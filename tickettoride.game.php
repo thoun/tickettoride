@@ -25,6 +25,8 @@ require_once('modules/php/states.php');
 require_once('modules/php/args.php');
 require_once('modules/php/actions.php');
 
+require_once('modules/php/destination-deck.php');
+
 class TicketToRide extends Table {
     use UtilTrait;
     use ActionTrait;
@@ -47,13 +49,13 @@ class TicketToRide extends Table {
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
             //      ...
-        ]);   
+        ]);  
+        
+        $this->destinations = self::getNew("module.common.deck");
+        $this->destinationDeck = new DestinationDeck($this, 3, 2);
 		
         $this->trainCars = self::getNew("module.common.deck");
         $this->trainCars->init("traincar");
-		
-        $this->destinations = self::getNew("module.common.deck");
-        $this->destinations->init("destination");     
 	}
 	
     protected function getGameName() {
@@ -98,7 +100,8 @@ class TicketToRide extends Table {
         //self::initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
         //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
 
-        // TODO: setup the initial game situation here
+        // setup the initial game situation here
+        $this->destinationDeck->createDestinations();
        
 
         // Activate first player (which is in general a good idea :) )
@@ -172,8 +175,12 @@ class TicketToRide extends Table {
     	
         if ($state['type'] === "activeplayer") {
             switch ($statename) {
+                case 'chooseInitialDestinations':
+                    $this->gamestate->nextState('next');
+                    return;
                 default:
-                    $this->gamestate->nextState("zombiePass");
+                    $this->jumpToState(ST_NEXT_PLAYER);
+                    //$this->gamestate->nextState("zombiePass");
                 	break;
             }
 

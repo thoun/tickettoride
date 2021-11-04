@@ -14,6 +14,27 @@ trait StateTrait {
     function stChooseInitialDestinations() {  
         $playerId = self::getActivePlayerId();
 
-        // TODO
+        if ($this->everyPlayerHasDestinations()) {
+            $this->gamestate->nextState('start');
+        } else {            
+            $this->destinationDeck->pickInitialCards();
+        }
+    }
+
+    function stChooseInitialDestinationsNextPlayer() {
+        $playerId = self::activeNextPlayer();
+        self::giveExtraTime($playerId);
+
+        if ($this->everyPlayerHasDestinations()) {
+            $this->gamestate->nextState('start');
+        } else {
+            $this->gamestate->nextState('nextPlayer');
+        }
+    }
+
+    function stChooseAdditionalDestinations() {  
+        $playerId = self::getActivePlayerId();
+
+        $this->destinationDeck->pickAdditionialCards();
     }
 }

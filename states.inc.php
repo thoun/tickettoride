@@ -84,6 +84,7 @@ $playerActionsGameStates = [
         "args" => "argChooseInitialDestinations",
         "possibleactions" => [ "chooseInitialDestinations" ],
         "transitions" => [
+            "start" => ST_PLAYER_CHOOSE_ACTION,
             "next" => ST_CHOOSE_INITIAL_DESTINATIONS_NEXT_PLAYER,
         ],
 
@@ -101,6 +102,7 @@ $playerActionsGameStates = [
         ],
         "transitions" => [
             "drawSecondCard" => ST_PLAYER_DRAW_SECOND_CARD,
+            "drawDestinations" => ST_PLAYER_CHOOSE_ADDITIONAL_DESTINATIONS,
             "nextPlayer" => ST_NEXT_PLAYER,
         ]
     ],
@@ -116,6 +118,20 @@ $playerActionsGameStates = [
         "transitions" => [
             "nextPlayer" => ST_NEXT_PLAYER,
         ]
+    ],
+
+    ST_PLAYER_CHOOSE_ADDITIONAL_DESTINATIONS => [
+        "name" => "chooseAdditionalDestinations",
+        "description" => clienttranslate('${actplayer} must choose destination tickets'),
+        "descriptionmyturn" => clienttranslate('${you} must choose destination tickets'),
+        "type" => "activeplayer",
+        "action" => "stChooseAdditionalDestinations",
+        "args" => "argChooseAdditionalDestinations",
+        "possibleactions" => [ "chooseAdditionalDestinations" ],
+        "transitions" => [
+            "nextPlayer" => ST_NEXT_PLAYER,
+        ],
+
     ],
 ];
 

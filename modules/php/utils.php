@@ -34,4 +34,21 @@ trait UtilTrait {
     function getInitialTrainCarsNumber() {
         return 45;
     }
+
+    function getNonZombiePlayersIds() {
+        $sql = "SELECT player_id FROM player WHERE player_eliminated = 0 AND player_zombie = 0 ORDER BY player_no";
+        $dbResults = self::getCollectionFromDB($sql);
+        return array_map(function($dbResult) { return intval($dbResult['player_id']); }, array_values($dbResults));
+    }
+
+    private function everyPlayerHasDestinations() {
+        $playersIds = $this->getNonZombiePlayersIds();
+        foreach($playersIds as $playerId) {
+            $cardsOfPlayer = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
+            if (count($cardsOfPlayer) == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

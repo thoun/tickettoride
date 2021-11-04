@@ -16,7 +16,7 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        // TODO
+        $this->destinationDeck->keepInitialCards($playerId, $ids);
         
         // TODO in nextPlayer check if all remaining players have at least one destination
         $this->gamestate->nextState('nextPlayer');

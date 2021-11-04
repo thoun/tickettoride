@@ -13,7 +13,15 @@ trait ArgsTrait {
     */
 
     function argChooseInitialDestinations() {
-        $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('deck'));
+        $destinations = $this->destinationDeck->getPickedCards();
+
+        return [
+           'destinations' => $destinations,
+        ];
+    }
+
+    function argChooseAdditionialDestinations() {
+        $destinations = $this->destinationDeck->getPickedCards();
 
         return [
            'destinations' => $destinations,
