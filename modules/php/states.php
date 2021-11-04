@@ -73,13 +73,14 @@ trait StateTrait {
                 $completed = $this->map->isDestinationCompleted($playerId, $destination);
                 $points = $completed ? $destination->points : -$destination->points;
                 
-                self::DbQuery("UPDATE player SET player_score = player_score + $points WHERE player_id = $playerId");
-
-                /* TODO notif self::notifyAllPlayers('scoreLords', clienttranslate('${player_name} wins ${points} points with lords'), [
-                    'playerId' => $player_id,
-                    'player_name' => $playerDb['player_name'],
-                    'points' => $points,
-                ]);*/
+                $message = clienttranslate('${player_name} ${gainsloses} ${delta} points with ${from} to ${to} destination');
+                $this->incScore($playerId, $route->points, $message, [
+                    'delta' => $completed ? $route->points : -$route->points,
+                    'from' => $route->from,
+                    'to' => $route->to,
+                    'i18n' => ['gainsloses'],
+                    'gainsloses' => $completed ? clienttranslate('gains') : clienttranslate('loses')
+                ]);
 
                 // TODO stats self::setStat($points, 'lords_points', $player_id);
             }
