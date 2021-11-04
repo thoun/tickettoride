@@ -68,4 +68,25 @@ trait UtilTrait {
         }
         return true;
     }
+
+    function getPlayerName(int $playerId) {
+        return self::getUniqueValueFromDb("SELECT player_name FROM player WHERE player_id = $playerId");
+    }
+
+    function getPlayerScore(int $playerId) {
+        return intval(self::getUniqueValueFromDB("SELECT player_score FROM player where `player_id` = $playerId"));
+    }
+
+    function incScore(int $playerId, int $delta, $message = null, $messageArgs = []) {
+        self::DbQuery("UPDATE player SET `player_score` = `player_score` + $delta where `player_id` = $playerId");
+
+        if ($message != null) {
+            self::notifyAllPlayers('points', $message, $messageArgs + [
+                'playerId' => $playerId,
+                'player_name' => $this->getPlayerName($playerId),
+                'points' => $this->getPlayerScore($playerId),
+                'delta' => $points,
+            ]);
+        }
+    }
 }

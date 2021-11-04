@@ -91,11 +91,41 @@ trait ActionTrait {
   	
     public function claimRoute(int $routeId) {
         self::checkAction('claimRoute');
+        
+        $playerId = intval(self::getActivePlayerId());
 
-        // TODO check claimed route
-        // TODO save claimed route
-        // TODO update score
-        // TODO notif
+        $route = $this->ROUTES[$routeId];
+
+        if (intval($this->game->getUniqueValueFromDB( "SELECT count(*) FROM `claimed_routes` WHERE `route_id` = $routeId")) > 0) {
+            throw new BgaSystemException("Route is already claimed.");
+        }
+
+        if ($this->getRemainingTrainCarsCount($playerId) < $route->number) {
+            throw new BgaSystemException("Not enough train cars to claim the route.");
+        }
+        
+        $colorAndLocomotiveCards = array_filter($trainCarsHand, function ($card) use ($routeColor) { return in_array($card->color, [0, $routeColor]); });
+        
+        if (count($colorAndLocomotiveCards) < $route->number) {
+            throw new BgaSystemException("Not enough cards to claim the route.");
+        }
+
+        usort($colorAndLocomotiveCards, function ($card1, $card2) {
+            return $card1->color < $card2->color;
+        });
+        // TODO check color cards are first after usort
+
+        $idsToRemove = array_slice(array_keys($colorAndLocomotiveCards), 0, $route->number);
+        $this->trainCars->moveCards($idsToRemove, 'discard');
+
+        // save claimed route
+        $sql = "INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)";
+        
+        // TODO notif claimed route, notif removed cards
+
+        // update score
+        $message = clienttranslate('${player_name} gains ${delta} points by claiming ${number} train-cars route from ${from} to ${to}');
+        $this->incScore($playerId, $route->points, $message, $route);
 
         $this->gamestate->nextState('nextPlayer'); 
     }
