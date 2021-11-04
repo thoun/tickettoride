@@ -96,7 +96,8 @@ $playerActionsGameStates = [
         "descriptionmyturn" => clienttranslate('${you} must draw train cards, claim a route or draw destination tickets'),
         "type" => "activeplayer",
         "possibleactions" => [ 
-            "drawCard",
+            "drawDeckCards",
+            "drawTableCard",
             "claimRoute",
             "drawDestinations"
         ],
@@ -113,7 +114,8 @@ $playerActionsGameStates = [
         "descriptionmyturn" => clienttranslate('${you} must draw a train card'),
         "type" => "activeplayer",
         "possibleactions" => [ 
-            "drawSecondCard",
+            "drawSecondDeckCard",
+            "drawSecondTableCard",
         ],
         "transitions" => [
             "nextPlayer" => ST_NEXT_PLAYER,
@@ -155,7 +157,7 @@ $gameGameStates = [
         "updateGameProgression" => true,
         "transitions" => [
             "nextPlayer" => ST_PLAYER_CHOOSE_ACTION, 
-            "endGame" => ST_END_SCORE,
+            "endScore" => ST_END_SCORE,
         ],
     ],
 

@@ -25,6 +25,7 @@ require_once('modules/php/states.php');
 require_once('modules/php/args.php');
 require_once('modules/php/actions.php');
 
+require_once('modules/php/train-car-deck.php');
 require_once('modules/php/destination-deck.php');
 
 class TicketToRide extends Table {
@@ -55,7 +56,7 @@ class TicketToRide extends Table {
         $this->destinationDeck = new DestinationDeck($this, 3, 2);
 		
         $this->trainCars = self::getNew("module.common.deck");
-        $this->trainCars->init("traincar");
+        $this->trainCarDeck = new TrainCarDeck($this);
 	}
 	
     protected function getGameName() {
@@ -101,18 +102,12 @@ class TicketToRide extends Table {
         //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
 
         // setup the initial game situation here
+
         $this->destinationDeck->createDestinations();
-       
-        // create train cars
-        for ($color = 0; $color <= 8; $color++) {
-            $trainCars[] = [ 'type' => $color, 'type_arg' => null, 'nbr' => ($color == 0 ? 14 : 12)];
-        }
-        $this->trainCars->createCards($trainCars, 'deck');
-        $this->trainCars->shuffle('deck');
+
+        $this->trainCarDeck->createTrainCars();
         // give 4 to each player
-        foreach ($players as $playerId => $player) {
-            $this->trainCars->pickCards(4, 'deck', $playerId);
-        }
+        $this->trainCarDeck->giveInitialCards(array_keys($players));
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -143,6 +138,11 @@ class TicketToRide extends Table {
 
         $result['handTrainCars'] = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $currentPlayerId));
         $result['handDestinations'] = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $currentPlayerId));
+
+        foreach ($result['players'] as $playerId => &$player) {
+            $player['trainCarsNumber'] = intval($this->trainCars->countCardInLocation('hand', $playerId));
+            $player['destinationsNumber'] = intval($this->destinations->countCardInLocation('hand', $playerId));
+        }
   
         return $result;
     }

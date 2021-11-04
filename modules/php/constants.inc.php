@@ -1,5 +1,7 @@
 <?php
 
+define('TRAIN_CARS_NUMBER_TO_START_LAST_TURN', 2);
+
 /* 
  * Colors 
  */
