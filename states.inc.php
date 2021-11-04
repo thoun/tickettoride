@@ -95,6 +95,7 @@ $playerActionsGameStates = [
         "description" => clienttranslate('${actplayer} must draw train cards, claim a route or draw destination tickets'),
         "descriptionmyturn" => clienttranslate('${you} must draw train cards, claim a route or draw destination tickets'),
         "type" => "activeplayer",
+        "args" => "argChooseAction",
         "possibleactions" => [ 
             "drawDeckCards",
             "drawTableCard",
@@ -113,6 +114,7 @@ $playerActionsGameStates = [
         "description" => clienttranslate('${actplayer} must draw a train card'),
         "descriptionmyturn" => clienttranslate('${you} must draw a train card'),
         "type" => "activeplayer",
+        "args" => "argDrawSecondCard",
         "possibleactions" => [ 
             "drawSecondDeckCard",
             "drawSecondTableCard",

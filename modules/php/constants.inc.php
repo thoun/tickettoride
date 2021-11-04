@@ -1,6 +1,9 @@
 <?php
 
 define('TRAIN_CARS_NUMBER_TO_START_LAST_TURN', 2);
+define('TRAIN_CARS_PER_PLAYER', 45);
+define('NUMBER_OF_LOCOMOTIVE_CARDS', 14);
+define('NUMBER_OF_COLORED_CARDS', 12);
 
 /* 
  * Colors 

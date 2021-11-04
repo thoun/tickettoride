@@ -22,6 +22,9 @@
 require_once(__DIR__.'/modules/php/objects/route.php');
 require_once(__DIR__.'/modules/php/objects/destination.php');
 
+/**
+ * Cities in the map (by alphabetical order).
+ */
 $this->CITIES = [
   1 => 'Atlanta',
   2 => 'Boston',
@@ -61,6 +64,11 @@ $this->CITIES = [
   36 => 'Winnipeg',
 ];
 
+/**
+ * Route on the map. 
+ * For double routes, there is 2 instances of Route.
+ * It's always low id to high id.
+ */
 $this->ROUTES = [
   1 => new Route(1, 4, 2, GRAY),
   2 => new Route(1, 16, 5, BLUE),
@@ -163,6 +171,9 @@ $this->ROUTES = [
   98 => new Route(32, 34, 1, GRAY),
 ];
 
+/**
+ * List of DestinationCard.
+ */
 $this->DESTINATIONS = [
   1 => [
     1 => new DestinationCard(2, 16, 12), // Boston	Miami	12
@@ -198,6 +209,9 @@ $this->DESTINATIONS = [
   ]
 ];
 
+/**
+ * Points scored for claimed routes.
+ */
 $this->ROUTE_POINTS = [
   1 => 1,
   2 => 2,

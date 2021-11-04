@@ -20,11 +20,34 @@ trait ArgsTrait {
         ];
     }
 
-    function argChooseAdditionialDestinations() {
+    function argChooseAdditionalDestinations() {
         $destinations = $this->destinationDeck->getPickedCards();
 
         return [
            'destinations' => $destinations,
         ];
+    }
+
+    function argChooseAction() {
+        $possibleRoutes = []; // TODO 
+        $maxHiddenCardsPick = min(2, $this->trainCarDeck->getRemainingCardsInDeck(true));
+        $availableDestinations = $this->destinationDeck->getRemainingCardsInDeck() > 0;
+
+        return [
+            'possibleRoutes' => $possibleRoutes,
+            'maxHiddenCardsPick' => $maxHiddenCardsPick,
+            'availableDestinations' => $availableDestinations,
+        ];
+    }
+
+    function argDrawSecondCard() {
+        $maxHiddenCardsPick = min(1, $this->trainCarDeck->getRemainingCardsInDeck(true));
+        $availableVisibleCards = $this->trainCarDeck->getVisibleCards(true);
+
+        return [
+            'maxHiddenCardsPick' => $maxHiddenCardsPick,
+            'availableVisibleCards' => $availableVisibleCards,
+        ];
+
     }
 }

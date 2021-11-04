@@ -32,7 +32,11 @@ trait UtilTrait {
     }
 
     function getInitialTrainCarsNumber() {
-        return 45;
+        return TRAIN_CARS_PER_PLAYER;
+    }
+
+    function getLowestTrainCarsCount() {
+        return intval(self::getUniqueValueFromDB("SELECT min(`player_remaining_train_cars`) FROM player"));
     }
 
     function getNonZombiePlayersIds() {
@@ -49,6 +53,16 @@ trait UtilTrait {
                 return false;
             }
         }
+        return true;
+    }
+
+    private function getLongestPath(int $playerId) {
+        // TODO
+        return 0;
+    }
+
+    private function isDestinationCompleted(int $playerId, object $destination) {
+        // TODO 
         return true;
     }
 }

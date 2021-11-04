@@ -43,14 +43,13 @@ trait StateTrait {
 
         $lastTurn = intval(self::getGameStateValue(LAST_TURN));
 
+        // check if it was last action from player who started last turn
         if ($lastTurn == $playerId) {
             $this->gamestate->nextState('endScore');
         } else {
             if ($lastTurn == 0) {
-                // check if last turn is started
-                $minTrainCars = intval(self::getUniqueValueFromDB("SELECT min(`player_remaining_train_cars`) FROM player"));
-    
-                if ($minTrainCars <= TRAIN_CARS_NUMBER_TO_START_LAST_TURN) {
+                // check if last turn is started    
+                if ($this->getLowestTrainCarsCount() <= TRAIN_CARS_NUMBER_TO_START_LAST_TURN) {
                     self::setGameStateValue(LAST_TURN, $playerId);
                 }
             }
@@ -62,9 +61,52 @@ trait StateTrait {
     }
 
     function stEndScore() {
-        // TODO count completed/failed destinations
-        // TODO count longestRoad
-        // TODO count max completed ?
-        // TODO update score
+        $sql = "SELECT player_id id, player_name FROM player ORDER BY player_no ASC";
+        $players = self::getCollectionFromDb($sql);
+
+        // completed/failed destinations 
+        foreach ($players as $playerId => $playerDb) {
+
+            $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $currentPlayerId));
+
+            foreach ($destinations as $destination) {
+                $completed = $this->isDestinationCompleted($playerId, $destination);
+                $points = $completed ? $destination->points : -$destination->points;
+                
+                self::DbQuery("UPDATE player SET player_score = player_score + $points WHERE player_id = $playerId");
+
+                /* TODO notif self::notifyAllPlayers('scoreLords', clienttranslate('${player_name} wins ${points} points with lords'), [
+                    'playerId' => $player_id,
+                    'player_name' => $playerDb['player_name'],
+                    'points' => $points,
+                ]);*/
+
+                // TODO stats self::setStat($points, 'lords_points', $player_id);
+            }
+        }
+
+        // Longest continuous path 
+        $playersLongestPaths = [];
+        foreach ($players as $playerId => $playerDb) {
+            $playersLongestPaths[$playerId] = $this->getLongestPath($playerId);
+
+            /*$points = $this->getScoreLocations($player_id, intval($playerDb['pearls']));
+
+            $playersPoints[$player_id] += $points;
+            self::DbQuery("UPDATE player SET player_score = player_score + $points, player_score_locations = $points WHERE player_id = $player_id");
+            // TODO self::DbQuery("UPDATE player SET player_score_locations = $points WHERE player_id = $player_id");
+
+            self::notifyAllPlayers('scoreLocations', clienttranslate('${player_name} wins ${points} points with locations'), [
+                'playerId' => $player_id,
+                'player_name' => $playerDb['player_name'],
+                'points' => $points,
+            ]);
+            
+            // TODO statsself::setStat($points, 'locations_points', $player_id);*/
+        }
+
+        // TODO TOCHECK count max completed destination ?
+
+        $this->gamestate->nextState('endGame');
     }
 }

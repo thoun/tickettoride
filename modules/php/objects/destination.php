@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * A DestinationCard is the graphic representation of a card (informations on it : from, to and points).
+ */
 class DestinationCard {
     public /*int*/ $from;
     public /*int*/ $to;
@@ -12,6 +15,13 @@ class DestinationCard {
     } 
 }
 
+/**
+ * A Destination is a physical card. It contains informations from matching DestinationCard, with technical informations like id and location.
+ * Location : deck or hand
+ * Location arg : order (in deck), playerId (in hand)
+ * Type : 1 for simple destination
+ * Type arg : the destination type (DestinationCard id)
+ */
 class Destination extends DestinationCard {
     public $id;
     public $location;

@@ -28,28 +28,26 @@ require_once('modules/php/actions.php');
 require_once('modules/php/train-car-deck.php');
 require_once('modules/php/destination-deck.php');
 
+/*
+ * Game main class.
+ * For readability, main sections (util, action, state, args) have been splited into Traits with the section name on modules/php directory.
+ */
 class TicketToRide extends Table {
     use UtilTrait;
     use ActionTrait;
     use StateTrait;
     use ArgsTrait;
 
+    /* Object responsible of Destination cards that can be picked (deck). */
+    private $destinationDeck;
+    /* Object responsible of Train cards that can be picked (deck and table). */
+    private $trainCarDeck;
+
 	function __construct() {
-        // Your global variables labels:
-        //  Here, you can assign labels to global variables you are using for this game.
-        //  You can use any number of global variables with IDs between 10 and 99.
-        //  If your game has options (variants), you also have to associate here a label to
-        //  the corresponding ID in gameoptions.inc.php.
-        // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         
         self::initGameStateLabels([
-            LAST_TURN => 10,
-            
-            //      ...
-            //    "my_first_game_variant" => 100,
-            //    "my_second_game_variant" => 101,
-            //      ...
+            LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
         ]);  
         
         $this->destinations = self::getNew("module.common.deck");
@@ -94,7 +92,7 @@ class TicketToRide extends Table {
         /************ Start the game initialization *****/
 
         // Init global values with their initial values
-        //self::setGameStateInitialValue( 'my_first_global_variable', 0 );
+        self::setGameStateInitialValue(LAST_TURN, 0);
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -138,6 +136,7 @@ class TicketToRide extends Table {
 
         $result['handTrainCars'] = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $currentPlayerId));
         $result['handDestinations'] = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $currentPlayerId));
+        // TODO completed/uncompleted destinations counters ?
 
         foreach ($result['players'] as $playerId => &$player) {
             $player['trainCarsNumber'] = intval($this->trainCars->countCardInLocation('hand', $playerId));
@@ -158,9 +157,14 @@ class TicketToRide extends Table {
         (see states.inc.php)
     */
     function getGameProgression() {
-        // TODO: compute and return the game progression
+        $stateName = $this->gamestate->state()['name']; 
+        if ($stateName === 'endScore' || $stateName === 'gameEnd') {
+            // game is over
+            return 100;
+        }
 
-        return 0;
+        // ratio of remaining train cars (based on player with lowest count)
+        return 100 * (TRAIN_CARS_PER_PLAYER - $this->getLowestTrainCarsCount()) / TRAIN_CARS_PER_PLAYER;
     }
 
 //////////////////////////////////////////////////////////////////////////////
