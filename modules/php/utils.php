@@ -30,4 +30,8 @@ trait UtilTrait {
     function getDestinationsFromDb(array $dbObjects) {
         return array_map(function($dbObject) { return $this->getDestinationFromDb($dbObject); }, array_values($dbObjects));
     }
+
+    function getInitialTrainCarsNumber() {
+        return 45;
+    }
 }

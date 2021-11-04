@@ -4,7 +4,7 @@ class TrainCar {
     public $id;
     public $location;
     public $location_arg;
-    public $type; // color: 0 for locomotive, ... TODO
+    public $type; // see Color constants (0 is locomotive)
     public $type_arg;
 
     public function __construct($dbCard) {

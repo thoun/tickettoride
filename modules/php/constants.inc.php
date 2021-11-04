@@ -1,5 +1,18 @@
 <?php
 
+/* 
+ * Colors 
+ */
+define('GRAY', 0);
+define('PINK', 1);
+define('WHITE', 2);
+define('BLUE', 3);
+define('YELLOW', 4);
+define('ORANGE', 5);
+define('BLACK', 6);
+define('RED', 7);
+define('GREEN', 8);
+
 /*
  * State constants
  */

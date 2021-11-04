@@ -35,17 +35,14 @@ CREATE TABLE IF NOT EXISTS `destination` (
   `card_type_arg` int(11) NOT NULL,
   `card_location` varchar(16) NOT NULL,
   `card_location_arg` int(11) NOT NULL,
+  `completed` TINYINT unsigned NOT NULL DEFAULT FALSE,
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-CREATE TABLE IF NOT EXISTS `traincar_meeple` (
-  `id` TINYINT unsigned NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `claimed_routes` (
+  `route_id` TINYINT unsigned NOT NULL,
   `player_id` int(11) NOT NULL,
-  `position` TINYINT unsigned NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`route_id`, `player_id`)
 ) ENGINE=InnoDB;
 
-
--- Example 2: add a custom field to the standard "player" table
--- ALTER TABLE `player` ADD `player_my_custom_field` INT UNSIGNED NOT NULL DEFAULT '0';
-
+ALTER TABLE `player` ADD `player_remaining_train_cars` INT UNSIGNED NOT NULL;
