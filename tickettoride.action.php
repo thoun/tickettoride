@@ -43,6 +43,16 @@
 
         self::ajaxResponse();
     }
+  	
+    public function chooseAdditionalDestinations() {
+        self::setAjaxMode();
+
+        $destinationsIds = self::getArg("destinationsIds", AT_numberlist, true);
+
+        $this->game->chooseAdditionalDestinations($destinationsIds);
+
+        self::ajaxResponse();
+    }
 
   }
   

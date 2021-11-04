@@ -80,10 +80,10 @@ class TicketToRide extends Table {
         // Create players
         // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
         $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar, player_remaining_train_cars) VALUES ";
-        $values = array();
-        foreach ($players as $player_id => $player) {
+        $values = [];
+        foreach ($players as $playerId => $player) {
             $color = array_shift( $default_colors );
-            $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."', ".$this->getInitialTrainCarsNumber().")";
+            $values[] = "('".$playerId."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."', ".$this->getInitialTrainCarsNumber().")";
         }
         $sql .= implode($values, ',');
         self::DbQuery($sql);
@@ -103,6 +103,16 @@ class TicketToRide extends Table {
         // setup the initial game situation here
         $this->destinationDeck->createDestinations();
        
+        // create train cars
+        for ($color = 0; $color <= 8; $color++) {
+            $trainCars[] = [ 'type' => $color, 'type_arg' => null, 'nbr' => ($color == 0 ? 14 : 12)];
+        }
+        $this->trainCars->createCards($trainCars, 'deck');
+        $this->trainCars->shuffle('deck');
+        // give 4 to each player
+        foreach ($players as $playerId => $player) {
+            $this->trainCars->pickCards(4, 'deck', $playerId);
+        }
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();

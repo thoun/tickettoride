@@ -10,7 +10,7 @@ class DestinationDeck {
     private /*int*/ $minimumAdditionalCardKept;
     private /*bool*/ $unusedGoToDeckBottom;
 
-    function __construct(object $game, /* TODO pass selff:new as parameter ? */ int $initialCardPick = 3, int $minimumInitialCardKept = 2, int $additionalCardPick = 3, int $minimumAdditionalCardKept = 1, bool $unusedGoToDeckBottom = true) {
+    function __construct(object &$game, /* TODO pass selff:new as parameter ? */ int $initialCardPick = 3, int $minimumInitialCardKept = 2, int $additionalCardPick = 3, int $minimumAdditionalCardKept = 1, bool $unusedGoToDeckBottom = true) {
         $this->game = $game;
         $this->initialCardPick = $initialCardPick;
         $this->minimumInitialCardKept = $minimumInitialCardKept;
@@ -28,6 +28,7 @@ class DestinationDeck {
             }
         }
         $this->game->destinations->createCards($destinations, 'deck');
+        $this->game->destinations->shuffle('deck');
     }
 	
     public function pickInitialCards() {

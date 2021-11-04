@@ -18,7 +18,16 @@ trait ActionTrait {
 
         $this->destinationDeck->keepInitialCards($playerId, $ids);
         
-        // TODO in nextPlayer check if all remaining players have at least one destination
+        $this->gamestate->nextState('nextPlayer');
+    }
+    
+    public function chooseAdditionalDestinations(array $ids) {
+        self::checkAction('chooseAdditionalDestinations'); 
+        
+        $playerId = intval(self::getActivePlayerId());
+
+        $this->destinationDeck->keepAdditionalCards($playerId, $ids);
+        
         $this->gamestate->nextState('nextPlayer');
     }
 }
