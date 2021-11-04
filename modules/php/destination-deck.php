@@ -97,7 +97,7 @@ class DestinationDeck {
             throw new BgaSystemException("You must keep at least $minimum cards.");
         }
 
-        if (count($ids) > 0 && intval(self::getUniqueValueFromDB( "SELECT count(*) FROM destination WHERE `card_location` != 'pick' AND `card_id` in (".implode(', ', $ids).")")) > 0) {
+        if (count($ids) > 0 && intval($this->game->getUniqueValueFromDB( "SELECT count(*) FROM destination WHERE `card_location` != 'pick' AND `card_id` in (".implode(', ', $ids).")")) > 0) {
             throw new BgaSystemException("Selected cards are not available.");
         }
 
@@ -108,7 +108,7 @@ class DestinationDeck {
             if ($this->unusedGoToDeckBottom) {
                 $this->destinations->shuffle('pick');
                 // we put remaining cards in pick at the bottom of the deck
-                self::DbQuery("UPDATE destination SET `card_location_arg` = card_location_arg + $remainingCardsInPick");
+                $this->game->DbQuery("UPDATE destination SET `card_location_arg` = card_location_arg + $remainingCardsInPick");
                 $this->destinations->moveAllCardsInLocationKeepOrder('pick', 'deck');
             } else {
                 // we discard remaining cards in pick

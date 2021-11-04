@@ -39,10 +39,23 @@ trait UtilTrait {
         return intval(self::getUniqueValueFromDB("SELECT min(`player_remaining_train_cars`) FROM player"));
     }
 
+    function getRemainingTrainCarsCount(int $playerId) {
+        return intval(self::getUniqueValueFromDB("SELECT `player_remaining_train_cars` FROM player WHERE player_id = $playerId"));
+    }
+
     function getNonZombiePlayersIds() {
         $sql = "SELECT player_id FROM player WHERE player_eliminated = 0 AND player_zombie = 0 ORDER BY player_no";
         $dbResults = self::getCollectionFromDB($sql);
         return array_map(function($dbResult) { return intval($dbResult['player_id']); }, array_values($dbResults));
+    }
+
+    function getClaimedRoutesIds($playerId = null) {
+        $sql = "SELECT route_id FROM claimed_routes ";
+        if ($playerId !== null) {
+            $sql .= "WHERE player_id = $playerId ";
+        }
+        $dbResults = self::getCollectionFromDB($sql);
+        return array_map(function($dbResult) { return intval($dbResult['route_id']); }, array_values($dbResults));
     }
 
     private function everyPlayerHasDestinations() {
@@ -53,16 +66,6 @@ trait UtilTrait {
                 return false;
             }
         }
-        return true;
-    }
-
-    private function getLongestPath(int $playerId) {
-        // TODO
-        return 0;
-    }
-
-    private function isDestinationCompleted(int $playerId, object $destination) {
-        // TODO 
         return true;
     }
 }

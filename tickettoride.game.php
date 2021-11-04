@@ -25,6 +25,7 @@ require_once('modules/php/states.php');
 require_once('modules/php/args.php');
 require_once('modules/php/actions.php');
 
+require_once('modules/php/map.php');
 require_once('modules/php/train-car-deck.php');
 require_once('modules/php/destination-deck.php');
 
@@ -38,6 +39,8 @@ class TicketToRide extends Table {
     use StateTrait;
     use ArgsTrait;
 
+    /* Object responsible of the map and meeple on it. */
+    private $map;
     /* Object responsible of Destination cards that can be picked (deck). */
     private $destinationDeck;
     /* Object responsible of Train cards that can be picked (deck and table). */
@@ -49,6 +52,8 @@ class TicketToRide extends Table {
         self::initGameStateLabels([
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
         ]);  
+
+        $this->map = new Map($this);
         
         $this->destinations = self::getNew("module.common.deck");
         $this->destinationDeck = new DestinationDeck($this, 3, 2);
@@ -141,6 +146,7 @@ class TicketToRide extends Table {
         foreach ($result['players'] as $playerId => &$player) {
             $player['trainCarsNumber'] = intval($this->trainCars->countCardInLocation('hand', $playerId));
             $player['destinationsNumber'] = intval($this->destinations->countCardInLocation('hand', $playerId));
+            $player['remainingTrainCars'] = $this->getRemainingTrainCarsCount($playerId);
         }
   
         return $result;

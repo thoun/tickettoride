@@ -28,8 +28,13 @@ trait ArgsTrait {
         ];
     }
 
-    function argChooseAction() {
-        $possibleRoutes = []; // TODO 
+    function argChooseAction() {        
+        $playerId = intval(self::getActivePlayerId());
+
+        $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
+        $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
+
+        $possibleRoutes = $this->map->claimableRoutes($trainCarsHand, $remainingTrainCars);
         $maxHiddenCardsPick = min(2, $this->trainCarDeck->getRemainingCardsInDeck(true));
         $availableDestinations = $this->destinationDeck->getRemainingCardsInDeck() > 0;
 

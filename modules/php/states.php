@@ -70,7 +70,7 @@ trait StateTrait {
             $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $currentPlayerId));
 
             foreach ($destinations as $destination) {
-                $completed = $this->isDestinationCompleted($playerId, $destination);
+                $completed = $this->map->isDestinationCompleted($playerId, $destination);
                 $points = $completed ? $destination->points : -$destination->points;
                 
                 self::DbQuery("UPDATE player SET player_score = player_score + $points WHERE player_id = $playerId");
@@ -88,7 +88,7 @@ trait StateTrait {
         // Longest continuous path 
         $playersLongestPaths = [];
         foreach ($players as $playerId => $playerDb) {
-            $playersLongestPaths[$playerId] = $this->getLongestPath($playerId);
+            $playersLongestPaths[$playerId] = $this->map->getLongestPath($playerId);
 
             /*$points = $this->getScoreLocations($player_id, intval($playerDb['pearls']));
 
