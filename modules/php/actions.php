@@ -14,13 +14,13 @@ trait ActionTrait {
     public function chooseInitialDestinations(array $ids) {
         self::checkAction('chooseInitialDestinations'); 
         
-        $playerId = intval(self::getActivePlayerId());
+        $playerId = intval(self::getCurrentPlayerId());
 
         $this->destinationDeck->keepInitialCards($playerId, $ids);
 
         // TODO notif
         
-        $this->gamestate->nextState('nextPlayer');
+        $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
     }
     
     public function chooseAdditionalDestinations(array $ids) {

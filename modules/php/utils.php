@@ -58,18 +58,12 @@ trait UtilTrait {
         return array_values($dbResults);
     }
 
-    private function everyPlayerHasDestinations() {
-        $playersIds = $this->getNonZombiePlayersIds();
-        foreach($playersIds as $playerId) {
-            if (intval($this->destinations->countCardInLocation('hand', $playerId)) == 0) {
-                return false;
-            }
-        }
-        return true;
+    function getPlayersIds() {
+        return array_keys($this->loadPlayersBasicInfos());
     }
 
     function getPlayerCount() {
-        return $this->getUniqueIntValueFromDB("SELECT count(*) FROM player");
+        return count($this->getPlayersIds());
     }
 
     function getPlayerName(int $playerId) {

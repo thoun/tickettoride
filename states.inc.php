@@ -59,7 +59,7 @@ $basicGameStates = [
         "description" => clienttranslate("Game setup"),
         "type" => "manager",
         "action" => "stGameSetup",
-        "transitions" => [ "" => ST_PLAYER_CHOOSE_INITIAL_DESTINATIONS ]
+        "transitions" => [ "" => ST_MULTIPLAYER_CHOOSE_INITIAL_DESTINATIONS ]
     ],
    
     // Final state.
@@ -75,17 +75,16 @@ $basicGameStates = [
 
 $playerActionsGameStates = [
 
-    ST_PLAYER_CHOOSE_INITIAL_DESTINATIONS => [
+    ST_MULTIPLAYER_CHOOSE_INITIAL_DESTINATIONS => [
         "name" => "chooseInitialDestinations",
-        "description" => clienttranslate('${actplayer} must choose destination tickets'),
+        "description" => clienttranslate('Other players must choose destination tickets'),
         "descriptionmyturn" => clienttranslate('${you} must choose destination tickets'),
-        "type" => "activeplayer",
+        "type" => "multipleactiveplayer",
         "action" => "stChooseInitialDestinations",
         "args" => "argChooseInitialDestinations",
         "possibleactions" => [ "chooseInitialDestinations" ],
         "transitions" => [
             "start" => ST_PLAYER_CHOOSE_ACTION,
-            "next" => ST_CHOOSE_INITIAL_DESTINATIONS_NEXT_PLAYER,
         ],
 
     ],
@@ -140,17 +139,6 @@ $playerActionsGameStates = [
 ];
 
 $gameGameStates = [
-    ST_CHOOSE_INITIAL_DESTINATIONS_NEXT_PLAYER => [
-        "name" => "chooseInitialDestinationsNextPlayer",
-        "description" => "",
-        "type" => "game",
-        "action" => "stChooseInitialDestinationsNextPlayer",
-        "transitions" => [
-            "nextPlayer" => ST_PLAYER_CHOOSE_INITIAL_DESTINATIONS,
-            "start" => ST_PLAYER_CHOOSE_ACTION,
-        ],
-    ],
-
     ST_NEXT_PLAYER => [
         "name" => "nextPlayer",
         "description" => "",

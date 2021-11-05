@@ -45,7 +45,9 @@ interface TicketToRideGame extends Game {
 }
 
 interface EnteringChooseDestinationsArgs {
-    destinations: Card[];
+    _private: {
+        destinations: Card[];
+    };
     minimum: number;
 }
 

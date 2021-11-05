@@ -52,7 +52,14 @@ class TicketToRide implements TicketToRideGame {
         //this.cards.onItemCreate = (card_div, card_type_id) => this.game.cards.setupNewCard(card_div, card_type_id);
         this.cards.image_items_per_row = 10;
         this.cards.centerItems = true;
-        dojo.connect(this.cards, 'onChangeSelection', this, () => dojo.toggleClass('chooseInitialDestinations_button', 'disabled', this.cards.getSelectedItems().length < this.minimumDestinations));
+        dojo.connect(this.cards, 'onChangeSelection', this, () => {
+            if (document.getElementById('chooseInitialDestinations_button')) {
+                dojo.toggleClass('chooseInitialDestinations_button', 'disabled', this.cards.getSelectedItems().length < this.minimumDestinations)
+            }
+            if (document.getElementById('chooseAdditionalDestinations_button')) {
+                dojo.toggleClass('chooseAdditionalDestinations_button', 'disabled', this.cards.getSelectedItems().length < this.minimumDestinations)
+            }
+        });
         this.setupDestinationCards(this.cards);
 
         log("Ending game setup");
@@ -75,7 +82,7 @@ class TicketToRide implements TicketToRideGame {
     }
 
     onEnteringChooseInitialDestinations(args: EnteringChooseDestinationsArgs) {
-        args.destinations.forEach(card => this.cards.addToStockWithId(card.id, ''+card.id));
+        args._private.destinations.forEach(card => this.cards.addToStockWithId(card.id, ''+card.id));
 
         if ((this as any).isCurrentPlayerActive()) {
             this.cards.setSelectionMode(2);

@@ -12,13 +12,13 @@ trait StateTrait {
     */
 
     function stChooseInitialDestinations() {  
-        $playerId = self::getActivePlayerId();
+        $playersIds = $this->getPlayersIds();
 
-        if ($this->everyPlayerHasDestinations()) {
-            $this->gamestate->nextState('start');
-        } else {            
+        foreach($playersIds as $playerId) {
             $this->destinationDeck->pickInitialCards($playerId);
         }
+
+        $this->gamestate->setAllPlayersMultiactive();
     }
 
     function stChooseInitialDestinationsNextPlayer() {

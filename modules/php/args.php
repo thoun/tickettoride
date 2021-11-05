@@ -13,19 +13,28 @@ trait ArgsTrait {
     */
 
     function argChooseInitialDestinations() {
-        $playerId = intval(self::getActivePlayerId());
+        $playersIds = $this->getPlayersIds();
+        
+        $private = [];
+
+        foreach($playersIds as $playerId) {
+            $private[$playerId] = [
+                'destinations' => $this->destinationDeck->pickInitialCards($playerId),
+            ];
+        }
 
         $destinations = $this->destinationDeck->getPickedCards($playerId);
 
         return [
            'minimum' => 2,
-           'destinations' => $destinations,
+           '_private' => $private,
         ];
+        
     }
 
     function argChooseAdditionalDestinations() {
         $playerId = intval(self::getActivePlayerId());
-        
+
         $destinations = $this->destinationDeck->getPickedCards($playerId);
 
         return [
