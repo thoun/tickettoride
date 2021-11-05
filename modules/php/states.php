@@ -17,7 +17,7 @@ trait StateTrait {
         if ($this->everyPlayerHasDestinations()) {
             $this->gamestate->nextState('start');
         } else {            
-            $this->destinationDeck->pickInitialCards();
+            $this->destinationDeck->pickInitialCards($playerId);
         }
     }
 
@@ -35,7 +35,7 @@ trait StateTrait {
     function stChooseAdditionalDestinations() {  
         $playerId = self::getActivePlayerId();
 
-        $this->destinationDeck->pickAdditionialCards();
+        $this->destinationDeck->pickAdditionalCards($playerId);
     }
 
     function stNextPlayer() {

@@ -36,11 +36,11 @@ trait UtilTrait {
     }
 
     function getLowestTrainCarsCount() {
-        return intval(self::getUniqueValueFromDB("SELECT min(`player_remaining_train_cars`) FROM player"));
+        return $this->getUniqueIntValueFromDB("SELECT min(`player_remaining_train_cars`) FROM player");
     }
 
     function getRemainingTrainCarsCount(int $playerId) {
-        return intval(self::getUniqueValueFromDB("SELECT `player_remaining_train_cars` FROM player WHERE player_id = $playerId"));
+        return $this->getUniqueIntValueFromDB("SELECT `player_remaining_train_cars` FROM player WHERE player_id = $playerId");
     }
 
     function getNonZombiePlayersIds() {
@@ -61,8 +61,7 @@ trait UtilTrait {
     private function everyPlayerHasDestinations() {
         $playersIds = $this->getNonZombiePlayersIds();
         foreach($playersIds as $playerId) {
-            $cardsOfPlayer = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
-            if (count($cardsOfPlayer) == 0) {
+            if (intval($this->destinations->countCardInLocation('hand', $playerId)) == 0) {
                 return false;
             }
         }
@@ -70,7 +69,7 @@ trait UtilTrait {
     }
 
     function getPlayerCount() {
-        return intval(self::getUniqueValueFromDB("SELECT count(*) FROM player"));
+        return $this->getUniqueIntValueFromDB("SELECT count(*) FROM player");
     }
 
     function getPlayerName(int $playerId) {
@@ -78,7 +77,7 @@ trait UtilTrait {
     }
 
     function getPlayerScore(int $playerId) {
-        return intval(self::getUniqueValueFromDB("SELECT player_score FROM player where `player_id` = $playerId"));
+        return $this->getUniqueIntValueFromDB("SELECT player_score FROM player where `player_id` = $playerId");
     }
 
     function incScore(int $playerId, int $delta, $message = null, $messageArgs = []) {
@@ -92,5 +91,9 @@ trait UtilTrait {
                 'delta' => $points,
             ] + $messageArgs);
         }
+    }
+
+    function getUniqueIntValueFromDB(string $sql) {
+        return intval(self::getUniqueValueFromDB($sql));
     }
 }

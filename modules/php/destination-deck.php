@@ -44,8 +44,8 @@ class DestinationDeck {
     /**
      * Pick cards for beginning choice.
      */
-    public function pickInitialCards() {
-		return $this->pickCards($this->initialCardPick);
+    public function pickInitialCards(int $playerId) {
+		return $this->pickCards($playerId, $this->initialCardPick);
     }	
 
     /**
@@ -53,14 +53,14 @@ class DestinationDeck {
      * Unused cards are set back on the deck or discarded.
      */
     public function keepInitialCards(int $playerId, array $ids) {
-		return $this->keepCards($playerId, $ids, $this->minimumInitialCardKept);
+		$this->keepCards($playerId, $ids, $this->minimumInitialCardKept);
     }	
 	
     /**
      * Pick cards for pick destination action.
      */
-    public function pickAdditionalCards() {
-		return $this->pickCards($this->additionalCardPick);
+    public function pickAdditionalCards(int $playerId) {
+		return $this->pickCards($playerId, $this->additionalCardPick);
     }	
 
     /**
@@ -68,14 +68,14 @@ class DestinationDeck {
      * Unused cards are set back on the deck or discarded.
      */
     public function keepAdditionalCards(int $playerId, array $ids) {
-		return $this->keepCards($playerId, $ids, $this->minimumAdditionalCardKept);
+		$this->keepCards($playerId, $ids, $this->minimumAdditionalCardKept);
     }
 
     /**
      * Get picked cards (cards player can choose).
      */
-    public function getPickedCards() {
-        $cards = $this->game->getDestinationsFromDb($this->destinations->getCardsInLocation('pick'));
+    public function getPickedCards(int $playerId) {
+        $cards = $this->game->getDestinationsFromDb($this->destinations->getCardsInLocation("pick$playerId"));
         return $cards;
     }
 
@@ -87,8 +87,8 @@ class DestinationDeck {
         return $remaining;
     }
 
-    private function pickCards(int $number) {
-        $cards = $this->game->getDestinationsFromDb($this->destinations->pickCardsForLocation($number, 'deck', 'pick'));
+    private function pickCards($playerId, int $number) {
+        $cards = $this->game->getDestinationsFromDb($this->destinations->pickCardsForLocation($number, 'deck', "pick$playerId"));
         return $cards;
     }
 
@@ -97,25 +97,23 @@ class DestinationDeck {
             throw new BgaSystemException("You must keep at least $minimum cards.");
         }
 
-        if (count($ids) > 0 && intval($this->game->getUniqueValueFromDB( "SELECT count(*) FROM destination WHERE `card_location` != 'pick' AND `card_id` in (".implode(', ', $ids).")")) > 0) {
+        if (count($ids) > 0 && $this->game->getUniqueIntValueFromDB("SELECT count(*) FROM destination WHERE `card_location` != 'pick$playerId' AND `card_id` in (".implode(', ', $ids).")") > 0) {
             throw new BgaSystemException("Selected cards are not available.");
         }
 
-        $cards = $this->game->getDestinationsFromDb($this->destinations->moveCards($ids, 'hand', $playerId));
+        $this->destinations->moveCards($ids, 'hand', $playerId);
 
-        $remainingCardsInPick = intval($this->destinations->countCardInLocation('pick'));
+        $remainingCardsInPick = intval($this->destinations->countCardInLocation("pick$playerId"));
         if ($remainingCardsInPick > 0) {
             if ($this->unusedGoToDeckBottom) {
-                $this->destinations->shuffle('pick');
+                $this->destinations->shuffle("pick$playerId");
                 // we put remaining cards in pick at the bottom of the deck
-                $this->game->DbQuery("UPDATE destination SET `card_location_arg` = card_location_arg + $remainingCardsInPick");
-                $this->destinations->moveAllCardsInLocationKeepOrder('pick', 'deck');
+                $this->game->DbQuery("UPDATE destination SET `card_location_arg` = card_location_arg + $remainingCardsInPick WHERE `card_location` = 'deck'");
+                $this->destinations->moveAllCardsInLocationKeepOrder("pick$playerId", 'deck');
             } else {
                 // we discard remaining cards in pick
-                $this->destinations->moveAllCardsInLocationKeepOrder('pick', 'discard');
+                $this->destinations->moveAllCardsInLocationKeepOrder("pick$playerId", 'discard');
             }
         }
-
-        return $cards;
     }
 }

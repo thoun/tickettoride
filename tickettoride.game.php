@@ -137,7 +137,7 @@ class TicketToRide extends Table {
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result['players'] = self::getCollectionFromDb($sql);
   
-        // TODO: Gather all information about current game situation (visible by player $currentPlayerId).
+        // Gather all information about current game situation (visible by player $currentPlayerId).
 
         $result['handTrainCars'] = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $currentPlayerId));
         $result['handDestinations'] = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $currentPlayerId));

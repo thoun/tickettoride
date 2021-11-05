@@ -31,7 +31,7 @@ class Map {
         $doubleRouteAllowed = $this->isDoubleRouteAllowed();
         // remove double routes if low player count, or if player already got the other route
         $claimableRoutes = array_values(array_filter($claimableRoutes, function($unclaimedRoute) use ($playerId, $claimedRoutes, $doubleRouteAllowed) {
-            $twinRoutes = $this-getTwinRoutes($unclaimedRoute);
+            $twinRoutes = $this->getTwinRoutes($unclaimedRoute);
             foreach($twinRoutes as $twinRoute) {
                 // we check if twin route is claimed
                 $twinRouteClaimedBy = null;
@@ -53,7 +53,7 @@ class Map {
             return true;
         }));
         
-        return $routes;
+        return $claimableRoutes;
     }
 
     /**
@@ -109,11 +109,11 @@ class Map {
         }
 
         $colorsToTest = $route->color > 0 ? [$route->color] : [1,2,3,4,5,6,7,8];
-        $locomotiveCards = array_filter($trainCarsHand, function ($card) use ($color) { return $card->color == 0; });
+        $locomotiveCards = array_filter($trainCarsHand, function ($card) { return $card->type == 0; });
         
         // route is gray, check for each possible color
         foreach ($colorsToTest as $color) {
-            $colorCards = array_filter($trainCarsHand, function ($card) use ($color) { return $card->color == $color; });
+            $colorCards = array_filter($trainCarsHand, function ($card) use ($color) { return $card->type == $color; });
             if (count($colorCards) + count($locomotiveCards) >= $route->number) {
                 // enough color card (including locomotives)
                 return array_slice(array_merge($colorCards, $locomotiveCards), 0, $route->number); 

@@ -39,7 +39,7 @@
 
         $destinationsIds = self::getArg("destinationsIds", AT_numberlist, true);
 
-        $this->game->chooseInitialDestinations($destinationsIds);
+        $this->game->chooseInitialDestinations(array_map(function($idStr) { return intval($idStr); }, explode(',', $destinationsIds)));
 
         self::ajaxResponse();
     }
@@ -49,7 +49,7 @@
 
         $destinationsIds = self::getArg("destinationsIds", AT_numberlist, true);
 
-        $this->game->chooseAdditionalDestinations($destinationsIds);
+        $this->game->chooseAdditionalDestinations(array_map(function($idStr) { return intval($idStr); }, explode(',', $destinationsIds)));
 
         self::ajaxResponse();
     }

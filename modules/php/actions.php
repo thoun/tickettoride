@@ -96,7 +96,7 @@ trait ActionTrait {
 
         $route = $this->ROUTES[$routeId];
 
-        if (intval($this->game->getUniqueValueFromDB( "SELECT count(*) FROM `claimed_routes` WHERE `route_id` = $routeId")) > 0) {
+        if ($this->game->getUniqueIntValueFromDB( "SELECT count(*) FROM `claimed_routes` WHERE `route_id` = $routeId") > 0) {
             throw new BgaSystemException("Route is already claimed.");
         }
 
@@ -104,14 +104,14 @@ trait ActionTrait {
             throw new BgaSystemException("Not enough train cars to claim the route.");
         }
         
-        $colorAndLocomotiveCards = array_filter($trainCarsHand, function ($card) use ($routeColor) { return in_array($card->color, [0, $routeColor]); });
+        $colorAndLocomotiveCards = array_filter($trainCarsHand, function ($card) use ($routeColor) { return in_array($card->type, [0, $routeColor]); });
         
         if (count($colorAndLocomotiveCards) < $route->number) {
             throw new BgaSystemException("Not enough cards to claim the route.");
         }
 
         usort($colorAndLocomotiveCards, function ($card1, $card2) {
-            return $card1->color < $card2->color;
+            return $card1->type < $card2->type;
         });
         // TODO check color cards are first after usort
 
