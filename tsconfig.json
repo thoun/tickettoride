@@ -1,0 +1,17 @@
+{
+    "rootDir": ".", 
+    "compilerOptions": {
+      "target": "es5",
+      "module": "none",
+      "lib": ["dom", "esnext"],  
+      "sourceMap": false,
+      "outFile": "tickettoride.js",
+    },
+    "files": [
+        "src/framework.d.ts",
+        "src/stock.d.ts",
+        "src/tickettoride.d.ts",
+        "src/tickettoride.ts",
+        "src/define.ts"
+    ]
+}
