@@ -1,14 +1,24 @@
+declare const define;
+declare const ebg;
+declare const $;
+declare const dojo: Dojo;
+declare const _;
+declare const g_gamethemeurl;
+
 interface Card {
     id: number;
-    // TODO
+    type: number;
+    type_arg: number;
+    location: string;
+    location_arg: number;
 }
 
 interface TrainCar extends Card {
-
+    // TODO
 }
 
 interface Destination extends Card {
-
+    // TODO
 }
 
 interface TicketToRidePlayer extends Player {
@@ -33,8 +43,8 @@ interface TicketToRideGamedatas {
     players: { [playerId: number]: TicketToRidePlayer };
     tablespeed: string;
 
-    // Add here variables you set up in getAllDatas
-    
+    // Add here variables you set up in getAllDatas   
+    visibleTrainCards: TrainCar[];
 
     handTrainCars: TrainCar[];
     handDestinations: Destination[];
@@ -42,6 +52,9 @@ interface TicketToRideGamedatas {
 
 interface TicketToRideGame extends Game {
     getPlayerId(): number;
+    onVisibleTrainCarCardClick(itemId: number): void;
+    onHiddenTrainCarDeckClick(number: number): void;
+    claimRoute(id: number): void;
 }
 
 interface EnteringChooseDestinationsArgs {
@@ -49,6 +62,12 @@ interface EnteringChooseDestinationsArgs {
         destinations: Card[];
     };
     minimum: number;
+}
+
+interface EnteringChooseActionArgs {
+    possibleRoutes: any[]; // TODO
+    maxHiddenCardsPick: number;
+    availableDestinations: boolean;
 }
 
 // TODO

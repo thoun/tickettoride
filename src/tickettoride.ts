@@ -1,12 +1,3 @@
-declare const define;
-declare const ebg;
-declare const $;
-declare const dojo: Dojo;
-declare const _;
-declare const g_gamethemeurl;
-
-declare const board: HTMLDivElement;
-
 const ANIMATION_MS = 500;
 
 const isDebug = window.location.host == 'studio.boardgamearena.com';
@@ -15,8 +6,9 @@ const log = isDebug ? console.log.bind(window.console) : function () { };
 class TicketToRide implements TicketToRideGame {
     private gamedatas: TicketToRideGamedatas;
 
-    private cards: Stock;
-    private minimumDestinations: number;
+    private trainSelectionSelection: TrainSelectionSelection;
+    private destinationSelection: DestinationSelection;
+    private playerTable: PlayerTable = null;
 
     constructor() {
     }
@@ -44,23 +36,13 @@ class TicketToRide implements TicketToRideGame {
 
         log('gamedatas', gamedatas);
 
-        this.cards = new ebg.stock() as Stock;
-        this.cards.setSelectionAppearance('class');
-        this.cards.selectionClass = 'destination-selection';
-        this.cards.create(this, $(`destination-stock`), 100, 100);
-        this.cards.setSelectionMode(0);
-        //this.cards.onItemCreate = (card_div, card_type_id) => this.game.cards.setupNewCard(card_div, card_type_id);
-        this.cards.image_items_per_row = 10;
-        this.cards.centerItems = true;
-        dojo.connect(this.cards, 'onChangeSelection', this, () => {
-            if (document.getElementById('chooseInitialDestinations_button')) {
-                dojo.toggleClass('chooseInitialDestinations_button', 'disabled', this.cards.getSelectedItems().length < this.minimumDestinations)
-            }
-            if (document.getElementById('chooseAdditionalDestinations_button')) {
-                dojo.toggleClass('chooseAdditionalDestinations_button', 'disabled', this.cards.getSelectedItems().length < this.minimumDestinations)
-            }
-        });
-        this.setupDestinationCards(this.cards);
+        this.trainSelectionSelection = new TrainSelectionSelection(this, gamedatas.visibleTrainCards);
+        this.destinationSelection = new DestinationSelection(this);
+
+        const player = gamedatas.players[this.getPlayerId()];
+        if (player) {
+            this.playerTable = new PlayerTable(this, player, gamedatas.handTrainCars, gamedatas.handDestinations);
+        }
 
         log("Ending game setup");
     }
@@ -75,19 +57,19 @@ class TicketToRide implements TicketToRideGame {
         log('Entering state: '+stateName, args.args);
 
         switch (stateName) {
-            case 'chooseInitialDestinations':
+            /*case 'chooseInitialDestinations':
                 this.onEnteringChooseInitialDestinations(args.args as EnteringChooseDestinationsArgs);
-                break;
+                break;*/
         }
     }
 
-    onEnteringChooseInitialDestinations(args: EnteringChooseDestinationsArgs) {
+    /*onEnteringChooseInitialDestinations(args: EnteringChooseDestinationsArgs) {
         args._private.destinations.forEach(card => this.cards.addToStockWithId(card.id, ''+card.id));
 
         if ((this as any).isCurrentPlayerActive()) {
             this.cards.setSelectionMode(2);
         }
-    }
+    }*/
 
     // onLeavingState: this method is called each time we are leaving a game state.
     //                 You can use this method to perform some user interface changes at this moment.
@@ -96,14 +78,10 @@ class TicketToRide implements TicketToRideGame {
         log('Leaving state: '+stateName);
 
         switch (stateName) {
-            case 'chooseInitialDestinations':
-                this.onLeavingChooseInitialDestinations();
+            case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
+                this.destinationSelection.hide();
                 break;
         }
-    }
-
-    onLeavingChooseInitialDestinations() {
-        this.cards.setSelectionMode(0);
     }
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -111,11 +89,23 @@ class TicketToRide implements TicketToRideGame {
     //
     public onUpdateActionButtons(stateName: string, args: any) {
         if((this as any).isCurrentPlayerActive()) {
-            switch (stateName) {    
+            switch (stateName) {
                 case 'chooseInitialDestinations':
+                    const chooseInitialDestinationsArgs = args as EnteringChooseDestinationsArgs;
                     (this as any).addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), () => this.chooseInitialDestinations());
                     dojo.addClass('chooseInitialDestinations_button', 'disabled');
-                    this.minimumDestinations = (args as EnteringChooseDestinationsArgs).minimum;
+                    this.destinationSelection.setCards(chooseInitialDestinationsArgs._private.destinations, chooseInitialDestinationsArgs.minimum);
+                    break;   
+                case 'chooseAction':
+                    (this as any).addActionButton('drawDestinations_button', _("Draw Destination Tickets"), () => this.drawDestinations(), null, null, 'red');
+                    dojo.toggleClass('drawDestinations_button', 'disabled', !(args as EnteringChooseActionArgs).availableDestinations);
+                    break;
+                case 'chooseAdditionalDestinations':
+                    const chooseAdditionalDestinationsArgs = args as EnteringChooseDestinationsArgs;
+                    (this as any).addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), () => this.chooseAdditionalDestinations());
+                    dojo.addClass('chooseAdditionalDestinations_button', 'disabled');
+                    this.destinationSelection.setCards(chooseAdditionalDestinationsArgs._private.destinations, chooseAdditionalDestinationsArgs.minimum);
+                    break;  
             }
         }
     } 
@@ -130,23 +120,70 @@ class TicketToRide implements TicketToRideGame {
     public getPlayerId(): number {
         return Number((this as any).player_id);
     }
-    
-    public setupDestinationCards(stock: Stock) {
-        const keepcardsurl = `${g_gamethemeurl}img/destinations.jpg`;
-        for (let id=1; id<=36; id++) {
-            stock.addItemType(id, id, keepcardsurl, id);
-        }
-    }
 
     public chooseInitialDestinations() {
         if(!(this as any).checkAction('chooseInitialDestinations')) {
             return;
         }
 
-        const destinationsIds = this.cards.getSelectedItems().map(item => Number(item.id));
+        const destinationsIds = this.destinationSelection.getSelectedDestinationsIds();
 
         this.takeAction('chooseInitialDestinations', {
             destinationsIds: destinationsIds.join(',')
+        });
+    }
+
+    public drawDestinations() {
+        if(!(this as any).checkAction('drawDestinations')) {
+            return;
+        }
+
+        this.takeAction('drawDestinations');
+    }
+
+    public chooseAdditionalDestinations() {
+        if(!(this as any).checkAction('chooseAdditionalDestinations')) {
+            return;
+        }
+
+        const destinationsIds = this.destinationSelection.getSelectedDestinationsIds();
+
+        this.takeAction('chooseAdditionalDestinations', {
+            destinationsIds: destinationsIds.join(',')
+        });
+    }
+
+    public onHiddenTrainCarDeckClick(number: number) {
+        const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'drawSecondDeckCard' : 'drawDeckCards';
+        
+        if(!(this as any).checkAction(action)) {
+            return;
+        }
+
+        this.takeAction(action, {
+            number
+        });
+    }
+
+    public onVisibleTrainCarCardClick(id: number) {
+        const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'drawSecondTableCard' : 'drawTableCard';
+
+        if(!(this as any).checkAction(action)) {
+            return;
+        }
+
+        this.takeAction(action, {
+            id
+        });
+    }
+
+    public claimRoute(routeId: number) {
+        if(!(this as any).checkAction('claimRoute')) {
+            return;
+        }
+
+        this.takeAction('claimRoute', {
+            routeId
         });
     }
 

@@ -59,7 +59,7 @@ $basicGameStates = [
         "description" => clienttranslate("Game setup"),
         "type" => "manager",
         "action" => "stGameSetup",
-        "transitions" => [ "" => ST_MULTIPLAYER_CHOOSE_INITIAL_DESTINATIONS ]
+        "transitions" => [ "" => ST_DEAL_INITIAL_DESTINATIONS ]
     ],
    
     // Final state.
@@ -139,6 +139,17 @@ $playerActionsGameStates = [
 ];
 
 $gameGameStates = [
+
+    ST_DEAL_INITIAL_DESTINATIONS => [
+        "name" => "endScore",
+        "description" => "",
+        "type" => "game",
+        "action" => "stDealInitialDestinations",
+        "transitions" => [
+            "" => ST_MULTIPLAYER_CHOOSE_INITIAL_DESTINATIONS,
+        ],
+    ],
+
     ST_NEXT_PLAYER => [
         "name" => "nextPlayer",
         "description" => "",

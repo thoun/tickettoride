@@ -1,3 +1,13 @@
+#destination-deck .hidden {
+  display: none;
+}
+
 .destination-selection {
   border: 4px solid #00c2c2;
+}
+
+#board {
+  width: 1420px;
+  height: 900px;
+  background: url("img/board.jpg");
 }

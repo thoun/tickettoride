@@ -139,6 +139,8 @@ class TicketToRide extends Table {
   
         // Gather all information about current game situation (visible by player $currentPlayerId).
 
+        $result['visibleTrainCards'] = $this->getTrainCarDeck->getVisibleCards();
+
         $result['handTrainCars'] = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $currentPlayerId));
         $result['handDestinations'] = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $currentPlayerId));
         // TODO completed/uncompleted destinations counters ?

@@ -26,8 +26,8 @@ trait ArgsTrait {
         $destinations = $this->destinationDeck->getPickedCards($playerId);
 
         return [
-           'minimum' => 2,
-           '_private' => $private,
+            'minimum' => 2,
+            '_private' => $private,
         ];
         
     }
@@ -38,8 +38,12 @@ trait ArgsTrait {
         $destinations = $this->destinationDeck->getPickedCards($playerId);
 
         return [
-           'minimum' => 1,
-           'destinations' => $destinations,
+            'minimum' => 1,
+            '_private' => [          // Using "_private" keyword, all data inside this array will be made private
+                'active' => [       // Using "active" keyword inside "_private", you select active player(s)
+                    'destinations' => $destinations,   // will be send only to active player(s)
+                ]
+            ],
         ];
     }
 

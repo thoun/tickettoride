@@ -11,25 +11,18 @@ trait StateTrait {
         The action method of state X is called everytime the current game state is set to X.
     */
 
-    function stChooseInitialDestinations() {  
+    function stDealInitialDestinations() {
         $playersIds = $this->getPlayersIds();
 
         foreach($playersIds as $playerId) {
             $this->destinationDeck->pickInitialCards($playerId);
         }
-
-        $this->gamestate->setAllPlayersMultiactive();
+        
+        $this->gamestate->nextState('');
     }
 
-    function stChooseInitialDestinationsNextPlayer() {
-        $playerId = self::activeNextPlayer();
-        self::giveExtraTime($playerId);
-
-        if ($this->everyPlayerHasDestinations()) {
-            $this->gamestate->nextState('start');
-        } else {
-            $this->gamestate->nextState('nextPlayer');
-        }
+    function stChooseInitialDestinations() { 
+        $this->gamestate->setAllPlayersMultiactive();
     }
 
     function stChooseAdditionalDestinations() {  

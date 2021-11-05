@@ -5,12 +5,17 @@
       "module": "none",
       "lib": ["dom", "esnext"],  
       "sourceMap": false,
-      "outFile": "tickettoride.js",
+      "outFile": "tickettoride.js"
     },
     "files": [
         "src/framework.d.ts",
         "src/stock.d.ts",
         "src/tickettoride.d.ts",
+        "src/stock-utils.ts",
+        "src/map/map.ts",
+        "src/destination-deck/destination-deck.ts",
+        "src/train-car-deck/train-car-deck.ts",
+        "src/player-table/player-table.ts",
         "src/tickettoride.ts",
         "src/define.ts"
     ]
