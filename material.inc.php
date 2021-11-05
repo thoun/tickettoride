@@ -67,7 +67,7 @@ $this->CITIES = [
 /**
  * Route on the map. 
  * For double routes, there is 2 instances of Route.
- * It's always low id to high id.
+ * For cities (from/to), it's always low id to high id.
  */
 $this->ROUTES = [
   1 => new Route(1, 4, 2, GRAY),

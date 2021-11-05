@@ -9,6 +9,7 @@
  * color (0 for gray, else see Color constants)
  */
 class Route {
+    public /*int*/ $id;
     public /*int*/ $from;
     public /*int*/ $to;
     public /*int*/ $number;

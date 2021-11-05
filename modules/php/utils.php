@@ -49,13 +49,13 @@ trait UtilTrait {
         return array_map(function($dbResult) { return intval($dbResult['player_id']); }, array_values($dbResults));
     }
 
-    function getClaimedRoutesIds($playerId = null) {
-        $sql = "SELECT route_id FROM claimed_routes ";
+    function getClaimedRoutes($playerId = null) {
+        $sql = "SELECT route_id, player_id FROM claimed_routes ";
         if ($playerId !== null) {
             $sql .= "WHERE player_id = $playerId ";
         }
         $dbResults = self::getCollectionFromDB($sql);
-        return array_map(function($dbResult) { return intval($dbResult['route_id']); }, array_values($dbResults));
+        return array_values($dbResults);
     }
 
     private function everyPlayerHasDestinations() {
