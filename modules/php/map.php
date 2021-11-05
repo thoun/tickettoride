@@ -20,7 +20,7 @@ class Map {
     public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars) {
         $allRoutes = $this->getAllRoutes();
         $claimedRoutes = $this->game->getClaimedRoutes();
-        $claimedRoutesIds = array_map(function($dbResult) { return intval($dbResult['route_id']); }, array_values($dbResults));
+        $claimedRoutesIds = array_map(function($dbResult) { return intval($dbResult['route_id']); }, array_values($claimedRoutes));
 
         // remove routes already claimed
         $claimableRoutes = array_filter($allRoutes, function($route) use ($claimedRoutesIds) { return !in_array($route->id, $claimedRoutesIds); });
@@ -70,8 +70,12 @@ class Map {
      * Indicates if destination is completed (continuous path linking both cities).
      */
     public function isDestinationCompleted(int $playerId, object $destination) {
-        // TODO 
-        return true;
+        $claimedRoutes = $this->game->getClaimedRoutes($playerId);
+        $claimedRoutesIds = array_map(function($dbResult) { return intval($dbResult['route_id']); }, array_values($claimedRoutes));
+
+        $citiesConnectedToFrom = $this->getAccessibleCitiesFrom($destination->from, [$destination->from], $claimedRoutesIds);
+
+        return in_array($destination->from, $citiesConnectedToFrom);
     }
 
     public function getAllRoutes() {
@@ -97,10 +101,46 @@ class Map {
     private function getTwinRoutes(object $route) {
         $allRoutes = $this->getAllRoutes();
 
-        $twinRoute = array_values(array_filter($allRoutes, function($twinRoute) use ($route) {
+        $twinRoutes = array_values(array_filter($allRoutes, function($twinRoute) use ($route) {
             return $twinRoute->from == $route->from && $twinRoute->to == $route->to && $twinRoute->id != $route->id;
         }));
 
-        return $twinRoute;
+        return $twinRoutes;
+    }
+
+    private function getRoutesConnectedToCity(int $city) {
+        $allRoutes = $this->getAllRoutes();
+
+        $connectedRoutes = array_values(array_filter($allRoutes, function($route) use ($city) {
+            return $route->from == $city && $route->to == $city;
+        }));
+
+        return $connectedRoutes;
+    }
+
+    private function getAccessibleCitiesFrom(int $from, array $visitedCitiesIds, array $playerClaimedRoutesIds) {
+        $connectedRoutes = $this->getRoutesConnectedToCity($from);
+
+        // we only check route to cities we haven't checked, to avoid infinite loop
+        $claimedConnectedRouteToExplore = array_values(array_filter($connectedRoutes, function($route) use ($from, $visitedCitiesIds, $playerClaimedRoutesIds) {
+            $cityOnOtherSideOfRoute = $route->from == $from ? $route->to : $route->from;
+            return in_array($route->id, $playerClaimedRoutesIds) && !in_array($cityOnOtherSideOfRoute, $visitedCitiesIds);
+        }));
+
+        $connectedCities = array_map(function($route) use ($from) {
+            $cityOnOtherSideOfRoute = $route->from == $from ? $route->to : $route->from;
+            return $cityOnOtherSideOfRoute;
+        }, $claimedConnectedRouteToExplore);
+
+        $recursiveConnectedCities = $connectedCities; // copy
+        $newVisitedCitiesIds = array_merge($visitedCitiesIds, $connectedCities);
+        foreach ($connectedCities as $connectedCity) {
+            $recursiveConnectedCities = array_merge(
+                $recursiveConnectedCities, 
+                $this->getAccessibleCitiesFrom($connectedCity, $newVisitedCitiesIds, $playerClaimedRoutesIds)
+            );
+        }
+
+        return $recursiveConnectedCities;
     }
 }
