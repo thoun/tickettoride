@@ -5,12 +5,10 @@ require_once(__DIR__.'/objects/route.php');
 class Map {
     /** Access to main game functions. */
     private /*object*/ $game;
-    private /*int*/ $playerCount;
     private /*int*/ $minimumPlayerForDoubleRoutes;
 
-    function __construct(object &$game, int $playerCount, int $minimumPlayerForDoubleRoutes = 4) {
+    function __construct(object &$game, int $minimumPlayerForDoubleRoutes = 4) {
         $this->game = $game;
-        $this->playerCount = $playerCount;
         $this->minimumPlayerForDoubleRoutes = $minimumPlayerForDoubleRoutes;
 	}
 
@@ -27,7 +25,7 @@ class Map {
 
         // remove routes user can't pay
         $claimableRoutes = array_values(array_filter($claimableRoutes, function($unclaimedRoute) use ($trainCarsHand, $remainingTrainCars) {
-            return $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars);
+            return $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars) !== null;
         }));
 
         $doubleRouteAllowed = $this->isDoubleRouteAllowed();
@@ -97,17 +95,31 @@ class Map {
     }
     
     private function isDoubleRouteAllowed() {
-        return $this->playerCount >= $this->minimumPlayerForDoubleRoutes;
+        return $this->game->getPlayerCount() >= $this->minimumPlayerForDoubleRoutes;
     }
 
+    /**
+     * Indicates if the player got enough train cars (meeples) left, and enough Train car cards (of route color + locomotive).
+     * If player cannot pay, returns null.
+     * If player can pay return cards to pay for the route.
+     */
     private function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars) {
         if ($remainingTrainCars < $route->number) {
-            return false; // not enough remaining meeples
+            return null; // not enough remaining meeples
         }
 
-        $routeColor = $route->color;        
-        $colorAndLocomotiveCards = array_filter($trainCarsHand, function ($card) use ($routeColor) { return in_array($card->color, [0, $routeColor]); });
-        return count($colorAndLocomotiveCards) >= $route->number; // enough color card (including locomotives)
+        $colorsToTest = $route->color > 0 ? [$route->color] : [1,2,3,4,5,6,7,8];
+        $locomotiveCards = array_filter($trainCarsHand, function ($card) use ($color) { return $card->color == 0; });
+        
+        // route is gray, check for each possible color
+        foreach ($colorsToTest as $color) {
+            $colorCards = array_filter($trainCarsHand, function ($card) use ($color) { return $card->color == $color; });
+            if (count($colorCards) + count($locomotiveCards) >= $route->number) {
+                // enough color card (including locomotives)
+                return array_slice(array_merge($colorCards, $locomotiveCards), 0, $route->number); 
+            }
+        }
+        return null;
     }
 
     private function getTwinRoutes(object $route) {
@@ -159,7 +171,7 @@ class Map {
     private function getLongestPathFromRoute(object $fromRoute, array $claimedRoutesIds) {
         return $fromRoute->number + max(
             $this->getLongestPathFromCity($fromRoute->from, [$fromRoute->id], $claimedRoutesIds),
-            $this->getLongestPathFromCity($fromRoute->to, [$fromRoute->id], $claimedRoutesIds),
+            $this->getLongestPathFromCity($fromRoute->to, [$fromRoute->id], $claimedRoutesIds)
         );
     }
 

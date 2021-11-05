@@ -69,6 +69,10 @@ trait UtilTrait {
         return true;
     }
 
+    function getPlayerCount() {
+        return intval(self::getUniqueValueFromDB("SELECT count(*) FROM player"));
+    }
+
     function getPlayerName(int $playerId) {
         return self::getUniqueValueFromDb("SELECT player_name FROM player WHERE player_id = $playerId");
     }
