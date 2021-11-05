@@ -62,8 +62,20 @@ class Map {
      * Get the longest continuous path for a player.
      */
     public function getLongestPath(int $playerId) {
-        // TODO
-        return 0;
+        $claimedRoutes = $this->game->getClaimedRoutes($playerId);
+        $claimedRoutesIds = array_map(function($dbResult) { return intval($dbResult['route_id']); }, array_values($claimedRoutes));
+
+        $longestPath = 0;
+        
+        foreach ($claimedRoutes as $fromRoute) {
+            $longestPathFromRoute = $this->getLongestPathFromRoute($fromRoute, $claimedRoutesIds);
+
+            if ($longestPathFromRoute > $longestPath) {
+                $longestPath = $longestPathFromRoute;
+            }
+        }
+        
+        return $longestPath;
     }
 
     /**
@@ -142,5 +154,39 @@ class Map {
         }
 
         return $recursiveConnectedCities;
+    }
+
+    private function getLongestPathFromRoute(object $fromRoute, array $claimedRoutesIds) {
+        return $fromRoute->number + max(
+            $this->getLongestPathFromCity($fromRoute->from, [$fromRoute->id], $claimedRoutesIds),
+            $this->getLongestPathFromCity($fromRoute->to, [$fromRoute->id], $claimedRoutesIds),
+        );
+    }
+
+    private function getLongestPathFromCity(int $from, array $visitedRoutesIds, array $playerClaimedRoutesIds) {
+        $connectedRoutes = $this->getRoutesConnectedToCity($from);
+
+        // we only check route we haven't checked, to avoid infinite loop
+        $claimedConnectedRouteToExplore = array_values(array_filter($connectedRoutes, function($route) use ($from, $visitedRoutesIds, $playerClaimedRoutesIds) {
+            $cityOnOtherSideOfRoute = $route->from == $from ? $route->to : $route->from;
+            return in_array($route->id, $playerClaimedRoutesIds) && !in_array($route->id, $visitedRoutesIds);
+        }));
+
+        $longestPath = 0;
+
+        foreach ($claimedRoutes as $claimedConnectedRouteToExplore) {
+            $cityOnOtherSideOfRoute = $route->from == $from ? $route->to : $route->from;
+            $longestPathFromRoute = $this->getLongestPathFromCity(
+                $cityOnOtherSideOfRoute, 
+                array_merge($visitedRoutesIds, [$claimedConnectedRouteToExplore->id]),
+                $playerClaimedRoutesIds
+            );
+
+            if ($longestPathFromRoute > $longestPath) {
+                $longestPath = $longestPathFromRoute;
+            }
+        }
+
+        return $longestPath;
     }
 }
