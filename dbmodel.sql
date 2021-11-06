@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS `traincar` (
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+-- completed destinations are persisted to avoid costly recomputations (a completed destination cannot be "uncompleted")
 CREATE TABLE IF NOT EXISTS `destination` (
   `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `card_type` varchar(16) NOT NULL,

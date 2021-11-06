@@ -90,4 +90,26 @@ trait UtilTrait {
     function getUniqueIntValueFromDB(string $sql) {
         return intval(self::getUniqueValueFromDB($sql));
     }
+
+    function getCompletedDestinationsIds(int $playerId) {
+        $sql = "SELECT `card_id` FROM `destination` WHERE `card_location` = 'hand' AND `card_location_arg` = $playerId AND  `completed` = 1";
+        $dbResults = self::getCollectionFromDB($sql);
+        return array_map(function($dbResult) { return intval($dbResult['card_id']); }, array_values($dbResults));
+    }
+
+    function checkCompletedDestinations(int $playerId) {
+        $handDestinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
+        $alreadyCompleted = $this->getCompletedDestinationsIds($playerId);
+
+        foreach($handDestinations as $destination) {
+            if (!in_array($destination->id, $alreadyCompleted) && $this->map->isDestinationCompleted($playerId, $destination)) {
+                self::DbQuery("UPDATE `destination` SET `completed` = 1 where `card_id` = $destination->id");
+
+                // TODO notif
+
+                self::incStat(1, 'completedDestinations');
+                self::incStat(1, 'completedDestinations', $playerId);
+            }
+        }
+    }
 }

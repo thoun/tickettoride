@@ -155,22 +155,21 @@ trait ActionTrait {
 
         // save claimed route
         $sql = "INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)";
-        
-        // TODO notif claimed route, notif removed cards
 
         // update score
-        $message = clienttranslate('${player_name} gains ${delta} points by claiming ${number} train-cars route from ${from} to ${to}');
-        $this->incScore($playerId, $route->points, $message, $route);
+        $points = $this->ROUTE_POINTS[$route->number];
+        $message = clienttranslate('${player_name} gains ${delta} points by claiming route from ${from} to ${to}');
+        $this->incScore($playerId, $points, $message, $route);
 
-        // TODO update remainingTrainCars (-$route->number) and notif
+        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $route->number WHERE player_id = $player_id");
+        // notif claimed route, notif removed cards, notif remaining_train_cars
 
         self::incStat(1, 'claimedRoutes');
         self::incStat(1, 'claimedRoutes', $playerId);
         self::incStat($route->number, 'playedTrainCars');
         self::incStat($route->number, 'playedTrainCars', $playerId);
-        // TODO check complete destinations
-        //self::incStat(x, 'completedDestinations');
-        //self::incStat(x, 'completedDestinations', $playerId);
+
+        $this->checkCompletedDestinations($playerId);
 
         $this->gamestate->nextState('nextPlayer'); 
     }

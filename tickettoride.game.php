@@ -169,7 +169,7 @@ class TicketToRide extends Table {
 
         $result['handTrainCars'] = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $currentPlayerId));
         $result['handDestinations'] = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $currentPlayerId));
-        // TODO completed/uncompleted destinations counters ?
+        $result['completedDestinations'] = $this->getDestinationsFromDb($this->destinations->getCards($this->getCompletedDestinationsIds($currentPlayerId)));
 
         foreach ($result['players'] as $playerId => &$player) {
             $player['trainCarsNumber'] = intval($this->trainCars->countCardInLocation('hand', $playerId));

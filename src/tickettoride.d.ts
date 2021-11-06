@@ -46,8 +46,10 @@ interface TicketToRideGamedatas {
     // Add here variables you set up in getAllDatas   
     visibleTrainCards: TrainCar[];
 
+    // private informations for current player only
     handTrainCars: TrainCar[];
     handDestinations: Destination[];
+    completedDestinations: Destination[];
 }
 
 interface TicketToRideGame extends Game {
