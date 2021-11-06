@@ -20,12 +20,50 @@ function setupDestinationCards(stock) {
         stock.addItemType(id, id, destinationsUrl, id);
     }
 }
+var POINT_CASE_SIZE = 25.5;
+var BOARD_POINTS_MARGIN = 38;
 var TtrMap = /** @class */ (function () {
-    function TtrMap(game) {
+    function TtrMap(game, players) {
         var _this = this;
         this.game = game;
+        this.players = players;
+        this.points = new Map();
+        var html = '';
+        // points
+        players.forEach(function (player) {
+            html += "<div id=\"player-" + player.id + "-point-marker\" class=\"point-marker " + (_this.game.isColorBlindMode() ? 'color-blind' : '') + "\" data-player-no=\"" + player.playerNo + "\" style=\"background: #" + player.color + ";\"></div>";
+            _this.points.set(Number(player.id), Number(player.score));
+        });
+        dojo.place(html, 'board');
         document.getElementById('board').addEventListener('click', function (e) { return _this.game.claimRoute(Math.floor(e.x / 10)); });
     }
+    TtrMap.prototype.setPoints = function (playerId, points) {
+        this.points.set(playerId, points);
+        this.movePoints();
+    };
+    TtrMap.prototype.getPointsCoordinates = function (points) {
+        var top = points < 86 ? Math.min(Math.max(points - 34, 0), 17) * POINT_CASE_SIZE : (102 - points) * POINT_CASE_SIZE;
+        var left = points < 52 ? Math.min(points, 34) * POINT_CASE_SIZE : (33 - Math.max(points - 52, 0)) * POINT_CASE_SIZE;
+        return [17 + left, 15 + top];
+    };
+    TtrMap.prototype.movePoints = function () {
+        var _this = this;
+        this.points.forEach(function (points, playerId) {
+            var markerDiv = document.getElementById("player-" + playerId + "-point-marker");
+            var coordinates = _this.getPointsCoordinates(points);
+            var left = coordinates[0];
+            var top = coordinates[1];
+            var topShift = 0;
+            var leftShift = 0;
+            _this.points.forEach(function (iPoints, iPlayerId) {
+                if (iPoints === points && iPlayerId < playerId) {
+                    topShift += 5;
+                    leftShift += 5;
+                }
+            });
+            markerDiv.style.transform = "translateX(" + (left + leftShift) + "px) translateY(" + (top + topShift) + "px)";
+        });
+    };
     return TtrMap;
 }());
 var DestinationSelection = /** @class */ (function () {
@@ -65,8 +103,8 @@ var DestinationSelection = /** @class */ (function () {
     };
     return DestinationSelection;
 }());
-var TrainSelectionSelection = /** @class */ (function () {
-    function TrainSelectionSelection(game, visibleCards) {
+var TrainCarSelection = /** @class */ (function () {
+    function TrainCarSelection(game, visibleCards) {
         var _this = this;
         this.game = game;
         document.getElementById('drawDeckCards1').addEventListener('click', function () { return _this.game.onHiddenTrainCarDeckClick(1); });
@@ -83,7 +121,7 @@ var TrainSelectionSelection = /** @class */ (function () {
         setupTrainCarCards(this.visibleCardsStock);
         visibleCards.forEach(function (card) { return _this.visibleCardsStock.addToStockWithId(card.id, '' + card.id); });
     }
-    return TrainSelectionSelection;
+    return TrainCarSelection;
 }());
 var PlayerTable = /** @class */ (function () {
     function PlayerTable(game, player, trainCars, destinations) {
@@ -155,7 +193,8 @@ var TicketToRide = /** @class */ (function () {
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
-        this.trainSelectionSelection = new TrainSelectionSelection(this, gamedatas.visibleTrainCards);
+        this.map = new TtrMap(this, Object.values(gamedatas.players));
+        this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards);
         this.destinationSelection = new DestinationSelection(this);
         var player = gamedatas.players[this.getPlayerId()];
         if (player) {
@@ -229,12 +268,15 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.getPlayerId = function () {
         return Number(this.player_id);
     };
+    TicketToRide.prototype.isColorBlindMode = function () {
+        return this.prefs[201].value == 1;
+    };
     TicketToRide.prototype.createPlayerPanels = function (gamedatas) {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
             // public counters
-            dojo.place("<div class=\"counters\">\n                <div class=\"counter train-car-counter\">\n                    <div class=\"icon train-car\"></div> \n                    <span id=\"train-car-counter-" + player.id + "\"></span>\n                </div>\n                <div class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card\"></div> \n                    <span id=\"train-car-card-counter-" + player.id + "\"></span>\n                </div>\n                <div class=\"counter completed-destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-" + player.id + "\">" + (_this.getPlayerId() !== playerId ? '?' : '') + "</span>&nbsp;/&nbsp;<span id=\"destination-card-counter-" + player.id + "\"></span>\n                </div>\n            </div>", "player_board_" + player.id);
+            dojo.place("<div class=\"counters\">\n                <div class=\"counter train-car-counter\">\n                    <div class=\"icon train-car\"></div> \n                    <span id=\"train-car-counter-" + player.id + "\"></span>\n                </div>\n                <div class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card\"></div> \n                    <span id=\"train-car-card-counter-" + player.id + "\"></span>\n                </div>\n                <div class=\"counter destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-" + player.id + "\">" + (_this.getPlayerId() !== playerId ? '?' : '') + "</span>&nbsp;/&nbsp;<span id=\"destination-card-counter-" + player.id + "\"></span>\n                </div>\n            </div>", "player_board_" + player.id);
             var trainCarCounter = new ebg.counter();
             trainCarCounter.create("train-car-counter-" + player.id);
             trainCarCounter.setValue(player.remainingTrainCarsCount);
@@ -253,10 +295,18 @@ var TicketToRide = /** @class */ (function () {
                 _this.completedDestinationsCounter.create("completed-destinations-counter-" + player.id);
                 _this.completedDestinationsCounter.setValue(gamedatas.completedDestinations.length);
             }
+            if (_this.isColorBlindMode()) {
+                dojo.place("\n                <div class=\"point-marker color-blind meeple-player-" + player.id + "\" data-player-no=\"" + player.playerNo + "\" style=\"background-color: #" + player.color + ";\"></div>\n                ", "player_board_" + player.id);
+            }
         });
-        this.addTooltipHtmlToClass('train-car-counter', 'TODO');
-        this.addTooltipHtmlToClass('train-car-card-counter', 'TODO');
-        this.addTooltipHtmlToClass('completed-destinations-counter', 'TODO');
+        this.addTooltipHtmlToClass('train-car-counter', _("Remaining train cars"));
+        this.addTooltipHtmlToClass('train-car-card-counter', _("Train cars cards"));
+        this.addTooltipHtmlToClass('destinations-counter', _("Completed / Total destination cards"));
+    };
+    TicketToRide.prototype.setPoints = function (playerId, points) {
+        var _a;
+        (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(points);
+        this.map.setPoints(playerId, points);
     };
     TicketToRide.prototype.chooseInitialDestinations = function () {
         if (!this.checkAction('chooseInitialDestinations')) {
@@ -328,15 +378,19 @@ var TicketToRide = /** @class */ (function () {
         //log( 'notifications subscriptions setup' );
         var _this = this;
         var notifs = [
-            ['factoriesFilled', ANIMATION_MS],
+            //['factoriesFilled', ANIMATION_MS],
+            ['points', 1],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, "notif_" + notif[0]);
             _this.notifqueue.setSynchronous(notif[0], notif[1]);
         });
     };
-    TicketToRide.prototype.notif_factoriesFilled = function (notif) {
-        //this.factories.fillFactories(notif.args.factories, notif.args.remainingTiles);
+    /*notif_factoriesFilled(notif: Notif<NotifFirstPlayerTokenArgs>) {
+        this.factories.fillFactories(notif.args.factories, notif.args.remainingTiles);
+    }*/
+    TicketToRide.prototype.notif_points = function (notif) {
+        this.setPoints(notif.args.playerId, notif.args.points);
     };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

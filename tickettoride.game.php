@@ -160,7 +160,7 @@ class TicketToRide extends Table {
     
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id, player_score score FROM player ";
+        $sql = "SELECT player_id id, player_score score, player_no playerNo FROM player ";
         $result['players'] = self::getCollectionFromDb($sql);
   
         // Gather all information about current game situation (visible by player $currentPlayerId).
@@ -174,6 +174,7 @@ class TicketToRide extends Table {
 
         // share informations (for player panels)
         foreach ($result['players'] as $playerId => &$player) {
+            $player['playerNo'] = intval($player['playerNo']);
             $player['trainCarsCount'] = intval($this->trainCars->countCardInLocation('hand', $playerId));
             $player['destinationsCount'] = intval($this->destinations->countCardInLocation('hand', $playerId));
             $player['remainingTrainCarsCount'] = $this->getRemainingTrainCarsCount($playerId);

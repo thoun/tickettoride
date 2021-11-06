@@ -6,7 +6,8 @@ const log = isDebug ? console.log.bind(window.console) : function () { };
 class TicketToRide implements TicketToRideGame {
     private gamedatas: TicketToRideGamedatas;
 
-    private trainSelectionSelection: TrainSelectionSelection;
+    private map: TtrMap;
+    private trainCarSelection: TrainCarSelection;
     private destinationSelection: DestinationSelection;
     private playerTable: PlayerTable = null;
 
@@ -41,7 +42,8 @@ class TicketToRide implements TicketToRideGame {
 
         log('gamedatas', gamedatas);
 
-        this.trainSelectionSelection = new TrainSelectionSelection(this, gamedatas.visibleTrainCards);
+        this.map = new TtrMap(this, Object.values(gamedatas.players));
+        this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards);
         this.destinationSelection = new DestinationSelection(this);
 
         const player = gamedatas.players[this.getPlayerId()];
@@ -129,6 +131,10 @@ class TicketToRide implements TicketToRideGame {
         return Number((this as any).player_id);
     }
 
+    public isColorBlindMode(): boolean {
+        return (this as any).prefs[201].value == 1;
+    }
+
     private createPlayerPanels(gamedatas: TicketToRideGamedatas) {
 
         Object.values(gamedatas.players).forEach(player => {
@@ -144,7 +150,7 @@ class TicketToRide implements TicketToRideGame {
                     <div class="icon train-car-card"></div> 
                     <span id="train-car-card-counter-${player.id}"></span>
                 </div>
-                <div class="counter completed-destinations-counter">
+                <div class="counter destinations-counter">
                     <div class="icon destination-card"></div> 
                     <span id="completed-destinations-counter-${player.id}">${this.getPlayerId() !== playerId ? '?' : ''}</span>&nbsp;/&nbsp;<span id="destination-card-counter-${player.id}"></span>
                 </div>
@@ -171,11 +177,22 @@ class TicketToRide implements TicketToRideGame {
                 this.completedDestinationsCounter.create(`completed-destinations-counter-${player.id}`);
                 this.completedDestinationsCounter.setValue(gamedatas.completedDestinations.length);
             }
+            
+            if (this.isColorBlindMode()) {
+                dojo.place(`
+                <div class="point-marker color-blind meeple-player-${player.id}" data-player-no="${player.playerNo}" style="background-color: #${player.color};"></div>
+                `, `player_board_${player.id}`);
+            }
         });
 
-        (this as any).addTooltipHtmlToClass('train-car-counter', 'TODO');
-        (this as any).addTooltipHtmlToClass('train-car-card-counter', 'TODO');
-        (this as any).addTooltipHtmlToClass('completed-destinations-counter', 'TODO');
+        (this as any).addTooltipHtmlToClass('train-car-counter', _("Remaining train cars"));
+        (this as any).addTooltipHtmlToClass('train-car-card-counter', _("Train cars cards"));
+        (this as any).addTooltipHtmlToClass('destinations-counter', _("Completed / Total destination cards"));
+    }
+    
+    private setPoints(playerId: number, points: number) {
+        (this as any).scoreCtrl[playerId]?.toValue(points);
+        this.map.setPoints(playerId, points);
     }
 
     public chooseInitialDestinations() {
@@ -266,7 +283,8 @@ class TicketToRide implements TicketToRideGame {
         //log( 'notifications subscriptions setup' );
 
         const notifs = [
-            ['factoriesFilled', ANIMATION_MS],
+            //['factoriesFilled', ANIMATION_MS],
+            ['points', 1],
         ];
 
         notifs.forEach((notif) => {
@@ -275,8 +293,12 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
-    notif_factoriesFilled(notif: Notif<NotifFirstPlayerTokenArgs>) {
-        //this.factories.fillFactories(notif.args.factories, notif.args.remainingTiles);
+    /*notif_factoriesFilled(notif: Notif<NotifFirstPlayerTokenArgs>) {
+        this.factories.fillFactories(notif.args.factories, notif.args.remainingTiles);
+    }*/
+
+    notif_points(notif: Notif<NotifPointsArgs>) {
+        this.setPoints(notif.args.playerId, notif.args.points);
     }
 
     /* This enable to inject translatable styled things to logs or action bar */

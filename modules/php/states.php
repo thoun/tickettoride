@@ -112,8 +112,6 @@ trait StateTrait {
             self::setStat(self::getStat('playedTrainCars', $playerId) / (float)self::getStat('claimedRoutes', $playerId), 'averageClaimedRouteLength', $playerId);
         }
 
-        // TODO TOCHECK count max completed destination ?
-
         $this->gamestate->nextState('endGame');
     }
 }

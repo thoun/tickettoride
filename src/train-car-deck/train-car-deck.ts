@@ -1,4 +1,4 @@
-class TrainSelectionSelection {
+class TrainCarSelection {
     private visibleCardsStock: Stock;
 
     constructor(

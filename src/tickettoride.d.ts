@@ -21,7 +21,12 @@ interface Destination extends Card {
     // TODO
 }
 
+interface Route {
+    // TODO
+}
+
 interface TicketToRidePlayer extends Player {
+    playerNo: number;
     trainCarsCount: number;
     destinationsCount: number;
     remainingTrainCarsCount: number;
@@ -61,6 +66,7 @@ interface TicketToRideGame extends Game {
     onVisibleTrainCarCardClick(itemId: number): void;
     onHiddenTrainCarDeckClick(number: number): void;
     claimRoute(id: number): void;
+    isColorBlindMode(): boolean;
 }
 
 interface EnteringChooseDestinationsArgs {
@@ -71,12 +77,12 @@ interface EnteringChooseDestinationsArgs {
 }
 
 interface EnteringChooseActionArgs {
-    possibleRoutes: any[]; // TODO
+    possibleRoutes: Route[];
     maxHiddenCardsPick: number;
     maxDestinationsPick: number;
 }
 
-// TODO
-interface NotifFirstPlayerTokenArgs {
+interface NotifPointsArgs {
     playerId: number;
+    points: number;
 }
