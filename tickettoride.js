@@ -133,6 +133,9 @@ var log = isDebug ? console.log.bind(window.console) : function () { };
 var TicketToRide = /** @class */ (function () {
     function TicketToRide() {
         this.playerTable = null;
+        this.trainCarCounters = [];
+        this.trainCarCardCounters = [];
+        this.destinationCardCounters = [];
     }
     /*
         setup:
@@ -158,6 +161,7 @@ var TicketToRide = /** @class */ (function () {
         if (player) {
             this.playerTable = new PlayerTable(this, player, gamedatas.handTrainCars, gamedatas.handDestinations);
         }
+        this.createPlayerPanels(gamedatas);
         log("Ending game setup");
     };
     ///////////////////////////////////////////////////
@@ -223,6 +227,35 @@ var TicketToRide = /** @class */ (function () {
     ///////////////////////////////////////////////////
     TicketToRide.prototype.getPlayerId = function () {
         return Number(this.player_id);
+    };
+    TicketToRide.prototype.createPlayerPanels = function (gamedatas) {
+        var _this = this;
+        Object.values(gamedatas.players).forEach(function (player) {
+            var playerId = Number(player.id);
+            // public counters
+            dojo.place("<div class=\"counters\">\n                <div class=\"counter train-car-counter\">\n                    <div class=\"icon train-car\"></div> \n                    <span id=\"train-car-counter-" + player.id + "\"></span>\n                </div>\n                <div class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card\"></div> \n                    <span id=\"train-car-card-counter-" + player.id + "\"></span>\n                </div>\n                <div class=\"counter completed-destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-" + player.id + "\">" + (_this.getPlayerId() !== playerId ? '?' : '') + "</span>&nbsp;/&nbsp;<span id=\"destination-card-counter-" + player.id + "\"></span>\n                </div>\n            </div>", "player_board_" + player.id);
+            var trainCarCounter = new ebg.counter();
+            trainCarCounter.create("train-car-counter-" + player.id);
+            trainCarCounter.setValue(player.remainingTrainCarsCount);
+            _this.trainCarCounters[playerId] = trainCarCounter;
+            var trainCarCardCounter = new ebg.counter();
+            trainCarCardCounter.create("train-car-card-counter-" + player.id);
+            trainCarCardCounter.setValue(player.trainCarsCount);
+            _this.trainCarCardCounters[playerId] = trainCarCardCounter;
+            var destinationCardCounter = new ebg.counter();
+            destinationCardCounter.create("destination-card-counter-" + player.id);
+            destinationCardCounter.setValue(player.destinationsCount);
+            _this.destinationCardCounters[playerId] = destinationCardCounter;
+            // private counters
+            if (_this.getPlayerId() === playerId) {
+                _this.completedDestinationsCounter = new ebg.counter();
+                _this.completedDestinationsCounter.create("completed-destinations-counter-" + player.id);
+                _this.completedDestinationsCounter.setValue(gamedatas.completedDestinations.length);
+            }
+        });
+        this.addTooltipHtmlToClass('train-car-counter', 'TODO');
+        this.addTooltipHtmlToClass('train-car-card-counter', 'TODO');
+        this.addTooltipHtmlToClass('completed-destinations-counter', 'TODO');
     };
     TicketToRide.prototype.chooseInitialDestinations = function () {
         if (!this.checkAction('chooseInitialDestinations')) {

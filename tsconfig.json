@@ -10,6 +10,7 @@
     "files": [
         "src/framework.d.ts",
         "src/stock.d.ts",
+        "src/counter.d.ts",
         "src/tickettoride.d.ts",
         "src/stock-utils.ts",
         "src/map/map.ts",

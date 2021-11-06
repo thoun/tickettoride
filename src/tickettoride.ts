@@ -10,6 +10,11 @@ class TicketToRide implements TicketToRideGame {
     private destinationSelection: DestinationSelection;
     private playerTable: PlayerTable = null;
 
+    private trainCarCounters: Counter[] = [];
+    private trainCarCardCounters: Counter[] = [];
+    private destinationCardCounters: Counter[] = [];
+    private completedDestinationsCounter: Counter;
+
     constructor() {
     }
     
@@ -43,6 +48,8 @@ class TicketToRide implements TicketToRideGame {
         if (player) {
             this.playerTable = new PlayerTable(this, player, gamedatas.handTrainCars, gamedatas.handDestinations);
         }
+
+        this.createPlayerPanels(gamedatas);
 
         log("Ending game setup");
     }
@@ -119,6 +126,55 @@ class TicketToRide implements TicketToRideGame {
 
     public getPlayerId(): number {
         return Number((this as any).player_id);
+    }
+
+    private createPlayerPanels(gamedatas: TicketToRideGamedatas) {
+
+        Object.values(gamedatas.players).forEach(player => {
+            const playerId = Number(player.id);
+
+            // public counters
+            dojo.place(`<div class="counters">
+                <div class="counter train-car-counter">
+                    <div class="icon train-car"></div> 
+                    <span id="train-car-counter-${player.id}"></span>
+                </div>
+                <div class="counter train-car-card-counter">
+                    <div class="icon train-car-card"></div> 
+                    <span id="train-car-card-counter-${player.id}"></span>
+                </div>
+                <div class="counter completed-destinations-counter">
+                    <div class="icon destination-card"></div> 
+                    <span id="completed-destinations-counter-${player.id}">${this.getPlayerId() !== playerId ? '?' : ''}</span>&nbsp;/&nbsp;<span id="destination-card-counter-${player.id}"></span>
+                </div>
+            </div>`, `player_board_${player.id}`);
+
+            const trainCarCounter = new ebg.counter();
+            trainCarCounter.create(`train-car-counter-${player.id}`);
+            trainCarCounter.setValue(player.remainingTrainCarsCount);
+            this.trainCarCounters[playerId] = trainCarCounter;
+
+            const trainCarCardCounter = new ebg.counter();
+            trainCarCardCounter.create(`train-car-card-counter-${player.id}`);
+            trainCarCardCounter.setValue(player.trainCarsCount);
+            this.trainCarCardCounters[playerId] = trainCarCardCounter;
+
+            const destinationCardCounter = new ebg.counter();
+            destinationCardCounter.create(`destination-card-counter-${player.id}`);
+            destinationCardCounter.setValue(player.destinationsCount);
+            this.destinationCardCounters[playerId] = destinationCardCounter;
+
+            // private counters
+            if (this.getPlayerId() === playerId) {
+                this.completedDestinationsCounter = new ebg.counter();
+                this.completedDestinationsCounter.create(`completed-destinations-counter-${player.id}`);
+                this.completedDestinationsCounter.setValue(gamedatas.completedDestinations.length);
+            }
+        });
+
+        (this as any).addTooltipHtmlToClass('train-car-counter', 'TODO');
+        (this as any).addTooltipHtmlToClass('train-car-card-counter', 'TODO');
+        (this as any).addTooltipHtmlToClass('completed-destinations-counter', 'TODO');
     }
 
     public chooseInitialDestinations() {

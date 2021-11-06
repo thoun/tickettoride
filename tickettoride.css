@@ -1,3 +1,17 @@
+.counters {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+}
+.counters .counter {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.counters .counter span {
+  padding: 0 5px 0 5px;
+}
+
 #destination-deck .hidden {
   display: none;
 }

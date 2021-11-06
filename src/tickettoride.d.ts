@@ -22,9 +22,9 @@ interface Destination extends Card {
 }
 
 interface TicketToRidePlayer extends Player {
-    trainCarsNumber: number;
-    destinationsNumber: number;
-    remainingTrainCars: number;
+    trainCarsCount: number;
+    destinationsCount: number;
+    remainingTrainCarsCount: number;
 }
 
 /**
@@ -50,6 +50,10 @@ interface TicketToRideGamedatas {
     handTrainCars: TrainCar[];
     handDestinations: Destination[];
     completedDestinations: Destination[];
+
+    // counters
+    trainCarDeckCount: number;
+    destinationDeckCount: number;
 }
 
 interface TicketToRideGame extends Game {

@@ -167,15 +167,21 @@ class TicketToRide extends Table {
 
         $result['visibleTrainCards'] = $this->getTrainCarDeck->getVisibleCards();
 
+        // private data : current player hidden informations
         $result['handTrainCars'] = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $currentPlayerId));
         $result['handDestinations'] = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $currentPlayerId));
         $result['completedDestinations'] = $this->getDestinationsFromDb($this->destinations->getCards($this->getCompletedDestinationsIds($currentPlayerId)));
 
+        // share informations (for player panels)
         foreach ($result['players'] as $playerId => &$player) {
-            $player['trainCarsNumber'] = intval($this->trainCars->countCardInLocation('hand', $playerId));
-            $player['destinationsNumber'] = intval($this->destinations->countCardInLocation('hand', $playerId));
-            $player['remainingTrainCars'] = $this->getRemainingTrainCarsCount($playerId);
+            $player['trainCarsCount'] = intval($this->trainCars->countCardInLocation('hand', $playerId));
+            $player['destinationsCount'] = intval($this->destinations->countCardInLocation('hand', $playerId));
+            $player['remainingTrainCarsCount'] = $this->getRemainingTrainCarsCount($playerId);
         }
+
+        // deck counters
+        $player['trainCarDeckCount'] = $this->trainCarDeck->getRemainingCardsInDeck();
+        $player['destinationDeckCount'] = $this->destinationDeck->getRemainingCardsInDeck();
   
         return $result;
     }
