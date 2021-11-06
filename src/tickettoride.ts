@@ -104,8 +104,9 @@ class TicketToRide implements TicketToRideGame {
                     this.destinationSelection.setCards(chooseInitialDestinationsArgs._private.destinations, chooseInitialDestinationsArgs.minimum);
                     break;   
                 case 'chooseAction':
-                    (this as any).addActionButton('drawDestinations_button', _("Draw Destination Tickets"), () => this.drawDestinations(), null, null, 'red');
-                    dojo.toggleClass('drawDestinations_button', 'disabled', !(args as EnteringChooseActionArgs).availableDestinations);
+                    const chooseActionArgs = args as EnteringChooseActionArgs;
+                    (this as any).addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), () => this.drawDestinations(), null, null, 'red');
+                    dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
                     break;
                 case 'chooseAdditionalDestinations':
                     const chooseAdditionalDestinationsArgs = args as EnteringChooseDestinationsArgs;

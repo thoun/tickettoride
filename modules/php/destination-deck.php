@@ -40,6 +40,13 @@ class DestinationDeck {
         $this->destinations->createCards($destinations, 'deck');
         $this->destinations->shuffle('deck');
     }
+
+    /**
+     * Return the number of card to pick when the player draw new destinations.
+     */
+    public function getAdditionalCardPick() {
+        return $this->additionalCardPick;
+    }
 	
     /**
      * Pick cards for beginning choice.

@@ -55,12 +55,12 @@ trait ArgsTrait {
 
         $possibleRoutes = $this->map->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
         $maxHiddenCardsPick = min(2, $this->trainCarDeck->getRemainingCardsInDeck(true));
-        $availableDestinations = $this->destinationDeck->getRemainingCardsInDeck() > 0;
+        $maxDestinationsPick = min($this->destinationDeck->getAdditionalCardPick(), $this->destinationDeck->getRemainingCardsInDeck());
 
         return [
             'possibleRoutes' => $possibleRoutes,
             'maxHiddenCardsPick' => $maxHiddenCardsPick,
-            'availableDestinations' => $availableDestinations,
+            'maxDestinationsPick' => $maxDestinationsPick,
         ];
     }
 

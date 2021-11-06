@@ -210,8 +210,9 @@ var TicketToRide = /** @class */ (function () {
                     this.destinationSelection.setCards(chooseInitialDestinationsArgs._private.destinations, chooseInitialDestinationsArgs.minimum);
                     break;
                 case 'chooseAction':
-                    this.addActionButton('drawDestinations_button', _("Draw Destination Tickets"), function () { return _this.drawDestinations(); }, null, null, 'red');
-                    dojo.toggleClass('drawDestinations_button', 'disabled', !args.availableDestinations);
+                    var chooseActionArgs = args;
+                    this.addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick }), function () { return _this.drawDestinations(); }, null, null, 'red');
+                    dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
                     break;
                 case 'chooseAdditionalDestinations':
                     var chooseAdditionalDestinationsArgs = args;

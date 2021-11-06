@@ -9,6 +9,9 @@ trait UtilTrait {
 //////////// Utility functions
 ////////////
 
+    /**
+     * Transforms a TrainCar Db object to TrainCar class.
+     */
     function getTrainCarFromDb($dbObject) {
         if (!$dbObject || !array_key_exists('id', $dbObject)) {
             throw new BgaSystemException("Train car doesn't exists ".json_encode($dbObject));
@@ -16,10 +19,16 @@ trait UtilTrait {
         return new TrainCar($dbObject);
     }
 
+    /**
+     * Transforms a TrainCar Db object array to TrainCar class array.
+     */
     function getTrainCarsFromDb(array $dbObjects) {
         return array_map(function($dbObject) { return $this->getTrainCarFromDb($dbObject); }, array_values($dbObjects));
     }
 
+    /**
+     * Transforms a Destination Db object to Destination class.
+     */    
     function getDestinationFromDb($dbObject) {
         if (!$dbObject || !array_key_exists('id', $dbObject)) {
             throw new BgaSystemException("Destination doesn't exists ".json_encode($dbObject));
@@ -27,6 +36,9 @@ trait UtilTrait {
         return new Destination($dbObject, $this->DESTINATIONS);
     }
 
+    /**
+     * Transforms a Destination Db object array to Destination class array.
+     */    
     function getDestinationsFromDb(array $dbObjects) {
         return array_map(function($dbObject) { return $this->getDestinationFromDb($dbObject); }, array_values($dbObjects));
     }

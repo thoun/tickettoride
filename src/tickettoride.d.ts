@@ -73,7 +73,7 @@ interface EnteringChooseDestinationsArgs {
 interface EnteringChooseActionArgs {
     possibleRoutes: any[]; // TODO
     maxHiddenCardsPick: number;
-    availableDestinations: boolean;
+    maxDestinationsPick: number;
 }
 
 // TODO

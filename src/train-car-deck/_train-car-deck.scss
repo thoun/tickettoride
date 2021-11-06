@@ -1,0 +1,42 @@
+
+#train-car-deck {
+    .hidden-pile {
+        position: relative;   
+        display: flex;
+        border-radius: 10px;
+        box-shadow: 3px 3px 0px 0px #333, 5px 5px 3px black;
+
+        background-position: 0% 0%;
+
+        .button {
+            display: none;
+            flex: 1;
+            border: 3px dashed white;
+            color: white;
+            font-size: 400%;
+            justify-content: center;
+            align-items: center;
+            text-shadow: 2px 2px 2px black;
+        }
+
+        .button {
+            &.left-radius {
+                border-radius: 10px 0 0 10px;
+            }
+            &.right-radius {
+                border-radius: 0 10px 10px 0;
+            }
+        }
+
+        &.selectable .button {
+            display: flex;
+            cursor: pointer;
+        }
+
+        &.selectable .button.hidden {
+            visibility: hidden;
+            pointer-events: none;
+            cursor: default;
+        }
+    }
+}
