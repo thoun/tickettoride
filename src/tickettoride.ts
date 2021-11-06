@@ -53,6 +53,13 @@ class TicketToRide implements TicketToRideGame {
 
         this.createPlayerPanels(gamedatas);
 
+        if (gamedatas.lastTurn) {
+            this.notif_lastTurn();
+        }
+        if (Number(gamedatas.gamestate.id) >= 98) { // score or end
+            this.onEnteringEndScore(true);
+        }
+
         log("Ending game setup");
     }
 
@@ -69,6 +76,9 @@ class TicketToRide implements TicketToRideGame {
             /*case 'chooseInitialDestinations':
                 this.onEnteringChooseInitialDestinations(args.args as EnteringChooseDestinationsArgs);
                 break;*/
+            case 'endScore':
+                this.onEnteringEndScore();
+                break;
         }
     }
 
@@ -79,6 +89,13 @@ class TicketToRide implements TicketToRideGame {
             this.cards.setSelectionMode(2);
         }
     }*/
+
+    private onEnteringEndScore(fromReload: boolean = false) {
+        const lastTurnBar = document.getElementById('last-round');
+        if (lastTurnBar) {
+            lastTurnBar.style.display = 'none';
+        }
+    }
 
     // onLeavingState: this method is called each time we are leaving a game state.
     //                 You can use this method to perform some user interface changes at this moment.
@@ -285,6 +302,7 @@ class TicketToRide implements TicketToRideGame {
         const notifs = [
             //['factoriesFilled', ANIMATION_MS],
             ['points', 1],
+            ['lastTurn', 1],
         ];
 
         notifs.forEach((notif) => {
@@ -299,6 +317,12 @@ class TicketToRide implements TicketToRideGame {
 
     notif_points(notif: Notif<NotifPointsArgs>) {
         this.setPoints(notif.args.playerId, notif.args.points);
+    }
+
+    notif_lastTurn() {
+        dojo.place(`<div id="last-round">
+            ${_("This is the final round!")}
+        </div>`, 'page-title');
     }
 
     /* This enable to inject translatable styled things to logs or action bar */

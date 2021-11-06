@@ -1,6 +1,10 @@
+#board {
+    width: 1420px;
+    height: 900px;
+    background: url('img/board.jpg');
+}
 
-
-  .point-marker {
+.point-marker {
     position: absolute;
     top: 0;
     left: 0;
@@ -42,4 +46,4 @@
         content: '★'; // star
       }
     }
-  }
+}

@@ -201,6 +201,12 @@ var TicketToRide = /** @class */ (function () {
             this.playerTable = new PlayerTable(this, player, gamedatas.handTrainCars, gamedatas.handDestinations);
         }
         this.createPlayerPanels(gamedatas);
+        if (gamedatas.lastTurn) {
+            this.notif_lastTurn();
+        }
+        if (Number(gamedatas.gamestate.id) >= 98) { // score or end
+            this.onEnteringEndScore(true);
+        }
         log("Ending game setup");
     };
     ///////////////////////////////////////////////////
@@ -214,6 +220,9 @@ var TicketToRide = /** @class */ (function () {
             /*case 'chooseInitialDestinations':
                 this.onEnteringChooseInitialDestinations(args.args as EnteringChooseDestinationsArgs);
                 break;*/
+            case 'endScore':
+                this.onEnteringEndScore();
+                break;
         }
     };
     /*onEnteringChooseInitialDestinations(args: EnteringChooseDestinationsArgs) {
@@ -223,6 +232,13 @@ var TicketToRide = /** @class */ (function () {
             this.cards.setSelectionMode(2);
         }
     }*/
+    TicketToRide.prototype.onEnteringEndScore = function (fromReload) {
+        if (fromReload === void 0) { fromReload = false; }
+        var lastTurnBar = document.getElementById('last-round');
+        if (lastTurnBar) {
+            lastTurnBar.style.display = 'none';
+        }
+    };
     // onLeavingState: this method is called each time we are leaving a game state.
     //                 You can use this method to perform some user interface changes at this moment.
     //
@@ -380,6 +396,7 @@ var TicketToRide = /** @class */ (function () {
         var notifs = [
             //['factoriesFilled', ANIMATION_MS],
             ['points', 1],
+            ['lastTurn', 1],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, "notif_" + notif[0]);
@@ -391,6 +408,9 @@ var TicketToRide = /** @class */ (function () {
     }*/
     TicketToRide.prototype.notif_points = function (notif) {
         this.setPoints(notif.args.playerId, notif.args.points);
+    };
+    TicketToRide.prototype.notif_lastTurn = function () {
+        dojo.place("<div id=\"last-round\">\n            " + _("This is the final round!") + "\n        </div>", 'page-title');
     };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

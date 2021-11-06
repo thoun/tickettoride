@@ -47,6 +47,12 @@ trait StateTrait {
                 // check if last turn is started    
                 if ($this->getLowestTrainCarsCount() <= TRAIN_CARS_NUMBER_TO_START_LAST_TURN) {
                     self::setGameStateValue(LAST_TURN, $playerId);
+
+                    self::notifyAllPlayers('lastTurn', clienttranslate('${player_name} has ${number} train cars or less, starting final turn !'), [
+                        'playerId' => $playerId,
+                        'player_name' => $this->getPlayerName($playerId),
+                        'number' => TRAIN_CARS_NUMBER_TO_START_LAST_TURN,
+                    ]);
                 }
             }
 

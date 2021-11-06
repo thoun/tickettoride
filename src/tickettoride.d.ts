@@ -59,6 +59,7 @@ interface TicketToRideGamedatas {
     // counters
     trainCarDeckCount: number;
     destinationDeckCount: number;
+    lastTurn: boolean;
 }
 
 interface TicketToRideGame extends Game {

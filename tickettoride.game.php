@@ -183,6 +183,13 @@ class TicketToRide extends Table {
         // deck counters
         $player['trainCarDeckCount'] = $this->trainCarDeck->getRemainingCardsInDeck();
         $player['destinationDeckCount'] = $this->destinationDeck->getRemainingCardsInDeck();
+        
+        $stateName = $this->gamestate->state()['name']; 
+        $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
+        if (!$isEnd) {
+            $result['lastTurn'] = self::getGameStateValue(LAST_TURN) > 0;
+            
+        }
   
         return $result;
     }
