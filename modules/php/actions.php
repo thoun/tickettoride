@@ -19,6 +19,8 @@ trait ActionTrait {
         $this->destinationDeck->keepInitialCards($playerId, $ids);
 
         // TODO notif
+
+        self::incStat($number, 'keptInitialDestinationCards', $playerId);
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
     }
@@ -31,6 +33,8 @@ trait ActionTrait {
         $this->destinationDeck->keepAdditionalCards($playerId, $ids);
 
         // TODO notif
+
+        self::incStat($number, 'keptAdditionalDestinationCards', $playerId);
         
         $this->gamestate->nextState('nextPlayer');
     }
@@ -44,6 +48,11 @@ trait ActionTrait {
 
         // TODO notif
 
+        self::incStat($number, 'collectedTrainCarCards');
+        self::incStat($number, 'collectedTrainCarCards', $playerId);
+        self::incStat($number, 'collectedHiddenTrainCarCards');
+        self::incStat($number, 'collectedHiddenTrainCarCards', $playerId);
+
         $this->gamestate->nextState($number == 2 ? 'nextPlayer' : 'drawSecondCard'); 
     }
   	
@@ -52,9 +61,18 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $this->trainCarsDeck->drawFromTable($playerId, $id);
+        $card = $this->trainCarsDeck->drawFromTable($playerId, $id);
 
         // TODO notif
+
+        self::incStat(1, 'collectedTrainCarCards');
+        self::incStat(1, 'collectedTrainCarCards', $playerId);
+        self::incStat(1, 'collectedVisibleTrainCarCards');
+        self::incStat(1, 'collectedVisibleTrainCarCards', $playerId);
+        if ($card->type == 0) {
+            self::incStat(1, 'collectedVisibleLocomotives');
+            self::incStat(1, 'collectedVisibleLocomotives', $playerId);
+        }
 
         $this->gamestate->nextState($card->type == 0 ? 'nextPlayer' : 'drawSecondCard'); 
     }
@@ -68,6 +86,11 @@ trait ActionTrait {
 
         // TODO notif
 
+        self::incStat(1, 'collectedTrainCarCards');
+        self::incStat(1, 'collectedTrainCarCards', $playerId);
+        self::incStat(1, 'collectedHiddenTrainCarCards');
+        self::incStat(1, 'collectedHiddenTrainCarCards', $playerId);
+
         $this->gamestate->nextState('nextPlayer'); 
     }
   	
@@ -76,15 +99,27 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $this->trainCarsDeck->drawFromTable($playerId, $id, true);
+        $card = $this->trainCarsDeck->drawFromTable($playerId, $id, true);
 
         // TODO notif
+
+        self::incStat(1, 'collectedTrainCarCards');
+        self::incStat(1, 'collectedTrainCarCards', $playerId);
+        self::incStat(1, 'collectedVisibleTrainCarCards');
+        self::incStat(1, 'collectedVisibleTrainCarCards', $playerId);
+        if ($card->type == 0) {
+            self::incStat(1, 'collectedVisibleLocomotives');
+            self::incStat(1, 'collectedVisibleLocomotives', $playerId);
+        }
 
         $this->gamestate->nextState('drawSecondCard'); 
     }
   	
     public function drawDestinations() {
         self::checkAction('drawDestinations');
+
+        self::incStat(1, 'drawDestinationsAction');
+        self::incStat(1, 'drawDestinationsAction', $playerId);
 
         $this->gamestate->nextState('drawDestinations'); 
     }
@@ -126,6 +161,16 @@ trait ActionTrait {
         // update score
         $message = clienttranslate('${player_name} gains ${delta} points by claiming ${number} train-cars route from ${from} to ${to}');
         $this->incScore($playerId, $route->points, $message, $route);
+
+        // TODO update remainingTrainCars (-$route->number) and notif
+
+        self::incStat(1, 'claimedRoutes');
+        self::incStat(1, 'claimedRoutes', $playerId);
+        self::incStat($route->number, 'playedTrainCars');
+        self::incStat($route->number, 'playedTrainCars', $playerId);
+        // TODO check complete destinations
+        //self::incStat(x, 'completedDestinations');
+        //self::incStat(x, 'completedDestinations', $playerId);
 
         $this->gamestate->nextState('nextPlayer'); 
     }

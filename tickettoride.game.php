@@ -100,9 +100,35 @@ class TicketToRide extends Table {
         self::setGameStateInitialValue(LAST_TURN, 0);
         
         // Init game statistics
-        // (note: statistics used in this file must be defined in your stats.inc.php file)
-        //self::initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
-        //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
+        // 10+ : other
+        self::initStat('table', 'turnsNumber', 0);
+        self::initStat('player', 'turnsNumber', 0);
+        // 20+ : train car cards
+        self::initStat('table', 'collectedTrainCarCards', 0);
+        self::initStat('player', 'collectedTrainCarCards', 0);
+        self::initStat('table', 'collectedHiddenTrainCarCards', 0);
+        self::initStat('player', 'collectedHiddenTrainCarCards', 0);
+        self::initStat('table', 'collectedVisibleTrainCarCards', 0);
+        self::initStat('player', 'collectedVisibleTrainCarCards', 0);
+        self::initStat('table', 'collectedVisibleLocomotives', 0);
+        self::initStat('player', 'collectedVisibleLocomotives', 0);
+        // 30+ : destination cards
+        self::initStat('table', 'drawDestinationsAction', 0);
+        self::initStat('player', 'drawDestinationsAction', 0);
+        self::initStat('table', 'completedDestinations', 0);
+        self::initStat('player', 'completedDestinations', 0);
+        //self::initStat('table', 'uncompletedDestinations', 0); // only computed at the end
+        //self::initStat('player', 'uncompletedDestinations', 0); // only computed at the end
+        self::initStat('player', 'keptInitialDestinationCards', 0); // player only
+        self::initStat('player', 'keptAdditionalDestinationCards', 0); // player only
+        // 40+ : train cars (meeples)
+        self::initStat('table', 'claimedRoutes', 0);
+        self::initStat('player', 'claimedRoutes', 0);
+        self::initStat('table', 'playedTrainCars', 0);
+        self::initStat('player', 'playedTrainCars', 0);
+        //self::initStat('table', 'averageClaimedRouteLength', 0); // only computed at the end
+        //self::initStat('player', 'averageClaimedRouteLength', 0); // only computed at the end
+        //self::initStat('player', 'longestPath', 0); // player only // only computed at the end
 
         // setup the initial game situation here
 

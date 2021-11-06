@@ -34,6 +34,9 @@ trait StateTrait {
     function stNextPlayer() {
         $playerId = self::getActivePlayerId();
 
+        self::incStat(1, 'turnsNumber');
+        self::incStat(1, 'turnsNumber', $playerId);
+
         $lastTurn = intval(self::getGameStateValue(LAST_TURN));
 
         // check if it was last action from player who started last turn
@@ -75,14 +78,18 @@ trait StateTrait {
                     'gainsloses' => $completed ? clienttranslate('gains') : clienttranslate('loses')
                 ]);
 
-                // TODO stats self::setStat($points, 'lords_points', $player_id);
+                // TODO stats
+
+                //self::incStat(1, 'uncompletedDestinations');
+                //self::incStat(1, 'uncompletedDestinations', $playerId);
             }
         }
 
         // Longest continuous path 
         $playersLongestPaths = [];
         foreach ($players as $playerId => $playerDb) {
-            $playersLongestPaths[$playerId] = $this->map->getLongestPath($playerId);
+            $longestPath = $this->map->getLongestPath($playerId);
+            $playersLongestPaths[$playerId] = $longestPath;
 
             /*$points = $this->getScoreLocations($player_id, intval($playerDb['pearls']));
 
@@ -94,9 +101,15 @@ trait StateTrait {
                 'playerId' => $player_id,
                 'player_name' => $playerDb['player_name'],
                 'points' => $points,
-            ]);
+            ]);*/
             
-            // TODO statsself::setStat($points, 'locations_points', $player_id);*/
+            self::setStat($longestPath, 'longestPath', $playerId);
+        }
+
+        // averageClaimedRouteLength stat = playedTrainCars / claimedRoutes
+        self::setStat(self::getStat('playedTrainCars') / (float)self::getStat('claimedRoutes'), 'averageClaimedRouteLength');
+        foreach ($players as $playerId => $playerDb) {
+            self::setStat(self::getStat('playedTrainCars', $playerId) / (float)self::getStat('claimedRoutes', $playerId), 'averageClaimedRouteLength', $playerId);
         }
 
         // TODO TOCHECK count max completed destination ?
