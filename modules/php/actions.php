@@ -44,7 +44,7 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $this->trainCarsDeck->drawFromDeck($playerId, $number);
+        $this->trainCarDeck->drawFromDeck($playerId, $number);
 
         // TODO notif
 
@@ -61,7 +61,7 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $card = $this->trainCarsDeck->drawFromTable($playerId, $id);
+        $card = $this->trainCarDeck->drawFromTable($playerId, $id);
 
         // TODO notif
 
@@ -82,7 +82,7 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $this->trainCarsDeck->drawFromDeck($playerId, 1, true);
+        $this->trainCarDeck->drawFromDeck($playerId, 1, true);
 
         // TODO notif
 
@@ -99,7 +99,7 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $card = $this->trainCarsDeck->drawFromTable($playerId, $id, true);
+        $card = $this->trainCarDeck->drawFromTable($playerId, $id, true);
 
         // TODO notif
 

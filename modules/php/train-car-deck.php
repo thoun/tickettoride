@@ -67,11 +67,11 @@ class TrainCarDeck {
      */
     public function drawFromDeck(int $playerId, int $number, bool $isSecondCard = false) {
         if ($number != 1 && $number != 2) {
-            throw new BgaSystemException("You must take one or two cards.");
+            throw new BgaUserException("You must take one or two cards.");
         }
         
         if ($number == 2 && $isSecondCard) {
-            throw new BgaSystemException("You must take one card.");
+            throw new BgaUserException("You must take one card.");
         }
 
         $this->trainCars->pickCards($number, 'deck', $playerId);

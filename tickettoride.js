@@ -10,8 +10,8 @@ var CARD_WIDTH = 150;
 var CARD_HEIGHT = 100;
 function setupTrainCarCards(stock) {
     var trainCarsUrl = g_gamethemeurl + "img/train-cards.jpg";
-    for (var id = 0; id <= 8; id++) {
-        stock.addItemType(id, id, trainCarsUrl, id);
+    for (var type = 0; type <= 8; type++) {
+        stock.addItemType(type, type, trainCarsUrl, type);
     }
 }
 function setupDestinationCards(stock) {
@@ -107,8 +107,8 @@ var TrainCarSelection = /** @class */ (function () {
     function TrainCarSelection(game, visibleCards) {
         var _this = this;
         this.game = game;
-        document.getElementById('drawDeckCards1').addEventListener('click', function () { return _this.game.onHiddenTrainCarDeckClick(1); });
-        document.getElementById('drawDeckCards2').addEventListener('click', function () { return _this.game.onHiddenTrainCarDeckClick(2); });
+        document.getElementById('train-car-deck-hidden-pile1').addEventListener('click', function () { return _this.game.onHiddenTrainCarDeckClick(1); });
+        document.getElementById('train-car-deck-hidden-pile2').addEventListener('click', function () { return _this.game.onHiddenTrainCarDeckClick(2); });
         this.visibleCardsStock = new ebg.stock();
         this.visibleCardsStock.setSelectionAppearance('class');
         this.visibleCardsStock.selectionClass = 'no-class-selection';
@@ -119,7 +119,7 @@ var TrainCarSelection = /** @class */ (function () {
         this.visibleCardsStock.centerItems = true;
         dojo.connect(this.visibleCardsStock, 'onChangeSelection', this, function (_, itemId) { return _this.game.onVisibleTrainCarCardClick(Number(itemId)); });
         setupTrainCarCards(this.visibleCardsStock);
-        visibleCards.forEach(function (card) { return _this.visibleCardsStock.addToStockWithId(card.id, '' + card.id); });
+        visibleCards.forEach(function (card) { return _this.visibleCardsStock.addToStockWithId(card.type, '' + card.id); });
     }
     return TrainCarSelection;
 }());

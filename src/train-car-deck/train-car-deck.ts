@@ -6,8 +6,8 @@ class TrainCarSelection {
         visibleCards: TrainCar[],
     ) {
 
-        document.getElementById('drawDeckCards1').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(1));
-        document.getElementById('drawDeckCards2').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(2));
+        document.getElementById('train-car-deck-hidden-pile1').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(1));
+        document.getElementById('train-car-deck-hidden-pile2').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(2));
 
         this.visibleCardsStock = new ebg.stock() as Stock;
         this.visibleCardsStock.setSelectionAppearance('class');
@@ -20,6 +20,6 @@ class TrainCarSelection {
         dojo.connect(this.visibleCardsStock, 'onChangeSelection', this, (_, itemId: string) => this.game.onVisibleTrainCarCardClick(Number(itemId)));
         setupTrainCarCards(this.visibleCardsStock);
 
-        visibleCards.forEach(card => this.visibleCardsStock.addToStockWithId(card.id, ''+card.id));
+        visibleCards.forEach(card => this.visibleCardsStock.addToStockWithId(card.type, ''+card.id));
     }
 }

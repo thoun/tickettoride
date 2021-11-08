@@ -12,8 +12,8 @@ const CARD_HEIGHT = 100;
 
 function setupTrainCarCards(stock: Stock) {
     const trainCarsUrl = `${g_gamethemeurl}img/train-cards.jpg`;
-    for (let id=0; id<=8; id++) {
-        stock.addItemType(id, id, trainCarsUrl, id);
+    for (let type=0; type<=8; type++) {
+        stock.addItemType(type, type, trainCarsUrl, type);
     }
 }
 
