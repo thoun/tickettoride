@@ -25,6 +25,11 @@ interface Route {
     // TODO
 }
 
+interface ClaimedRoute {
+    routeId: number;
+    playerId: number;
+}
+
 interface TicketToRidePlayer extends Player {
     playerNo: number;
     trainCarsCount: number;
@@ -49,6 +54,7 @@ interface TicketToRideGamedatas {
     tablespeed: string;
 
     // Add here variables you set up in getAllDatas   
+    claimedRoutes: ClaimedRoute[];
     visibleTrainCards: TrainCar[];
 
     // private informations for current player only
@@ -108,4 +114,13 @@ interface NotifTrainCarsPickedArgs {
 
 interface NotifNewCardsOnTableArgs {
     cards: TrainCar[];
+}
+
+interface NotifNewCardsOnTableArgs {
+    cards: TrainCar[];
+}
+
+interface NotifClaimedRouteArgs {
+    playerId: number;
+    route: Route;
 }

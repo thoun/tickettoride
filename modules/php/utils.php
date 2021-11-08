@@ -2,6 +2,7 @@
 
 require_once(__DIR__.'/objects/train-car.php');
 require_once(__DIR__.'/objects/destination.php');
+require_once(__DIR__.'/objects/route.php');
 
 trait UtilTrait {
 
@@ -67,7 +68,7 @@ trait UtilTrait {
             $sql .= "WHERE player_id = $playerId ";
         }
         $dbResults = self::getCollectionFromDB($sql);
-        return array_values($dbResults);
+        return array_map(function($dbResult) { return new ClaimedRoute($dbResult); }, array_values($dbResults));
     }
 
     function getPlayersIds() {

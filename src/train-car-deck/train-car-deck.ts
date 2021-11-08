@@ -30,7 +30,14 @@ class TrainCarSelection {
     }
 
     public setNewCardsOnTable(cards: TrainCar[]) {
-        this.visibleCardsStock.removeAll();
+        if (cards.length > 1) {
+            this.visibleCardsStock.removeAll();
+        }
+
+        const newWeights = [];
+        cards.forEach(card => newWeights[card.type] = card.location_arg);
+        this.visibleCardsStock.changeItemsWeight(newWeights);
+
         cards.forEach(card => this.visibleCardsStock.addToStockWithId(card.type, ''+card.id));
     }
 }

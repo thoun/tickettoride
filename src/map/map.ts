@@ -119,6 +119,7 @@ class TtrMap {
     constructor(
         private game: TicketToRideGame,
         private players: TicketToRidePlayer[],
+        claimedRoutes: ClaimedRoute[],
     ) {
         let html = '';
 
@@ -135,6 +136,7 @@ class TtrMap {
         });
 
         this.movePoints();
+        this.setClaimedRoutes(claimedRoutes);
     }
 
     public setPoints(playerId: number, points: number) {
@@ -176,5 +178,9 @@ class TtrMap {
     
             markerDiv.style.transform = `translateX(${left + leftShift}px) translateY(${top + topShift}px)`;
         });
+    }
+
+    public setClaimedRoutes(claimedRoutes: ClaimedRoute[]) {
+        claimedRoutes.forEach(claimedRoute => document.getElementById(`route${claimedRoute.routeId}`).style.borderColor = `#${this.players[claimedRoute.playerId].color}`);
     }
 }

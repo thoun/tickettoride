@@ -166,6 +166,7 @@ class TicketToRide extends Table {
   
         // Gather all information about current game situation (visible by player $currentPlayerId).
 
+        $result['claimedRoutes'] = $this->getClaimedRoutes();
         $result['visibleTrainCards'] = $this->trainCarDeck->getVisibleCards();
 
         // private data : current player hidden informations

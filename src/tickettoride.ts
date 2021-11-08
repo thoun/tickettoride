@@ -42,7 +42,7 @@ class TicketToRide implements TicketToRideGame {
 
         log('gamedatas', gamedatas);
 
-        this.map = new TtrMap(this, Object.values(gamedatas.players));
+        this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes);
         this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards);
         this.destinationSelection = new DestinationSelection(this);
 
@@ -299,6 +299,7 @@ class TicketToRide implements TicketToRideGame {
 
         const notifs = [
             ['newCardsOnTable', ANIMATION_MS],
+            ['claimedRoute', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
             ['trainCarPicked', 1],
@@ -333,6 +334,17 @@ class TicketToRide implements TicketToRideGame {
         this.trainCarSelection.setNewCardsOnTable(notif.args.cards);
     }
 
+    notif_claimedRoute(notif: Notif<NotifClaimedRouteArgs>) {
+        const playerId = notif.args.playerId;
+        const route = notif.args.route;
+        this.trainCarCardCounters[playerId].incValue(-route.number);
+        this.trainCarCounters[playerId].incValue(-route.number);
+        this.map.setClaimedRoutes([{
+            playerId,
+            routeId: route.id
+        }]);
+    }
+    
     notif_lastTurn() {
         dojo.place(`<div id="last-round">
             ${_("This is the final round!")}

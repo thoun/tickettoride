@@ -18,8 +18,6 @@ trait ActionTrait {
 
         $this->destinationDeck->keepInitialCards($playerId, $ids);
 
-        // TODO notif
-
         self::incStat($number, 'keptInitialDestinationCards', $playerId);
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
@@ -31,8 +29,6 @@ trait ActionTrait {
         $playerId = intval(self::getActivePlayerId());
 
         $this->destinationDeck->keepAdditionalCards($playerId, $ids);
-
-        // TODO notif
 
         self::incStat($number, 'keptAdditionalDestinationCards', $playerId);
         
@@ -152,11 +148,18 @@ trait ActionTrait {
 
         // update score
         $points = $this->ROUTE_POINTS[$route->number];
-        $message = clienttranslate('${player_name} gains ${delta} points by claiming route from ${from} to ${to}');
-        $this->incScore($playerId, $points, $message, $route);
+        $this->incScore($playerId, $points);
 
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $route->number WHERE player_id = $playerId");
-        // notif claimed route, notif removed cards, notif remaining_train_cars
+
+        self::notifyAllPlayers('claimedRoute', clienttranslate('${player_name} gains ${delta} points by claiming route from ${from} to ${to} with ${number} train cars'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'route' => $route,
+            'from' => $this->CITIES[$route->from],
+            'to' => $this->CITIES[$route->to],
+            'number' => $route->number,
+        ]);
 
         self::incStat(1, 'claimedRoutes');
         self::incStat(1, 'claimedRoutes', $playerId);

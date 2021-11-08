@@ -18,7 +18,7 @@ class Map {
     public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars) {
         $allRoutes = $this->getAllRoutes();
         $claimedRoutes = $this->game->getClaimedRoutes();
-        $claimedRoutesIds = array_map(function($dbResult) { return intval($dbResult['route_id']); }, array_values($claimedRoutes));
+        $claimedRoutesIds = array_map(function($claimedRoute) { return $claimedRoute->routeId; }, array_values($claimedRoutes));
 
         // remove routes already claimed
         $claimableRoutes = array_filter($allRoutes, function($route) use ($claimedRoutesIds) { return !in_array($route->id, $claimedRoutesIds); });
@@ -61,7 +61,7 @@ class Map {
      */
     public function getLongestPath(int $playerId) {
         $claimedRoutes = $this->game->getClaimedRoutes($playerId);
-        $claimedRoutesIds = array_map(function($dbResult) { return intval($dbResult['route_id']); }, array_values($claimedRoutes));
+        $claimedRoutesIds = array_map(function($claimedRoute) { return $claimedRoute->routeId; }, array_values($claimedRoutes));
 
         $longestPath = 0;
         
@@ -81,7 +81,7 @@ class Map {
      */
     public function isDestinationCompleted(int $playerId, object $destination) {
         $claimedRoutes = $this->game->getClaimedRoutes($playerId);
-        $claimedRoutesIds = array_map(function($dbResult) { return intval($dbResult['route_id']); }, array_values($claimedRoutes));
+        $claimedRoutesIds = array_map(function($claimedRoute) { return $claimedRoute->routeId; }, array_values($claimedRoutes));
 
         $citiesConnectedToFrom = $this->getAccessibleCitiesFrom($destination->from, [$destination->from], $claimedRoutesIds);
 

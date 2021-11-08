@@ -243,7 +243,7 @@ var ROUTES = [
     new Route(98, 32, 34, 1, GRAY),
 ];
 var TtrMap = /** @class */ (function () {
-    function TtrMap(game, players) {
+    function TtrMap(game, players, claimedRoutes) {
         var _this = this;
         this.game = game;
         this.players = players;
@@ -260,6 +260,7 @@ var TtrMap = /** @class */ (function () {
             document.getElementById("route" + route.id).addEventListener('click', function () { return _this.game.claimRoute(route.id); });
         });
         this.movePoints();
+        this.setClaimedRoutes(claimedRoutes);
     }
     TtrMap.prototype.setPoints = function (playerId, points) {
         this.points.set(playerId, points);
@@ -295,6 +296,10 @@ var TtrMap = /** @class */ (function () {
             });
             markerDiv.style.transform = "translateX(" + (left + leftShift) + "px) translateY(" + (top + topShift) + "px)";
         });
+    };
+    TtrMap.prototype.setClaimedRoutes = function (claimedRoutes) {
+        var _this = this;
+        claimedRoutes.forEach(function (claimedRoute) { return document.getElementById("route" + claimedRoute.routeId).style.borderColor = "#" + _this.players[claimedRoute.playerId].color; });
     };
     return TtrMap;
 }());
@@ -361,7 +366,12 @@ var TrainCarSelection = /** @class */ (function () {
     };
     TrainCarSelection.prototype.setNewCardsOnTable = function (cards) {
         var _this = this;
-        this.visibleCardsStock.removeAll();
+        if (cards.length > 1) {
+            this.visibleCardsStock.removeAll();
+        }
+        var newWeights = [];
+        cards.forEach(function (card) { return newWeights[card.type] = card.location_arg; });
+        this.visibleCardsStock.changeItemsWeight(newWeights);
         cards.forEach(function (card) { return _this.visibleCardsStock.addToStockWithId(card.type, '' + card.id); });
     };
     return TrainCarSelection;
@@ -436,7 +446,7 @@ var TicketToRide = /** @class */ (function () {
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
-        this.map = new TtrMap(this, Object.values(gamedatas.players));
+        this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes);
         this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards);
         this.destinationSelection = new DestinationSelection(this);
         var player = gamedatas.players[this.getPlayerId()];
@@ -635,6 +645,7 @@ var TicketToRide = /** @class */ (function () {
         var _this = this;
         var notifs = [
             ['newCardsOnTable', ANIMATION_MS],
+            ['claimedRoute', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
             ['trainCarPicked', 1],
@@ -664,6 +675,16 @@ var TicketToRide = /** @class */ (function () {
     };
     TicketToRide.prototype.notif_newCardsOnTable = function (notif) {
         this.trainCarSelection.setNewCardsOnTable(notif.args.cards);
+    };
+    TicketToRide.prototype.notif_claimedRoute = function (notif) {
+        var playerId = notif.args.playerId;
+        var route = notif.args.route;
+        this.trainCarCardCounters[playerId].incValue(-route.number);
+        this.trainCarCounters[playerId].incValue(-route.number);
+        this.map.setClaimedRoutes([{
+                playerId: playerId,
+                routeId: route.id
+            }]);
     };
     TicketToRide.prototype.notif_lastTurn = function () {
         dojo.place("<div id=\"last-round\">\n            " + _("This is the final round!") + "\n        </div>", 'page-title');

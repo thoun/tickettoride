@@ -76,7 +76,7 @@ class TrainCarDeck {
 
         $cards = $this->game->getTrainCarsFromDb($this->trainCars->pickCards($number, 'deck', $playerId));
 
-        /* TODO self::notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes ${number} hidden train car card(s)'), [
+        /* TODO $this->game->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes ${number} hidden train car card(s)'), [
             'playerId' => $playerId,
             'player_name' => $this->game->getPlayerName($playerId),
             'number' => $number,
@@ -107,9 +107,9 @@ class TrainCarDeck {
 
         $this->trainCars->moveCard($id, 'hand', $playerId);
 
-        $this->trainCars->pickCardForLocation('deck', 'table', $spot);
+        $this->placeNewCardOnTable($spot);
 
-        /* TODO self::notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes a visible train car card'), [
+        /* $this->game->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes a visible train car card'), [
             'playerId' => $playerId,
             'player_name' => $this->game->getPlayerName($playerId),
             'number' => 1,
@@ -161,11 +161,21 @@ class TrainCarDeck {
             $cards[] = $this->game->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $i));
         }
 
-        self::notifyAllPlayers('newCardsOnTable', clienttranslate('Three locomotives have been revealed, visible train cards are replaced'), [
+        $this->game->notifyAllPlayers('newCardsOnTable', clienttranslate('Three locomotives have been revealed, visible train cards are replaced'), [
             'cards' => $cards
         ]);
 
         $this->game->incStat(1, 'visibleCardsReplaced');
+
+        return $cards;
+    }
+
+    private function placeNewCardOnTable(int $spot) {
+        $card = $this->game->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $spot));
+
+        $this->game->notifyAllPlayers('newCardsOnTable', '', [
+            'cards' => [$card]
+        ]);
 
         return $cards;
     }
