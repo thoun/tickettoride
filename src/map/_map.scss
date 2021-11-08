@@ -47,3 +47,19 @@
       }
     }
 }
+
+// TODO temp
+.route {
+  display: inline-block;
+  border: 3px solid lightgray;
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 8px;
+  padding: 5px;
+  margin: 5px;
+  pointer-events: none;
+
+  &.selectable {
+    border-color: black;
+    pointer-events: all;
+  }
+}

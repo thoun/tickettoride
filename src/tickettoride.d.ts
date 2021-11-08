@@ -72,7 +72,7 @@ interface TicketToRideGame extends Game {
 
 interface EnteringChooseDestinationsArgs {
     _private: {
-        destinations: Card[];
+        destinations: Destination[];
     };
     minimum: number;
 }
@@ -86,4 +86,13 @@ interface EnteringChooseActionArgs {
 interface NotifPointsArgs {
     playerId: number;
     points: number;
+}
+
+interface NotifDestinationsPickedArgs {
+    playerId: number;
+    number: number;
+    remainingDestinationsInDeck: number;
+    _private: {
+        destinations: Destination[];
+    };
 }

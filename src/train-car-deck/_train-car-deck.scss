@@ -1,6 +1,10 @@
 
 #train-car-deck {
+
     .hidden-pile {
+        width: 150px;
+        height: 100px;
+        background: gray;
         position: relative;   
         display: flex;
         border-radius: 10px;

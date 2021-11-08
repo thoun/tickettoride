@@ -122,5 +122,17 @@ class DestinationDeck {
                 $this->destinations->moveAllCardsInLocationKeepOrder("pick$playerId", 'discard');
             }
         }
+
+        /* TODO self::notifyAllPlayers('destinationsPicked', clienttranslate('${player_name} keeps ${number} destinations'), [
+            'playerId' => $playerId,
+            'player_name' => $this->game->getPlayerName($playerId),
+            'number' => count($ids),
+            'remainingDestinationsInDeck' => $this->getRemainingCardsInDeck(),
+            '_private' => [
+                $playerId => [
+                    'destinations' => $this->game->getDestinationsFromDb($this->destinations->getCards($ids)),
+                ],
+            ],
+        ]);*/
     }
 }

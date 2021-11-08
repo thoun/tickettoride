@@ -55,6 +55,56 @@
   content: "★";
 }
 
+.route {
+  display: inline-block;
+  border: 3px solid lightgray;
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 8px;
+  padding: 5px;
+  margin: 5px;
+  pointer-events: none;
+}
+.route.selectable {
+  border-color: black;
+  pointer-events: all;
+}
+
+#train-car-deck .hidden-pile {
+  width: 150px;
+  height: 100px;
+  background: gray;
+  position: relative;
+  display: flex;
+  border-radius: 10px;
+  box-shadow: 3px 3px 0px 0px #333, 5px 5px 3px black;
+  background-position: 0% 0%;
+}
+#train-car-deck .hidden-pile .button {
+  display: none;
+  flex: 1;
+  border: 3px dashed white;
+  color: white;
+  font-size: 400%;
+  justify-content: center;
+  align-items: center;
+  text-shadow: 2px 2px 2px black;
+}
+#train-car-deck .hidden-pile .button.left-radius {
+  border-radius: 10px 0 0 10px;
+}
+#train-car-deck .hidden-pile .button.right-radius {
+  border-radius: 0 10px 10px 0;
+}
+#train-car-deck .hidden-pile.selectable .button {
+  display: flex;
+  cursor: pointer;
+}
+#train-car-deck .hidden-pile.selectable .button.hidden {
+  visibility: hidden;
+  pointer-events: none;
+  cursor: default;
+}
+
 #destination-deck .hidden {
   display: none;
 }

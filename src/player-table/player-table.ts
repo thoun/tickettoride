@@ -19,7 +19,7 @@ class PlayerTable {
 
         dojo.place(html, 'player-hand');
 
-        // adventurer        
+        // train cars cards        
 
         this.trainCarStock = new ebg.stock() as Stock;
         this.trainCarStock.setSelectionAppearance('class');
@@ -37,7 +37,7 @@ class PlayerTable {
 
         trainCars.forEach(trainCar => this.trainCarStock.addToStockWithId(trainCar.type, ''+trainCar.id));
 
-        // companions
+        // destionation cards
 
         this.destinationStock = new ebg.stock() as Stock;
         this.destinationStock.setSelectionAppearance('class');
@@ -45,15 +45,12 @@ class PlayerTable {
         this.destinationStock.create(this.game, $(`player-table-${this.playerId}-destinations`), CARD_WIDTH, CARD_HEIGHT);
         this.destinationStock.setSelectionMode(0);
         this.destinationStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupDestinationCardDiv(cardDiv, type);
-        dojo.connect(this.destinationStock, 'onChangeSelection', this, (_, itemId: string) => {
-            if (this.destinationStock.getSelectedItems().length) {
-                //this.game.cardClick(1, Number(itemId));
-            }
-            this.destinationStock.unselectAll();
-        });
         setupDestinationCards(this.destinationStock);
 
-        destinations.forEach(destination => this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id));
-
+        this.addDestinations(destinations);
+    }
+        
+    public addDestinations(destinations: Destination[]) {
+        destinations.forEach(destination => this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id), 'destination-stock');
     }
 }

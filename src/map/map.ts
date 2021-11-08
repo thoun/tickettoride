@@ -130,14 +130,24 @@ class TtrMap {
         dojo.place(html, 'board');
 
         ROUTES.forEach(route => {
-            dojo.place(`<span id="route${route.id}">&nbsp; ${CITIES[route.from]} to ${CITIES[route.to]}, ${route.number} ${COLORS[route.color]} &nbsp;</span>`, 'board');
+            dojo.place(`<div id="route${route.id}" class="route">${CITIES[route.from]} to ${CITIES[route.to]}, ${route.number} ${COLORS[route.color]}</div>`, 'board');
             document.getElementById(`route${route.id}`).addEventListener('click', () => this.game.claimRoute(route.id));   
         });
+
+        this.movePoints();
     }
 
     public setPoints(playerId: number, points: number) {
         this.points.set(playerId, points);
         this.movePoints();
+    }
+    
+    public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
+        if (selectable) {
+            possibleRoutes.forEach(route => document.getElementById(`route${route.id}`).classList.add('selectable'));
+        } else {            
+            dojo.query('.route').removeClass('selectable');
+        }
     }
 
     private getPointsCoordinates(points: number) {

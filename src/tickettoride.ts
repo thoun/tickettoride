@@ -73,22 +73,20 @@ class TicketToRide implements TicketToRideGame {
         log('Entering state: '+stateName, args.args);
 
         switch (stateName) {
-            /*case 'chooseInitialDestinations':
-                this.onEnteringChooseInitialDestinations(args.args as EnteringChooseDestinationsArgs);
-                break;*/
+            case 'chooseAction':
+                this.onEnteringChooseAction(args.args as EnteringChooseActionArgs);
+                break;
             case 'endScore':
                 this.onEnteringEndScore();
                 break;
         }
     }
 
-    /*onEnteringChooseInitialDestinations(args: EnteringChooseDestinationsArgs) {
-        args._private.destinations.forEach(card => this.cards.addToStockWithId(card.id, ''+card.id));
-
-        if ((this as any).isCurrentPlayerActive()) {
-            this.cards.setSelectionMode(2);
-        }
-    }*/
+    onEnteringChooseAction(args: EnteringChooseActionArgs) {
+        this.trainCarSelection.setSelectableTopDeck((this as any).isCurrentPlayerActive(), args.maxHiddenCardsPick);
+        
+        this.map.setSelectableRoutes((this as any).isCurrentPlayerActive(), args.possibleRoutes);
+    }
 
     private onEnteringEndScore(fromReload: boolean = false) {
         const lastTurnBar = document.getElementById('last-round');
@@ -302,6 +300,7 @@ class TicketToRide implements TicketToRideGame {
         const notifs = [
             //['factoriesFilled', ANIMATION_MS],
             ['points', 1],
+            ['destinationsPicked', 1],
             ['lastTurn', 1],
         ];
 
@@ -311,12 +310,15 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
-    /*notif_factoriesFilled(notif: Notif<NotifFirstPlayerTokenArgs>) {
-        this.factories.fillFactories(notif.args.factories, notif.args.remainingTiles);
-    }*/
-
     notif_points(notif: Notif<NotifPointsArgs>) {
         this.setPoints(notif.args.playerId, notif.args.points);
+    }
+
+    notif_destinationsPicked(notif: Notif<NotifDestinationsPickedArgs>) {
+        this.destinationCardCounters[notif.args.playerId].incValue(notif.args.number);
+        if (notif.args._private?.destinations) {
+            this.playerTable.addDestinations(notif.args._private.destinations);
+        }
     }
 
     notif_lastTurn() {
