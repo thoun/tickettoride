@@ -46,8 +46,6 @@ trait ActionTrait {
 
         $this->trainCarDeck->drawFromDeck($playerId, $number);
 
-        // TODO notif
-
         self::incStat($number, 'collectedTrainCarCards');
         self::incStat($number, 'collectedTrainCarCards', $playerId);
         self::incStat($number, 'collectedHiddenTrainCarCards');
@@ -62,8 +60,6 @@ trait ActionTrait {
         $playerId = intval(self::getActivePlayerId());
 
         $card = $this->trainCarDeck->drawFromTable($playerId, $id);
-
-        // TODO notif
 
         self::incStat(1, 'collectedTrainCarCards');
         self::incStat(1, 'collectedTrainCarCards', $playerId);
@@ -84,8 +80,6 @@ trait ActionTrait {
 
         $this->trainCarDeck->drawFromDeck($playerId, 1, true);
 
-        // TODO notif
-
         self::incStat(1, 'collectedTrainCarCards');
         self::incStat(1, 'collectedTrainCarCards', $playerId);
         self::incStat(1, 'collectedHiddenTrainCarCards');
@@ -100,8 +94,6 @@ trait ActionTrait {
         $playerId = intval(self::getActivePlayerId());
 
         $card = $this->trainCarDeck->drawFromTable($playerId, $id, true);
-
-        // TODO notif
 
         self::incStat(1, 'collectedTrainCarCards');
         self::incStat(1, 'collectedTrainCarCards', $playerId);
@@ -131,17 +123,19 @@ trait ActionTrait {
 
         $route = $this->ROUTES[$routeId];
 
-        if ($this->game->getUniqueIntValueFromDB( "SELECT count(*) FROM `claimed_routes` WHERE `route_id` = $routeId") > 0) {
+        if ($this->getUniqueIntValueFromDB( "SELECT count(*) FROM `claimed_routes` WHERE `route_id` = $routeId") > 0) {
             throw new BgaUserException("Route is already claimed.");
         }
 
-        if ($this->getRemainingTrainCarsCount($playerId) < $route->number) {
+        $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
+        if ($remainingTrainCars < $route->number) {
             throw new BgaUserException("Not enough train cars to claim the route.");
         }
         
-        $colorAndLocomotiveCards = array_filter($trainCarsHand, function ($card) use ($routeColor) { return in_array($card->type, [0, $routeColor]); });
+        $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
+        $colorAndLocomotiveCards = $this->map->canPayForRoute($route, $trainCarsHand, $remainingTrainCars);
         
-        if (count($colorAndLocomotiveCards) < $route->number) {
+        if ($colorAndLocomotiveCards == null || count($colorAndLocomotiveCards) < $route->number) {
             throw new BgaUserException("Not enough cards to claim the route.");
         }
 
@@ -161,7 +155,7 @@ trait ActionTrait {
         $message = clienttranslate('${player_name} gains ${delta} points by claiming route from ${from} to ${to}');
         $this->incScore($playerId, $points, $message, $route);
 
-        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $route->number WHERE player_id = $player_id");
+        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $route->number WHERE player_id = $playerId");
         // notif claimed route, notif removed cards, notif remaining_train_cars
 
         self::incStat(1, 'claimedRoutes');

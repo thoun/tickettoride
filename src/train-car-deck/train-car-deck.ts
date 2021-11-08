@@ -20,12 +20,17 @@ class TrainCarSelection {
         dojo.connect(this.visibleCardsStock, 'onChangeSelection', this, (_, itemId: string) => this.game.onVisibleTrainCarCardClick(Number(itemId)));
         setupTrainCarCards(this.visibleCardsStock);
 
-        visibleCards.forEach(card => this.visibleCardsStock.addToStockWithId(card.type, ''+card.id));
+        this.setNewCardsOnTable(visibleCards);
     }
 
     public setSelectableTopDeck(selectable: boolean, number: number = 0) {
         dojo.toggleClass('train-car-deck-hidden-pile', 'selectable', selectable);
         dojo.toggleClass('train-car-deck-hidden-pile1', 'hidden', number < 1);
         dojo.toggleClass('train-car-deck-hidden-pile2', 'hidden', number < 2);
+    }
+
+    public setNewCardsOnTable(cards: TrainCar[]) {
+        this.visibleCardsStock.removeAll();
+        cards.forEach(card => this.visibleCardsStock.addToStockWithId(card.type, ''+card.id));
     }
 }

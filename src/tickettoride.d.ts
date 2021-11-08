@@ -96,3 +96,16 @@ interface NotifDestinationsPickedArgs {
         destinations: Destination[];
     };
 }
+
+interface NotifTrainCarsPickedArgs {
+    playerId: number;
+    number: number;
+    remainingTrainCarsInDeck: number;
+    _private: {
+        cards: TrainCar[];
+    };
+}
+
+interface NotifNewCardsOnTableArgs {
+    cards: TrainCar[];
+}

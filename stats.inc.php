@@ -115,7 +115,14 @@ $commonStats = [
 $stats_type = [
 
     // Statistics global to table
-    "table" => $commonStats,
+    "table" => $commonStats + [
+        // 20+ : train car cards
+        "visibleCardsReplaced" => [
+            "id" => 24,
+            "name" => totranslate("Visible cards replaced (three locomotives)"),
+            "type" => "int"
+        ],
+    ],
     
     // Statistics existing for each player
     "player" => $commonStats + [   

@@ -103,7 +103,7 @@ class Map {
      * If player cannot pay, returns null.
      * If player can pay return cards to pay for the route.
      */
-    private function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars) {
+    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars) {
         if ($remainingTrainCars < $route->number) {
             return null; // not enough remaining meeples
         }

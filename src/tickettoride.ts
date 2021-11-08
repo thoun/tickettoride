@@ -298,9 +298,10 @@ class TicketToRide implements TicketToRideGame {
         //log( 'notifications subscriptions setup' );
 
         const notifs = [
-            //['factoriesFilled', ANIMATION_MS],
+            ['newCardsOnTable', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
+            ['trainCarPicked', 1],
             ['lastTurn', 1],
         ];
 
@@ -319,6 +320,17 @@ class TicketToRide implements TicketToRideGame {
         if (notif.args._private?.destinations) {
             this.playerTable.addDestinations(notif.args._private.destinations);
         }
+    }
+
+    notif_trainCarPicked(notif: Notif<NotifTrainCarsPickedArgs>) {
+        this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
+        if (notif.args._private?.cards) {
+            this.playerTable.addTrainCars(notif.args._private.cards);
+        }
+    }
+
+    notif_newCardsOnTable(notif: Notif<NotifNewCardsOnTableArgs>) {
+        this.trainCarSelection.setNewCardsOnTable(notif.args.cards);
     }
 
     notif_lastTurn() {

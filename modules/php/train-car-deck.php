@@ -74,7 +74,19 @@ class TrainCarDeck {
             throw new BgaUserException("You must take one card.");
         }
 
-        $this->trainCars->pickCards($number, 'deck', $playerId);
+        $cards = $this->game->getTrainCarsFromDb($this->trainCars->pickCards($number, 'deck', $playerId));
+
+        /* TODO self::notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes ${number} hidden train car card(s)'), [
+            'playerId' => $playerId,
+            'player_name' => $this->game->getPlayerName($playerId),
+            'number' => $number,
+            'remainingTrainCarsInDeck' => $this->getRemainingCardsInDeck(),
+            '_private' => [
+                $playerId => [
+                    'cards' => $cards,
+                ],
+            ],
+        ]);*/
     }
 
     /**
@@ -96,6 +108,18 @@ class TrainCarDeck {
         $this->trainCars->moveCard($id, 'hand', $playerId);
 
         $this->trainCars->pickCardForLocation('deck', 'table', $spot);
+
+        /* TODO self::notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes a visible train car card'), [
+            'playerId' => $playerId,
+            'player_name' => $this->game->getPlayerName($playerId),
+            'number' => 1,
+            'remainingTrainCarsInDeck' => $this->getRemainingCardsInDeck(),
+            '_private' => [
+                $playerId => [
+                    'cards' => $this->game->getTrainCarsFromDb($this->trainCars->getCards([$id])),
+                ],
+            ],
+        ]);*/
 
         $this->checkTooMuchLocomotives();
 
@@ -125,6 +149,7 @@ class TrainCarDeck {
         if ($locomotives >= 3) {
             $this->trainCars->moveAllCardsInLocation('table', 'discard');
             $this->placeNewCardsOnTable();
+
             $this->checkTooMuchLocomotives();
         }
     }
@@ -135,6 +160,12 @@ class TrainCarDeck {
         for ($i=1; $i<=5; $i++) {
             $cards[] = $this->game->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $i));
         }
+
+        self::notifyAllPlayers('newCardsOnTable', clienttranslate('Three locomotives have been revealed, visible train cards are replaced'), [
+            'cards' => $cards
+        ]);
+
+        $this->game->incStat(1, 'visibleCardsReplaced');
 
         return $cards;
     }

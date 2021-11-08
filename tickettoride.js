@@ -351,13 +351,18 @@ var TrainCarSelection = /** @class */ (function () {
         this.visibleCardsStock.centerItems = true;
         dojo.connect(this.visibleCardsStock, 'onChangeSelection', this, function (_, itemId) { return _this.game.onVisibleTrainCarCardClick(Number(itemId)); });
         setupTrainCarCards(this.visibleCardsStock);
-        visibleCards.forEach(function (card) { return _this.visibleCardsStock.addToStockWithId(card.type, '' + card.id); });
+        this.setNewCardsOnTable(visibleCards);
     }
     TrainCarSelection.prototype.setSelectableTopDeck = function (selectable, number) {
         if (number === void 0) { number = 0; }
         dojo.toggleClass('train-car-deck-hidden-pile', 'selectable', selectable);
         dojo.toggleClass('train-car-deck-hidden-pile1', 'hidden', number < 1);
         dojo.toggleClass('train-car-deck-hidden-pile2', 'hidden', number < 2);
+    };
+    TrainCarSelection.prototype.setNewCardsOnTable = function (cards) {
+        var _this = this;
+        this.visibleCardsStock.removeAll();
+        cards.forEach(function (card) { return _this.visibleCardsStock.addToStockWithId(card.type, '' + card.id); });
     };
     return TrainCarSelection;
 }());
@@ -382,7 +387,7 @@ var PlayerTable = /** @class */ (function () {
             _this.trainCarStock.unselectAll();
         });
         setupTrainCarCards(this.trainCarStock);
-        trainCars.forEach(function (trainCar) { return _this.trainCarStock.addToStockWithId(trainCar.type, '' + trainCar.id); });
+        this.addTrainCars(trainCars);
         // destionation cards
         this.destinationStock = new ebg.stock();
         this.destinationStock.setSelectionAppearance('class');
@@ -396,6 +401,10 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.addDestinations = function (destinations) {
         var _this = this;
         destinations.forEach(function (destination) { return _this.destinationStock.addToStockWithId(destination.type_arg, '' + destination.id); }, 'destination-stock');
+    };
+    PlayerTable.prototype.addTrainCars = function (trainCars) {
+        var _this = this;
+        trainCars.forEach(function (trainCar) { return _this.trainCarStock.addToStockWithId(trainCar.type, '' + trainCar.id); });
     };
     return PlayerTable;
 }());
@@ -625,9 +634,10 @@ var TicketToRide = /** @class */ (function () {
         //log( 'notifications subscriptions setup' );
         var _this = this;
         var notifs = [
-            //['factoriesFilled', ANIMATION_MS],
+            ['newCardsOnTable', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
+            ['trainCarPicked', 1],
             ['lastTurn', 1],
         ];
         notifs.forEach(function (notif) {
@@ -644,6 +654,16 @@ var TicketToRide = /** @class */ (function () {
         if ((_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.destinations) {
             this.playerTable.addDestinations(notif.args._private.destinations);
         }
+    };
+    TicketToRide.prototype.notif_trainCarPicked = function (notif) {
+        var _a;
+        this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
+        if ((_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.cards) {
+            this.playerTable.addTrainCars(notif.args._private.cards);
+        }
+    };
+    TicketToRide.prototype.notif_newCardsOnTable = function (notif) {
+        this.trainCarSelection.setNewCardsOnTable(notif.args.cards);
     };
     TicketToRide.prototype.notif_lastTurn = function () {
         dojo.place("<div id=\"last-round\">\n            " + _("This is the final round!") + "\n        </div>", 'page-title');

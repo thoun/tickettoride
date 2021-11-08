@@ -112,6 +112,7 @@ class TicketToRide extends Table {
         self::initStat('player', 'collectedVisibleTrainCarCards', 0);
         self::initStat('table', 'collectedVisibleLocomotives', 0);
         self::initStat('player', 'collectedVisibleLocomotives', 0);
+        self::initStat('table', 'visibleCardsReplaced', 0);
         // 30+ : destination cards
         self::initStat('table', 'drawDestinationsAction', 0);
         self::initStat('player', 'drawDestinationsAction', 0);

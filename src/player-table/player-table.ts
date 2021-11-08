@@ -35,7 +35,7 @@ class PlayerTable {
         });
         setupTrainCarCards(this.trainCarStock);
 
-        trainCars.forEach(trainCar => this.trainCarStock.addToStockWithId(trainCar.type, ''+trainCar.id));
+        this.addTrainCars(trainCars);
 
         // destionation cards
 
@@ -52,5 +52,9 @@ class PlayerTable {
         
     public addDestinations(destinations: Destination[]) {
         destinations.forEach(destination => this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id), 'destination-stock');
+    }
+    
+    public addTrainCars(trainCars: TrainCar[]) {
+        trainCars.forEach(trainCar => this.trainCarStock.addToStockWithId(trainCar.type, ''+trainCar.id));
     }
 }
