@@ -10,7 +10,7 @@ class DestinationSelection {
         this.destinations.selectionClass = 'destination-selection';
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $(`destination-stock`), CARD_WIDTH, CARD_HEIGHT);
-        //this.cards.onItemCreate = (card_div, card_type_id) => this.game.cards.setupNewCard(card_div, card_type_id);
+        this.destinations.onItemCreate = (cardDiv, cardTypeId) => setupDestinationCardDiv(cardDiv, cardTypeId);
         this.destinations.image_items_per_row = 13;
         this.destinations.centerItems = true;
         dojo.connect(this.destinations, 'onChangeSelection', this, () => {

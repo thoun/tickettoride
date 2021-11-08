@@ -26,8 +26,7 @@ class PlayerTable {
         this.trainCarStock.selectionClass = 'selected';
         this.trainCarStock.create(this.game, $(`player-table-${this.playerId}-train-cars`), CARD_WIDTH, CARD_HEIGHT);
         this.trainCarStock.setSelectionMode(0);
-        this.trainCarStock.setSelectionMode(0);
-        //this.trainCarStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupAdventurerCard(game, cardDiv, type);
+        this.trainCarStock.onItemCreate = (cardDiv, cardTypeId) => setupTrainCarCardDiv(cardDiv, cardTypeId);
         dojo.connect(this.trainCarStock, 'onChangeSelection', this, (_, itemId: string) => {
             if (this.trainCarStock.getSelectedItems().length) {
                 //this.game.cardClick(0, Number(itemId));
@@ -45,8 +44,7 @@ class PlayerTable {
         this.destinationStock.selectionClass = 'selected';
         this.destinationStock.create(this.game, $(`player-table-${this.playerId}-destinations`), CARD_WIDTH, CARD_HEIGHT);
         this.destinationStock.setSelectionMode(0);
-        this.destinationStock.setSelectionMode(0);
-        //this.destinationStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupCompanionCard(game, cardDiv, type);
+        this.destinationStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupDestinationCardDiv(cardDiv, type);
         dojo.connect(this.destinationStock, 'onChangeSelection', this, (_, itemId: string) => {
             if (this.destinationStock.getSelectedItems().length) {
                 //this.game.cardClick(1, Number(itemId));

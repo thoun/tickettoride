@@ -20,8 +20,228 @@ function setupDestinationCards(stock) {
         stock.addItemType(id, id, destinationsUrl, id);
     }
 }
+var GRAY = 0;
+var PINK = 1;
+var WHITE = 2;
+var BLUE = 3;
+var YELLOW = 4;
+var ORANGE = 5;
+var BLACK = 6;
+var RED = 7;
+var GREEN = 8;
+// TODO TEMP
+var COLORS = [
+    'GRAY',
+    'PINK',
+    'WHITE',
+    'BLUE',
+    'YELLOW',
+    'ORANGE',
+    'BLACK',
+    'RED',
+    'GREEN',
+];
+function setupTrainCarCardDiv(cardDiv, cardTypeId) {
+    var color = COLORS[Number(cardTypeId)];
+    cardDiv.innerHTML = "<span><strong>" + color + "</span></strong>";
+}
+var DestinationCard = /** @class */ (function () {
+    function DestinationCard(id, from, to, points) {
+        this.id = id;
+        this.from = from;
+        this.to = to;
+        this.points = points;
+    }
+    return DestinationCard;
+}());
+var CITIES = [
+    null,
+    'Atlanta',
+    'Boston',
+    'Calgary',
+    'Charleston',
+    'Chicago',
+    'Dallas',
+    'Denver',
+    'Duluth',
+    'El Paso',
+    'Helena',
+    'Houston',
+    'Kansas City',
+    'Las Vegas',
+    'Little Rock',
+    'Los Angeles',
+    'Miami',
+    'Montréal',
+    'Nashville',
+    'New Orleans',
+    'New York',
+    'Oklahoma City',
+    'Omaha',
+    'Phoenix',
+    'Pittsburgh',
+    'Portland',
+    'Raleigh',
+    'Saint Louis',
+    'Salt Lake City',
+    'Sault St. Marie',
+    'San Francisco',
+    'Santa Fe',
+    'Seattle',
+    'Toronto',
+    'Vancouver',
+    'Washington',
+    'Winnipeg',
+];
+var DESTINATIONS = [
+    new DestinationCard(1, 2, 16, 12),
+    new DestinationCard(2, 3, 23, 13),
+    new DestinationCard(3, 3, 28, 7),
+    new DestinationCard(4, 5, 19, 7),
+    new DestinationCard(5, 5, 31, 9),
+    new DestinationCard(6, 6, 20, 11),
+    new DestinationCard(7, 7, 9, 4),
+    new DestinationCard(8, 7, 24, 11),
+    new DestinationCard(9, 8, 9, 10),
+    new DestinationCard(10, 8, 11, 8),
+    new DestinationCard(11, 10, 15, 8),
+    new DestinationCard(12, 12, 11, 5),
+    new DestinationCard(13, 15, 5, 16),
+    new DestinationCard(14, 15, 16, 20),
+    new DestinationCard(15, 15, 20, 21),
+    new DestinationCard(16, 17, 1, 9),
+    new DestinationCard(17, 17, 19, 13),
+    new DestinationCard(18, 20, 1, 6),
+    new DestinationCard(19, 25, 18, 17),
+    new DestinationCard(21, 25, 23, 11),
+    new DestinationCard(22, 30, 1, 17),
+    new DestinationCard(23, 29, 18, 8),
+    new DestinationCard(24, 29, 21, 9),
+    new DestinationCard(25, 32, 15, 9),
+    new DestinationCard(26, 32, 20, 22),
+    new DestinationCard(27, 33, 16, 10),
+    new DestinationCard(28, 34, 17, 20),
+    new DestinationCard(29, 34, 31, 13),
+    new DestinationCard(30, 36, 11, 12),
+    new DestinationCard(31, 36, 14, 11), // Winnipeg	Little Rock	11
+];
+function setupDestinationCardDiv(cardDiv, cardTypeId) {
+    var destination = DESTINATIONS[Number(cardTypeId)];
+    cardDiv.innerHTML = "<span><strong>" + CITIES[destination.from] + "</strong> to <strong>" + CITIES[destination.to] + "</strong> (<strong>" + destination.points + "</strong>)</span>";
+}
 var POINT_CASE_SIZE = 25.5;
 var BOARD_POINTS_MARGIN = 38;
+var Route = /** @class */ (function () {
+    function Route(id, from, to, number, color) {
+        this.id = id;
+        this.from = from;
+        this.to = to;
+        this.number = number;
+        this.color = color;
+    }
+    return Route;
+}());
+var ROUTES = [
+    new Route(1, 1, 4, 2, GRAY),
+    new Route(2, 1, 16, 5, BLUE),
+    new Route(3, 1, 18, 1, GRAY),
+    new Route(4, 1, 19, 4, YELLOW),
+    new Route(5, 1, 19, 4, ORANGE),
+    new Route(6, 1, 26, 2, GRAY),
+    new Route(7, 1, 26, 2, GRAY),
+    new Route(8, 2, 17, 2, GRAY),
+    new Route(9, 2, 17, 2, GRAY),
+    new Route(10, 2, 20, 2, YELLOW),
+    new Route(11, 2, 20, 2, RED),
+    new Route(12, 3, 10, 4, GRAY),
+    new Route(12, 3, 32, 4, GRAY),
+    new Route(13, 3, 34, 3, GRAY),
+    new Route(14, 3, 36, 6, WHITE),
+    new Route(15, 4, 16, 4, PINK),
+    new Route(16, 4, 26, 5, GRAY),
+    new Route(17, 5, 8, 3, RED),
+    new Route(18, 5, 22, 4, BLUE),
+    new Route(19, 5, 24, 3, ORANGE),
+    new Route(20, 5, 24, 3, BLACK),
+    new Route(21, 5, 27, 2, GREEN),
+    new Route(22, 5, 27, 2, WHITE),
+    new Route(23, 5, 33, 4, WHITE),
+    new Route(24, 6, 9, 4, RED),
+    new Route(25, 6, 11, 1, GRAY),
+    new Route(26, 6, 11, 1, GRAY),
+    new Route(27, 6, 14, 2, GRAY),
+    new Route(28, 6, 21, 2, GRAY),
+    new Route(29, 6, 21, 2, GRAY),
+    new Route(30, 7, 10, 4, GREEN),
+    new Route(31, 7, 12, 4, BLACK),
+    new Route(32, 7, 12, 4, ORANGE),
+    new Route(33, 7, 21, 4, RED),
+    new Route(34, 7, 22, 4, PINK),
+    new Route(35, 7, 23, 5, WHITE),
+    new Route(36, 7, 28, 3, RED),
+    new Route(37, 7, 28, 3, YELLOW),
+    new Route(38, 8, 10, 6, ORANGE),
+    new Route(39, 8, 22, 2, GRAY),
+    new Route(40, 8, 22, 2, GRAY),
+    new Route(41, 8, 29, 3, GRAY),
+    new Route(42, 8, 33, 6, PINK),
+    new Route(43, 8, 36, 4, BLACK),
+    new Route(44, 9, 11, 6, GREEN),
+    new Route(45, 9, 15, 6, BLACK),
+    new Route(46, 9, 21, 5, YELLOW),
+    new Route(47, 9, 23, 3, GRAY),
+    new Route(48, 9, 31, 2, GRAY),
+    new Route(49, 10, 22, 5, RED),
+    new Route(50, 10, 28, 3, PINK),
+    new Route(51, 10, 32, 6, YELLOW),
+    new Route(52, 10, 36, 4, BLUE),
+    new Route(53, 11, 19, 2, GRAY),
+    new Route(54, 12, 21, 2, GRAY),
+    new Route(55, 12, 21, 2, GRAY),
+    new Route(56, 12, 22, 1, GRAY),
+    new Route(57, 12, 22, 1, GRAY),
+    new Route(58, 12, 27, 2, BLUE),
+    new Route(59, 12, 27, 2, PINK),
+    new Route(60, 13, 15, 2, GRAY),
+    new Route(61, 13, 28, 3, ORANGE),
+    new Route(62, 14, 18, 3, WHITE),
+    new Route(63, 14, 19, 3, GREEN),
+    new Route(64, 14, 21, 2, GRAY),
+    new Route(65, 14, 27, 2, GRAY),
+    new Route(66, 15, 23, 3, GRAY),
+    new Route(67, 15, 30, 3, YELLOW),
+    new Route(68, 15, 30, 3, PINK),
+    new Route(69, 16, 19, 6, RED),
+    new Route(70, 17, 20, 3, BLUE),
+    new Route(71, 17, 29, 5, BLACK),
+    new Route(72, 17, 33, 3, GRAY),
+    new Route(73, 18, 24, 3, BLACK),
+    new Route(74, 18, 26, 4, YELLOW),
+    new Route(75, 18, 27, 2, GRAY),
+    new Route(76, 20, 24, 2, WHITE),
+    new Route(77, 20, 24, 2, GREEN),
+    new Route(78, 20, 35, 2, ORANGE),
+    new Route(79, 20, 35, 2, BLACK),
+    new Route(80, 21, 31, 3, BLUE),
+    new Route(81, 23, 31, 3, GRAY),
+    new Route(82, 24, 26, 2, GRAY),
+    new Route(83, 24, 27, 5, GREEN),
+    new Route(84, 24, 33, 2, GRAY),
+    new Route(85, 24, 35, 2, GRAY),
+    new Route(86, 25, 28, 6, BLUE),
+    new Route(87, 25, 30, 5, GREEN),
+    new Route(88, 25, 30, 5, PINK),
+    new Route(89, 25, 32, 1, GRAY),
+    new Route(90, 25, 32, 1, GRAY),
+    new Route(91, 26, 35, 2, GRAY),
+    new Route(92, 26, 35, 2, GRAY),
+    new Route(93, 28, 30, 5, ORANGE),
+    new Route(94, 28, 30, 5, WHITE),
+    new Route(95, 29, 33, 2, GRAY),
+    new Route(96, 29, 36, 6, GRAY),
+    new Route(97, 32, 34, 1, GRAY),
+    new Route(98, 32, 34, 1, GRAY),
+];
 var TtrMap = /** @class */ (function () {
     function TtrMap(game, players) {
         var _this = this;
@@ -35,7 +255,10 @@ var TtrMap = /** @class */ (function () {
             _this.points.set(Number(player.id), Number(player.score));
         });
         dojo.place(html, 'board');
-        document.getElementById('board').addEventListener('click', function (e) { return _this.game.claimRoute(Math.floor(e.x / 10)); });
+        ROUTES.forEach(function (route) {
+            dojo.place("<span id=\"route" + route.id + "\">&nbsp; " + CITIES[route.from] + " to " + CITIES[route.to] + ", " + route.number + " " + COLORS[route.color] + " &nbsp;</span>", 'board');
+            document.getElementById("route" + route.id).addEventListener('click', function () { return _this.game.claimRoute(route.id); });
+        });
     }
     TtrMap.prototype.setPoints = function (playerId, points) {
         this.points.set(playerId, points);
@@ -75,7 +298,7 @@ var DestinationSelection = /** @class */ (function () {
         this.destinations.selectionClass = 'destination-selection';
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $("destination-stock"), CARD_WIDTH, CARD_HEIGHT);
-        //this.cards.onItemCreate = (card_div, card_type_id) => this.game.cards.setupNewCard(card_div, card_type_id);
+        this.destinations.onItemCreate = function (cardDiv, cardTypeId) { return setupDestinationCardDiv(cardDiv, cardTypeId); };
         this.destinations.image_items_per_row = 13;
         this.destinations.centerItems = true;
         dojo.connect(this.destinations, 'onChangeSelection', this, function () {
@@ -114,7 +337,7 @@ var TrainCarSelection = /** @class */ (function () {
         this.visibleCardsStock.selectionClass = 'no-class-selection';
         this.visibleCardsStock.setSelectionMode(1);
         this.visibleCardsStock.create(game, $("visible-train-cards-stock"), CARD_WIDTH, CARD_HEIGHT);
-        //this.cards.onItemCreate = (card_div, card_type_id) => this.game.cards.setupNewCard(card_div, card_type_id);
+        this.visibleCardsStock.onItemCreate = function (cardDiv, cardTypeId) { return setupTrainCarCardDiv(cardDiv, cardTypeId); };
         this.visibleCardsStock.image_items_per_row = 13;
         this.visibleCardsStock.centerItems = true;
         dojo.connect(this.visibleCardsStock, 'onChangeSelection', this, function (_, itemId) { return _this.game.onVisibleTrainCarCardClick(Number(itemId)); });
@@ -136,8 +359,7 @@ var PlayerTable = /** @class */ (function () {
         this.trainCarStock.selectionClass = 'selected';
         this.trainCarStock.create(this.game, $("player-table-" + this.playerId + "-train-cars"), CARD_WIDTH, CARD_HEIGHT);
         this.trainCarStock.setSelectionMode(0);
-        this.trainCarStock.setSelectionMode(0);
-        //this.trainCarStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupAdventurerCard(game, cardDiv, type);
+        this.trainCarStock.onItemCreate = function (cardDiv, cardTypeId) { return setupTrainCarCardDiv(cardDiv, cardTypeId); };
         dojo.connect(this.trainCarStock, 'onChangeSelection', this, function (_, itemId) {
             if (_this.trainCarStock.getSelectedItems().length) {
                 //this.game.cardClick(0, Number(itemId));
@@ -152,8 +374,7 @@ var PlayerTable = /** @class */ (function () {
         this.destinationStock.selectionClass = 'selected';
         this.destinationStock.create(this.game, $("player-table-" + this.playerId + "-destinations"), CARD_WIDTH, CARD_HEIGHT);
         this.destinationStock.setSelectionMode(0);
-        this.destinationStock.setSelectionMode(0);
-        //this.destinationStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupCompanionCard(game, cardDiv, type);
+        this.destinationStock.onItemCreate = function (cardDiv, type) { return setupDestinationCardDiv(cardDiv, type); };
         dojo.connect(this.destinationStock, 'onChangeSelection', this, function (_, itemId) {
             if (_this.destinationStock.getSelectedItems().length) {
                 //this.game.cardClick(1, Number(itemId));
