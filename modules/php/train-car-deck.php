@@ -84,11 +84,11 @@ class TrainCarDeck {
         $card = $this->game->getTrainCarFromDb($this->trainCars->getCard($id));
 
         if ($card->location != 'table') {
-            throw new BgaSystemException("You can't take this visible card.");
+            throw new BgaUserException("You can't take this visible card.");
         }
 
         if ($isSecondCard && $card->type == 0 && $visibleLocomotiveAsTwoCards) {
-            throw new BgaSystemException("You can't take a locomotive as a second card.");
+            throw new BgaUserException("You can't take a locomotive as a second card.");
         }
 
         $spot = $card->location_arg;

@@ -132,17 +132,17 @@ trait ActionTrait {
         $route = $this->ROUTES[$routeId];
 
         if ($this->game->getUniqueIntValueFromDB( "SELECT count(*) FROM `claimed_routes` WHERE `route_id` = $routeId") > 0) {
-            throw new BgaSystemException("Route is already claimed.");
+            throw new BgaUserException("Route is already claimed.");
         }
 
         if ($this->getRemainingTrainCarsCount($playerId) < $route->number) {
-            throw new BgaSystemException("Not enough train cars to claim the route.");
+            throw new BgaUserException("Not enough train cars to claim the route.");
         }
         
         $colorAndLocomotiveCards = array_filter($trainCarsHand, function ($card) use ($routeColor) { return in_array($card->type, [0, $routeColor]); });
         
         if (count($colorAndLocomotiveCards) < $route->number) {
-            throw new BgaSystemException("Not enough cards to claim the route.");
+            throw new BgaUserException("Not enough cards to claim the route.");
         }
 
         usort($colorAndLocomotiveCards, function ($card1, $card2) {
