@@ -270,8 +270,7 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
-    public onVisibleTrainCarCardClick(id: number) {
-        const stock = this.trainCarSelection.visibleCardsStocks.find(stock => stock.items.some(item => Number(item.id) == id));
+    public onVisibleTrainCarCardClick(id: number, stock: Stock) {
         if (dojo.hasClass(`${stock.container_div.id}_item_${id}`, 'disabled')) {
             stock.unselectItem(''+id);
             return;
@@ -334,7 +333,7 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
-    notif_points(notif: Notif<NotifPointsArgs>) {
+    notif_points(notif: Notif<NotifPointsArgs>) {console.log(notif.args);
         this.setPoints(notif.args.playerId, notif.args.points);
     }
 

@@ -18,7 +18,7 @@ class TrainCarSelection {
             this.visibleCardsStocks[i].onItemCreate = (cardDiv, cardTypeId) => setupTrainCarCardDiv(cardDiv, cardTypeId);
             //this.visibleCardsStock.image_items_per_row = 9;
             this.visibleCardsStocks[i].centerItems = true;
-            dojo.connect(this.visibleCardsStocks[i], 'onChangeSelection', this, (_, itemId: string) => this.game.onVisibleTrainCarCardClick(Number(itemId)));
+            dojo.connect(this.visibleCardsStocks[i], 'onChangeSelection', this, (_, itemId: string) => this.game.onVisibleTrainCarCardClick(Number(itemId), this.visibleCardsStocks[i]));
             setupTrainCarCards(this.visibleCardsStocks[i]);
         }
 

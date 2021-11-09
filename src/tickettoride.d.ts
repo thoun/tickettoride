@@ -70,7 +70,7 @@ interface TicketToRideGamedatas {
 
 interface TicketToRideGame extends Game {
     getPlayerId(): number;
-    onVisibleTrainCarCardClick(itemId: number): void;
+    onVisibleTrainCarCardClick(itemId: number, stock: Stock): void;
     onHiddenTrainCarDeckClick(number: number): void;
     claimRoute(id: number): void;
     isColorBlindMode(): boolean;

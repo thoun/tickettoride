@@ -69,17 +69,18 @@ trait StateTrait {
         // completed/failed destinations 
         foreach ($players as $playerId => $playerDb) {
 
-            $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $currentPlayerId));
+            $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
 
             foreach ($destinations as $destination) {
                 $completed = $this->map->isDestinationCompleted($playerId, $destination);
                 $points = $completed ? $destination->points : -$destination->points;
                 
                 $message = clienttranslate('${player_name} ${gainsloses} ${delta} points with ${from} to ${to} destination');
-                $this->incScore($playerId, $route->points, $message, [
-                    'delta' => $completed ? $route->points : -$route->points,
-                    'from' => $route->from,
-                    'to' => $route->to,
+                $deltaPoints = $completed ? $destination->points : -$destination->points;
+                $this->incScore($playerId, $deltaPoints, $message, [
+                    'delta' => $destination->points,
+                    'from' => $this->CITIES[$destination->from],
+                    'to' => $this->CITIES[$destination->to],
                     'i18n' => ['gainsloses'],
                     'gainsloses' => $completed ? clienttranslate('gains') : clienttranslate('loses')
                 ]);

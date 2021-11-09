@@ -27,7 +27,7 @@ class DestinationSelection {
     public setCards(destinations: Destination[], minimumDestinations: number) {
         dojo.removeClass('destination-deck', 'hidden');
 
-        destinations.forEach(card => this.destinations.addToStockWithId(card.id, ''+card.id));
+        destinations.forEach(destination => this.destinations.addToStockWithId(destination.type_arg, ''+destination.id));
 
         this.minimumDestinations = minimumDestinations;
     }

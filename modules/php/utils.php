@@ -90,14 +90,12 @@ trait UtilTrait {
     function incScore(int $playerId, int $delta, $message = null, $messageArgs = []) {
         self::DbQuery("UPDATE player SET `player_score` = `player_score` + $delta where `player_id` = $playerId");
 
-        if ($message != null) {
-            self::notifyAllPlayers('points', $message, [
-                'playerId' => $playerId,
-                'player_name' => $this->getPlayerName($playerId),
-                'points' => $this->getPlayerScore($playerId),
-                'delta' => $delta,
-            ] + $messageArgs);
-        }
+        self::notifyAllPlayers('points', $message !== null ? $message : '', [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'points' => $this->getPlayerScore($playerId),
+            'delta' => $delta,
+        ] + $messageArgs);
     }
 
     function getUniqueIntValueFromDB(string $sql) {
