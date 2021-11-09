@@ -50,11 +50,20 @@ class PlayerTable {
         this.addDestinations(destinations);
     }
         
-    public addDestinations(destinations: Destination[]) {
-        destinations.forEach(destination => this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id), 'destination-stock');
+    public addDestinations(destinations: Destination[], originStock?: Stock) {
+        destinations.forEach(destination => {
+            const from = document.getElementById(`${originStock ? originStock.container_div.id : 'destination-stock'}_item_${destination.id}`)?.id || 'destination-stock';
+            this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id, from);
+        });
+        originStock?.removeAll();
     }
     
-    public addTrainCars(trainCars: TrainCar[]) {
-        trainCars.forEach(trainCar => this.trainCarStock.addToStockWithId(trainCar.type, ''+trainCar.id));
+    public addTrainCars(trainCars: TrainCar[], stocks?: TrainCarSelection) {
+        trainCars.forEach(trainCar => {
+            const stock = stocks ? stocks.visibleCardsStocks[trainCar.location_arg] : null;
+            const from = document.getElementById(`${stock ? stock.container_div.id : 'train-car-deck'}_item_${trainCar.id}`)?.id || 'train-car-deck';
+            this.trainCarStock.addToStockWithId(trainCar.type, ''+trainCar.id, from);
+            stock?.removeAll();
+        });
     }
 }

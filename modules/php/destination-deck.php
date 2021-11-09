@@ -123,7 +123,7 @@ class DestinationDeck {
             }
         }
 
-        /* TODO self::notifyAllPlayers('destinationsPicked', clienttranslate('${player_name} keeps ${number} destinations'), [
+        $this->game->notifyAllPlayers('destinationsPicked', clienttranslate('${player_name} keeps ${number} destinations'), [
             'playerId' => $playerId,
             'player_name' => $this->game->getPlayerName($playerId),
             'number' => count($ids),
@@ -133,6 +133,6 @@ class DestinationDeck {
                     'destinations' => $this->game->getDestinationsFromDb($this->destinations->getCards($ids)),
                 ],
             ],
-        ]);*/
+        ]);
     }
 }

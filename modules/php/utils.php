@@ -91,12 +91,12 @@ trait UtilTrait {
         self::DbQuery("UPDATE player SET `player_score` = `player_score` + $delta where `player_id` = $playerId");
 
         if ($message != null) {
-            /* TODO self::notifyAllPlayers('points', $message, [
+            self::notifyAllPlayers('points', $message, [
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerName($playerId),
                 'points' => $this->getPlayerScore($playerId),
                 'delta' => $delta,
-            ] + $messageArgs);*/
+            ] + $messageArgs);
         }
     }
 

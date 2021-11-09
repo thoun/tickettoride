@@ -89,6 +89,11 @@ interface EnteringChooseActionArgs {
     maxDestinationsPick: number;
 }
 
+interface EnteringDrawSecondCardArgs {
+    availableVisibleCards: TrainCar[];
+    maxHiddenCardsPick: number;
+}
+
 interface NotifPointsArgs {
     playerId: number;
     points: number;
@@ -99,7 +104,9 @@ interface NotifDestinationsPickedArgs {
     number: number;
     remainingDestinationsInDeck: number;
     _private: {
-        destinations: Destination[];
+        [playerId: number]: {
+            destinations: Destination[];
+        };
     };
 }
 
@@ -108,7 +115,9 @@ interface NotifTrainCarsPickedArgs {
     number: number;
     remainingTrainCarsInDeck: number;
     _private: {
-        cards: TrainCar[];
+        [playerId: number]: {
+            cards: TrainCar[];
+        };        
     };
 }
 

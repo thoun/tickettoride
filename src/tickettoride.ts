@@ -60,6 +60,8 @@ class TicketToRide implements TicketToRideGame {
             this.onEnteringEndScore(true);
         }
 
+        this.setupNotifications();
+
         log("Ending game setup");
     }
 
@@ -76,16 +78,24 @@ class TicketToRide implements TicketToRideGame {
             case 'chooseAction':
                 this.onEnteringChooseAction(args.args as EnteringChooseActionArgs);
                 break;
+            case 'drawSecondCard':
+                this.onEnteringDrawSecondCard(args.args as EnteringDrawSecondCardArgs);
+                break;
             case 'endScore':
                 this.onEnteringEndScore();
                 break;
         }
     }
 
-    onEnteringChooseAction(args: EnteringChooseActionArgs) {
+    private onEnteringChooseAction(args: EnteringChooseActionArgs) {
         this.trainCarSelection.setSelectableTopDeck((this as any).isCurrentPlayerActive(), args.maxHiddenCardsPick);
         
         this.map.setSelectableRoutes((this as any).isCurrentPlayerActive(), args.possibleRoutes);
+    }
+
+    private onEnteringDrawSecondCard(args: EnteringDrawSecondCardArgs) {
+        this.trainCarSelection.setSelectableTopDeck((this as any).isCurrentPlayerActive(), args.maxHiddenCardsPick);
+        this.trainCarSelection.setSelectableVisibleCards(args.availableVisibleCards);
     }
 
     private onEnteringEndScore(fromReload: boolean = false) {
@@ -104,6 +114,12 @@ class TicketToRide implements TicketToRideGame {
         switch (stateName) {
             case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
+                break;
+            case 'chooseAction':
+                this.map.setSelectableRoutes(false, []);
+                break;
+            case 'drawSecondCard':
+                this.trainCarSelection.removeSelectableVisibleCards();  
                 break;
         }
     }
@@ -255,6 +271,12 @@ class TicketToRide implements TicketToRideGame {
     }
 
     public onVisibleTrainCarCardClick(id: number) {
+        const stock = this.trainCarSelection.visibleCardsStocks.find(stock => stock.items.some(item => Number(item.id) == id));
+        if (dojo.hasClass(`${stock.container_div.id}_item_${id}`, 'disabled')) {
+            stock.unselectItem(''+id);
+            return;
+        }
+
         const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'drawSecondTableCard' : 'drawTableCard';
 
         if(!(this as any).checkAction(action)) {
@@ -317,16 +339,24 @@ class TicketToRide implements TicketToRideGame {
     }
 
     notif_destinationsPicked(notif: Notif<NotifDestinationsPickedArgs>) {
+        console.log('notif_destinationsPicked', notif.args);
         this.destinationCardCounters[notif.args.playerId].incValue(notif.args.number);
-        if (notif.args._private?.destinations) {
-            this.playerTable.addDestinations(notif.args._private.destinations);
+        const destinations = notif.args._private?.[this.getPlayerId()]?.destinations;
+        if (destinations) {
+            this.playerTable.addDestinations(destinations, this.destinationSelection.destinations);
+        } else {
+            // TODO notif to player board ?
         }
     }
 
     notif_trainCarPicked(notif: Notif<NotifTrainCarsPickedArgs>) {
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
-        if (notif.args._private?.cards) {
-            this.playerTable.addTrainCars(notif.args._private.cards);
+        console.log('notif_trainCarPicked', notif.args);
+        const cards = notif.args._private?.[this.getPlayerId()]?.cards;
+        if (cards) {
+            this.playerTable.addTrainCars(cards, this.trainCarSelection);
+        } else {
+            // TODO notif to player board ?
         }
     }
 

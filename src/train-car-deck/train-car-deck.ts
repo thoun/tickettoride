@@ -1,5 +1,5 @@
 class TrainCarSelection {
-    private visibleCardsStock: Stock;
+    public visibleCardsStocks: Stock[] = [];
 
     constructor(
         private game: TicketToRideGame,
@@ -9,16 +9,18 @@ class TrainCarSelection {
         document.getElementById('train-car-deck-hidden-pile1').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(1));
         document.getElementById('train-car-deck-hidden-pile2').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(2));
 
-        this.visibleCardsStock = new ebg.stock() as Stock;
-        this.visibleCardsStock.setSelectionAppearance('class');
-        this.visibleCardsStock.selectionClass = 'no-class-selection';
-        this.visibleCardsStock.setSelectionMode(1);
-        this.visibleCardsStock.create(game, $(`visible-train-cards-stock`), CARD_WIDTH, CARD_HEIGHT);
-        this.visibleCardsStock.onItemCreate = (cardDiv, cardTypeId) => setupTrainCarCardDiv(cardDiv, cardTypeId);
-        this.visibleCardsStock.image_items_per_row = 13;
-        this.visibleCardsStock.centerItems = true;
-        dojo.connect(this.visibleCardsStock, 'onChangeSelection', this, (_, itemId: string) => this.game.onVisibleTrainCarCardClick(Number(itemId)));
-        setupTrainCarCards(this.visibleCardsStock);
+        for (let i=1; i<=5; i++) {
+            this.visibleCardsStocks[i] = new ebg.stock() as Stock;
+            this.visibleCardsStocks[i].setSelectionAppearance('class');
+            this.visibleCardsStocks[i].selectionClass = 'no-class-selection';
+            this.visibleCardsStocks[i].setSelectionMode(1);
+            this.visibleCardsStocks[i].create(game, $(`visible-train-cards-stock${i}`), CARD_WIDTH, CARD_HEIGHT);
+            this.visibleCardsStocks[i].onItemCreate = (cardDiv, cardTypeId) => setupTrainCarCardDiv(cardDiv, cardTypeId);
+            //this.visibleCardsStock.image_items_per_row = 9;
+            this.visibleCardsStocks[i].centerItems = true;
+            dojo.connect(this.visibleCardsStocks[i], 'onChangeSelection', this, (_, itemId: string) => this.game.onVisibleTrainCarCardClick(Number(itemId)));
+            setupTrainCarCards(this.visibleCardsStocks[i]);
+        }
 
         this.setNewCardsOnTable(visibleCards);
     }
@@ -28,16 +30,31 @@ class TrainCarSelection {
         dojo.toggleClass('train-car-deck-hidden-pile1', 'hidden', number < 1);
         dojo.toggleClass('train-car-deck-hidden-pile2', 'hidden', number < 2);
     }
+    
+    public setSelectableVisibleCards(availableVisibleCards: TrainCar[]) {
+        for (let i=1; i<=5; i++) {
+            const stock = this.visibleCardsStocks[i];
+            stock.items.forEach(item => {
+                const itemId = Number(item.id);
+                if (!availableVisibleCards.some(card => card.id == itemId)) {
+                    document.getElementById(`${stock.container_div.id}_item_${itemId}`)?.classList.add('disabled');
+                }
+            });
+        }
+    }
+
+    public removeSelectableVisibleCards() {
+        for (let i=1; i<=5; i++) {
+            const stock = this.visibleCardsStocks[i];
+            stock.items.forEach(item => document.getElementById(`${stock.container_div.id}_item_${item.id}`)?.classList.remove('disabled'));
+        }
+    }
 
     public setNewCardsOnTable(cards: TrainCar[]) {
-        if (cards.length > 1) {
-            this.visibleCardsStock.removeAll();
-        }
-
-        const newWeights = [];
-        cards.forEach(card => newWeights[card.type] = card.location_arg);
-        this.visibleCardsStock.changeItemsWeight(newWeights);
-
-        cards.forEach(card => this.visibleCardsStock.addToStockWithId(card.type, ''+card.id));
+        cards.forEach(card => {
+            const spot = card.location_arg;
+            this.visibleCardsStocks[spot].removeAll();
+            this.visibleCardsStocks[spot].addToStockWithId(card.type, ''+card.id);
+        });
     }
 }

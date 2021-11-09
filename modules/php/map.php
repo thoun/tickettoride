@@ -36,8 +36,8 @@ class Map {
                 // we check if twin route is claimed
                 $twinRouteClaimedBy = null;
                 foreach($claimedRoutes as $claimedRoute) {
-                    if (intval($claimedRoute['route_id']) == $twinRoute->id) {
-                        $twinRouteClaimedBy = intval($claimedRoute['player_id']);
+                    if ($claimedRoute->routeId == $twinRoute->id) {
+                        $twinRouteClaimedBy = $claimedRoute->playerId;
                         break;
                     }
                 }

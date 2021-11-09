@@ -18,7 +18,7 @@ trait ActionTrait {
 
         $this->destinationDeck->keepInitialCards($playerId, $ids);
 
-        self::incStat($number, 'keptInitialDestinationCards', $playerId);
+        self::incStat(count($ids), 'keptInitialDestinationCards', $playerId);
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
     }
@@ -30,7 +30,7 @@ trait ActionTrait {
 
         $this->destinationDeck->keepAdditionalCards($playerId, $ids);
 
-        self::incStat($number, 'keptAdditionalDestinationCards', $playerId);
+        self::incStat(count($ids), 'keptAdditionalDestinationCards', $playerId);
         
         $this->gamestate->nextState('nextPlayer');
     }
@@ -84,7 +84,7 @@ trait ActionTrait {
         $this->gamestate->nextState('nextPlayer'); 
     }
   	
-    public function drawSecondTableCard() {
+    public function drawSecondTableCard(int $id) {
         self::checkAction('drawSecondTableCard'); 
         
         $playerId = intval(self::getActivePlayerId());
@@ -100,7 +100,7 @@ trait ActionTrait {
             self::incStat(1, 'collectedVisibleLocomotives', $playerId);
         }
 
-        $this->gamestate->nextState('drawSecondCard'); 
+        $this->gamestate->nextState('nextPlayer'); 
     }
   	
     public function drawDestinations() {
@@ -144,7 +144,7 @@ trait ActionTrait {
         $this->trainCars->moveCards($idsToRemove, 'discard');
 
         // save claimed route
-        $sql = "INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)";
+        self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
 
         // update score
         $points = $this->ROUTE_POINTS[$route->number];
@@ -152,9 +152,10 @@ trait ActionTrait {
 
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $route->number WHERE player_id = $playerId");
 
-        self::notifyAllPlayers('claimedRoute', clienttranslate('${player_name} gains ${delta} points by claiming route from ${from} to ${to} with ${number} train cars'), [
+        self::notifyAllPlayers('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s)'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
+            'points' => $points,
             'route' => $route,
             'from' => $this->CITIES[$route->from],
             'to' => $this->CITIES[$route->to],

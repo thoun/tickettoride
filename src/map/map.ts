@@ -181,6 +181,6 @@ class TtrMap {
     }
 
     public setClaimedRoutes(claimedRoutes: ClaimedRoute[]) {
-        claimedRoutes.forEach(claimedRoute => document.getElementById(`route${claimedRoute.routeId}`).style.borderColor = `#${this.players[claimedRoute.playerId].color}`);
+        claimedRoutes.forEach(claimedRoute => document.getElementById(`route${claimedRoute.routeId}`).style.borderColor = `#${this.players.find(player => Number(player.id) == claimedRoute.playerId).color}`);
     }
 }

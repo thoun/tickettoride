@@ -7,8 +7,8 @@ declare const g_gamethemeurl;
 
 declare const board: HTMLDivElement;*/
 
-const CARD_WIDTH = 150;
-const CARD_HEIGHT = 100;
+const CARD_WIDTH = 272;
+const CARD_HEIGHT = 178;
 
 function setupTrainCarCards(stock: Stock) {
     const trainCarsUrl = `${g_gamethemeurl}img/train-cards.jpg`;
@@ -47,8 +47,7 @@ const COLORS = [
   'GREEN',
 ];
 function setupTrainCarCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
-    const color = COLORS[Number(cardTypeId)];
-    cardDiv.innerHTML = `<span><strong>${color}</span></strong>`;
+    cardDiv.title = Number(cardTypeId) == 0 ? 'Locomotive' : COLORS[Number(cardTypeId)];
 }
 
 class DestinationCard {

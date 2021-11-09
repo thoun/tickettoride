@@ -69,9 +69,14 @@
   pointer-events: all;
 }
 
+#train-car-deck {
+  display: flex;
+}
+#train-car-deck .stock {
+  width: 272px;
+  height: 178px;
+}
 #train-car-deck .hidden-pile {
-  width: 150px;
-  height: 100px;
   background: gray;
   position: relative;
   display: flex;
@@ -124,4 +129,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.stockitem.disabled {
+  filter: contrast(0.6);
+  cursor: not-allowed;
 }

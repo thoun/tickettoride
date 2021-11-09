@@ -76,7 +76,7 @@ class TrainCarDeck {
 
         $cards = $this->game->getTrainCarsFromDb($this->trainCars->pickCards($number, 'deck', $playerId));
 
-        /* TODO $this->game->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes ${number} hidden train car card(s)'), [
+        $this->game->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes ${number} hidden train car card(s)'), [
             'playerId' => $playerId,
             'player_name' => $this->game->getPlayerName($playerId),
             'number' => $number,
@@ -86,7 +86,7 @@ class TrainCarDeck {
                     'cards' => $cards,
                 ],
             ],
-        ]);*/
+        ]);
     }
 
     /**
@@ -99,7 +99,7 @@ class TrainCarDeck {
             throw new BgaUserException("You can't take this visible card.");
         }
 
-        if ($isSecondCard && $card->type == 0 && $visibleLocomotiveAsTwoCards) {
+        if ($isSecondCard && $card->type == 0 && $this->visibleLocomotiveAsTwoCards) {
             throw new BgaUserException("You can't take a locomotive as a second card.");
         }
 
@@ -109,7 +109,7 @@ class TrainCarDeck {
 
         $this->placeNewCardOnTable($spot);
 
-        /* $this->game->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes a visible train car card'), [
+        $this->game->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes a visible train car card'), [
             'playerId' => $playerId,
             'player_name' => $this->game->getPlayerName($playerId),
             'number' => 1,
@@ -119,7 +119,7 @@ class TrainCarDeck {
                     'cards' => $this->game->getTrainCarsFromDb($this->trainCars->getCards([$id])),
                 ],
             ],
-        ]);*/
+        ]);
 
         $this->checkTooMuchLocomotives();
 
@@ -177,6 +177,6 @@ class TrainCarDeck {
             'cards' => [$card]
         ]);
 
-        return $cards;
+        return [$card];
     }
 }

@@ -1,5 +1,5 @@
 class DestinationSelection {
-    private destinations: Stock;
+    public destinations: Stock;
     public minimumDestinations: number;
 
     constructor(
