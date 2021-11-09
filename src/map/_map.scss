@@ -62,4 +62,13 @@
     border-color: black;
     pointer-events: all;
   }
+
+  &.space {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 35px;
+    height: 4px;
+    z-index: 5; // TODO TEMP
+  }
 }

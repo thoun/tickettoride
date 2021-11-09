@@ -366,8 +366,8 @@ class TicketToRide implements TicketToRideGame {
     notif_claimedRoute(notif: Notif<NotifClaimedRouteArgs>) {
         const playerId = notif.args.playerId;
         const route = notif.args.route;
-        this.trainCarCardCounters[playerId].incValue(-route.number);
-        this.trainCarCounters[playerId].incValue(-route.number);
+        this.trainCarCardCounters[playerId].incValue(-route.spaces);
+        this.trainCarCounters[playerId].incValue(-route.spaces);
         this.map.setClaimedRoutes([{
             playerId,
             routeId: route.id

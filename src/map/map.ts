@@ -1,12 +1,20 @@
 const POINT_CASE_SIZE = 25.5;
 const BOARD_POINTS_MARGIN = 38;
 
+class RouteSpace {
+    constructor(
+        public x: number,
+        public y: number,
+        public angle: number,
+    ) {}
+}
+
 class Route {
     constructor(
         public id: number,
         public from: number,
         public to: number,
-        public number: number,
+        public spaces: number | RouteSpace[],
         public color: number,
     ) {}
 }
@@ -81,7 +89,10 @@ const ROUTES = [
     new Route(66, 15, 23, 3, GRAY),
     new Route(67, 15, 30, 3, YELLOW),
     new Route(68, 15, 30, 3, PINK),
-    new Route(69, 16, 19, 6, RED),
+    new Route(69, 16, 19, [
+        new RouteSpace(1254, 805, 49),
+        new RouteSpace(1217, 769, 40),
+    ], RED),
     new Route(70, 17, 20, 3, BLUE),
     new Route(71, 17, 29, 5, BLACK),
     new Route(72, 17, 33, 3, GRAY),
@@ -131,8 +142,18 @@ class TtrMap {
         dojo.place(html, 'board');
 
         ROUTES.forEach(route => {
-            dojo.place(`<div id="route${route.id}" class="route">${CITIES[route.from]} to ${CITIES[route.to]}, ${route.number} ${COLORS[route.color]}</div>`, 'board');
-            document.getElementById(`route${route.id}`).addEventListener('click', () => this.game.claimRoute(route.id));   
+            if (typeof route.spaces === 'number') {
+                dojo.place(`<div id="route${route.id}" class="route">${CITIES[route.from]} to ${CITIES[route.to]}, ${route.spaces} ${COLORS[route.color]}</div>`, 'board');
+                document.getElementById(`route${route.id}`).addEventListener('click', () => this.game.claimRoute(route.id));   
+            } else {
+                route.spaces.forEach((space, spaceIndex) => {
+                    dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route space" 
+                        style="transform: translate(${space.x}px, ${space.y}px) rotate(${space.angle}deg)"
+                        title="${CITIES[route.from]} to ${CITIES[route.to]}, ${(route.spaces as any).length} ${COLORS[route.color]}"
+                    ></div>`, 'board');
+                    document.getElementById(`route${route.id}-space${spaceIndex}`).addEventListener('click', () => this.game.claimRoute(route.id));   
+                });
+            }
         });
 
         this.movePoints();
@@ -181,6 +202,19 @@ class TtrMap {
     }
 
     public setClaimedRoutes(claimedRoutes: ClaimedRoute[]) {
-        claimedRoutes.forEach(claimedRoute => document.getElementById(`route${claimedRoute.routeId}`).style.borderColor = `#${this.players.find(player => Number(player.id) == claimedRoute.playerId).color}`);
+        claimedRoutes.forEach(claimedRoute => {
+            const route = ROUTES.find(r => r.id == claimedRoute.routeId);
+            const color = `#${this.players.find(player => Number(player.id) == claimedRoute.playerId).color}`;
+            if (typeof route.spaces === 'number') {
+                document.getElementById(`route${claimedRoute.routeId}`).style.borderColor = color;
+            } else {
+                route.spaces.forEach((_, spaceIndex) => {
+                    const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
+                    spaceDiv.style.borderColor = color;
+                    spaceDiv.style.background = color;
+                });
+            }
+            
+        });
     }
 }

@@ -130,12 +130,20 @@ function setupDestinationCardDiv(cardDiv, cardTypeId) {
 }
 var POINT_CASE_SIZE = 25.5;
 var BOARD_POINTS_MARGIN = 38;
+var RouteSpace = /** @class */ (function () {
+    function RouteSpace(x, y, angle) {
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+    }
+    return RouteSpace;
+}());
 var Route = /** @class */ (function () {
-    function Route(id, from, to, number, color) {
+    function Route(id, from, to, spaces, color) {
         this.id = id;
         this.from = from;
         this.to = to;
-        this.number = number;
+        this.spaces = spaces;
         this.color = color;
     }
     return Route;
@@ -210,7 +218,10 @@ var ROUTES = [
     new Route(66, 15, 23, 3, GRAY),
     new Route(67, 15, 30, 3, YELLOW),
     new Route(68, 15, 30, 3, PINK),
-    new Route(69, 16, 19, 6, RED),
+    new Route(69, 16, 19, [
+        new RouteSpace(1254, 805, 49),
+        new RouteSpace(1217, 769, 40),
+    ], RED),
     new Route(70, 17, 20, 3, BLUE),
     new Route(71, 17, 29, 5, BLACK),
     new Route(72, 17, 33, 3, GRAY),
@@ -255,8 +266,16 @@ var TtrMap = /** @class */ (function () {
         });
         dojo.place(html, 'board');
         ROUTES.forEach(function (route) {
-            dojo.place("<div id=\"route" + route.id + "\" class=\"route\">" + CITIES[route.from] + " to " + CITIES[route.to] + ", " + route.number + " " + COLORS[route.color] + "</div>", 'board');
-            document.getElementById("route" + route.id).addEventListener('click', function () { return _this.game.claimRoute(route.id); });
+            if (typeof route.spaces === 'number') {
+                dojo.place("<div id=\"route" + route.id + "\" class=\"route\">" + CITIES[route.from] + " to " + CITIES[route.to] + ", " + route.spaces + " " + COLORS[route.color] + "</div>", 'board');
+                document.getElementById("route" + route.id).addEventListener('click', function () { return _this.game.claimRoute(route.id); });
+            }
+            else {
+                route.spaces.forEach(function (space, spaceIndex) {
+                    dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                        style=\"transform: translate(" + space.x + "px, " + space.y + "px) rotate(" + space.angle + "deg)\"\n                        title=\"" + CITIES[route.from] + " to " + CITIES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                    ></div>", 'board');
+                    document.getElementById("route" + route.id + "-space" + spaceIndex).addEventListener('click', function () { return _this.game.claimRoute(route.id); });
+                });
+            }
         });
         this.movePoints();
         this.setClaimedRoutes(claimedRoutes);
@@ -298,7 +317,20 @@ var TtrMap = /** @class */ (function () {
     };
     TtrMap.prototype.setClaimedRoutes = function (claimedRoutes) {
         var _this = this;
-        claimedRoutes.forEach(function (claimedRoute) { return document.getElementById("route" + claimedRoute.routeId).style.borderColor = "#" + _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; }).color; });
+        claimedRoutes.forEach(function (claimedRoute) {
+            var route = ROUTES.find(function (r) { return r.id == claimedRoute.routeId; });
+            var color = "#" + _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; }).color;
+            if (typeof route.spaces === 'number') {
+                document.getElementById("route" + claimedRoute.routeId).style.borderColor = color;
+            }
+            else {
+                route.spaces.forEach(function (_, spaceIndex) {
+                    var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
+                    spaceDiv.style.borderColor = color;
+                    spaceDiv.style.background = color;
+                });
+            }
+        });
     };
     return TtrMap;
 }());
@@ -749,8 +781,8 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.notif_claimedRoute = function (notif) {
         var playerId = notif.args.playerId;
         var route = notif.args.route;
-        this.trainCarCardCounters[playerId].incValue(-route.number);
-        this.trainCarCounters[playerId].incValue(-route.number);
+        this.trainCarCardCounters[playerId].incValue(-route.spaces);
+        this.trainCarCounters[playerId].incValue(-route.spaces);
         this.map.setClaimedRoutes([{
                 playerId: playerId,
                 routeId: route.id

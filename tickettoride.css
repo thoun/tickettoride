@@ -68,6 +68,14 @@
   border-color: black;
   pointer-events: all;
 }
+.route.space {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 35px;
+  height: 4px;
+  z-index: 5;
+}
 
 #train-car-deck {
   display: flex;
