@@ -129,7 +129,8 @@ class TicketToRide extends Table {
         self::initStat('player', 'playedTrainCars', 0);
         //self::initStat('table', 'averageClaimedRouteLength', 0); // only computed at the end
         //self::initStat('player', 'averageClaimedRouteLength', 0); // only computed at the end
-        //self::initStat('player', 'longestPath', 0); // player only // only computed at the end
+        //self::initStat('table', 'longestPath', 0); // only computed at the end
+        //self::initStat('player', 'longestPath', 0); // only computed at the end
 
         // setup the initial game situation here
 

@@ -76,8 +76,7 @@ trait StateTrait {
                 $points = $completed ? $destination->points : -$destination->points;
                 
                 $message = clienttranslate('${player_name} ${gainsloses} ${delta} points with ${from} to ${to} destination');
-                $deltaPoints = $completed ? $destination->points : -$destination->points;
-                $this->incScore($playerId, $deltaPoints, $message, [
+                $this->incScore($playerId, $points, $message, [
                     'delta' => $destination->points,
                     'from' => $this->CITIES[$destination->from],
                     'to' => $this->CITIES[$destination->to],
@@ -85,10 +84,10 @@ trait StateTrait {
                     'gainsloses' => $completed ? clienttranslate('gains') : clienttranslate('loses')
                 ]);
 
-                // TODO stats
-
-                //self::incStat(1, 'uncompletedDestinations');
-                //self::incStat(1, 'uncompletedDestinations', $playerId);
+                if (!$completed) {
+                    self::incStat(1, 'uncompletedDestinations');
+                    self::incStat(1, 'uncompletedDestinations', $playerId);
+                }
             }
         }
 
@@ -98,19 +97,29 @@ trait StateTrait {
             $longestPath = $this->map->getLongestPath($playerId);
             $playersLongestPaths[$playerId] = $longestPath;
 
-            /*$points = $this->getScoreLocations($player_id, intval($playerDb['pearls']));
-
-            $playersPoints[$player_id] += $points;
-            self::DbQuery("UPDATE player SET player_score = player_score + $points, player_score_locations = $points WHERE player_id = $player_id");
-            // TODO self::DbQuery("UPDATE player SET player_score_locations = $points WHERE player_id = $player_id");
-
-            self::notifyAllPlayers('scoreLocations', clienttranslate('${player_name} wins ${points} points with locations'), [
-                'playerId' => $player_id,
-                'player_name' => $playerDb['player_name'],
-                'points' => $points,
-            ]);*/
-            
             self::setStat($longestPath, 'longestPath', $playerId);
+        }
+
+        $longestPathBySize = [];
+        foreach ($playersLongestPaths as $playerId => $longestPath) {
+            $longestPathBySize[$longestPath] = array_key_exists($longestPath, $longestPathBySize) ?
+                array_merge($longestPathBySize[$longestPath], [$playerId]):
+                [$playerId];
+        }
+        $bestLongestPath = array_key_last($longestPathBySize);
+        $longestPathWinners = $longestPathBySize[$bestLongestPath];   
+        self::setStat($bestLongestPath, 'longestPath');
+        foreach ($longestPathWinners as $playerId) {
+            $points = POINTS_FOR_LONGEST_PATH;
+            $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${points} points with longest continuous path : ${trainCars} train cars'), [
+                'points' => $points,
+                'trainCars' => $bestLongestPath,
+            ]);
+
+            if (!$completed) {
+                self::incStat(1, 'uncompletedDestinations');
+                self::incStat(1, 'uncompletedDestinations', $playerId);
+            }
         }
 
         // averageClaimedRouteLength stat = playedTrainCars / claimedRoutes

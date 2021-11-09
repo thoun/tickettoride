@@ -110,6 +110,11 @@ $commonStats = [
         "name" => totranslate("Average claimed route length"),
         "type" => "float"
     ],
+    "longestPath" => [
+        "id" => 43,
+        "name" => totranslate("Longest continuous path"),
+        "type" => "int"
+    ],
 ];
 
 $stats_type = [
@@ -135,13 +140,6 @@ $stats_type = [
         "keptAdditionalDestinationCards" => [
             "id" => 34,
             "name" => totranslate("Kept additional destination cards"),
-            "type" => "int"
-        ],
-
-        // 40+ : train cars (meeples)
-        "longestPath" => [
-            "id" => 43,
-            "name" => totranslate("Longest continuous path"),
             "type" => "int"
         ],
     ],
