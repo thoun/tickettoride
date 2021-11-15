@@ -108,6 +108,8 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
+        $this->pickAdditionalDestinationCards($playerId);
+
         self::incStat(1, 'drawDestinationsAction');
         self::incStat(1, 'drawDestinationsAction', $playerId);
 

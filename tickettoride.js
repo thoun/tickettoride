@@ -125,7 +125,7 @@ var DESTINATIONS = [
     new DestinationCard(31, 36, 14, 11), // Winnipeg	Little Rock	11
 ];
 function setupDestinationCardDiv(cardDiv, cardTypeId) {
-    var destination = DESTINATIONS[Number(cardTypeId)];
+    var destination = DESTINATIONS.find(function (d) { return d.id == Number(cardTypeId); });
     cardDiv.innerHTML = "<span><strong>" + CITIES[destination.from] + "</strong> to <strong>" + CITIES[destination.to] + "</strong> (<strong>" + destination.points + "</strong>)</span>";
 }
 var POINT_CASE_SIZE = 25.5;

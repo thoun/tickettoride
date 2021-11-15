@@ -25,12 +25,6 @@ trait StateTrait {
         $this->gamestate->setAllPlayersMultiactive();
     }
 
-    function stChooseAdditionalDestinations() {  
-        $playerId = self::getActivePlayerId();
-
-        $this->pickAdditionalDestinationCards($playerId);
-    }
-
     function stNextPlayer() {
         $playerId = self::getActivePlayerId();
 

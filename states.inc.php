@@ -128,7 +128,6 @@ $playerActionsGameStates = [
         "description" => clienttranslate('${actplayer} must choose destination tickets'),
         "descriptionmyturn" => clienttranslate('${you} must choose destination tickets'),
         "type" => "activeplayer",
-        "action" => "stChooseAdditionalDestinations",
         "args" => "argChooseAdditionalDestinations",
         "possibleactions" => [ "chooseAdditionalDestinations" ],
         "transitions" => [

@@ -19,11 +19,9 @@ trait ArgsTrait {
 
         foreach($playersIds as $playerId) {
             $private[$playerId] = [
-                'destinations' => $this->pickInitialDestinationCards($playerId),
+                'destinations' => $this->getPickedDestinationCards($playerId),
             ];
         }
-
-        $destinations = $this->getPickedDestinationCards($playerId);
 
         return [
             'minimum' => 2,
