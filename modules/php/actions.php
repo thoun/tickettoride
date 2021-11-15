@@ -16,7 +16,7 @@ trait ActionTrait {
         
         $playerId = intval(self::getCurrentPlayerId());
 
-        $this->destinationDeck->keepInitialCards($playerId, $ids);
+        $this->keepInitialDestinationCards($playerId, $ids);
 
         self::incStat(count($ids), 'keptInitialDestinationCards', $playerId);
         
@@ -28,7 +28,7 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $this->destinationDeck->keepAdditionalCards($playerId, $ids);
+        $this->keepAdditionalDestinationCards($playerId, $ids);
 
         self::incStat(count($ids), 'keptAdditionalDestinationCards', $playerId);
         
@@ -105,6 +105,8 @@ trait ActionTrait {
   	
     public function drawDestinations() {
         self::checkAction('drawDestinations');
+        
+        $playerId = intval(self::getActivePlayerId());
 
         self::incStat(1, 'drawDestinationsAction');
         self::incStat(1, 'drawDestinationsAction', $playerId);

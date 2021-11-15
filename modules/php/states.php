@@ -15,7 +15,7 @@ trait StateTrait {
         $playersIds = $this->getPlayersIds();
 
         foreach($playersIds as $playerId) {
-            $this->destinationDeck->pickInitialCards($playerId);
+            $this->pickInitialDestinationCards($playerId);
         }
         
         $this->gamestate->nextState('');
@@ -28,7 +28,7 @@ trait StateTrait {
     function stChooseAdditionalDestinations() {  
         $playerId = self::getActivePlayerId();
 
-        $this->destinationDeck->pickAdditionalCards($playerId);
+        $this->pickAdditionalDestinationCards($playerId);
     }
 
     function stNextPlayer() {

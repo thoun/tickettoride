@@ -8,6 +8,11 @@ define('VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS', true); // Says if it is possib
 define('RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES', 3); // Resets visible cards when 3 locomotives are visible (null means disabled)
 define('TRAIN_CARS_NUMBER_TO_START_LAST_TURN', 2); // 2 means 0, 1, or 2 will start last turn
 define('TRAIN_CARS_PER_PLAYER', 45);
+define('INITIAL_DESTINATION_CARD_PICK', 3); // Number of destinations cards shown at the beginning.
+define('INITIAL_DESTINATION_MINIMUM_KEPT', 2); // Minimum number of destinations cards to keep at the beginning.
+define('ADDITIONAL_DESTINATION_CARD_PICK', 3); // Number of destinations cards shown at pick destination action.
+define('ADDITIONAL_DESTINATION_MINIMUM_KEPT', 1); // Minimum number of destinations cards to keep at pick destination action.
+define('UNUSED_DESTINATIONS_GO_TO_DECK_BOTTOM', true); // Indicates if unpicked destinations cards go back to the bottom of the deck.
 define('POINTS_FOR_LONGEST_PATH', 10); // points for maximum longest countinuous path (null means disabled)
 define('POINTS_FOR_GLOBETROTTER', null); // points for maximum completed destinations (null means disabled)
 define('MINIMUM_PLAYER_FOR_DOUBLE_ROUTES', 4); // 4 means 2-3 players cant use double routes

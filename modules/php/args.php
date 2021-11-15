@@ -19,11 +19,11 @@ trait ArgsTrait {
 
         foreach($playersIds as $playerId) {
             $private[$playerId] = [
-                'destinations' => $this->destinationDeck->pickInitialCards($playerId),
+                'destinations' => $this->pickInitialDestinationCards($playerId),
             ];
         }
 
-        $destinations = $this->destinationDeck->getPickedCards($playerId);
+        $destinations = $this->getPickedDestinationCards($playerId);
 
         return [
             'minimum' => 2,
@@ -35,7 +35,7 @@ trait ArgsTrait {
     function argChooseAdditionalDestinations() {
         $playerId = intval(self::getActivePlayerId());
 
-        $destinations = $this->destinationDeck->getPickedCards($playerId);
+        $destinations = $this->getPickedDestinationCards($playerId);
 
         return [
             'minimum' => 1,
@@ -55,7 +55,7 @@ trait ArgsTrait {
 
         $possibleRoutes = $this->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
         $maxHiddenCardsPick = min(2, $this->getRemainingTrainCarCardsInDeck(true));
-        $maxDestinationsPick = min($this->destinationDeck->getAdditionalCardPick(), $this->destinationDeck->getRemainingTrainCarCardsInDeck());
+        $maxDestinationsPick = min(ADDITIONAL_DESTINATION_CARD_PICK, $this->getRemainingDestinationCardsInDeck());
 
         return [
             'possibleRoutes' => $possibleRoutes,

@@ -39,11 +39,7 @@ class TicketToRide extends Table {
     use ArgsTrait;
     use MapTrait;
     use TrainCarDeckTrait;
-
-    /* Object responsible of Destination cards that can be picked (deck). */
-    private $destinationDeck;
-    /* Object responsible of Train cards that can be picked (deck and table). */
-    private $trainCarDeck;
+    use DestinationDeckTrait;
 
 	function __construct() {
         parent::__construct();
@@ -53,7 +49,7 @@ class TicketToRide extends Table {
         ]);
         
         $this->destinations = self::getNew("module.common.deck");
-        $this->destinationDeck = new DestinationDeck($this, 3, 2);
+        $this->destinations->init("destination");
 		
         $this->trainCars = self::getNew("module.common.deck");
         $this->trainCars->init("traincar"); 
@@ -132,7 +128,7 @@ class TicketToRide extends Table {
 
         // setup the initial game situation here
 
-        $this->destinationDeck->createDestinations();
+        $this->createDestinations();
 
         $this->createTrainCars();
         // give 4 to each player
@@ -183,7 +179,7 @@ class TicketToRide extends Table {
 
         // deck counters
         $player['trainCarDeckCount'] = $this->getRemainingTrainCarCardsInDeck();
-        $player['destinationDeckCount'] = $this->destinationDeck->getRemainingTrainCarCardsInDeck();
+        $player['destinationDeckCount'] = $this->getRemainingDestinationCardsInDeck();
         
         $stateName = $this->gamestate->state()['name']; 
         $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';

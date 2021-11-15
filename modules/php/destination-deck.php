@@ -2,37 +2,13 @@
 
 require_once(__DIR__.'/objects/destination.php');
 
-class DestinationDeck {
-    /** Access to main game functions. */
-    private /*object*/ $game;
-    /** Number of destinations cards shown at the beginning. */
-    private /*int*/ $initialCardPick;
-    /** Minimum number of destinations cards to keep at the beginning. */
-    private /*int*/ $minimumInitialCardKept;
-    /** Number of destinations cards shown at pick destination action. */
-    private /*int*/ $additionalCardPick;
-    /** Minimum number of destinations cards to keep at pick destination action. */
-    private /*int*/ $minimumAdditionalCardKept;
-    /** Indicates if unpicked destinations cards go back to the bottom of the deck. */
-    private /*bool*/ $unusedGoToDeckBottom;
-
-    function __construct(object &$game, int $initialCardPick = 3, int $minimumInitialCardKept = 2, int $additionalCardPick = 3, int $minimumAdditionalCardKept = 1, bool $unusedGoToDeckBottom = true) {
-        $this->game = $game;
-        $this->destinations = $game->destinations;
-        $this->initialCardPick = $initialCardPick;
-        $this->minimumInitialCardKept = $minimumInitialCardKept;
-        $this->additionalCardPick = $additionalCardPick;
-        $this->minimumAdditionalCardKept = $minimumAdditionalCardKept;
-        $this->unusedGoToDeckBottom = $unusedGoToDeckBottom;
-
-        $this->destinations->init("destination");  
-	}
+trait DestinationDeckTrait {
 
     /**
-     * Create cards.
+     * Create destination cards.
      */
     public function createDestinations() {
-        foreach($this->game->DESTINATIONS as $type => $typeDestinations) {
+        foreach($this->DESTINATIONS as $type => $typeDestinations) {
             foreach($typeDestinations as $typeArg => $destination) {
                 $destinations[] = [ 'type' => 1, 'type_arg' => $typeArg, 'nbr' => 1];
             }
@@ -40,71 +16,70 @@ class DestinationDeck {
         $this->destinations->createCards($destinations, 'deck');
         $this->destinations->shuffle('deck');
     }
-
-    /**
-     * Return the number of card to pick when the player draw new destinations.
-     */
-    public function getAdditionalCardPick() {
-        return $this->additionalCardPick;
-    }
 	
     /**
-     * Pick cards for beginning choice.
+     * Pick destination cards for beginning choice.
      */
-    public function pickInitialCards(int $playerId) {
-		return $this->pickCards($playerId, $this->initialCardPick);
+    public function pickInitialDestinationCards(int $playerId) {
+		return $this->pickDestinationCards($playerId, INITIAL_DESTINATION_CARD_PICK);
     }	
 
     /**
-     * Select kept cards for beginning choice. 
-     * Unused cards are set back on the deck or discarded.
+     * Select kept destination cards for beginning choice. 
+     * Unused destination cards are set back on the deck or discarded.
      */
-    public function keepInitialCards(int $playerId, array $ids) {
-		$this->keepCards($playerId, $ids, $this->minimumInitialCardKept);
+    public function keepInitialDestinationCards(int $playerId, array $ids) {
+		$this->keepDestinationCards($playerId, $ids, INITIAL_DESTINATION_MINIMUM_KEPT);
     }	
 	
     /**
-     * Pick cards for pick destination action.
+     * Pick destination cards for pick destination action.
      */
-    public function pickAdditionalCards(int $playerId) {
-		return $this->pickCards($playerId, $this->additionalCardPick);
+    public function pickAdditionalDestinationCards(int $playerId) {
+		return $this->pickDestinationCards($playerId, ADDITIONAL_DESTINATION_CARD_PICK);
     }	
 
     /**
-     * Select kept cards for pick destination action. 
-     * Unused cards are set back on the deck or discarded.
+     * Select kept destination cards for pick destination action. 
+     * Unused destination cards are set back on the deck or discarded.
      */
-    public function keepAdditionalCards(int $playerId, array $ids) {
-		$this->keepCards($playerId, $ids, $this->minimumAdditionalCardKept);
+    public function keepAdditionalDestinationCards(int $playerId, array $ids) {
+		$this->keepDestinationCards($playerId, $ids, ADDITIONAL_DESTINATION_MINIMUM_KEPT);
     }
 
     /**
-     * Get picked cards (cards player can choose).
+     * Get destination picked cards (cards player can choose).
      */
-    public function getPickedCards(int $playerId) {
-        $cards = $this->game->getDestinationsFromDb($this->destinations->getCardsInLocation("pick$playerId"));
+    public function getPickedDestinationCards(int $playerId) {
+        $cards = $this->getDestinationsFromDb($this->destinations->getCardsInLocation("pick$playerId"));
         return $cards;
     }
 
     /**
-     * get remaining cards in deck.
+     * get remaining destination cards in deck.
      */
-    public function getRemainingTrainCarCardsInDeck() {
+    public function getRemainingDestinationCardsInDeck() {
         $remaining = intval($this->destinations->countCardInLocation('deck'));
         return $remaining;
     }
 
-    private function pickCards($playerId, int $number) {
-        $cards = $this->game->getDestinationsFromDb($this->destinations->pickCardsForLocation($number, 'deck', "pick$playerId"));
+    /**
+     * place a number of destinations cards to pick$playerId.
+     */
+    private function pickDestinationCards($playerId, int $number) {
+        $cards = $this->getDestinationsFromDb($this->destinations->pickCardsForLocation($number, 'deck', "pick$playerId"));
         return $cards;
     }
 
-    private function keepCards(int $playerId, array $ids, int $minimum) {
+    /**
+     * move selected cards to player hand, and empty pick$playerId.
+     */
+    private function keepDestinationCards(int $playerId, array $ids, int $minimum) {
         if (count($ids) < $minimum) {
             throw new BgaUserException("You must keep at least $minimum cards.");
         }
 
-        if (count($ids) > 0 && $this->game->getUniqueIntValueFromDB("SELECT count(*) FROM destination WHERE `card_location` != 'pick$playerId' AND `card_id` in (".implode(', ', $ids).")") > 0) {
+        if (count($ids) > 0 && $this->getUniqueIntValueFromDB("SELECT count(*) FROM destination WHERE `card_location` != 'pick$playerId' AND `card_id` in (".implode(', ', $ids).")") > 0) {
             throw new BgaUserException("Selected cards are not available.");
         }
 
@@ -112,10 +87,10 @@ class DestinationDeck {
 
         $remainingCardsInPick = intval($this->destinations->countCardInLocation("pick$playerId"));
         if ($remainingCardsInPick > 0) {
-            if ($this->unusedGoToDeckBottom) {
+            if (UNUSED_DESTINATIONS_GO_TO_DECK_BOTTOM) {
                 $this->destinations->shuffle("pick$playerId");
                 // we put remaining cards in pick at the bottom of the deck
-                $this->game->DbQuery("UPDATE destination SET `card_location_arg` = card_location_arg + $remainingCardsInPick WHERE `card_location` = 'deck'");
+                $this->DbQuery("UPDATE destination SET `card_location_arg` = card_location_arg + $remainingCardsInPick WHERE `card_location` = 'deck'");
                 $this->destinations->moveAllCardsInLocationKeepOrder("pick$playerId", 'deck');
             } else {
                 // we discard remaining cards in pick
@@ -123,14 +98,14 @@ class DestinationDeck {
             }
         }
 
-        $this->game->notifyAllPlayers('destinationsPicked', clienttranslate('${player_name} keeps ${number} destinations'), [
+        $this->notifyAllPlayers('destinationsPicked', clienttranslate('${player_name} keeps ${number} destinations'), [
             'playerId' => $playerId,
-            'player_name' => $this->game->getPlayerName($playerId),
+            'player_name' => $this->getPlayerName($playerId),
             'number' => count($ids),
-            'remainingDestinationsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+            'remainingDestinationsInDeck' => $this->getRemainingDestinationCardsInDeck(),
             '_private' => [
                 $playerId => [
-                    'destinations' => $this->game->getDestinationsFromDb($this->destinations->getCards($ids)),
+                    'destinations' => $this->getDestinationsFromDb($this->destinations->getCards($ids)),
                 ],
             ],
         ]);
