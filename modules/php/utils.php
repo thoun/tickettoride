@@ -113,7 +113,7 @@ trait UtilTrait {
         $alreadyCompleted = $this->getCompletedDestinationsIds($playerId);
 
         foreach($handDestinations as $destination) {
-            if (!in_array($destination->id, $alreadyCompleted) && $this->map->isDestinationCompleted($playerId, $destination)) {
+            if (!in_array($destination->id, $alreadyCompleted) && $this->isDestinationCompleted($playerId, $destination)) {
                 self::DbQuery("UPDATE `destination` SET `completed` = 1 where `card_id` = $destination->id");
 
                 // TODO notif

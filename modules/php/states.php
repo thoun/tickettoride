@@ -72,7 +72,7 @@ trait StateTrait {
             $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
 
             foreach ($destinations as $destination) {
-                $completed = $this->map->isDestinationCompleted($playerId, $destination);
+                $completed = $this->isDestinationCompleted($playerId, $destination);
                 $points = $completed ? $destination->points : -$destination->points;
                 
                 $message = clienttranslate('${player_name} ${gainsloses} ${delta} points with ${from} to ${to} destination');
@@ -92,34 +92,40 @@ trait StateTrait {
         }
 
         // Longest continuous path 
-        $playersLongestPaths = [];
-        foreach ($players as $playerId => $playerDb) {
-            $longestPath = $this->map->getLongestPath($playerId);
-            $playersLongestPaths[$playerId] = $longestPath;
+        if (POINTS_FOR_LONGEST_PATH !== null) {
+            $playersLongestPaths = [];
+            foreach ($players as $playerId => $playerDb) {
+                $longestPath = $this->getLongestPath($playerId);
+                $playersLongestPaths[$playerId] = $longestPath;
 
-            self::setStat($longestPath, 'longestPath', $playerId);
-        }
-
-        $longestPathBySize = [];
-        foreach ($playersLongestPaths as $playerId => $longestPath) {
-            $longestPathBySize[$longestPath] = array_key_exists($longestPath, $longestPathBySize) ?
-                array_merge($longestPathBySize[$longestPath], [$playerId]):
-                [$playerId];
-        }
-        $bestLongestPath = array_key_last($longestPathBySize);
-        $longestPathWinners = $longestPathBySize[$bestLongestPath];   
-        self::setStat($bestLongestPath, 'longestPath');
-        foreach ($longestPathWinners as $playerId) {
-            $points = POINTS_FOR_LONGEST_PATH;
-            $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${points} points with longest continuous path : ${trainCars} train cars'), [
-                'points' => $points,
-                'trainCars' => $bestLongestPath,
-            ]);
-
-            if (!$completed) {
-                self::incStat(1, 'uncompletedDestinations');
-                self::incStat(1, 'uncompletedDestinations', $playerId);
+                self::setStat($longestPath, 'longestPath', $playerId);
             }
+
+            $longestPathBySize = [];
+            foreach ($playersLongestPaths as $playerId => $longestPath) {
+                $longestPathBySize[$longestPath] = array_key_exists($longestPath, $longestPathBySize) ?
+                    array_merge($longestPathBySize[$longestPath], [$playerId]):
+                    [$playerId];
+            }
+            $bestLongestPath = array_key_last($longestPathBySize);
+            $longestPathWinners = $longestPathBySize[$bestLongestPath];   
+            self::setStat($bestLongestPath, 'longestPath');
+            foreach ($longestPathWinners as $playerId) {
+                $points = POINTS_FOR_LONGEST_PATH;
+                $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${points} points with longest continuous path : ${trainCars} train cars'), [
+                    'points' => $points,
+                    'trainCars' => $bestLongestPath,
+                ]);
+
+                if (!$completed) {
+                    self::incStat(1, 'uncompletedDestinations');
+                    self::incStat(1, 'uncompletedDestinations', $playerId);
+                }
+            }
+        }
+
+        // Globetrotter
+        if (POINTS_FOR_GLOBETROTTER !== null) {
         }
 
         // averageClaimedRouteLength stat = playedTrainCars / claimedRoutes

@@ -24,8 +24,8 @@ require_once('modules/php/utils.php');
 require_once('modules/php/states.php');
 require_once('modules/php/args.php');
 require_once('modules/php/actions.php');
-
 require_once('modules/php/map.php');
+
 require_once('modules/php/train-car-deck.php');
 require_once('modules/php/destination-deck.php');
 
@@ -38,6 +38,7 @@ class TicketToRide extends Table {
     use ActionTrait;
     use StateTrait;
     use ArgsTrait;
+    use MapTrait;
 
     /* Object responsible of the map and meeple on it. */
     private $map;
@@ -51,9 +52,7 @@ class TicketToRide extends Table {
         
         self::initGameStateLabels([
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
-        ]);  
-
-        $this->map = new Map($this);
+        ]);
         
         $this->destinations = self::getNew("module.common.deck");
         $this->destinationDeck = new DestinationDeck($this, 3, 2);

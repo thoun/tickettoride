@@ -129,7 +129,7 @@ trait ActionTrait {
         }
         
         $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
-        $colorAndLocomotiveCards = $this->map->canPayForRoute($route, $trainCarsHand, $remainingTrainCars);
+        $colorAndLocomotiveCards = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars);
         
         if ($colorAndLocomotiveCards == null || count($colorAndLocomotiveCards) < $route->number) {
             throw new BgaUserException("Not enough cards to claim the route.");

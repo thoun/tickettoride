@@ -2,22 +2,17 @@
 
 require_once(__DIR__.'/objects/route.php');
 
-class Map {
-    /** Access to main game functions. */
-    private /*object*/ $game;
-    private /*int*/ $minimumPlayerForDoubleRoutes;
-
-    function __construct(object &$game, int $minimumPlayerForDoubleRoutes = 4) {
-        $this->game = $game;
-        $this->minimumPlayerForDoubleRoutes = $minimumPlayerForDoubleRoutes;
-	}
+trait MapTrait {
 
     /**
-     * List routes a player can claim.
+     * List routes a player can claim. Player can claim only if :
+     * - he got enough train cars & train car cards
+     * - it is not already claimed
+     * - player count allows it (if double route)
      */
     public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars) {
         $allRoutes = $this->getAllRoutes();
-        $claimedRoutes = $this->game->getClaimedRoutes();
+        $claimedRoutes = $this->getClaimedRoutes();
         $claimedRoutesIds = array_map(function($claimedRoute) { return $claimedRoute->routeId; }, array_values($claimedRoutes));
 
         // remove routes already claimed
@@ -60,7 +55,7 @@ class Map {
      * Get the longest continuous path for a player.
      */
     public function getLongestPath(int $playerId) {
-        $claimedRoutes = $this->game->getClaimedRoutes($playerId);
+        $claimedRoutes = $this->getClaimedRoutes($playerId);
         $claimedRoutesIds = array_map(function($claimedRoute) { return $claimedRoute->routeId; }, array_values($claimedRoutes));
 
         $longestPath = 0;
@@ -80,7 +75,7 @@ class Map {
      * Indicates if destination is completed (continuous path linking both cities).
      */
     public function isDestinationCompleted(int $playerId, object $destination) {
-        $claimedRoutes = $this->game->getClaimedRoutes($playerId);
+        $claimedRoutes = $this->getClaimedRoutes($playerId);
         $claimedRoutesIds = array_map(function($claimedRoute) { return $claimedRoute->routeId; }, array_values($claimedRoutes));
 
         $citiesConnectedToFrom = $this->getAccessibleCitiesFrom($destination->from, [$destination->from], $claimedRoutesIds);
@@ -89,13 +84,13 @@ class Map {
     }
 
     public function getAllRoutes() {
-        $allRoutes = $this->game->ROUTES;
+        $allRoutes = $this->ROUTES;
         array_walk($allRoutes, function(&$route, $id) { $route->id = $id; });
         return $allRoutes;
     }
     
     private function isDoubleRouteAllowed() {
-        return $this->game->getPlayerCount() >= $this->minimumPlayerForDoubleRoutes;
+        return $this->getPlayerCount() >= MINIMUM_PLAYER_FOR_DOUBLE_ROUTES;
     }
 
     /**
@@ -169,7 +164,7 @@ class Map {
     }
 
     private function getLongestPathFromRouteId(int $fromRouteId, array $claimedRoutesIds) {
-        $fromRoute = $this->game->ROUTES[$fromRouteId];
+        $fromRoute = $this->ROUTES[$fromRouteId];
 
         return $fromRoute->number + max(
             $this->getLongestPathFromCity($fromRoute->from, [$fromRoute->id], $claimedRoutesIds),

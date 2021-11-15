@@ -1,10 +1,15 @@
 <?php
 
-define('TRAIN_CARS_NUMBER_TO_START_LAST_TURN', 2);
+/* 
+ * Game version 
+ */
+define('TRAIN_CARS_NUMBER_TO_START_LAST_TURN', 2); // 2 means 0, 1, or 2 will start last turn
 define('TRAIN_CARS_PER_PLAYER', 45);
+define('POINTS_FOR_LONGEST_PATH', 10);
+define('POINTS_FOR_GLOBETROTTER', null); // null means no globetrotter card in this edition
+define('MINIMUM_PLAYER_FOR_DOUBLE_ROUTES', 4); // 4 means 2-3 players cant use double routes
 define('NUMBER_OF_LOCOMOTIVE_CARDS', 14);
 define('NUMBER_OF_COLORED_CARDS', 12);
-define('POINTS_FOR_LONGEST_PATH', 10);
 
 /* 
  * Colors 
