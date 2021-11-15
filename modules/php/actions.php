@@ -40,7 +40,7 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $this->trainCarDeck->drawFromDeck($playerId, $number);
+        $this->drawTrainCarCardsFromDeck($playerId, $number);
 
         self::incStat($number, 'collectedTrainCarCards');
         self::incStat($number, 'collectedTrainCarCards', $playerId);
@@ -55,7 +55,7 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $card = $this->trainCarDeck->drawFromTable($playerId, $id);
+        $card = $this->drawTrainCarCardsFromTable($playerId, $id);
 
         self::incStat(1, 'collectedTrainCarCards');
         self::incStat(1, 'collectedTrainCarCards', $playerId);
@@ -74,7 +74,7 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $this->trainCarDeck->drawFromDeck($playerId, 1, true);
+        $this->drawTrainCarCardsFromDeck($playerId, 1, true);
 
         self::incStat(1, 'collectedTrainCarCards');
         self::incStat(1, 'collectedTrainCarCards', $playerId);
@@ -89,7 +89,7 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $card = $this->trainCarDeck->drawFromTable($playerId, $id, true);
+        $card = $this->drawTrainCarCardsFromTable($playerId, $id, true);
 
         self::incStat(1, 'collectedTrainCarCards');
         self::incStat(1, 'collectedTrainCarCards', $playerId);

@@ -25,7 +25,6 @@ require_once('modules/php/states.php');
 require_once('modules/php/args.php');
 require_once('modules/php/actions.php');
 require_once('modules/php/map.php');
-
 require_once('modules/php/train-car-deck.php');
 require_once('modules/php/destination-deck.php');
 
@@ -39,9 +38,8 @@ class TicketToRide extends Table {
     use StateTrait;
     use ArgsTrait;
     use MapTrait;
+    use TrainCarDeckTrait;
 
-    /* Object responsible of the map and meeple on it. */
-    private $map;
     /* Object responsible of Destination cards that can be picked (deck). */
     private $destinationDeck;
     /* Object responsible of Train cards that can be picked (deck and table). */
@@ -58,7 +56,8 @@ class TicketToRide extends Table {
         $this->destinationDeck = new DestinationDeck($this, 3, 2);
 		
         $this->trainCars = self::getNew("module.common.deck");
-        $this->trainCarDeck = new TrainCarDeck($this);
+        $this->trainCars->init("traincar"); 
+        $this->trainCars->autoreshuffle = true;
 	}
 	
     protected function getGameName() {
@@ -135,9 +134,9 @@ class TicketToRide extends Table {
 
         $this->destinationDeck->createDestinations();
 
-        $this->trainCarDeck->createTrainCars();
+        $this->createTrainCars();
         // give 4 to each player
-        $this->trainCarDeck->giveInitialCards(array_keys($players));
+        $this->giveInitialTrainCarCards(array_keys($players));
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -167,7 +166,7 @@ class TicketToRide extends Table {
         // Gather all information about current game situation (visible by player $currentPlayerId).
 
         $result['claimedRoutes'] = $this->getClaimedRoutes();
-        $result['visibleTrainCards'] = $this->trainCarDeck->getVisibleCards();
+        $result['visibleTrainCards'] = $this->getVisibleTrainCarCards();
 
         // private data : current player hidden informations
         $result['handTrainCars'] = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $currentPlayerId));
@@ -183,8 +182,8 @@ class TicketToRide extends Table {
         }
 
         // deck counters
-        $player['trainCarDeckCount'] = $this->trainCarDeck->getRemainingCardsInDeck();
-        $player['destinationDeckCount'] = $this->destinationDeck->getRemainingCardsInDeck();
+        $player['trainCarDeckCount'] = $this->getRemainingTrainCarCardsInDeck();
+        $player['destinationDeckCount'] = $this->destinationDeck->getRemainingTrainCarCardsInDeck();
         
         $stateName = $this->gamestate->state()['name']; 
         $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';

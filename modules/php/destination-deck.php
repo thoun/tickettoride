@@ -89,7 +89,7 @@ class DestinationDeck {
     /**
      * get remaining cards in deck.
      */
-    public function getRemainingCardsInDeck() {
+    public function getRemainingTrainCarCardsInDeck() {
         $remaining = intval($this->destinations->countCardInLocation('deck'));
         return $remaining;
     }
@@ -127,7 +127,7 @@ class DestinationDeck {
             'playerId' => $playerId,
             'player_name' => $this->game->getPlayerName($playerId),
             'number' => count($ids),
-            'remainingDestinationsInDeck' => $this->getRemainingCardsInDeck(),
+            'remainingDestinationsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
             '_private' => [
                 $playerId => [
                     'destinations' => $this->game->getDestinationsFromDb($this->destinations->getCards($ids)),

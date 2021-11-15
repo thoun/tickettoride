@@ -54,8 +54,8 @@ trait ArgsTrait {
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
 
         $possibleRoutes = $this->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
-        $maxHiddenCardsPick = min(2, $this->trainCarDeck->getRemainingCardsInDeck(true));
-        $maxDestinationsPick = min($this->destinationDeck->getAdditionalCardPick(), $this->destinationDeck->getRemainingCardsInDeck());
+        $maxHiddenCardsPick = min(2, $this->getRemainingTrainCarCardsInDeck(true));
+        $maxDestinationsPick = min($this->destinationDeck->getAdditionalCardPick(), $this->destinationDeck->getRemainingTrainCarCardsInDeck());
 
         return [
             'possibleRoutes' => $possibleRoutes,
@@ -65,8 +65,8 @@ trait ArgsTrait {
     }
 
     function argDrawSecondCard() {
-        $maxHiddenCardsPick = min(1, $this->trainCarDeck->getRemainingCardsInDeck(true));
-        $availableVisibleCards = $this->trainCarDeck->getVisibleCards(true);
+        $maxHiddenCardsPick = min(1, $this->getRemainingTrainCarCardsInDeck(true));
+        $availableVisibleCards = $this->getVisibleTrainCarCards(true);
 
         return [
             'maxHiddenCardsPick' => $maxHiddenCardsPick,

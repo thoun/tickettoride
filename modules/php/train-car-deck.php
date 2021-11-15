@@ -2,28 +2,7 @@
 
 require_once(__DIR__.'/objects/train-car.php');
 
-class TrainCarDeck {
-    /** Access to main game functions. */
-    private /*object*/ $game;
-    /** Number of train car cards in hand, for each player, at the beginning of the game. */
-    private /*int*/ $initialCardsInHand;
-    /** Says if it is possible to take only one visible locomotive. */
-    private /*bool*/ $visibleLocomotiveAsTwoCards;
-    /** Resets visible cards when 3 locomotives are visible. */
-    private /*bool*/ $resetVisibleCardsAtThreeLocomotives;
-    /** Number of visible cards. */
-    private /*int*/ $tableCardsNumber = 5;
-
-    function __construct(object &$game, int $initialCardsInHand = 4, bool $visibleLocomotiveAsTwoCards = true, bool $resetVisibleCardsAtThreeLocomotives = true) {
-        $this->game = $game;
-        $this->trainCars = $game->trainCars;
-        $this->initialCardsInHand = $initialCardsInHand;
-        $this->visibleLocomotiveAsTwoCards = $visibleLocomotiveAsTwoCards;
-        $this->resetVisibleCardsAtThreeLocomotives = $resetVisibleCardsAtThreeLocomotives;
-
-        $this->trainCars->init("traincar"); 
-        $this->trainCars->autoreshuffle = true;
-	}
+trait TrainCarDeckTrait {
 
     /**
      * Create cards, place 5 on table, and check revealed cards are valid.
@@ -35,16 +14,16 @@ class TrainCarDeck {
         $this->trainCars->createCards($trainCars, 'deck');
         $this->trainCars->shuffle('deck');
 
-        $this->placeNewCardsOnTable();
+        $this->placeNewTrainCarCardsOnTable();
         $this->checkTooMuchLocomotives();
     }
 
     /**
      * Give initial cards to each player.
      */
-    public function giveInitialCards(array $playersIds) {
+    public function giveInitialTrainCarCards(array $playersIds) {
 		foreach ($playersIds as $playerId) {
-            $this->trainCars->pickCards($this->initialCardsInHand, 'deck', $playerId);
+            $this->trainCars->pickCards(INITIAL_TRAIN_CAR_CARDS_IN_HAND, 'deck', $playerId);
         }
     }
 
@@ -52,10 +31,10 @@ class TrainCarDeck {
      * List visible cards.
      * Optional filter can return only card play can draw.
      */
-    public function getVisibleCards(bool $limitToSelectableOnSecondPick = false) {
-        $cards = $this->game->getTrainCarsFromDb($this->trainCars->getCardsInLocation('table'));
+    public function getVisibleTrainCarCards(bool $limitToSelectableOnSecondPick = false) {
+        $cards = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('table'));
 
-        if ($limitToSelectableOnSecondPick && $this->visibleLocomotiveAsTwoCards) {
+        if ($limitToSelectableOnSecondPick && VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS) {
             $cards = array_values(array_filter($cards, function ($card) { return $card->type != 0; }));
         }
 
@@ -65,7 +44,7 @@ class TrainCarDeck {
     /**
      * Draw 1 or 2 hidden cards, to player hand.
      */
-    public function drawFromDeck(int $playerId, int $number, bool $isSecondCard = false) {
+    public function drawTrainCarCardsFromDeck(int $playerId, int $number, bool $isSecondCard = false) {
         if ($number != 1 && $number != 2) {
             throw new BgaUserException("You must take one or two cards.");
         }
@@ -74,13 +53,13 @@ class TrainCarDeck {
             throw new BgaUserException("You must take one card.");
         }
 
-        $cards = $this->game->getTrainCarsFromDb($this->trainCars->pickCards($number, 'deck', $playerId));
+        $cards = $this->getTrainCarsFromDb($this->trainCars->pickCards($number, 'deck', $playerId));
 
-        $this->game->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes ${number} hidden train car card(s)'), [
+        $this->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes ${number} hidden train car card(s)'), [
             'playerId' => $playerId,
-            'player_name' => $this->game->getPlayerName($playerId),
+            'player_name' => $this->getPlayerName($playerId),
             'number' => $number,
-            'remainingTrainCarsInDeck' => $this->getRemainingCardsInDeck(),
+            'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
             '_private' => [
                 $playerId => [
                     'cards' => $cards,
@@ -92,14 +71,14 @@ class TrainCarDeck {
     /**
      * Draw 1 visible card, to player hand.
      */
-    public function drawFromTable(int $playerId, int $id, bool $isSecondCard = false) { // return card
-        $card = $this->game->getTrainCarFromDb($this->trainCars->getCard($id));
+    public function drawTrainCarCardsFromTable(int $playerId, int $id, bool $isSecondCard = false) { // return card
+        $card = $this->getTrainCarFromDb($this->trainCars->getCard($id));
 
         if ($card->location != 'table') {
             throw new BgaUserException("You can't take this visible card.");
         }
 
-        if ($isSecondCard && $card->type == 0 && $this->visibleLocomotiveAsTwoCards) {
+        if ($isSecondCard && $card->type == 0 && VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS) {
             throw new BgaUserException("You can't take a locomotive as a second card.");
         }
 
@@ -107,16 +86,16 @@ class TrainCarDeck {
 
         $this->trainCars->moveCard($id, 'hand', $playerId);
 
-        $this->placeNewCardOnTable($spot);
+        $this->placeNewTrainCarCardOnTable($spot);
 
-        $this->game->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes a visible train car card'), [
+        $this->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes a visible train car card'), [
             'playerId' => $playerId,
-            'player_name' => $this->game->getPlayerName($playerId),
+            'player_name' => $this->getPlayerName($playerId),
             'number' => 1,
-            'remainingTrainCarsInDeck' => $this->getRemainingCardsInDeck(),
+            'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
             '_private' => [
                 $playerId => [
-                    'cards' => $this->game->getTrainCarsFromDb($this->trainCars->getCards([$id])),
+                    'cards' => $this->getTrainCarsFromDb($this->trainCars->getCards([$id])),
                 ],
             ],
         ]);
@@ -129,7 +108,7 @@ class TrainCarDeck {
     /**
      * get remaining cards in deck (can include discarded ones, to know how many cards player can pick).
      */
-    public function getRemainingCardsInDeck(bool $includeDiscard = false) {
+    public function getRemainingTrainCarCardsInDeck(bool $includeDiscard = false) {
         $remaining = intval($this->trainCars->countCardInLocation('deck'));
 
         if ($includeDiscard) {
@@ -139,41 +118,50 @@ class TrainCarDeck {
         return $remaining;
     }
 
+    /**
+     * reset visible cards if there is 3 or more locomotives
+     */
     private function checkTooMuchLocomotives() {
-        if (!$this->resetVisibleCardsAtThreeLocomotives) {
+        if (RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES === null) {
             return;
         }
 
-        $cards = $this->getVisibleCards();
+        $cards = $this->getVisibleTrainCarCards();
         $locomotives = count(array_filter($cards, function ($card) { return $card->type == 0; }));
-        if ($locomotives >= 3) {
+        if ($locomotives >= RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES) {
             $this->trainCars->moveAllCardsInLocation('table', 'discard');
-            $this->placeNewCardsOnTable();
+            $this->placeNewTrainCarCardsOnTable();
 
             $this->checkTooMuchLocomotives();
         }
     }
 
-    private function placeNewCardsOnTable() {
+    /**
+     * replace all visible cards
+     */
+    private function placeNewTrainCarCardsOnTable() {
         $cards = [];
         
         for ($i=1; $i<=5; $i++) {
-            $cards[] = $this->game->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $i));
+            $cards[] = $this->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $i));
         }
 
-        $this->game->notifyAllPlayers('newCardsOnTable', clienttranslate('Three locomotives have been revealed, visible train cards are replaced'), [
+        $this->notifyAllPlayers('newCardsOnTable', clienttranslate('Three locomotives have been revealed, visible train cards are replaced'), [
             'cards' => $cards
         ]);
 
-        $this->game->incStat(1, 'visibleCardsReplaced');
+        $this->incStat(1, 'visibleCardsReplaced');
 
         return $cards;
     }
 
-    private function placeNewCardOnTable(int $spot) {
-        $card = $this->game->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $spot));
+    /**
+     * replace a visible card
+     */
+    private function placeNewTrainCarCardOnTable(int $spot) {
+        $card = $this->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $spot));
 
-        $this->game->notifyAllPlayers('newCardsOnTable', '', [
+        $this->notifyAllPlayers('newCardsOnTable', '', [
             'cards' => [$card]
         ]);
 
