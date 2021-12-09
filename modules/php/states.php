@@ -92,6 +92,12 @@ trait StateTrait {
                 $longestPath = $this->getLongestPath($playerId);
                 $playersLongestPaths[$playerId] = $longestPath;
 
+                self::notifyAllPlayers('longestPath', clienttranslate('${player_name} longest continuous path is ${length} train-cars long'), [
+                    'playerId' => $playerId,
+                    'player_name' => $this->getPlayerName($playerId),
+                    'length' => $longestPath,
+                ]);
+
                 self::setStat($longestPath, 'longestPath', $playerId);
             }
 

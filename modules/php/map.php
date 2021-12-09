@@ -131,7 +131,7 @@ trait MapTrait {
         $allRoutes = $this->getAllRoutes();
 
         $connectedRoutes = array_values(array_filter($allRoutes, function($route) use ($city) {
-            return $route->from == $city && $route->to == $city;
+            return $route->from == $city || $route->to == $city;
         }));
 
         return $connectedRoutes;
@@ -166,7 +166,7 @@ trait MapTrait {
     private function getLongestPathFromRouteId(int $fromRouteId, array $claimedRoutesIds) {
         $fromRoute = $this->ROUTES[$fromRouteId];
 
-        return $fromRoute->number + max(
+        return max(
             $this->getLongestPathFromCity($fromRoute->from, [$fromRoute->id], $claimedRoutesIds),
             $this->getLongestPathFromCity($fromRoute->to, [$fromRoute->id], $claimedRoutesIds)
         );
@@ -177,7 +177,6 @@ trait MapTrait {
 
         // we only check route we haven't checked, to avoid infinite loop
         $claimedConnectedRoutesToExplore = array_values(array_filter($connectedRoutes, function($route) use ($from, $visitedRoutesIds, $playerClaimedRoutesIds) {
-            $cityOnOtherSideOfRoute = $route->from == $from ? $route->to : $route->from;
             return in_array($route->id, $playerClaimedRoutesIds) && !in_array($route->id, $visitedRoutesIds);
         }));
 
@@ -187,9 +186,9 @@ trait MapTrait {
             $cityOnOtherSideOfRoute = $route->from == $from ? $route->to : $route->from;
             $longestPathFromRoute = $this->getLongestPathFromCity(
                 $cityOnOtherSideOfRoute, 
-                array_merge($visitedRoutesIds, [$claimedConnectedRoutesToExplore->id]),
+                array_merge($visitedRoutesIds, [$route->id]),
                 $playerClaimedRoutesIds
-            );
+            ) + $route->number;
 
             if ($longestPathFromRoute > $longestPath) {
                 $longestPath = $longestPathFromRoute;
