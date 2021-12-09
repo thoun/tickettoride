@@ -80,7 +80,7 @@ trait MapTrait {
 
         $citiesConnectedToFrom = $this->getAccessibleCitiesFrom($destination->from, [$destination->from], $claimedRoutesIds);
 
-        return in_array($destination->from, $citiesConnectedToFrom);
+        return in_array($destination->to, $citiesConnectedToFrom);
     }
 
     public function getAllRoutes() {
