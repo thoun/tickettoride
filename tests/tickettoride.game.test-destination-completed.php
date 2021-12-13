@@ -41,7 +41,7 @@ class TicketToRideTestLongestPath extends TicketToRide { // this is your game cl
     // class tests
     function testDestinationCompletedNo() {
 
-        $result = $this->isDestinationCompleted(1, $this->DESTINATIONS[1][21]);
+        $result = $this->isDestinationCompleted(1, $this->DESTINATIONS[1][20]);
 
         $expected = false;
         $equal = $result == $expected;
@@ -56,7 +56,7 @@ class TicketToRideTestLongestPath extends TicketToRide { // this is your game cl
 
     function testDestinationCompletedYes() {
 
-        $result = $this->isDestinationCompleted(2, $this->DESTINATIONS[1][21]);
+        $result = $this->isDestinationCompleted(2, $this->DESTINATIONS[1][20]);
 
         $expected = true;
         $equal = $result == $expected;

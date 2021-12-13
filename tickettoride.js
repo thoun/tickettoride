@@ -6,8 +6,8 @@ declare const _;
 declare const g_gamethemeurl;
 
 declare const board: HTMLDivElement;*/
-var CARD_WIDTH = 272;
-var CARD_HEIGHT = 178;
+var CARD_WIDTH = 250;
+var CARD_HEIGHT = 161;
 function setupTrainCarCards(stock) {
     var trainCarsUrl = g_gamethemeurl + "img/train-cards.jpg";
     for (var type = 0; type <= 8; type++) {
@@ -17,7 +17,7 @@ function setupTrainCarCards(stock) {
 function setupDestinationCards(stock) {
     var destinationsUrl = g_gamethemeurl + "img/destinations.jpg";
     for (var id = 1; id <= 36; id++) {
-        stock.addItemType(id, id, destinationsUrl, id);
+        stock.addItemType(id, id, destinationsUrl, id - 1);
     }
 }
 var GRAY = 0;
@@ -112,21 +112,21 @@ var DESTINATIONS = [
     new DestinationCard(17, 17, 19, 13),
     new DestinationCard(18, 20, 1, 6),
     new DestinationCard(19, 25, 18, 17),
-    new DestinationCard(21, 25, 23, 11),
-    new DestinationCard(22, 30, 1, 17),
-    new DestinationCard(23, 29, 18, 8),
-    new DestinationCard(24, 29, 21, 9),
-    new DestinationCard(25, 32, 15, 9),
-    new DestinationCard(26, 32, 20, 22),
-    new DestinationCard(27, 33, 16, 10),
-    new DestinationCard(28, 34, 17, 20),
-    new DestinationCard(29, 34, 31, 13),
-    new DestinationCard(30, 36, 11, 12),
-    new DestinationCard(31, 36, 14, 11), // Winnipeg	Little Rock	11
+    new DestinationCard(20, 25, 23, 11),
+    new DestinationCard(21, 30, 1, 17),
+    new DestinationCard(22, 29, 18, 8),
+    new DestinationCard(23, 29, 21, 9),
+    new DestinationCard(24, 32, 15, 9),
+    new DestinationCard(25, 32, 20, 22),
+    new DestinationCard(26, 33, 16, 10),
+    new DestinationCard(27, 34, 17, 20),
+    new DestinationCard(28, 34, 31, 13),
+    new DestinationCard(29, 36, 11, 12),
+    new DestinationCard(30, 36, 14, 11), // Winnipeg	Little Rock	11
 ];
 function setupDestinationCardDiv(cardDiv, cardTypeId) {
-    var destination = DESTINATIONS.find(function (d) { return d.id == Number(cardTypeId); });
-    cardDiv.innerHTML = "<span><strong>" + CITIES[destination.from] + "</strong> to <strong>" + CITIES[destination.to] + "</strong> (<strong>" + destination.points + "</strong>)</span>";
+    //const destination = DESTINATIONS.find(d => d.id == Number(cardTypeId));
+    //cardDiv.innerHTML = `<span><strong>${CITIES[destination.from]}</strong> to <strong>${CITIES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
 }
 var POINT_CASE_SIZE = 25.5;
 var BOARD_POINTS_MARGIN = 38;
@@ -149,7 +149,10 @@ var Route = /** @class */ (function () {
     return Route;
 }());
 var ROUTES = [
-    new Route(1, 1, 4, 2, GRAY),
+    new Route(1, 1, 4, [
+        new RouteSpace(1346, 689, 3),
+        new RouteSpace(1409, 691, 3),
+    ], GRAY),
     new Route(2, 1, 16, 5, BLUE),
     new Route(3, 1, 18, 1, GRAY),
     new Route(4, 1, 19, 4, YELLOW),
@@ -173,12 +176,30 @@ var ROUTES = [
     new Route(21, 5, 27, 2, GREEN),
     new Route(22, 5, 27, 2, WHITE),
     new Route(23, 5, 33, 4, WHITE),
-    new Route(24, 6, 9, 4, RED),
-    new Route(25, 6, 11, 1, GRAY),
-    new Route(26, 6, 11, 1, GRAY),
-    new Route(27, 6, 14, 2, GRAY),
-    new Route(28, 6, 21, 2, GRAY),
-    new Route(29, 6, 21, 2, GRAY),
+    new Route(24, 6, 9, [
+        new RouteSpace(653, 885, 351),
+        new RouteSpace(714, 875, 351),
+        new RouteSpace(776, 866, 351),
+        new RouteSpace(838, 857, 351),
+    ], RED),
+    new Route(25, 6, 11, [
+        new RouteSpace(915, 882, 49),
+    ], GRAY),
+    new Route(26, 6, 11, [
+        new RouteSpace(932, 868, 49),
+    ], GRAY),
+    new Route(27, 6, 14, [
+        new RouteSpace(936, 786, -55),
+        new RouteSpace(972, 735, -55),
+    ], GRAY),
+    new Route(28, 6, 21, [
+        new RouteSpace(864, 735, -97),
+        new RouteSpace(872, 797, -97),
+    ], GRAY),
+    new Route(29, 6, 21, [
+        new RouteSpace(885, 733, -97),
+        new RouteSpace(893, 795, -97),
+    ], GRAY),
     new Route(30, 7, 10, 4, GREEN),
     new Route(31, 7, 12, 4, BLACK),
     new Route(32, 7, 12, 4, ORANGE),
@@ -193,7 +214,14 @@ var ROUTES = [
     new Route(41, 8, 29, 3, GRAY),
     new Route(42, 8, 33, 6, PINK),
     new Route(43, 8, 36, 4, BLACK),
-    new Route(44, 9, 11, 6, GREEN),
+    new Route(44, 9, 11, [
+        new RouteSpace(611, 913, 30),
+        new RouteSpace(668, 939, 18),
+        new RouteSpace(729, 953, 8),
+        new RouteSpace(792, 959, 2),
+        new RouteSpace(855, 955, -10),
+        new RouteSpace(915, 939, -19),
+    ], GREEN),
     new Route(45, 9, 15, 6, BLACK),
     new Route(46, 9, 21, 5, YELLOW),
     new Route(47, 9, 23, 3, GRAY),
@@ -202,7 +230,10 @@ var ROUTES = [
     new Route(50, 10, 28, 3, PINK),
     new Route(51, 10, 32, 6, YELLOW),
     new Route(52, 10, 36, 4, BLUE),
-    new Route(53, 11, 19, 2, GRAY),
+    new Route(53, 11, 19, [
+        new RouteSpace(1070, 895, 352),
+        new RouteSpace(1009, 904, 352),
+    ], GRAY),
     new Route(54, 12, 21, 2, GRAY),
     new Route(55, 12, 21, 2, GRAY),
     new Route(56, 12, 22, 1, GRAY),
@@ -211,16 +242,31 @@ var ROUTES = [
     new Route(59, 12, 27, 2, PINK),
     new Route(60, 13, 15, 2, GRAY),
     new Route(61, 13, 28, 3, ORANGE),
-    new Route(62, 14, 18, 3, WHITE),
-    new Route(63, 14, 19, 3, GREEN),
-    new Route(64, 14, 21, 2, GRAY),
+    new Route(62, 14, 18, [
+        new RouteSpace(1056, 691, -4),
+        new RouteSpace(1119, 675, -24),
+        new RouteSpace(1173, 640, -41),
+    ], WHITE),
+    new Route(63, 14, 19, [
+        new RouteSpace(1036, 737, 63),
+        new RouteSpace(1064, 792, 63),
+        new RouteSpace(1094, 848, 63),
+    ], GREEN),
+    new Route(64, 14, 21, [
+        new RouteSpace(905, 690, -2),
+        new RouteSpace(966, 688, -2),
+    ], GRAY),
     new Route(65, 14, 27, 2, GRAY),
     new Route(66, 15, 23, 3, GRAY),
     new Route(67, 15, 30, 3, YELLOW),
     new Route(68, 15, 30, 3, PINK),
     new Route(69, 16, 19, [
-        new RouteSpace(1254, 805, 49),
-        new RouteSpace(1217, 769, 40),
+        new RouteSpace(1465, 943, 49),
+        new RouteSpace(1421, 898, 40),
+        new RouteSpace(1369, 863, 28),
+        new RouteSpace(1308, 848, 0),
+        new RouteSpace(1245, 855, 345),
+        new RouteSpace(1187, 881, 330),
     ], RED),
     new Route(70, 17, 20, 3, BLUE),
     new Route(71, 17, 29, 5, BLACK),
@@ -344,7 +390,7 @@ var DestinationSelection = /** @class */ (function () {
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $("destination-stock"), CARD_WIDTH, CARD_HEIGHT);
         this.destinations.onItemCreate = function (cardDiv, cardTypeId) { return setupDestinationCardDiv(cardDiv, cardTypeId); };
-        this.destinations.image_items_per_row = 13;
+        this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
         dojo.connect(this.destinations, 'onChangeSelection', this, function () {
             if (document.getElementById('chooseInitialDestinations_button')) {

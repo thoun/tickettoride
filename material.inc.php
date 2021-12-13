@@ -195,17 +195,17 @@ $this->DESTINATIONS = [
     17 => new DestinationCard(17, 19, 13), // Montréal	New Orleans	13
     18 => new DestinationCard(20, 1, 6), // New York	Atlanta	6
     19 => new DestinationCard(25, 18, 17), // Portland	Nashville	17
-    21 => new DestinationCard(25, 23, 11), // Portland	Phoenix	11
-    22 => new DestinationCard(30, 1, 17), // San Francisco	Atlanta	17
-    23 => new DestinationCard(29, 18, 8), // Sault St. Marie	Nashville	8
-    24 => new DestinationCard(29, 21, 9), // Sault St. Marie	Oklahoma City	9
-    25 => new DestinationCard(32, 15, 9), // Seattle	Los Angeles	9
-    26 => new DestinationCard(32, 20, 22), // Seattle	New York	22
-    27 => new DestinationCard(33, 16, 10), // Toronto	Miami	10
-    28 => new DestinationCard(34, 17, 20), // Vancouver	Montréal	20
-    29 => new DestinationCard(34, 31, 13), // Vancouver	Santa Fe	13
-    30 => new DestinationCard(36, 11, 12), // Winnipeg	Houston	12
-    31 => new DestinationCard(36, 14, 11), // Winnipeg	Little Rock	11
+    20 => new DestinationCard(25, 23, 11), // Portland	Phoenix	11
+    21 => new DestinationCard(30, 1, 17), // San Francisco	Atlanta	17
+    22 => new DestinationCard(29, 18, 8), // Sault St. Marie	Nashville	8
+    23 => new DestinationCard(29, 21, 9), // Sault St. Marie	Oklahoma City	9
+    24 => new DestinationCard(32, 15, 9), // Seattle	Los Angeles	9
+    25 => new DestinationCard(32, 20, 22), // Seattle	New York	22
+    26 => new DestinationCard(33, 16, 10), // Toronto	Miami	10
+    27 => new DestinationCard(34, 17, 20), // Vancouver	Montréal	20
+    28 => new DestinationCard(34, 31, 13), // Vancouver	Santa Fe	13
+    29 => new DestinationCard(36, 11, 12), // Winnipeg	Houston	12
+    30 => new DestinationCard(36, 14, 11), // Winnipeg	Little Rock	11
   ]
 ];
 

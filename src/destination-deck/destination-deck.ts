@@ -11,7 +11,7 @@ class DestinationSelection {
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $(`destination-stock`), CARD_WIDTH, CARD_HEIGHT);
         this.destinations.onItemCreate = (cardDiv, cardTypeId) => setupDestinationCardDiv(cardDiv, cardTypeId);
-        this.destinations.image_items_per_row = 13;
+        this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
         dojo.connect(this.destinations, 'onChangeSelection', this, () => {
             if (document.getElementById('chooseInitialDestinations_button')) {

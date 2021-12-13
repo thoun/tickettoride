@@ -7,8 +7,8 @@ declare const g_gamethemeurl;
 
 declare const board: HTMLDivElement;*/
 
-const CARD_WIDTH = 272;
-const CARD_HEIGHT = 178;
+const CARD_WIDTH = 250;
+const CARD_HEIGHT = 161;
 
 function setupTrainCarCards(stock: Stock) {
     const trainCarsUrl = `${g_gamethemeurl}img/train-cards.jpg`;
@@ -20,7 +20,7 @@ function setupTrainCarCards(stock: Stock) {
 function setupDestinationCards(stock: Stock) {
     const destinationsUrl = `${g_gamethemeurl}img/destinations.jpg`;
     for (let id=1; id<=36; id++) {
-        stock.addItemType(id, id, destinationsUrl, id);
+        stock.addItemType(id, id, destinationsUrl, id - 1);
     }
 }
 
@@ -118,19 +118,19 @@ const DESTINATIONS = [
     new DestinationCard(17, 17, 19, 13), // Montréal	New Orleans	13
     new DestinationCard(18, 20, 1, 6), // New York	Atlanta	6
     new DestinationCard(19, 25, 18, 17), // Portland	Nashville	17
-    new DestinationCard(21, 25, 23, 11), // Portland	Phoenix	11
-    new DestinationCard(22, 30, 1, 17), // San Francisco	Atlanta	17
-    new DestinationCard(23, 29, 18, 8), // Sault St. Marie	Nashville	8
-    new DestinationCard(24, 29, 21, 9), // Sault St. Marie	Oklahoma City	9
-    new DestinationCard(25, 32, 15, 9), // Seattle	Los Angeles	9
-    new DestinationCard(26, 32, 20, 22), // Seattle	New York	22
-    new DestinationCard(27, 33, 16, 10), // Toronto	Miami	10
-    new DestinationCard(28, 34, 17, 20), // Vancouver	Montréal	20
-    new DestinationCard(29, 34, 31, 13), // Vancouver	Santa Fe	13
-    new DestinationCard(30, 36, 11, 12), // Winnipeg	Houston	12
-    new DestinationCard(31, 36, 14, 11), // Winnipeg	Little Rock	11
+    new DestinationCard(20, 25, 23, 11), // Portland	Phoenix	11
+    new DestinationCard(21, 30, 1, 17), // San Francisco	Atlanta	17
+    new DestinationCard(22, 29, 18, 8), // Sault St. Marie	Nashville	8
+    new DestinationCard(23, 29, 21, 9), // Sault St. Marie	Oklahoma City	9
+    new DestinationCard(24, 32, 15, 9), // Seattle	Los Angeles	9
+    new DestinationCard(25, 32, 20, 22), // Seattle	New York	22
+    new DestinationCard(26, 33, 16, 10), // Toronto	Miami	10
+    new DestinationCard(27, 34, 17, 20), // Vancouver	Montréal	20
+    new DestinationCard(28, 34, 31, 13), // Vancouver	Santa Fe	13
+    new DestinationCard(29, 36, 11, 12), // Winnipeg	Houston	12
+    new DestinationCard(30, 36, 14, 11), // Winnipeg	Little Rock	11
 ];
 function setupDestinationCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
-    const destination = DESTINATIONS.find(d => d.id == Number(cardTypeId));
-    cardDiv.innerHTML = `<span><strong>${CITIES[destination.from]}</strong> to <strong>${CITIES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
+    //const destination = DESTINATIONS.find(d => d.id == Number(cardTypeId));
+    //cardDiv.innerHTML = `<span><strong>${CITIES[destination.from]}</strong> to <strong>${CITIES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
 }

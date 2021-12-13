@@ -14,8 +14,8 @@
 }
 
 #board {
-  width: 1420px;
-  height: 900px;
+  width: 1650px;
+  height: 1055px;
   background: url("img/board.jpg");
 }
 
@@ -62,7 +62,7 @@
   border-radius: 8px;
   padding: 5px;
   margin: 5px;
-  pointer-events: none;
+  border-color: black;
 }
 .route.selectable {
   border-color: black;
@@ -72,8 +72,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 35px;
-  height: 4px;
+  width: 43px;
+  height: 5px;
   z-index: 5;
 }
 
@@ -133,10 +133,7 @@
 }
 
 .stockitem {
-  text-shadow: 0 0 1px #fff, 0 0 2px #fff, 0 0 3px #fff, 0 0 5px #fff, 0 0 8px #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  border-radius: 6px;
 }
 .stockitem.disabled {
   filter: contrast(0.6);
