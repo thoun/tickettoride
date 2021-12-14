@@ -108,6 +108,9 @@ $this->ROUTES = [
   35 => new Route(7, 23, 5, WHITE),
   36 => new Route(7, 28, 3, RED),
   37 => new Route(7, 28, 3, YELLOW),
+
+  99 => new Route(7, 31, 2, GRAY),
+
   38 => new Route(8, 10, 6, ORANGE),
   39 => new Route(8, 22, 2, GRAY),
   40 => new Route(8, 22, 2, GRAY),
@@ -143,8 +146,8 @@ $this->ROUTES = [
   70 => new Route(17, 20, 3, BLUE),
   71 => new Route(17, 29, 5, BLACK),
   72 => new Route(17, 33, 3, GRAY),
-  73 => new Route(18, 24, 3, BLACK),
-  74 => new Route(18, 26, 4, YELLOW),
+  73 => new Route(18, 24, 4, YELLOW),
+  74 => new Route(18, 26, 3, BLACK),
   75 => new Route(18, 27, 2, GRAY),
   76 => new Route(20, 24, 2, WHITE),
   77 => new Route(20, 24, 2, GREEN),
