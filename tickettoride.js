@@ -130,6 +130,8 @@ function setupDestinationCardDiv(cardDiv, cardTypeId) {
 }
 var POINT_CASE_SIZE = 25.5;
 var BOARD_POINTS_MARGIN = 38;
+var SIDES = ['left', 'right', 'top', 'bottom'];
+var CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 var RouteSpace = /** @class */ (function () {
     function RouteSpace(x, y, angle) {
         this.x = x;
@@ -479,6 +481,13 @@ var ROUTES = [
 var TtrMap = /** @class */ (function () {
     //private points = new Map<number, number>();
     function TtrMap(game, players, claimedRoutes) {
+        var _this = this;
+        this.game = game;
+        this.players = players;
+        // map border
+        dojo.place("<div class=\"illustration\"></div>", 'board');
+        SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'board'); });
+        CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'board'); });
         /*let html = '';
 
         // points
@@ -487,9 +496,6 @@ var TtrMap = /** @class */ (function () {
             this.points.set(Number(player.id), Number(player.score));
         });
         dojo.place(html, 'board');*/
-        var _this = this;
-        this.game = game;
-        this.players = players;
         ROUTES.forEach(function (route) {
             if (typeof route.spaces === 'number') {
                 dojo.place("<div id=\"route" + route.id + "\" class=\"route\">" + CITIES[route.from] + " to " + CITIES[route.to] + ", " + route.spaces + " " + COLORS[route.color] + "</div>", 'board');

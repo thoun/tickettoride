@@ -1,6 +1,9 @@
 const POINT_CASE_SIZE = 25.5;
 const BOARD_POINTS_MARGIN = 38;
 
+const SIDES = ['left', 'right', 'top', 'bottom'];
+const CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
+
 class RouteSpace {
     constructor(
         public x: number,
@@ -358,6 +361,11 @@ class TtrMap {
         private players: TicketToRidePlayer[],
         claimedRoutes: ClaimedRoute[],
     ) {
+        // map border
+        dojo.place(`<div class="illustration"></div>`, 'board');
+        SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'board'));
+        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'board'));
+
         /*let html = '';
 
         // points

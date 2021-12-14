@@ -14,47 +14,122 @@
 }
 
 #board {
+  position: relative;
   width: 1650px;
   height: 1055px;
   background: url("img/board.jpg");
 }
-
-.point-marker {
+#board .side {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 16px;
-  height: 16px;
-  box-shadow: 1px 1px 1px 1px black;
-  border-radius: 50%;
-  background-image: url("img/points.png");
-  background-size: auto 100%;
-  transition: transform 0.5s, opacity 0.5s;
   pointer-events: none;
 }
-.point-marker.color-blind::after {
-  font-size: 120%;
-  display: flex;
-  align-content: center;
-  justify-content: center;
-  margin-top: -4px;
+#board .side.left {
+  background: url("img/border-map-left.png");
+  width: 9px;
+  left: 0;
+  top: 180px;
+  bottom: 180px;
 }
-.point-marker.color-blind[data-player-no="1"]::after {
-  content: "●";
+#board .side.right {
+  background: url("img/border-map-right.png");
+  width: 8px;
+  right: 0;
+  top: 180px;
+  bottom: 180px;
 }
-.point-marker.color-blind[data-player-no="2"]::after {
-  content: "▲";
+#board .side.top {
+  background: url("img/border-map-top.png");
+  height: 8px;
+  left: 180px;
+  right: 180px;
+  top: 0;
 }
-.point-marker.color-blind[data-player-no="3"]::after {
-  content: "■";
+#board .side.bottom {
+  background: url("img/border-map-bottom.png");
+  height: 9px;
+  left: 180px;
+  right: 180px;
+  bottom: 0;
 }
-.point-marker.color-blind[data-player-no="4"]::after {
-  content: "◆";
+#board .corner {
+  position: absolute;
+  pointer-events: none;
+  width: 180px;
+  height: 180px;
 }
-.point-marker.color-blind[data-player-no="5"]::after {
-  content: "★";
+#board .corner.top-left {
+  background: url("img/border-map-corner-top-left.png");
+  left: 0;
+  top: 0;
+}
+#board .corner.top-right {
+  background: url("img/border-map-corner-top-right.png");
+  right: 0;
+  top: 0;
+}
+#board .corner.bottom-left {
+  background: url("img/border-map-corner-bottom-left.png");
+  left: 0;
+  bottom: 0;
+}
+#board .corner.bottom-right {
+  background: url("img/border-map-corner-bottom-right.png");
+  right: 0;
+  bottom: 0;
+}
+#board .illustration {
+  position: absolute;
+  pointer-events: none;
+  background: url("img/border-map-illustration.png");
+  left: 0;
+  bottom: 0;
+  width: 258px;
+  height: 206px;
 }
 
+/*.point-marker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    box-shadow: 1px 1px 1px 1px black;
+    border-radius: 50%;
+    background-image: url('img/points.png');
+    background-size: auto 100%;   
+    transition: transform 0.5s, opacity 0.5s; 
+    pointer-events: none;
+
+    &.color-blind {
+      &::after {
+        font-size: 120%;
+        display: flex;
+        align-content: center;
+        justify-content: center;
+        margin-top: -4px;
+      }
+
+      &[data-player-no="1"]::after {
+        content: '●'; // circle
+      }
+
+      &[data-player-no="2"]::after {
+        content: '▲'; // triangle
+      }
+
+      &[data-player-no="3"]::after {
+        content: '■'; // square
+      }
+
+      &[data-player-no="4"]::after {
+        content: '◆'; // diamond
+      }
+
+      &[data-player-no="5"]::after {
+        content: '★'; // star
+      }
+    }
+}*/
 .route {
   display: inline-block;
   border: 3px solid lightgray;
