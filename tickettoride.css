@@ -439,6 +439,16 @@
   -webkit-mask: url("img/destination-done-mask.png") no-repeat center/contain;
 }
 
+html {
+  background: url("img/bg-pattern.jpg");
+  background-repeat: repeat;
+}
+
+.mode_3d #game_play_area_background {
+  background: url("img/bg-pattern.jpg");
+  background-repeat: repeat;
+}
+
 #last-round {
   margin: 5px -5px -5px;
   text-align: center;

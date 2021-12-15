@@ -4,6 +4,19 @@
 @import 'destination-deck/destination-deck';
 @import 'player-table/player-table';
 
+//$background: url('img/bg-wood.jpg');
+$background: url('img/bg-pattern.jpg');
+
+html {
+    background: $background;
+    background-repeat: repeat;
+}
+
+.mode_3d #game_play_area_background {
+    background: $background;
+    background-repeat: repeat;
+}
+
 #last-round {
     margin: 5px -5px -5px;
     text-align: center;
