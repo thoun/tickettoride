@@ -37,7 +37,7 @@ class PlayerTable {
 
         this.addTrainCars(trainCars);
 
-        // destionation cards
+        // destination cards
 
         this.destinationStock = new ebg.stock() as Stock;
         this.destinationStock.setSelectionAppearance('class');
@@ -54,8 +54,8 @@ class PlayerTable {
     public addDestinations(destinations: Destination[], originStock?: Stock) {
         destinations.forEach(destination => {
             const from = document.getElementById(`${originStock ? originStock.container_div.id : 'destination-stock'}_item_${destination.id}`)?.id || 'destination-stock';
-            console.log(destination);
             this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id, from);
+            document.getElementById(`${this.destinationStock.container_div.id}_item_${destination.id}`).classList.add('todo'); // TODO
         });
         originStock?.removeAll();
     }

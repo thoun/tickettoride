@@ -7,7 +7,7 @@ class DestinationSelection {
 
         this.destinations = new ebg.stock() as Stock;
         this.destinations.setSelectionAppearance('class');
-        this.destinations.selectionClass = 'destination-selection';
+        this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $(`destination-stock`), CARD_WIDTH, CARD_HEIGHT);
         this.destinations.onItemCreate = (cardDiv, cardTypeId) => setupDestinationCardDiv(cardDiv, cardTypeId);

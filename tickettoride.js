@@ -755,7 +755,7 @@ var DestinationSelection = /** @class */ (function () {
         this.game = game;
         this.destinations = new ebg.stock();
         this.destinations.setSelectionAppearance('class');
-        this.destinations.selectionClass = 'destination-selection';
+        this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $("destination-stock"), CARD_WIDTH, CARD_HEIGHT);
         this.destinations.onItemCreate = function (cardDiv, cardTypeId) { return setupDestinationCardDiv(cardDiv, cardTypeId); };
@@ -875,7 +875,7 @@ var PlayerTable = /** @class */ (function () {
         });
         setupTrainCarCards(this.trainCarStock);
         this.addTrainCars(trainCars);
-        // destionation cards
+        // destination cards
         this.destinationStock = new ebg.stock();
         this.destinationStock.setSelectionAppearance('class');
         this.destinationStock.selectionClass = 'selected';
@@ -891,8 +891,8 @@ var PlayerTable = /** @class */ (function () {
         destinations.forEach(function (destination) {
             var _a;
             var from = ((_a = document.getElementById((originStock ? originStock.container_div.id : 'destination-stock') + "_item_" + destination.id)) === null || _a === void 0 ? void 0 : _a.id) || 'destination-stock';
-            console.log(destination);
             _this.destinationStock.addToStockWithId(destination.type_arg, '' + destination.id, from);
+            document.getElementById(_this.destinationStock.container_div.id + "_item_" + destination.id).classList.add('todo'); // TODO
         });
         originStock === null || originStock === void 0 ? void 0 : originStock.removeAll();
     };

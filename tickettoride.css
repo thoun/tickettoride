@@ -197,8 +197,29 @@
   display: none;
 }
 
-.destination-selection {
-  border: 4px solid #00c2c2;
+#destination-stock .stockitem.selected::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("img/destination-selected.png");
+}
+
+.player-table-destinations .stockitem::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.player-table-destinations .stockitem.todo::after {
+  background: url("img/destination-todo.png");
+}
+.player-table-destinations .stockitem.done::after {
+  background: url("img/destination-done.png");
 }
 
 #last-round {

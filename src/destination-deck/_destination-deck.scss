@@ -4,6 +4,14 @@
     }
 }
 
-.destination-selection {
-  border: 4px solid rgb(0, 194, 194);
+#destination-stock {
+  .stockitem.selected::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('img/destination-selected.png');
+  }
 }

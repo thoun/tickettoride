@@ -139,6 +139,9 @@ class TicketToRide extends Table {
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
+        // TODO TEMP card to test
+        $this->debugSetup();
+
         /************ End of the game initialization *****/
     }
 

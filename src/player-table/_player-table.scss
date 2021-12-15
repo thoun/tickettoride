@@ -1,0 +1,19 @@
+.player-table-destinations {
+    .stockitem {
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        &.todo::after {
+            background: url('img/destination-todo.png');
+        }
+        &.done::after {
+            background: url('img/destination-done.png');
+        }
+    }
+}

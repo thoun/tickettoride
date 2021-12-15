@@ -122,6 +122,8 @@ trait UtilTrait {
                     'destination' => $destination,
                     'from' => $this->CITIES[$destination->from],
                     'to' => $this->CITIES[$destination->to],
+                    'you' => clienttranslate('You'),
+                    '118n' => ['you'],
                 ]);
 
                 self::incStat(1, 'completedDestinations');

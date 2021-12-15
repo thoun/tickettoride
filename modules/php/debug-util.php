@@ -11,7 +11,15 @@ trait DebugUtilTrait {
             return;
         }
 
+        $this->debugSetDestinationInHand(7, 2343492);
+
         $this->gamestate->changeActivePlayer(2343492);
+    }
+
+    function debugSetDestinationInHand($cardType, $playerId) {
+        $card = $this->getDestinationFromDb(array_values($this->destinations->getCardsOfType(1, $cardType))[0]);
+        $this->destinations->moveCard($card->id, 'hand', $playerId);
+        return $card;
     }
 
     function debug($debugData) {
