@@ -668,9 +668,9 @@ var TtrMap = /** @class */ (function () {
         this.game = game;
         this.players = players;
         // map border
-        dojo.place("<div class=\"illustration\"></div>", 'board');
-        SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'board'); });
-        CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'board'); });
+        dojo.place("<div class=\"illustration\"></div>", 'map');
+        SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map'); });
+        CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'map'); });
         /*let html = '';
 
         // points
@@ -678,10 +678,10 @@ var TtrMap = /** @class */ (function () {
             html += `<div id="player-${player.id}-point-marker" class="point-marker ${this.game.isColorBlindMode() ? 'color-blind' : ''}" data-player-no="${player.playerNo}" style="background: #${player.color};"></div>`;
             this.points.set(Number(player.id), Number(player.score));
         });
-        dojo.place(html, 'board');*/
+        dojo.place(html, 'map');*/
         ROUTES.forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                    style=\"transform: translate(" + space.x + "px, " + space.y + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES[route.from] + " to " + CITIES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                ></div>", 'board');
+                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                    style=\"transform: translate(" + space.x + "px, " + space.y + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES[route.from] + " to " + CITIES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                ></div>", 'map');
                 document.getElementById("route" + route.id + "-space" + spaceIndex).addEventListener('click', function () { return _this.game.claimRoute(route.id); });
             });
         });
@@ -734,18 +734,32 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         var _this = this;
         claimedRoutes.forEach(function (claimedRoute) {
             var route = ROUTES.find(function (r) { return r.id == claimedRoute.routeId; });
-            var color = "#" + _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; }).color;
-            if (typeof route.spaces === 'number') {
-                document.getElementById("route" + claimedRoute.routeId).style.borderColor = color;
-            }
-            else {
-                route.spaces.forEach(function (_, spaceIndex) {
-                    var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
-                    spaceDiv.style.borderColor = color;
-                    spaceDiv.style.background = color;
-                });
-            }
+            var color = _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; }).color;
+            route.spaces.forEach(function (space, spaceIndex) {
+                var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
+                spaceDiv.parentElement.removeChild(spaceDiv);
+                var angle = -space.angle;
+                while (angle < 0) {
+                    angle += 180;
+                }
+                while (angle >= 180) {
+                    angle -= 180;
+                }
+                dojo.place("<div class=\"wagon angle" + Math.round(angle * 36 / 180) + "\" data-player-color=\"" + color + "\" style=\"transform: translate(" + space.x + "px, " + space.y + "px)\"></div>", 'map');
+            });
         });
+    };
+    TtrMap.prototype.setAutoZoom = function () {
+        var _this = this;
+        var map = document.getElementById('map');
+        var zoomWrapperWidth = map.clientWidth;
+        if (!zoomWrapperWidth) {
+            setTimeout(function () { return _this.setAutoZoom(); }, 200);
+            return;
+        }
+        var scale = Math.min(1, document.getElementById('game_play_area').clientWidth / zoomWrapperWidth);
+        map.style.transform = "scale(" + scale + ")";
+        document.getElementById('board').style.height = map.clientHeight * scale + "px";
     };
     return TtrMap;
 }());
@@ -934,6 +948,7 @@ var TicketToRide = /** @class */ (function () {
         "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
     */
     TicketToRide.prototype.setup = function (gamedatas) {
+        var _this = this;
         // ignore loading of some pictures
         this.dontPreloadImage('publisher.png');
         log("Starting game setup");
@@ -954,6 +969,9 @@ var TicketToRide = /** @class */ (function () {
             this.onEnteringEndScore(true);
         }
         this.setupNotifications();
+        this.onScreenWidthChange = function () {
+            _this.map.setAutoZoom();
+        };
         log("Ending game setup");
     };
     ///////////////////////////////////////////////////

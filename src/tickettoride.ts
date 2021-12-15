@@ -62,6 +62,10 @@ class TicketToRide implements TicketToRideGame {
 
         this.setupNotifications();
 
+        (this as any).onScreenWidthChange = () => {
+            this.map.setAutoZoom();
+        }
+
         log("Ending game setup");
     }
 

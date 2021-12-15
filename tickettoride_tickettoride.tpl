@@ -1,6 +1,8 @@
 {OVERALL_GAME_HEADER}
 
-<div id="board"></div>
+<div id="board">
+    <div id="map"></div>
+</div>
 
 <div id="train-car-deck">
     <div id="train-car-deck-hidden-pile" class="hidden-pile stock train-car-deck-hidden-pile-tooltip">

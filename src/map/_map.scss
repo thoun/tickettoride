@@ -1,8 +1,9 @@
-#board {
+#map {
     position: relative;
     width: 1650px;
     height: 1064px;
     background: url('img/map.jpg');
+    transform-origin: top left;
 
     .side {
       position: absolute;
@@ -134,8 +135,9 @@
 // TODO temp
 .route {
   display: inline-block;
-  border: 3px solid lightgray;
-  background: rgba(128, 128, 128, 0.3);
+  border: 3px solid transparent;
+  //border: 3px solid lightgray;
+  //background: rgba(128, 128, 128, 0.3);
   border-radius: 8px;
   padding: 5px;
   margin: 5px;
@@ -153,5 +155,41 @@
     width: 43px;
     height: 5px;
     z-index: 5; // TODO TEMP
+  }
+}
+
+.wagon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 90px;
+  height: 90px;
+  margin: -25px;
+  background-size: 600%;
+
+  @for $i from 0 through 35 {
+    &.angle#{$i} {
+        background-position: #{$i % 6 * 20%} #{floor($i / 6) * 20%};
+    }
+  }
+
+  &[data-player-color="ff0000"] {
+    background-image: url('img/wagons-red.png');
+  }
+
+  &[data-player-color="008000"] {
+    background-image: url('img/wagons-green.png');
+  }
+
+  &[data-player-color="0000ff"] {
+    background-image: url('img/wagons-blue.png');
+  }
+
+  &[data-player-color="ffa500"] {
+    background-image: url('img/wagons-yellow.png');
+  }
+
+  &[data-player-color="000000"] {
+    background-image: url('img/wagons-black.png');
   }
 }

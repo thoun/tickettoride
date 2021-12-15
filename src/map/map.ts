@@ -543,9 +543,9 @@ class TtrMap {
         claimedRoutes: ClaimedRoute[],
     ) {
         // map border
-        dojo.place(`<div class="illustration"></div>`, 'board');
-        SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'board'));
-        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'board'));
+        dojo.place(`<div class="illustration"></div>`, 'map');
+        SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'map'));
+        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map'));
 
         /*let html = '';
 
@@ -554,14 +554,14 @@ class TtrMap {
             html += `<div id="player-${player.id}-point-marker" class="point-marker ${this.game.isColorBlindMode() ? 'color-blind' : ''}" data-player-no="${player.playerNo}" style="background: #${player.color};"></div>`;
             this.points.set(Number(player.id), Number(player.score));
         });
-        dojo.place(html, 'board');*/
+        dojo.place(html, 'map');*/
 
         ROUTES.forEach(route => 
             route.spaces.forEach((space, spaceIndex) => {
                 dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route space" 
                     style="transform: translate(${space.x}px, ${space.y}px) rotate(${space.angle}deg)"
                     title="${CITIES[route.from]} to ${CITIES[route.to]}, ${(route.spaces as any).length} ${COLORS[route.color]}"
-                ></div>`, 'board');
+                ></div>`, 'map');
                 document.getElementById(`route${route.id}-space${spaceIndex}`).addEventListener('click', () => this.game.claimRoute(route.id));   
             })
         );
@@ -620,17 +620,35 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     public setClaimedRoutes(claimedRoutes: ClaimedRoute[]) {
         claimedRoutes.forEach(claimedRoute => {
             const route = ROUTES.find(r => r.id == claimedRoute.routeId);
-            const color = `#${this.players.find(player => Number(player.id) == claimedRoute.playerId).color}`;
-            if (typeof route.spaces === 'number') {
-                document.getElementById(`route${claimedRoute.routeId}`).style.borderColor = color;
-            } else {
-                route.spaces.forEach((_, spaceIndex) => {
-                    const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
-                    spaceDiv.style.borderColor = color;
-                    spaceDiv.style.background = color;
-                });
-            }
-            
+            const color = this.players.find(player => Number(player.id) == claimedRoute.playerId).color;
+            route.spaces.forEach((space, spaceIndex) => {
+                const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
+                spaceDiv.parentElement.removeChild(spaceDiv);
+
+                let angle = -space.angle;
+                while (angle < 0) {
+                    angle += 180;
+                }
+                while (angle >= 180) {
+                    angle -= 180;
+                }
+                dojo.place(`<div class="wagon angle${Math.round(angle * 36 / 180)}" data-player-color="${color}" style="transform: translate(${space.x}px, ${space.y}px)"></div>`, 'map');
+            });
         });
+    }
+
+    public setAutoZoom() {
+        const map = document.getElementById('map');
+        const zoomWrapperWidth = map.clientWidth;
+
+        if (!zoomWrapperWidth) {
+            setTimeout(() => this.setAutoZoom(), 200);
+            return;
+        }
+
+        const scale = Math.min(1, document.getElementById('game_play_area').clientWidth / zoomWrapperWidth);
+
+        map.style.transform = `scale(${scale})`;
+        document.getElementById('board').style.height = `${map.clientHeight * scale}px`;
     }
 }

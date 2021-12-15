@@ -13,71 +13,72 @@
   padding: 0 5px 0 5px;
 }
 
-#board {
+#map {
   position: relative;
   width: 1650px;
   height: 1064px;
   background: url("img/map.jpg");
+  transform-origin: top left;
 }
-#board .side {
+#map .side {
   position: absolute;
   pointer-events: none;
 }
-#board .side.left {
+#map .side.left {
   background: url("img/border-map-left.png");
   width: 9px;
   left: 0;
   top: 180px;
   bottom: 180px;
 }
-#board .side.right {
+#map .side.right {
   background: url("img/border-map-right.png");
   width: 8px;
   right: 0;
   top: 180px;
   bottom: 180px;
 }
-#board .side.top {
+#map .side.top {
   background: url("img/border-map-top.png");
   height: 8px;
   left: 180px;
   right: 180px;
   top: 0;
 }
-#board .side.bottom {
+#map .side.bottom {
   background: url("img/border-map-bottom.png");
   height: 9px;
   left: 180px;
   right: 180px;
   bottom: 0;
 }
-#board .corner {
+#map .corner {
   position: absolute;
   pointer-events: none;
   width: 180px;
   height: 180px;
 }
-#board .corner.top-left {
+#map .corner.top-left {
   background: url("img/border-map-corner-top-left.png");
   left: 0;
   top: 0;
 }
-#board .corner.top-right {
+#map .corner.top-right {
   background: url("img/border-map-corner-top-right.png");
   right: 0;
   top: 0;
 }
-#board .corner.bottom-left {
+#map .corner.bottom-left {
   background: url("img/border-map-corner-bottom-left.png");
   left: 0;
   bottom: 0;
 }
-#board .corner.bottom-right {
+#map .corner.bottom-right {
   background: url("img/border-map-corner-bottom-right.png");
   right: 0;
   bottom: 0;
 }
-#board .illustration {
+#map .illustration {
   position: absolute;
   pointer-events: none;
   background: url("img/border-map-illustration.png");
@@ -132,8 +133,7 @@
 }*/
 .route {
   display: inline-block;
-  border: 3px solid lightgray;
-  background: rgba(128, 128, 128, 0.3);
+  border: 3px solid transparent;
   border-radius: 8px;
   padding: 5px;
   margin: 5px;
@@ -150,6 +150,139 @@
   width: 43px;
   height: 5px;
   z-index: 5;
+}
+
+.wagon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 90px;
+  height: 90px;
+  margin: -25px;
+  background-size: 600%;
+}
+.wagon.angle0 {
+  background-position: 0% 0%;
+}
+.wagon.angle1 {
+  background-position: 20% 0%;
+}
+.wagon.angle2 {
+  background-position: 40% 0%;
+}
+.wagon.angle3 {
+  background-position: 60% 0%;
+}
+.wagon.angle4 {
+  background-position: 80% 0%;
+}
+.wagon.angle5 {
+  background-position: 100% 0%;
+}
+.wagon.angle6 {
+  background-position: 0% 20%;
+}
+.wagon.angle7 {
+  background-position: 20% 20%;
+}
+.wagon.angle8 {
+  background-position: 40% 20%;
+}
+.wagon.angle9 {
+  background-position: 60% 20%;
+}
+.wagon.angle10 {
+  background-position: 80% 20%;
+}
+.wagon.angle11 {
+  background-position: 100% 20%;
+}
+.wagon.angle12 {
+  background-position: 0% 40%;
+}
+.wagon.angle13 {
+  background-position: 20% 40%;
+}
+.wagon.angle14 {
+  background-position: 40% 40%;
+}
+.wagon.angle15 {
+  background-position: 60% 40%;
+}
+.wagon.angle16 {
+  background-position: 80% 40%;
+}
+.wagon.angle17 {
+  background-position: 100% 40%;
+}
+.wagon.angle18 {
+  background-position: 0% 60%;
+}
+.wagon.angle19 {
+  background-position: 20% 60%;
+}
+.wagon.angle20 {
+  background-position: 40% 60%;
+}
+.wagon.angle21 {
+  background-position: 60% 60%;
+}
+.wagon.angle22 {
+  background-position: 80% 60%;
+}
+.wagon.angle23 {
+  background-position: 100% 60%;
+}
+.wagon.angle24 {
+  background-position: 0% 80%;
+}
+.wagon.angle25 {
+  background-position: 20% 80%;
+}
+.wagon.angle26 {
+  background-position: 40% 80%;
+}
+.wagon.angle27 {
+  background-position: 60% 80%;
+}
+.wagon.angle28 {
+  background-position: 80% 80%;
+}
+.wagon.angle29 {
+  background-position: 100% 80%;
+}
+.wagon.angle30 {
+  background-position: 0% 100%;
+}
+.wagon.angle31 {
+  background-position: 20% 100%;
+}
+.wagon.angle32 {
+  background-position: 40% 100%;
+}
+.wagon.angle33 {
+  background-position: 60% 100%;
+}
+.wagon.angle34 {
+  background-position: 80% 100%;
+}
+.wagon.angle35 {
+  background-position: 100% 100%;
+}
+.wagon[data-player-color=ff0000] {
+  background-image: url("img/wagons-red.png");
+}
+.wagon[data-player-color="008000"] {
+  background-image: url("img/wagons-green.png");
+}
+.wagon[data-player-color="0000ff"] {
+  background-image: url("img/wagons-blue.png");
+}
+.wagon[data-player-color=ffa500] {
+  background-image: url("img/wagons-yellow.png");
+}
+.wagon[data-player-color="000000"] {
+  background-image: url("img/wagons-black.png");
 }
 
 #train-car-deck {
