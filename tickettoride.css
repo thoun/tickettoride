@@ -13,6 +13,39 @@
   padding: 0 5px 0 5px;
 }
 
+.icon {
+  display: inline-block;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  background-image: url("img/icons.png");
+  background-size: auto 100%;
+}
+.icon.train-car-card {
+  background-position: 0% 0%;
+}
+.icon.destination-card {
+  background-position: 100% 0%;
+}
+.icon.train {
+  background-image: url("img/train-icons.png");
+}
+.icon.train[data-player-color=ff0000] {
+  background-position: 75% 0%;
+}
+.icon.train[data-player-color="008000"] {
+  background-position: 25% 0%;
+}
+.icon.train[data-player-color="0000ff"] {
+  background-position: 0% 0%;
+}
+.icon.train[data-player-color=ffa500] {
+  background-position: 100% 0%;
+}
+.icon.train[data-player-color="982fff"] {
+  background-position: 50% 0%;
+}
+
 #map-zoom-wrapper {
   position: relative;
   user-select: none;
@@ -326,8 +359,8 @@
 .wagon[data-player-color=ffa500] {
   background-image: url("img/wagons-yellow.png");
 }
-.wagon[data-player-color="000000"] {
-  background-image: url("img/wagons-black.png");
+.wagon[data-player-color="982fff"] {
+  background-image: url("img/wagons-purple.png");
 }
 
 #train-car-deck {
@@ -383,6 +416,8 @@
   right: 0;
   bottom: 0;
   background: url("img/destination-selected.png");
+  box-shadow: 0 0 3px 3px #d9ffff;
+  border-radius: 6px;
 }
 
 .player-table-destinations .stockitem::after {

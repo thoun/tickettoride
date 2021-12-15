@@ -177,17 +177,17 @@ class TicketToRide implements TicketToRideGame {
 
             // public counters
             dojo.place(`<div class="counters">
-                <div class="counter train-car-counter">
-                    <div class="icon train-car"></div> 
+                <div id="train-car-counter-${player.id}-wrapper" class="counter train-car-counter">
+                    <div class="icon train" data-player-color="${player.color}"></div> 
                     <span id="train-car-counter-${player.id}"></span>
                 </div>
-                <div class="counter train-car-card-counter">
+                <div id="train-car-card-counter-${player.id}-wrapper" class="counter train-car-card-counter">
                     <div class="icon train-car-card"></div> 
                     <span id="train-car-card-counter-${player.id}"></span>
                 </div>
-                <div class="counter destinations-counter">
+                <div id="train-destinations-counter-${player.id}-wrapper" class="counter destinations-counter">
                     <div class="icon destination-card"></div> 
-                    <span id="completed-destinations-counter-${player.id}">${this.getPlayerId() !== playerId ? '?' : ''}</span>&nbsp;/&nbsp;<span id="destination-card-counter-${player.id}"></span>
+                    <span id="completed-destinations-counter-${player.id}">${this.getPlayerId() !== playerId ? '?' : ''}</span>/<span id="destination-card-counter-${player.id}"></span>
                 </div>
             </div>`, `player_board_${player.id}`);
 
