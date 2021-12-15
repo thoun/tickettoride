@@ -221,6 +221,10 @@
 .player-table-destinations .stockitem.done::after {
   background: url("img/destination-done.png");
 }
+.player-table-destinations .stockitem.done {
+  mask: url("img/destination-done-mask.png") no-repeat center/contain;
+  -webkit-mask: url("img/destination-done-mask.png") no-repeat center/contain;
+}
 
 #last-round {
   margin: 5px -5px -5px;

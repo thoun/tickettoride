@@ -854,7 +854,7 @@ var TrainCarSelection = /** @class */ (function () {
     return TrainCarSelection;
 }());
 var PlayerTable = /** @class */ (function () {
-    function PlayerTable(game, player, trainCars, destinations) {
+    function PlayerTable(game, player, trainCars, destinations, completedDestinations) {
         var _this = this;
         this.game = game;
         this.playerId = Number(player.id);
@@ -885,6 +885,7 @@ var PlayerTable = /** @class */ (function () {
         this.destinationStock.onItemCreate = function (cardDiv, type) { return setupDestinationCardDiv(cardDiv, type); };
         setupDestinationCards(this.destinationStock);
         this.addDestinations(destinations);
+        destinations.filter(function (destination) { return completedDestinations.some(function (d) { return d.id == destination.id; }); }).forEach(function (destination) { return _this.markDestinationComplete(destination); });
     }
     PlayerTable.prototype.addDestinations = function (destinations, originStock) {
         var _this = this;
@@ -892,9 +893,11 @@ var PlayerTable = /** @class */ (function () {
             var _a;
             var from = ((_a = document.getElementById((originStock ? originStock.container_div.id : 'destination-stock') + "_item_" + destination.id)) === null || _a === void 0 ? void 0 : _a.id) || 'destination-stock';
             _this.destinationStock.addToStockWithId(destination.type_arg, '' + destination.id, from);
-            document.getElementById(_this.destinationStock.container_div.id + "_item_" + destination.id).classList.add('todo'); // TODO
         });
         originStock === null || originStock === void 0 ? void 0 : originStock.removeAll();
+    };
+    PlayerTable.prototype.markDestinationComplete = function (destination) {
+        document.getElementById(this.destinationStock.container_div.id + "_item_" + destination.id).classList.add('done');
     };
     PlayerTable.prototype.addTrainCars = function (trainCars, stocks) {
         var _this = this;
@@ -941,7 +944,7 @@ var TicketToRide = /** @class */ (function () {
         this.destinationSelection = new DestinationSelection(this);
         var player = gamedatas.players[this.getPlayerId()];
         if (player) {
-            this.playerTable = new PlayerTable(this, player, gamedatas.handTrainCars, gamedatas.handDestinations);
+            this.playerTable = new PlayerTable(this, player, gamedatas.handTrainCars, gamedatas.handDestinations, gamedatas.completedDestinations);
         }
         this.createPlayerPanels(gamedatas);
         if (gamedatas.lastTurn) {
@@ -1208,7 +1211,8 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.notif_destinationCompleted = function (notif) {
         var destination = notif.args.destination;
         this.completedDestinationsCounter.incValue(1);
-        // TODO change destination aspect
+        this.gamedatas.completedDestinations.push(destination);
+        this.playerTable.markDestinationComplete(destination);
     };
     TicketToRide.prototype.notif_lastTurn = function () {
         dojo.place("<div id=\"last-round\">\n            " + _("This is the final round!") + "\n        </div>", 'page-title');

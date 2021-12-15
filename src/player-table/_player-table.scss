@@ -15,5 +15,9 @@
         &.done::after {
             background: url('img/destination-done.png');
         }
+        &.done {            
+            mask: url('img/destination-done-mask.png') no-repeat center / contain;
+            -webkit-mask: url('img/destination-done-mask.png') no-repeat center / contain;    
+        }
     }
 }

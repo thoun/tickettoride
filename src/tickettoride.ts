@@ -48,7 +48,7 @@ class TicketToRide implements TicketToRideGame {
 
         const player = gamedatas.players[this.getPlayerId()];
         if (player) {
-            this.playerTable = new PlayerTable(this, player, gamedatas.handTrainCars, gamedatas.handDestinations);
+            this.playerTable = new PlayerTable(this, player, gamedatas.handTrainCars, gamedatas.handDestinations, gamedatas.completedDestinations);
         }
 
         this.createPlayerPanels(gamedatas);
@@ -378,7 +378,8 @@ class TicketToRide implements TicketToRideGame {
     notif_destinationCompleted(notif: Notif<NotifDestinationCompletedArgs>) {
         const destination: Destination = notif.args.destination;
         this.completedDestinationsCounter.incValue(1);
-        // TODO change destination aspect
+        this.gamedatas.completedDestinations.push(destination);
+        this.playerTable.markDestinationComplete(destination);
     }
     
     notif_lastTurn() {

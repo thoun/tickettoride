@@ -7,7 +7,8 @@ class PlayerTable {
         private game: TicketToRideGame, 
         player: TicketToRidePlayer,
         trainCars: TrainCar[],
-        destinations: Destination[]) {
+        destinations: Destination[],
+        completedDestinations: Destination[]) {
 
         this.playerId = Number(player.id);
 
@@ -49,15 +50,19 @@ class PlayerTable {
         setupDestinationCards(this.destinationStock);
 
         this.addDestinations(destinations);
+        destinations.filter(destination => completedDestinations.some(d => d.id == destination.id)).forEach(destination => this.markDestinationComplete(destination));
     }
         
     public addDestinations(destinations: Destination[], originStock?: Stock) {
         destinations.forEach(destination => {
             const from = document.getElementById(`${originStock ? originStock.container_div.id : 'destination-stock'}_item_${destination.id}`)?.id || 'destination-stock';
             this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id, from);
-            document.getElementById(`${this.destinationStock.container_div.id}_item_${destination.id}`).classList.add('todo'); // TODO
         });
         originStock?.removeAll();
+    }
+
+    public markDestinationComplete(destination: Destination) {
+        document.getElementById(`${this.destinationStock.container_div.id}_item_${destination.id}`).classList.add('done');
     }
     
     public addTrainCars(trainCars: TrainCar[], stocks?: TrainCarSelection) {
