@@ -1,7 +1,10 @@
 {OVERALL_GAME_HEADER}
 
-<div id="board">
-    <div id="map"></div>
+<div id="map-zoom-wrapper">
+    <div id="map-zoom" class="disable-scrollbars">
+        <div id="map"></div>
+    </div>
+    <div id="zoom-button"></div>
 </div>
 
 <div id="train-car-deck">

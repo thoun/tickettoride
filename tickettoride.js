@@ -662,11 +662,12 @@ var ROUTES = [
     ], GRAY),
 ];
 var TtrMap = /** @class */ (function () {
-    //private points = new Map<number, number>();
     function TtrMap(game, players, claimedRoutes) {
         var _this = this;
         this.game = game;
         this.players = players;
+        this.pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 };
+        this.zoomed = false;
         // map border
         dojo.place("<div class=\"illustration\"></div>", 'map');
         SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map'); });
@@ -690,6 +691,13 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     ], ${COLORS[route.color]}),`).join('\n'));*/
         //this.movePoints();
         this.setClaimedRoutes(claimedRoutes);
+        this.mapZoomDiv = document.getElementById('map-zoom');
+        this.mapDiv = document.getElementById('map');
+        // Attach the handler
+        this.mapDiv.addEventListener('mousedown', function (e) { return _this.mouseDownHandler(e); });
+        document.addEventListener('mousemove', function (e) { return _this.mouseMoveHandler(e); });
+        document.addEventListener('mouseup', function (e) { return _this.mouseUpHandler(); });
+        document.getElementById('zoom-button').addEventListener('mouseup', function () { return _this.toggleZoom(); });
     }
     /*public setPoints(playerId: number, points: number) {
         this.points.set(playerId, points);
@@ -751,15 +759,56 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     };
     TtrMap.prototype.setAutoZoom = function () {
         var _this = this;
-        var map = document.getElementById('map');
-        var zoomWrapperWidth = map.clientWidth;
+        var zoomWrapperWidth = this.mapDiv.clientWidth;
         if (!zoomWrapperWidth) {
             setTimeout(function () { return _this.setAutoZoom(); }, 200);
             return;
         }
-        var scale = Math.min(1, document.getElementById('game_play_area').clientWidth / zoomWrapperWidth);
-        map.style.transform = "scale(" + scale + ")";
-        document.getElementById('board').style.height = map.clientHeight * scale + "px";
+        this.scale = Math.min(1, document.getElementById('game_play_area').clientWidth / zoomWrapperWidth);
+        this.mapDiv.style.transform = this.zoomed || this.scale === 1 ? '' : "scale(" + this.scale + ")";
+        this.mapZoomDiv.style.height = this.scale === 1 ? '' : this.mapDiv.clientHeight * this.scale + "px";
+    };
+    TtrMap.prototype.mouseDownHandler = function (e) {
+        if (!this.zoomed) {
+            return;
+        }
+        //this.mapDiv.style.cursor = 'grabbing';
+        this.pos = {
+            dragging: true,
+            left: this.mapDiv.scrollLeft,
+            top: this.mapDiv.scrollTop,
+            // Get the current mouse position
+            x: e.clientX,
+            y: e.clientY,
+        };
+    };
+    TtrMap.prototype.mouseMoveHandler = function (e) {
+        if (!this.zoomed || !this.pos.dragging) {
+            return;
+        }
+        // How far the mouse has been moved
+        var dx = e.clientX - this.pos.x;
+        var dy = e.clientY - this.pos.y;
+        // Scroll the element
+        this.mapZoomDiv.scrollTop -= dy;
+        this.mapZoomDiv.scrollLeft -= dx;
+    };
+    TtrMap.prototype.mouseUpHandler = function () {
+        if (!this.zoomed || !this.pos.dragging) {
+            return;
+        }
+        //this.mapDiv.style.cursor = 'grab';
+        this.pos.dragging = false;
+    };
+    TtrMap.prototype.toggleZoom = function () {
+        this.zoomed = !this.zoomed;
+        this.mapDiv.style.transform = this.zoomed || this.scale === 1 ? '' : "scale(" + this.scale + ")";
+        dojo.toggleClass('zoom-button', 'zoomed', this.zoomed);
+        dojo.toggleClass('map-zoom', 'scrollable', this.zoomed);
+        if (!this.zoomed) {
+            this.mapZoomDiv.scrollTop = 0;
+            this.mapZoomDiv.scrollLeft = 0;
+        }
     };
     return TtrMap;
 }());

@@ -536,6 +536,11 @@ const ROUTES = [
 
 class TtrMap {
     //private points = new Map<number, number>();
+    private scale: number;
+    private mapZoomDiv: HTMLDivElement;
+    private mapDiv: HTMLDivElement;
+    private pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 };
+    private zoomed = false;
 
     constructor(
         private game: TicketToRideGame,
@@ -572,6 +577,14 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
 
         //this.movePoints();
         this.setClaimedRoutes(claimedRoutes);
+
+        this.mapZoomDiv = document.getElementById('map-zoom') as HTMLDivElement;
+        this.mapDiv = document.getElementById('map') as HTMLDivElement;
+        // Attach the handler
+        this.mapDiv.addEventListener('mousedown', e => this.mouseDownHandler(e));
+        document.addEventListener('mousemove', e => this.mouseMoveHandler(e));
+        document.addEventListener('mouseup', e => this.mouseUpHandler());
+        document.getElementById('zoom-button').addEventListener('mouseup', () => this.toggleZoom());
     }
 
     /*public setPoints(playerId: number, points: number) {
@@ -638,17 +651,67 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     }
 
     public setAutoZoom() {
-        const map = document.getElementById('map');
-        const zoomWrapperWidth = map.clientWidth;
+        const zoomWrapperWidth = this.mapDiv.clientWidth;
 
         if (!zoomWrapperWidth) {
             setTimeout(() => this.setAutoZoom(), 200);
             return;
         }
 
-        const scale = Math.min(1, document.getElementById('game_play_area').clientWidth / zoomWrapperWidth);
+        this.scale = Math.min(1, document.getElementById('game_play_area').clientWidth / zoomWrapperWidth);
 
-        map.style.transform = `scale(${scale})`;
-        document.getElementById('board').style.height = `${map.clientHeight * scale}px`;
+        this.mapDiv.style.transform = this.zoomed || this.scale === 1 ? '' : `scale(${this.scale})`;
+        this.mapZoomDiv.style.height = this.scale === 1 ? '' : `${this.mapDiv.clientHeight * this.scale}px`;
+    }
+
+    private mouseDownHandler(e: MouseEvent) {
+        if (!this.zoomed) {
+            return;
+        }
+        //this.mapDiv.style.cursor = 'grabbing';
+
+        this.pos = {
+            dragging: true,
+            left: this.mapDiv.scrollLeft,
+            top: this.mapDiv.scrollTop,
+            // Get the current mouse position
+            x: e.clientX,
+            y: e.clientY,
+        };
+    }
+
+    private mouseMoveHandler(e: MouseEvent) {
+        if (!this.zoomed || !this.pos.dragging) {
+            return;
+        }
+
+        // How far the mouse has been moved
+        const dx = e.clientX - this.pos.x;
+        const dy = e.clientY - this.pos.y;
+
+        // Scroll the element
+        this.mapZoomDiv.scrollTop -= dy;
+        this.mapZoomDiv.scrollLeft -= dx;
+    }
+
+    private mouseUpHandler() {
+        if (!this.zoomed || !this.pos.dragging) {
+            return;
+        }
+        
+        //this.mapDiv.style.cursor = 'grab';
+        this.pos.dragging = false;
+    }
+
+    private toggleZoom() {      
+        this.zoomed = !this.zoomed;
+        this.mapDiv.style.transform = this.zoomed || this.scale === 1 ? '' : `scale(${this.scale})`;
+        dojo.toggleClass('zoom-button', 'zoomed', this.zoomed);
+        dojo.toggleClass('map-zoom', 'scrollable', this.zoomed);
+
+        if (!this.zoomed) {
+            this.mapZoomDiv.scrollTop = 0;
+            this.mapZoomDiv.scrollLeft = 0;
+        }
     }
 }
