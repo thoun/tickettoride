@@ -22,7 +22,11 @@ interface Destination extends Card {
 }
 
 interface Route {
-    // TODO
+    id: number;
+    from: number;
+    to: number;
+    number: number;
+    color: number;
 }
 
 interface ClaimedRoute {
@@ -132,4 +136,9 @@ interface NotifNewCardsOnTableArgs {
 interface NotifClaimedRouteArgs {
     playerId: number;
     route: Route;
+}
+
+interface NotifDestinationCompletedArgs {
+    playerId: number;
+    destination: Destination;
 }

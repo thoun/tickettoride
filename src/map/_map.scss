@@ -139,8 +139,7 @@
   border-radius: 8px;
   padding: 5px;
   margin: 5px;
-  // TODO TEMP pointer-events: none;
-  border-color: black; // TODO TEMP
+  pointer-events: none;
 
   &.selectable {
     border-color: black;

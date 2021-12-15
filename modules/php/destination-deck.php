@@ -10,7 +10,7 @@ trait DestinationDeckTrait {
     public function createDestinations() {
         foreach($this->DESTINATIONS as $type => $typeDestinations) {
             foreach($typeDestinations as $typeArg => $destination) {
-                $destinations[] = [ 'type' => 1, 'type_arg' => $typeArg, 'nbr' => 1];
+                $destinations[] = [ 'type' => $type, 'type_arg' => $typeArg, 'nbr' => 1];
             }
         }
         $this->destinations->createCards($destinations, 'deck');

@@ -34,6 +34,14 @@ class TicketToRideTestLongestPath extends TicketToRide { // this is your game cl
             return array_map(function($route) use ($playerId) {
                 return new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]);
             }, $routes);
+        } else if ($playerId === 3) {
+            $routes = [
+                48, //9 to 31, 
+                99, //7 to 31
+            ];
+            return array_map(function($route) use ($playerId) {
+                return new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]);
+            }, $routes);
         }
         return [];
     }
@@ -69,9 +77,24 @@ class TicketToRideTestLongestPath extends TicketToRide { // this is your game cl
         }
     }
 
+    function testDestinationCompletedYes2() {
+        $result = $this->isDestinationCompleted(3, $this->DESTINATIONS[1][7]);
+
+        $expected = true;
+        $equal = $result == $expected;
+
+        if ($equal) {
+            echo "Test2: PASSED\n";
+        } else {
+            echo "Test2: FAILED\n";
+            echo "Expected: $expected, value: $result\n";
+        }
+    }
+
     function testAll() {
         $this->testDestinationCompletedNo();
         $this->testDestinationCompletedYes();
+        $this->testDestinationCompletedYes2();
     }
 }
 

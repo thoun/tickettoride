@@ -223,7 +223,7 @@ class TicketToRide implements TicketToRideGame {
     
     private setPoints(playerId: number, points: number) {
         (this as any).scoreCtrl[playerId]?.toValue(points);
-        this.map.setPoints(playerId, points);
+        //this.map.setPoints(playerId, points);
     }
 
     public chooseInitialDestinations() {
@@ -321,6 +321,7 @@ class TicketToRide implements TicketToRideGame {
         const notifs = [
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
+            ['destinationCompleted', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
             ['trainCarPicked', 1],
@@ -333,7 +334,7 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
-    notif_points(notif: Notif<NotifPointsArgs>) {console.log(notif.args);
+    notif_points(notif: Notif<NotifPointsArgs>) {
         this.setPoints(notif.args.playerId, notif.args.points);
     }
 
@@ -365,13 +366,19 @@ class TicketToRide implements TicketToRideGame {
 
     notif_claimedRoute(notif: Notif<NotifClaimedRouteArgs>) {
         const playerId = notif.args.playerId;
-        const route = notif.args.route;
-        this.trainCarCardCounters[playerId].incValue(-route.spaces);
-        this.trainCarCounters[playerId].incValue(-route.spaces);
+        const route: Route = notif.args.route;
+        this.trainCarCardCounters[playerId].incValue(-route.number);
+        this.trainCarCounters[playerId].incValue(-route.number);
         this.map.setClaimedRoutes([{
             playerId,
             routeId: route.id
         }]);
+    }
+
+    notif_destinationCompleted(notif: Notif<NotifDestinationCompletedArgs>) {
+        const destination: Destination = notif.args.destination;
+        this.completedDestinationsCounter.incValue(1);
+        // TODO change destination aspect
     }
     
     notif_lastTurn() {

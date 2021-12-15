@@ -44,6 +44,7 @@ class PlayerTable {
         this.destinationStock.selectionClass = 'selected';
         this.destinationStock.create(this.game, $(`player-table-${this.playerId}-destinations`), CARD_WIDTH, CARD_HEIGHT);
         this.destinationStock.setSelectionMode(0);
+        this.destinationStock.image_items_per_row = 10;
         this.destinationStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupDestinationCardDiv(cardDiv, type);
         setupDestinationCards(this.destinationStock);
 
@@ -53,6 +54,7 @@ class PlayerTable {
     public addDestinations(destinations: Destination[], originStock?: Stock) {
         destinations.forEach(destination => {
             const from = document.getElementById(`${originStock ? originStock.container_div.id : 'destination-stock'}_item_${destination.id}`)?.id || 'destination-stock';
+            console.log(destination);
             this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id, from);
         });
         originStock?.removeAll();
