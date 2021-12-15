@@ -185,10 +185,22 @@ var ROUTES = [
         new RouteSpace(1380, 607, -41),
         new RouteSpace(1333, 649, -41),
     ], GRAY),
-    new Route(8, 2, 17, 2, GRAY),
-    new Route(9, 2, 17, 2, GRAY),
-    new Route(10, 2, 20, 2, YELLOW),
-    new Route(11, 2, 20, 2, RED),
+    new Route(8, 2, 17, [
+        new RouteSpace(1509, 84, 40),
+        new RouteSpace(1557, 123, 40),
+    ], GRAY),
+    new Route(9, 2, 17, [
+        new RouteSpace(1494, 100, 40),
+        new RouteSpace(1542, 140, 40),
+    ], GRAY),
+    new Route(10, 2, 20, [
+        new RouteSpace(1554, 201, 122),
+        new RouteSpace(1521, 254, 122),
+    ], YELLOW),
+    new Route(11, 2, 20, [
+        new RouteSpace(1572, 212, 122),
+        new RouteSpace(1539, 265, 122),
+    ], RED),
     new Route(12, 3, 10, 4, GRAY),
     new Route(12, 3, 32, 4, GRAY),
     new Route(13, 3, 34, 3, GRAY),
@@ -203,13 +215,41 @@ var ROUTES = [
         new RouteSpace(1443, 598, 35),
         new RouteSpace(1471, 640, -65),
     ], GRAY),
-    new Route(17, 5, 8, 3, RED),
-    new Route(18, 5, 22, 4, BLUE),
-    new Route(19, 5, 24, 3, ORANGE),
-    new Route(20, 5, 24, 3, BLACK),
-    new Route(21, 5, 27, 2, GREEN),
-    new Route(22, 5, 27, 2, WHITE),
-    new Route(23, 5, 33, 4, WHITE),
+    new Route(17, 5, 8, [
+        new RouteSpace(944, 320, 28),
+        new RouteSpace(1001, 346, 21),
+        new RouteSpace(1062, 364, 14),
+    ], RED),
+    new Route(18, 5, 22, [
+        new RouteSpace(897, 432, -34),
+        new RouteSpace(947, 398, -34),
+        new RouteSpace(1009, 383, 8),
+        new RouteSpace(1068, 392, 8),
+    ], BLUE),
+    new Route(19, 5, 24, [
+        new RouteSpace(1161, 363, -14),
+        new RouteSpace(1223, 350, -9),
+        new RouteSpace(1286, 347, 3),
+    ], ORANGE),
+    new Route(20, 5, 24, [
+        new RouteSpace(1169, 385, -14),
+        new RouteSpace(1231, 372, -9),
+        new RouteSpace(1293, 369, 3),
+    ], BLACK),
+    new Route(21, 5, 27, [
+        new RouteSpace(1046, 488, -57),
+        new RouteSpace(1079, 437, -57),
+    ], GREEN),
+    new Route(22, 5, 27, [
+        new RouteSpace(1065, 497, -57),
+        new RouteSpace(1098, 446, -57),
+    ], WHITE),
+    new Route(23, 5, 33, [
+        new RouteSpace(1128, 346, -48),
+        new RouteSpace(1176, 305, -35),
+        new RouteSpace(1233, 277, -17),
+        new RouteSpace(1289, 248, -39),
+    ], WHITE),
     new Route(24, 6, 9, [
         new RouteSpace(653, 885, 351),
         new RouteSpace(714, 875, 351),
@@ -234,7 +274,12 @@ var ROUTES = [
         new RouteSpace(885, 733, -97),
         new RouteSpace(893, 795, -97),
     ], GRAY),
-    new Route(30, 7, 10, 4, GREEN),
+    new Route(30, 7, 10, [
+        new RouteSpace(513, 344, 67),
+        new RouteSpace(535, 401, 67),
+        new RouteSpace(559, 458, 67),
+        new RouteSpace(582, 517, 67),
+    ], GREEN),
     new Route(31, 7, 12, [
         new RouteSpace(654, 570, 5),
         new RouteSpace(717, 571, -5),
@@ -280,11 +325,35 @@ var ROUTES = [
         new RouteSpace(584, 620, 273),
         new RouteSpace(581, 682, 273),
     ], GRAY),
-    new Route(38, 8, 10, 6, ORANGE),
-    new Route(39, 8, 22, 2, GRAY),
-    new Route(40, 8, 22, 2, GRAY),
-    new Route(41, 8, 29, 3, GRAY),
-    new Route(42, 8, 33, 6, PINK),
+    new Route(38, 8, 10, [
+        new RouteSpace(543, 297, -1),
+        new RouteSpace(606, 297, -1),
+        new RouteSpace(669, 296, -1),
+        new RouteSpace(732, 295, -1),
+        new RouteSpace(795, 294, -1),
+        new RouteSpace(858, 293, -1),
+    ], ORANGE),
+    new Route(39, 8, 22, [
+        new RouteSpace(877, 338, -68),
+        new RouteSpace(854, 396, -68),
+    ], GRAY),
+    new Route(40, 8, 22, [
+        new RouteSpace(897, 345, -68),
+        new RouteSpace(874, 403, -68),
+    ], GRAY),
+    new Route(41, 8, 29, [
+        new RouteSpace(965, 248, -23),
+        new RouteSpace(1022, 225, -23),
+        new RouteSpace(1080, 200, -23),
+    ], GRAY),
+    new Route(42, 8, 33, [
+        new RouteSpace(953, 281, -8),
+        new RouteSpace(1015, 270, -8),
+        new RouteSpace(1077, 259, -8),
+        new RouteSpace(1139, 249, -8),
+        new RouteSpace(1200, 238, -8),
+        new RouteSpace(1263, 227, -8),
+    ], PINK),
     new Route(43, 8, 36, 4, BLACK),
     new Route(44, 9, 11, [
         new RouteSpace(611, 913, 30),
@@ -318,9 +387,26 @@ var ROUTES = [
         new RouteSpace(574, 837, 273),
         new RouteSpace(577, 773, 273),
     ], GRAY),
-    new Route(49, 10, 22, 5, RED),
-    new Route(50, 10, 28, 3, PINK),
-    new Route(51, 10, 32, 6, YELLOW),
+    new Route(49, 10, 22, [
+        new RouteSpace(559, 332, 22),
+        new RouteSpace(616, 355, 22),
+        new RouteSpace(675, 379, 22),
+        new RouteSpace(734, 403, 22),
+        new RouteSpace(791, 427, 22),
+    ], RED),
+    new Route(50, 10, 28, [
+        new RouteSpace(463, 346, -59),
+        new RouteSpace(432, 399, -59),
+        new RouteSpace(399, 453, -59),
+    ], PINK),
+    new Route(51, 10, 32, [
+        new RouteSpace(133, 225, 12),
+        new RouteSpace(194, 239, 12),
+        new RouteSpace(255, 253, 12),
+        new RouteSpace(316, 267, 12),
+        new RouteSpace(377, 281, 12),
+        new RouteSpace(438, 294, 12),
+    ], YELLOW),
     new Route(52, 10, 36, 4, BLUE),
     new Route(53, 11, 19, [
         new RouteSpace(1070, 895, 352),
@@ -398,9 +484,17 @@ var ROUTES = [
         new RouteSpace(1245, 855, 345),
         new RouteSpace(1187, 881, 330),
     ], RED),
-    new Route(70, 17, 20, 3, BLUE),
+    new Route(70, 17, 20, [
+        new RouteSpace(1456, 118, 80),
+        new RouteSpace(1466, 181, 80),
+        new RouteSpace(1476, 241, 80),
+    ], BLUE),
     new Route(71, 17, 29, 5, BLACK),
-    new Route(72, 17, 33, 3, GRAY),
+    new Route(72, 17, 33, [
+        new RouteSpace(1323, 166, -59),
+        new RouteSpace(1363, 117, -42),
+        new RouteSpace(1417, 83, -23),
+    ], GRAY),
     new Route(73, 18, 24, [
         new RouteSpace(1198, 568, -62),
         new RouteSpace(1232, 515, -51),
@@ -416,10 +510,22 @@ var ROUTES = [
         new RouteSpace(1085, 578, 17),
         new RouteSpace(1144, 597, 17),
     ], GRAY),
-    new Route(76, 20, 24, 2, WHITE),
-    new Route(77, 20, 24, 2, GREEN),
-    new Route(78, 20, 35, 2, ORANGE),
-    new Route(79, 20, 35, 2, BLACK),
+    new Route(76, 20, 24, [
+        new RouteSpace(1386, 331, -31),
+        new RouteSpace(1439, 299, -31),
+    ], WHITE),
+    new Route(77, 20, 24, [
+        new RouteSpace(1397, 350, -31),
+        new RouteSpace(1450, 318, -31),
+    ], GREEN),
+    new Route(78, 20, 35, [
+        new RouteSpace(1494, 341, 87),
+        new RouteSpace(1497, 404, 87),
+    ], ORANGE),
+    new Route(79, 20, 35, [
+        new RouteSpace(1515, 339, 87),
+        new RouteSpace(1518, 402, 87),
+    ], BLACK),
     new Route(80, 21, 31, [
         new RouteSpace(633, 724, -7),
         new RouteSpace(694, 718, -7),
@@ -441,16 +547,42 @@ var ROUTES = [
         new RouteSpace(1248, 437, -30),
         new RouteSpace(1302, 406, -30),
     ], GREEN),
-    new Route(84, 24, 33, 2, GRAY),
+    new Route(84, 24, 33, [
+        new RouteSpace(1332, 256, -93),
+        new RouteSpace(1336, 320, -93),
+    ], GRAY),
     new Route(85, 24, 35, [
         new RouteSpace(1400, 401, 28),
         new RouteSpace(1456, 430, 28),
     ], GRAY),
-    new Route(86, 25, 28, 6, BLUE),
-    new Route(87, 25, 30, 5, GREEN),
-    new Route(88, 25, 30, 5, PINK),
-    new Route(89, 25, 32, 1, GRAY),
-    new Route(90, 25, 32, 1, GRAY),
+    new Route(86, 25, 28, [
+        new RouteSpace(96, 292, 12),
+        new RouteSpace(156, 309, 20),
+        new RouteSpace(214, 338, 33),
+        new RouteSpace(265, 375, 40),
+        new RouteSpace(310, 418, 49),
+        new RouteSpace(346, 469, 61),
+    ], BLUE),
+    new Route(87, 25, 30, [
+        new RouteSpace(17, 327, 111),
+        new RouteSpace(-2, 387, 102),
+        new RouteSpace(-9, 449, 93),
+        new RouteSpace(-8, 512, 86),
+        new RouteSpace(3, 575, 73),
+    ], GREEN),
+    new Route(88, 25, 30, [
+        new RouteSpace(39, 330, 111),
+        new RouteSpace(20, 390, 102),
+        new RouteSpace(13, 452, 93),
+        new RouteSpace(14, 515, 86),
+        new RouteSpace(25, 578, 73),
+    ], PINK),
+    new Route(89, 25, 32, [
+        new RouteSpace(54, 234, 112),
+    ], GRAY),
+    new Route(90, 25, 32, [
+        new RouteSpace(74, 241, 112),
+    ], GRAY),
     new Route(91, 26, 35, [
         new RouteSpace(1431, 528, -50),
         new RouteSpace(1472, 480, -50),
@@ -473,8 +605,18 @@ var ROUTES = [
         new RouteSpace(260, 559, -18),
         new RouteSpace(319, 540, -18),
     ], WHITE),
-    new Route(95, 29, 33, 2, GRAY),
-    new Route(96, 29, 36, 6, GRAY),
+    new Route(95, 29, 33, [
+        new RouteSpace(1184, 183, 11),
+        new RouteSpace(1246, 196, 11),
+    ], GRAY),
+    new Route(96, 29, 36, [
+        new RouteSpace(773, 91, 12),
+        new RouteSpace(834, 103, 12),
+        new RouteSpace(896, 116, 12),
+        new RouteSpace(956, 129, 12),
+        new RouteSpace(1017, 142, 12),
+        new RouteSpace(1078, 154, 12),
+    ], GRAY),
     new Route(97, 32, 34, 1, GRAY),
     new Route(98, 32, 34, 1, GRAY),
 ];
@@ -503,7 +645,7 @@ var TtrMap = /** @class */ (function () {
             }
             else {
                 route.spaces.forEach(function (space, spaceIndex) {
-                    dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                        style=\"transform: translate(" + space.x + "px, " + space.y + "px) rotate(" + space.angle + "deg)\"\n                        title=\"" + CITIES[route.from] + " to " + CITIES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                    ></div>", 'board');
+                    dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                        style=\"transform: translate(" + (space.x * 0.986 + 10) + "px, " + (space.y * 0.986 + 10) + "px) rotate(" + space.angle + "deg)\"\n                        title=\"" + CITIES[route.from] + " to " + CITIES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                    ></div>", 'board');
                     document.getElementById("route" + route.id + "-space" + spaceIndex).addEventListener('click', function () { return _this.game.claimRoute(route.id); });
                 });
             }
