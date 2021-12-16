@@ -69,6 +69,8 @@ interface TicketToRideGamedatas {
     // counters
     trainCarDeckCount: number;
     destinationDeckCount: number;
+    trainCarDeckMaxCount: number;
+    destinationDeckMaxCount: number;
     lastTurn: boolean;
 }
 

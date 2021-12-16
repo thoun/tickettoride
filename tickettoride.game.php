@@ -183,8 +183,10 @@ class TicketToRide extends Table {
         }
 
         // deck counters
-        $player['trainCarDeckCount'] = $this->getRemainingTrainCarCardsInDeck();
-        $player['destinationDeckCount'] = $this->getRemainingDestinationCardsInDeck();
+        $result['trainCarDeckCount'] = $this->getRemainingTrainCarCardsInDeck();
+        $result['destinationDeckCount'] = $this->getRemainingDestinationCardsInDeck();
+        $result['trainCarDeckMaxCount'] = 110;
+        $result['destinationDeckMaxCount'] = 30;
         
         $stateName = $this->gamestate->state()['name']; 
         $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';

@@ -43,7 +43,13 @@ class TicketToRide implements TicketToRideGame {
         log('gamedatas', gamedatas);
 
         this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes);
-        this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards);
+        this.trainCarSelection = new TrainCarSelection(this, 
+            gamedatas.visibleTrainCards,
+            gamedatas.trainCarDeckCount,
+            gamedatas.destinationDeckCount,
+            gamedatas.trainCarDeckMaxCount,
+            gamedatas.destinationDeckMaxCount,
+        );
         this.destinationSelection = new DestinationSelection(this);
 
         const player = gamedatas.players[this.getPlayerId()];
@@ -343,7 +349,6 @@ class TicketToRide implements TicketToRideGame {
     }
 
     notif_destinationsPicked(notif: Notif<NotifDestinationsPickedArgs>) {
-        console.log('notif_destinationsPicked', notif.args);
         this.destinationCardCounters[notif.args.playerId].incValue(notif.args.number);
         const destinations = notif.args._private?.[this.getPlayerId()]?.destinations;
         if (destinations) {
@@ -351,17 +356,18 @@ class TicketToRide implements TicketToRideGame {
         } else {
             // TODO notif to player board ?
         }
+        this.trainCarSelection.destinationGauge.setCount(notif.args.remainingDestinationsInDeck);
     }
 
     notif_trainCarPicked(notif: Notif<NotifTrainCarsPickedArgs>) {
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
-        console.log('notif_trainCarPicked', notif.args);
         const cards = notif.args._private?.[this.getPlayerId()]?.cards;
         if (cards) {
             this.playerTable.addTrainCars(cards, this.trainCarSelection);
         } else {
-            // TODO notif to player board ?
+            // TODO notif to player board ?        
         }
+        this.trainCarSelection.trainCarGauge.setCount(notif.args.remainingTrainCarsInDeck);
     }
 
     notif_newCardsOnTable(notif: Notif<NotifNewCardsOnTableArgs>) {

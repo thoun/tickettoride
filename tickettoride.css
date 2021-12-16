@@ -50,6 +50,10 @@
   position: relative;
   user-select: none;
 }
+#map-zoom-wrapper #map-zoom {
+  flex: 1;
+  max-width: calc(100% - 250px);
+}
 #map-zoom-wrapper #map-zoom.scrollable {
   overflow: auto;
 }
@@ -73,7 +77,7 @@
   background-position: 0% 50%;
 }
 
-@media screen and (min-width: 1550px) {
+@media screen and (min-width: 1800px) {
   #zoom-button {
     display: none;
   }
@@ -364,7 +368,9 @@
 }
 
 #train-car-deck {
+  width: 250px;
   display: flex;
+  flex-direction: column;
 }
 #train-car-deck .stock {
   width: 272px;
@@ -402,6 +408,34 @@
   visibility: hidden;
   pointer-events: none;
   cursor: default;
+}
+
+.gauge {
+  width: 50px;
+  height: 158px;
+  position: absolute;
+  right: 0;
+  top: 10px;
+}
+.gauge .inner {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 100%;
+  width: 100%;
+  background-position: bottom;
+}
+.gauge.train-car {
+  background-image: url("img/gauge-train-car-empty.png");
+}
+.gauge.train-car .inner {
+  background-image: url("img/gauge-train-car-full.png");
+}
+.gauge.destination {
+  background-image: url("img/gauge-destination-empty.png");
+}
+.gauge.destination .inner {
+  background-image: url("img/gauge-destination-full.png");
 }
 
 #destination-deck .hidden {
@@ -461,4 +495,8 @@ html {
 .stockitem.disabled {
   filter: contrast(0.6);
   cursor: not-allowed;
+}
+
+#map-and-deck {
+  display: flex;
 }

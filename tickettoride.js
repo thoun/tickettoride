@@ -764,7 +764,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             setTimeout(function () { return _this.setAutoZoom(); }, 200);
             return;
         }
-        this.scale = Math.min(1, document.getElementById('game_play_area').clientWidth / zoomWrapperWidth);
+        this.scale = Math.min(1, (document.getElementById('game_play_area').clientWidth - 250) / zoomWrapperWidth);
         this.mapDiv.style.transform = this.zoomed || this.scale === 1 ? '' : "scale(" + this.scale + ")";
         this.mapZoomDiv.style.height = this.scale === 1 ? '' : this.mapDiv.clientHeight * this.scale + "px";
     };
@@ -849,8 +849,19 @@ var DestinationSelection = /** @class */ (function () {
     };
     return DestinationSelection;
 }());
+var Gauge = /** @class */ (function () {
+    function Gauge(conainerId, className, max) {
+        this.max = max;
+        dojo.place("\n        <div id=\"gauge-" + className + "\" class=\"gauge " + className + "\">\n            <div class=\"inner\" id=\"gauge-" + className + "-level\"></div>\n        </div>", conainerId);
+        this.levelDiv = document.getElementById("gauge-" + className + "-level");
+    }
+    Gauge.prototype.setCount = function (count) {
+        this.levelDiv.style.height = 100 * count / this.max + "%";
+    };
+    return Gauge;
+}());
 var TrainCarSelection = /** @class */ (function () {
-    function TrainCarSelection(game, visibleCards) {
+    function TrainCarSelection(game, visibleCards, trainCarDeckCount, destinationDeckCount, trainCarDeckMaxCount, destinationDeckMaxCount) {
         var _this = this;
         this.game = game;
         this.visibleCardsStocks = [];
@@ -873,6 +884,10 @@ var TrainCarSelection = /** @class */ (function () {
             _loop_1(i);
         }
         this.setNewCardsOnTable(visibleCards);
+        this.trainCarGauge = new Gauge('train-car-deck-hidden-pile', 'train-car', trainCarDeckMaxCount);
+        this.destinationGauge = new Gauge('destination-deck-hidden-pile', 'destination', destinationDeckMaxCount);
+        this.trainCarGauge.setCount(trainCarDeckCount);
+        this.destinationGauge.setCount(destinationDeckCount);
     }
     TrainCarSelection.prototype.setSelectableTopDeck = function (selectable, number) {
         if (number === void 0) { number = 0; }
@@ -1004,7 +1019,7 @@ var TicketToRide = /** @class */ (function () {
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
         this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes);
-        this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards);
+        this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards, gamedatas.trainCarDeckCount, gamedatas.destinationDeckCount, gamedatas.trainCarDeckMaxCount, gamedatas.destinationDeckMaxCount);
         this.destinationSelection = new DestinationSelection(this);
         var player = gamedatas.players[this.getPlayerId()];
         if (player) {
@@ -1240,7 +1255,6 @@ var TicketToRide = /** @class */ (function () {
     };
     TicketToRide.prototype.notif_destinationsPicked = function (notif) {
         var _a, _b;
-        console.log('notif_destinationsPicked', notif.args);
         this.destinationCardCounters[notif.args.playerId].incValue(notif.args.number);
         var destinations = (_b = (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a[this.getPlayerId()]) === null || _b === void 0 ? void 0 : _b.destinations;
         if (destinations) {
@@ -1249,18 +1263,19 @@ var TicketToRide = /** @class */ (function () {
         else {
             // TODO notif to player board ?
         }
+        this.trainCarSelection.destinationGauge.setCount(notif.args.remainingDestinationsInDeck);
     };
     TicketToRide.prototype.notif_trainCarPicked = function (notif) {
         var _a, _b;
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
-        console.log('notif_trainCarPicked', notif.args);
         var cards = (_b = (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a[this.getPlayerId()]) === null || _b === void 0 ? void 0 : _b.cards;
         if (cards) {
             this.playerTable.addTrainCars(cards, this.trainCarSelection);
         }
         else {
-            // TODO notif to player board ?
+            // TODO notif to player board ?        
         }
+        this.trainCarSelection.trainCarGauge.setCount(notif.args.remainingTrainCarsInDeck);
     };
     TicketToRide.prototype.notif_newCardsOnTable = function (notif) {
         this.trainCarSelection.setNewCardsOnTable(notif.args.cards);

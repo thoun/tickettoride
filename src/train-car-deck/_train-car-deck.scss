@@ -1,6 +1,8 @@
 
 #train-car-deck {
+    width: 250px;
     display: flex;
+    flex-direction: column;
 
     .stock {
         width: 272px;
@@ -45,6 +47,39 @@
             visibility: hidden;
             pointer-events: none;
             cursor: default;
+        }
+    }
+}
+
+.gauge {
+    width: 50px;
+    height: 158px;
+    position: absolute;
+    right: 0;
+    top: 10px;
+
+    .inner {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 100%;
+        width: 100%;
+        background-position: bottom;
+    }
+
+    &.train-car {
+        background-image: url('img/gauge-train-car-empty.png');
+
+        .inner {
+            background-image: url('img/gauge-train-car-full.png');
+        }
+    }
+
+    &.destination {
+        background-image: url('img/gauge-destination-empty.png');
+
+        .inner {
+            background-image: url('img/gauge-destination-full.png');
         }
     }
 }

@@ -2,8 +2,13 @@
   position: relative;
   user-select: none;
 
-  #map-zoom.scrollable {
-    overflow: auto;
+  #map-zoom {
+    flex: 1;
+    max-width: calc(100% - 250px);
+
+    &.scrollable {
+      overflow: auto;
+    }
   }
 
   #zoom-button {
@@ -29,7 +34,7 @@
   }
 }
 
-@media screen and (min-width: 1550px) {
+@media screen and (min-width: 1800px) {
   #zoom-button {
     display: none;
   }

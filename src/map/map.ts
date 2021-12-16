@@ -658,7 +658,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             return;
         }
 
-        this.scale = Math.min(1, document.getElementById('game_play_area').clientWidth / zoomWrapperWidth);
+        this.scale = Math.min(1, (document.getElementById('game_play_area').clientWidth - 250) / zoomWrapperWidth);
 
         this.mapDiv.style.transform = this.zoomed || this.scale === 1 ? '' : `scale(${this.scale})`;
         this.mapZoomDiv.style.height = this.scale === 1 ? '' : `${this.mapDiv.clientHeight * this.scale}px`;

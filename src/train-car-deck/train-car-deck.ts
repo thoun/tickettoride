@@ -1,9 +1,35 @@
+class Gauge {
+    private levelDiv: HTMLDivElement;
+
+    constructor(conainerId: string,
+        className: string,
+        private max: number,
+    ) {
+        dojo.place(`
+        <div id="gauge-${className}" class="gauge ${className}">
+            <div class="inner" id="gauge-${className}-level"></div>
+        </div>`, conainerId);
+
+        this.levelDiv = document.getElementById(`gauge-${className}-level`) as HTMLDivElement;
+    }
+
+    public setCount(count: number) {
+        this.levelDiv.style.height = `${100 * count / this.max}%`;
+    }
+}
+
 class TrainCarSelection {
     public visibleCardsStocks: Stock[] = [];
+    public trainCarGauge: Gauge;
+    public destinationGauge: Gauge;
 
     constructor(
         private game: TicketToRideGame,
         visibleCards: TrainCar[],
+        trainCarDeckCount: number,
+        destinationDeckCount: number,
+        trainCarDeckMaxCount: number,
+        destinationDeckMaxCount: number,
     ) {
 
         document.getElementById('train-car-deck-hidden-pile1').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(1));
@@ -23,6 +49,12 @@ class TrainCarSelection {
         }
 
         this.setNewCardsOnTable(visibleCards);
+
+        
+        this.trainCarGauge = new Gauge('train-car-deck-hidden-pile', 'train-car', trainCarDeckMaxCount);
+        this.destinationGauge = new Gauge('destination-deck-hidden-pile', 'destination', destinationDeckMaxCount);
+        this.trainCarGauge.setCount(trainCarDeckCount);
+        this.destinationGauge.setCount(destinationDeckCount);
     }
 
     public setSelectableTopDeck(selectable: boolean, number: number = 0) {
