@@ -877,6 +877,20 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             return document.getElementById("city" + city).dataset.selectedDestination = 'true';
         });
     };
+    TtrMap.prototype.setHoveredRoute = function (route, valid) {
+        if (route) {
+            [route.from, route.to].forEach(function (city) {
+                var cityDiv = document.getElementById("city" + city);
+                cityDiv.dataset.hovered = 'true';
+                cityDiv.dataset.valid = valid.toString();
+            });
+        }
+        else {
+            ROUTES.forEach(function (r) { return [r.from, r.to].forEach(function (city) {
+                return document.getElementById("city" + city).dataset.hovered = 'false';
+            }); });
+        }
+    };
     return TtrMap;
 }());
 var DestinationSelection = /** @class */ (function () {

@@ -790,4 +790,18 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             document.getElementById(`city${city}`).dataset.selectedDestination = 'true'
         );
     }
+
+    public setHoveredRoute(route: Route | null, valid: boolean | null) {
+        if (route) {
+            [route.from, route.to].forEach(city => {
+                const cityDiv = document.getElementById(`city${city}`);
+                cityDiv.dataset.hovered = 'true';
+                cityDiv.dataset.valid = valid.toString();
+            });
+        } else {
+            ROUTES.forEach(r => [r.from, r.to].forEach(city => 
+                document.getElementById(`city${city}`).dataset.hovered = 'false'
+            ));
+        }
+    }
 }
