@@ -59,7 +59,7 @@ class DestinationCard {
     ) {}
 }
 
-const CITIES = [
+const CITIES_NAMES = [
     null,
     'Atlanta',
     'Boston',
@@ -132,5 +132,5 @@ const DESTINATIONS = [
 ];
 function setupDestinationCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
     //const destination = DESTINATIONS.find(d => d.id == Number(cardTypeId));
-    //cardDiv.innerHTML = `<span><strong>${CITIES[destination.from]}</strong> to <strong>${CITIES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
+    //cardDiv.innerHTML = `<span><strong>${CITIES_NAMES[destination.from]}</strong> to <strong>${CITIES_NAMES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
 }

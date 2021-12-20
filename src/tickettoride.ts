@@ -235,6 +235,10 @@ class TicketToRide implements TicketToRideGame {
         (this as any).scoreCtrl[playerId]?.toValue(points);
         //this.map.setPoints(playerId, points);
     }
+    
+    public setActiveDestination(destination: Destination, previousDestination: Destination = null): void {
+        this.map.setActiveDestination(destination, previousDestination);
+    }
 
     public chooseInitialDestinations() {
         if(!(this as any).checkAction('chooseInitialDestinations')) {

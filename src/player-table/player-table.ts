@@ -2,12 +2,13 @@ class PlayerTable {
     public playerId: number;
     public trainCarStock: Stock;
     public destinationStock: Stock;
+    private selectedDestination: Destination;
 
     constructor(
         private game: TicketToRideGame, 
         player: TicketToRidePlayer,
         trainCars: TrainCar[],
-        destinations: Destination[],
+        private destinations: Destination[],
         completedDestinations: Destination[]) {
 
         this.playerId = Number(player.id);
@@ -44,13 +45,17 @@ class PlayerTable {
         this.destinationStock.setSelectionAppearance('class');
         this.destinationStock.selectionClass = 'selected';
         this.destinationStock.create(this.game, $(`player-table-${this.playerId}-destinations`), CARD_WIDTH, CARD_HEIGHT);
-        this.destinationStock.setSelectionMode(0);
+        this.destinationStock.setSelectionMode(1);
         this.destinationStock.image_items_per_row = 10;
         this.destinationStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupDestinationCardDiv(cardDiv, type);
         setupDestinationCards(this.destinationStock);
+        dojo.connect(this.destinationStock, 'onChangeSelection', this, () => this.activateNextDestination());
 
         this.addDestinations(destinations);
         destinations.filter(destination => completedDestinations.some(d => d.id == destination.id)).forEach(destination => this.markDestinationComplete(destination));
+        
+        this.activateNextDestination();
+        document.getElementById(`player-table-${this.playerId}-destinations`).addEventListener('click', () => this.activateNextDestination());
     }
         
     public addDestinations(destinations: Destination[], originStock?: Stock) {
@@ -59,6 +64,8 @@ class PlayerTable {
             this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id, from);
         });
         originStock?.removeAll();
+
+        this.destinations.push(...destinations);
     }
 
     public markDestinationComplete(destination: Destination) {
@@ -72,5 +79,12 @@ class PlayerTable {
             this.trainCarStock.addToStockWithId(trainCar.type, ''+trainCar.id, from);
             stock?.removeAll();
         });
+    }
+
+    public activateNextDestination() {
+        const index = this.destinations.indexOf(this.selectedDestination);
+        const newIndex = (index + 1) % this.destinations.length;
+        this.game.setActiveDestination(this.destinations[newIndex], this.selectedDestination);
+        this.selectedDestination = this.destinations[newIndex];
     }
 }

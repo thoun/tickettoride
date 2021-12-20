@@ -4,6 +4,14 @@ const BOARD_POINTS_MARGIN = 38;
 const SIDES = ['left', 'right', 'top', 'bottom'];
 const CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 
+class City {
+    constructor(
+        public id: number,
+        public x: number,
+        public y: number,
+    ) {}
+}
+
 class RouteSpace {
     constructor(
         public x: number,
@@ -21,6 +29,45 @@ class Route {
         public color: number,
     ) {}
 }
+
+const CITIES = [
+    new City(1, 1320, 687), // Atlanta
+    new City(2, 1609, 186), // Boston
+    new City(3, 358, 94), // Calgary
+    new City(4, 1480, 699), // Charleston
+    new City(5, 1149, 418), // Chicago
+    new City(6, 921, 859), // Dallas
+    new City(7, 630, 588), // Denver
+    new City(8, 938, 312), // Duluth
+    new City(9, 609, 899), // El Paso
+    new City(10, 529, 322), // Helena
+    new City(11, 992, 927), // Houston
+    new City(12, 921, 558), // Kansas City
+    new City(13, 309, 723), // Las Vegas
+    new City(14, 1042, 714), // Little Rock
+    new City(15, 198, 824), // Los Angeles
+    new City(16, 1536, 970), // Miami
+    new City(17, 1486, 85), // Montréal
+    new City(18, 1232, 627), // Nashville
+    new City(19, 1157, 914), // New Orleans
+    new City(20, 1519, 315), // New York
+    new City(21, 886, 707), // Oklahoma City
+    new City(22, 886, 470), // Omaha
+    new City(23, 405, 836), // Phoenix
+    new City(24, 1374, 392), // Pittsburgh
+    new City(25, 89, 305), // Portland
+    new City(26, 1432, 586), // Raleigh
+    new City(27, 1072, 560), // Saint Louis
+    new City(28, 407, 534), // Salt Lake City
+    new City(29, 1157, 198), // Sault St. Marie
+    new City(30, 65, 645), // San Francisco
+    new City(31, 618, 745), // Santa Fe
+    new City(32, 126, 218), // Seattle
+    new City(33, 1344, 237), // Toronto
+    new City(34, 132, 125), // Vancouver
+    new City(35, 1532, 471), // Washington
+    new City(36, 744, 113), // Winnipeg
+];
 
 const ROUTES = [
     new Route(1, 1, 4, [
@@ -560,12 +607,21 @@ class TtrMap {
             this.points.set(Number(player.id), Number(player.score));
         });
         dojo.place(html, 'map');*/
+        
+
+        CITIES.forEach(city => 
+            dojo.place(`<div id="city${city.id}" class="city" 
+                style="transform: translate(${city.x}px, ${city.y}px)"
+                title="${CITIES_NAMES[city.id]}"
+            ></div>`, 'map')
+        );
+
 
         ROUTES.forEach(route => 
             route.spaces.forEach((space, spaceIndex) => {
                 dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route space" 
                     style="transform: translate(${space.x}px, ${space.y}px) rotate(${space.angle}deg)"
-                    title="${CITIES[route.from]} to ${CITIES[route.to]}, ${(route.spaces as any).length} ${COLORS[route.color]}"
+                    title="${CITIES_NAMES[route.from]} to ${CITIES_NAMES[route.to]}, ${(route.spaces as any).length} ${COLORS[route.color]}"
                 ></div>`, 'map');
                 document.getElementById(`route${route.id}-space${spaceIndex}`).addEventListener('click', () => this.game.claimRoute(route.id));   
             })
@@ -631,12 +687,12 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     }*/
 
     public setClaimedRoutes(claimedRoutes: ClaimedRoute[]) {
-        const claimedRoute = {
+        /*const claimedRoute = {
             playerId: 2343492
         };
-        ROUTES.forEach(route => {
-        //claimedRoutes.forEach(claimedRoute => {
-            //const route = ROUTES.find(r => r.id == claimedRoute.routeId);
+        ROUTES.forEach(route => {*/
+        claimedRoutes.forEach(claimedRoute => {
+            const route = ROUTES.find(r => r.id == claimedRoute.routeId);
             const color = this.players.find(player => Number(player.id) == claimedRoute.playerId).color;
             route.spaces.forEach((space, spaceIndex) => {
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
@@ -649,7 +705,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
                 while (angle >= 180) {
                     angle -= 180;
                 }
-                dojo.place(`<div class="wagon angle${Math.round(angle * 36 / 180)}" data-player-color="${color}" style="opacity: 0.5; transform: translate(${space.x}px, ${space.y}px)"></div>`, 'map');
+                dojo.place(`<div class="wagon angle${Math.round(angle * 36 / 180)}" data-player-color="${color}" style="transform: translate(${space.x}px, ${space.y}px)"></div>`, 'map');
             });
         });
     }
@@ -717,5 +773,21 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             this.mapZoomDiv.scrollTop = 0;
             this.mapZoomDiv.scrollLeft = 0;
         }
+    }
+
+    public setActiveDestination(destination: Destination, previousDestination: Destination = null) {
+        if (previousDestination) {
+            if (previousDestination.id === destination.id) {
+                return;
+            }
+
+            [previousDestination.from, previousDestination.to].forEach(city => 
+                document.getElementById(`city${city}`).dataset.selectedDestination = 'false'
+            );
+        }
+
+        [destination.from, destination.to].forEach(city => 
+            document.getElementById(`city${city}`).dataset.selectedDestination = 'true'
+        );
     }
 }

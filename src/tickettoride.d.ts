@@ -18,7 +18,8 @@ interface TrainCar extends Card {
 }
 
 interface Destination extends Card {
-    // TODO
+    from: number;
+    to: number;
 }
 
 interface Route {
@@ -80,6 +81,7 @@ interface TicketToRideGame extends Game {
     onHiddenTrainCarDeckClick(number: number): void;
     claimRoute(id: number): void;
     isColorBlindMode(): boolean;
+    setActiveDestination(destination: Destination, previousDestination?: Destination): void;
 }
 
 interface EnteringChooseDestinationsArgs {

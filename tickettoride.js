@@ -53,7 +53,7 @@ var DestinationCard = /** @class */ (function () {
     }
     return DestinationCard;
 }());
-var CITIES = [
+var CITIES_NAMES = [
     null,
     'Atlanta',
     'Boston',
@@ -126,12 +126,20 @@ var DESTINATIONS = [
 ];
 function setupDestinationCardDiv(cardDiv, cardTypeId) {
     //const destination = DESTINATIONS.find(d => d.id == Number(cardTypeId));
-    //cardDiv.innerHTML = `<span><strong>${CITIES[destination.from]}</strong> to <strong>${CITIES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
+    //cardDiv.innerHTML = `<span><strong>${CITIES_NAMES[destination.from]}</strong> to <strong>${CITIES_NAMES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
 }
 var POINT_CASE_SIZE = 25.5;
 var BOARD_POINTS_MARGIN = 38;
 var SIDES = ['left', 'right', 'top', 'bottom'];
 var CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
+var City = /** @class */ (function () {
+    function City(id, x, y) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+    }
+    return City;
+}());
 var RouteSpace = /** @class */ (function () {
     function RouteSpace(x, y, angle) {
         this.x = x;
@@ -150,6 +158,44 @@ var Route = /** @class */ (function () {
     }
     return Route;
 }());
+var CITIES = [
+    new City(1, 1320, 687),
+    new City(2, 1609, 186),
+    new City(3, 358, 94),
+    new City(4, 1480, 699),
+    new City(5, 1149, 418),
+    new City(6, 921, 859),
+    new City(7, 630, 588),
+    new City(8, 938, 312),
+    new City(9, 609, 899),
+    new City(10, 529, 322),
+    new City(11, 992, 927),
+    new City(12, 921, 558),
+    new City(13, 309, 723),
+    new City(14, 1042, 714),
+    new City(15, 198, 824),
+    new City(16, 1536, 970),
+    new City(17, 1486, 85),
+    new City(18, 1232, 627),
+    new City(19, 1157, 914),
+    new City(20, 1519, 315),
+    new City(21, 886, 707),
+    new City(22, 886, 470),
+    new City(23, 405, 836),
+    new City(24, 1374, 392),
+    new City(25, 89, 305),
+    new City(26, 1432, 586),
+    new City(27, 1072, 560),
+    new City(28, 407, 534),
+    new City(29, 1157, 198),
+    new City(30, 65, 645),
+    new City(31, 618, 745),
+    new City(32, 126, 218),
+    new City(33, 1344, 237),
+    new City(34, 132, 125),
+    new City(35, 1532, 471),
+    new City(36, 744, 113), // Winnipeg
+];
 var ROUTES = [
     new Route(1, 1, 4, [
         new RouteSpace(1337.16, 689.35, 3),
@@ -680,9 +726,12 @@ var TtrMap = /** @class */ (function () {
             this.points.set(Number(player.id), Number(player.score));
         });
         dojo.place(html, 'map');*/
+        CITIES.forEach(function (city) {
+            return dojo.place("<div id=\"city" + city.id + "\" class=\"city\" \n                style=\"transform: translate(" + city.x + "px, " + city.y + "px)\"\n                title=\"" + CITIES_NAMES[city.id] + "\"\n            ></div>", 'map');
+        });
         ROUTES.forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                    style=\"transform: translate(" + space.x + "px, " + space.y + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES[route.from] + " to " + CITIES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                ></div>", 'map');
+                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                    style=\"transform: translate(" + space.x + "px, " + space.y + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES_NAMES[route.from] + " to " + CITIES_NAMES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                ></div>", 'map');
                 document.getElementById("route" + route.id + "-space" + spaceIndex).addEventListener('click', function () { return _this.game.claimRoute(route.id); });
             });
         });
@@ -740,12 +789,12 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     }*/
     TtrMap.prototype.setClaimedRoutes = function (claimedRoutes) {
         var _this = this;
-        var claimedRoute = {
+        /*const claimedRoute = {
             playerId: 2343492
         };
-        ROUTES.forEach(function (route) {
-            //claimedRoutes.forEach(claimedRoute => {
-            //const route = ROUTES.find(r => r.id == claimedRoute.routeId);
+        ROUTES.forEach(route => {*/
+        claimedRoutes.forEach(function (claimedRoute) {
+            var route = ROUTES.find(function (r) { return r.id == claimedRoute.routeId; });
             var color = _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; }).color;
             route.spaces.forEach(function (space, spaceIndex) {
                 var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
@@ -757,7 +806,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
                 while (angle >= 180) {
                     angle -= 180;
                 }
-                dojo.place("<div class=\"wagon angle" + Math.round(angle * 36 / 180) + "\" data-player-color=\"" + color + "\" style=\"opacity: 0.5; transform: translate(" + space.x + "px, " + space.y + "px)\"></div>", 'map');
+                dojo.place("<div class=\"wagon angle" + Math.round(angle * 36 / 180) + "\" data-player-color=\"" + color + "\" style=\"transform: translate(" + space.x + "px, " + space.y + "px)\"></div>", 'map');
             });
         });
     };
@@ -813,6 +862,20 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             this.mapZoomDiv.scrollTop = 0;
             this.mapZoomDiv.scrollLeft = 0;
         }
+    };
+    TtrMap.prototype.setActiveDestination = function (destination, previousDestination) {
+        if (previousDestination === void 0) { previousDestination = null; }
+        if (previousDestination) {
+            if (previousDestination.id === destination.id) {
+                return;
+            }
+            [previousDestination.from, previousDestination.to].forEach(function (city) {
+                return document.getElementById("city" + city).dataset.selectedDestination = 'false';
+            });
+        }
+        [destination.from, destination.to].forEach(function (city) {
+            return document.getElementById("city" + city).dataset.selectedDestination = 'true';
+        });
     };
     return TtrMap;
 }());
@@ -947,6 +1010,7 @@ var PlayerTable = /** @class */ (function () {
     function PlayerTable(game, player, trainCars, destinations, completedDestinations) {
         var _this = this;
         this.game = game;
+        this.destinations = destinations;
         this.playerId = Number(player.id);
         var html = "\n        <div id=\"player-table-" + this.playerId + "\" class=\"player-table whiteblock\">\n            <div id=\"player-table-" + this.playerId + "-train-cars\" class=\"player-table-train-cars\"></div>\n            <div id=\"player-table-" + this.playerId + "-destinations\" class=\"player-table-destinations\"></div>\n        </div>";
         dojo.place(html, 'player-hand');
@@ -970,14 +1034,18 @@ var PlayerTable = /** @class */ (function () {
         this.destinationStock.setSelectionAppearance('class');
         this.destinationStock.selectionClass = 'selected';
         this.destinationStock.create(this.game, $("player-table-" + this.playerId + "-destinations"), CARD_WIDTH, CARD_HEIGHT);
-        this.destinationStock.setSelectionMode(0);
+        this.destinationStock.setSelectionMode(1);
         this.destinationStock.image_items_per_row = 10;
         this.destinationStock.onItemCreate = function (cardDiv, type) { return setupDestinationCardDiv(cardDiv, type); };
         setupDestinationCards(this.destinationStock);
+        dojo.connect(this.destinationStock, 'onChangeSelection', this, function () { return _this.activateNextDestination(); });
         this.addDestinations(destinations);
         destinations.filter(function (destination) { return completedDestinations.some(function (d) { return d.id == destination.id; }); }).forEach(function (destination) { return _this.markDestinationComplete(destination); });
+        this.activateNextDestination();
+        document.getElementById("player-table-" + this.playerId + "-destinations").addEventListener('click', function () { return _this.activateNextDestination(); });
     }
     PlayerTable.prototype.addDestinations = function (destinations, originStock) {
+        var _a;
         var _this = this;
         destinations.forEach(function (destination) {
             var _a;
@@ -985,6 +1053,7 @@ var PlayerTable = /** @class */ (function () {
             _this.destinationStock.addToStockWithId(destination.type_arg, '' + destination.id, from);
         });
         originStock === null || originStock === void 0 ? void 0 : originStock.removeAll();
+        (_a = this.destinations).push.apply(_a, destinations);
     };
     PlayerTable.prototype.markDestinationComplete = function (destination) {
         document.getElementById(this.destinationStock.container_div.id + "_item_" + destination.id).classList.add('done');
@@ -998,6 +1067,12 @@ var PlayerTable = /** @class */ (function () {
             _this.trainCarStock.addToStockWithId(trainCar.type, '' + trainCar.id, from);
             stock === null || stock === void 0 ? void 0 : stock.removeAll();
         });
+    };
+    PlayerTable.prototype.activateNextDestination = function () {
+        var index = this.destinations.indexOf(this.selectedDestination);
+        var newIndex = (index + 1) % this.destinations.length;
+        this.game.setActiveDestination(this.destinations[newIndex], this.selectedDestination);
+        this.selectedDestination = this.destinations[newIndex];
     };
     return PlayerTable;
 }());
@@ -1174,6 +1249,10 @@ var TicketToRide = /** @class */ (function () {
         var _a;
         (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(points);
         //this.map.setPoints(playerId, points);
+    };
+    TicketToRide.prototype.setActiveDestination = function (destination, previousDestination) {
+        if (previousDestination === void 0) { previousDestination = null; }
+        this.map.setActiveDestination(destination, previousDestination);
     };
     TicketToRide.prototype.chooseInitialDestinations = function () {
         if (!this.checkAction('chooseInitialDestinations')) {

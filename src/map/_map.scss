@@ -184,6 +184,28 @@
     }
 }*/
 
+.city {
+  display: inline-block;
+  width: 60px;
+  height: 60px;
+  border-radius: 50px;
+  margin: -30px;
+  pointer-events: none;
+
+  &[data-selected-destination="true"] {
+    background: rgba(0, 0, 200, 0.3);
+  }
+
+  &[data-hovered="true"] {
+    &[data-valid="true"] {
+      background: rgba(0, 200, 0, 0.3);
+    }
+    &[data-valid="false"] {
+      background: rgba(200, 0, 0, 0.3);
+    }
+  }
+}
+
 // TODO temp
 .route {
   display: inline-block;
