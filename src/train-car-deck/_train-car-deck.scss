@@ -1,5 +1,6 @@
 
 #train-car-deck {
+    position: relative;
     width: 250px;
     display: flex;
     flex-direction: column;
@@ -10,13 +11,33 @@
     }
 
     .hidden-pile {
-        background: gray;
         position: relative;   
         display: flex;
-        border-radius: 10px;
-        box-shadow: 3px 3px 0px 0px #333, 5px 5px 3px black;
+        
+        .deck-level {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
 
-        background-position: 0% 0%;
+        #train-car-deck-level {
+            @for $i from 1 through 10 {
+                &[data-level="#{$i}"] {
+                    background-image: url('img/deck-cardLevel-#{$i}0.png');
+                }
+            }
+        }
+
+        #destination-deck-level {
+            @for $i from 1 through 10 {
+                &[data-level="#{$i}"] {
+                    background-image: url('img/deck-destiLevel-#{$i}0.png');
+                }
+            }
+        }
 
         .button {
             display: none;
@@ -27,6 +48,7 @@
             justify-content: center;
             align-items: center;
             text-shadow: 2px 2px 2px black;
+            z-index: 1;
         }
 
         .button {

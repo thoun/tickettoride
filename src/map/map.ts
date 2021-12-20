@@ -631,8 +631,12 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     }*/
 
     public setClaimedRoutes(claimedRoutes: ClaimedRoute[]) {
-        claimedRoutes.forEach(claimedRoute => {
-            const route = ROUTES.find(r => r.id == claimedRoute.routeId);
+        const claimedRoute = {
+            playerId: 2343492
+        };
+        ROUTES.forEach(route => {
+        //claimedRoutes.forEach(claimedRoute => {
+            //const route = ROUTES.find(r => r.id == claimedRoute.routeId);
             const color = this.players.find(player => Number(player.id) == claimedRoute.playerId).color;
             route.spaces.forEach((space, spaceIndex) => {
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
@@ -645,7 +649,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
                 while (angle >= 180) {
                     angle -= 180;
                 }
-                dojo.place(`<div class="wagon angle${Math.round(angle * 36 / 180)}" data-player-color="${color}" style="transform: translate(${space.x}px, ${space.y}px)"></div>`, 'map');
+                dojo.place(`<div class="wagon angle${Math.round(angle * 36 / 180)}" data-player-color="${color}" style="opacity: 0.5; transform: translate(${space.x}px, ${space.y}px)"></div>`, 'map');
             });
         });
     }

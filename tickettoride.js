@@ -740,8 +740,12 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     }*/
     TtrMap.prototype.setClaimedRoutes = function (claimedRoutes) {
         var _this = this;
-        claimedRoutes.forEach(function (claimedRoute) {
-            var route = ROUTES.find(function (r) { return r.id == claimedRoute.routeId; });
+        var claimedRoute = {
+            playerId: 2343492
+        };
+        ROUTES.forEach(function (route) {
+            //claimedRoutes.forEach(claimedRoute => {
+            //const route = ROUTES.find(r => r.id == claimedRoute.routeId);
             var color = _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; }).color;
             route.spaces.forEach(function (space, spaceIndex) {
                 var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
@@ -753,7 +757,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
                 while (angle >= 180) {
                     angle -= 180;
                 }
-                dojo.place("<div class=\"wagon angle" + Math.round(angle * 36 / 180) + "\" data-player-color=\"" + color + "\" style=\"transform: translate(" + space.x + "px, " + space.y + "px)\"></div>", 'map');
+                dojo.place("<div class=\"wagon angle" + Math.round(angle * 36 / 180) + "\" data-player-color=\"" + color + "\" style=\"opacity: 0.5; transform: translate(" + space.x + "px, " + space.y + "px)\"></div>", 'map');
             });
         });
     };
@@ -886,8 +890,8 @@ var TrainCarSelection = /** @class */ (function () {
         this.setNewCardsOnTable(visibleCards);
         this.trainCarGauge = new Gauge('train-car-deck-hidden-pile', 'train-car', trainCarDeckMaxCount);
         this.destinationGauge = new Gauge('destination-deck-hidden-pile', 'destination', destinationDeckMaxCount);
-        this.trainCarGauge.setCount(trainCarDeckCount);
-        this.destinationGauge.setCount(destinationDeckCount);
+        this.setTrainCarCount(trainCarDeckCount);
+        this.setDestinationCount(destinationDeckCount);
     }
     TrainCarSelection.prototype.setSelectableTopDeck = function (selectable, number) {
         if (number === void 0) { number = 0; }
@@ -928,6 +932,14 @@ var TrainCarSelection = /** @class */ (function () {
             _this.visibleCardsStocks[spot].removeAll();
             _this.visibleCardsStocks[spot].addToStockWithId(card.type, '' + card.id);
         });
+    };
+    TrainCarSelection.prototype.setTrainCarCount = function (count) {
+        this.trainCarGauge.setCount(count);
+        document.getElementById("train-car-deck-level").dataset.level = "" + Math.min(10, Math.floor(count / 10));
+    };
+    TrainCarSelection.prototype.setDestinationCount = function (count) {
+        this.destinationGauge.setCount(count);
+        document.getElementById("destination-deck-level").dataset.level = "" + Math.min(10, Math.floor(count / 10));
     };
     return TrainCarSelection;
 }());
@@ -1263,7 +1275,7 @@ var TicketToRide = /** @class */ (function () {
         else {
             // TODO notif to player board ?
         }
-        this.trainCarSelection.destinationGauge.setCount(notif.args.remainingDestinationsInDeck);
+        this.trainCarSelection.setDestinationCount(notif.args.remainingDestinationsInDeck);
     };
     TicketToRide.prototype.notif_trainCarPicked = function (notif) {
         var _a, _b;
@@ -1275,7 +1287,7 @@ var TicketToRide = /** @class */ (function () {
         else {
             // TODO notif to player board ?        
         }
-        this.trainCarSelection.trainCarGauge.setCount(notif.args.remainingTrainCarsInDeck);
+        this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     };
     TicketToRide.prototype.notif_newCardsOnTable = function (notif) {
         this.trainCarSelection.setNewCardsOnTable(notif.args.cards);

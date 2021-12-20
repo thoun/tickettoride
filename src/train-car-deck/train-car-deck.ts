@@ -20,8 +20,8 @@ class Gauge {
 
 class TrainCarSelection {
     public visibleCardsStocks: Stock[] = [];
-    public trainCarGauge: Gauge;
-    public destinationGauge: Gauge;
+    private trainCarGauge: Gauge;
+    private destinationGauge: Gauge;
 
     constructor(
         private game: TicketToRideGame,
@@ -53,8 +53,8 @@ class TrainCarSelection {
         
         this.trainCarGauge = new Gauge('train-car-deck-hidden-pile', 'train-car', trainCarDeckMaxCount);
         this.destinationGauge = new Gauge('destination-deck-hidden-pile', 'destination', destinationDeckMaxCount);
-        this.trainCarGauge.setCount(trainCarDeckCount);
-        this.destinationGauge.setCount(destinationDeckCount);
+        this.setTrainCarCount(trainCarDeckCount);
+        this.setDestinationCount(destinationDeckCount);
     }
 
     public setSelectableTopDeck(selectable: boolean, number: number = 0) {
@@ -88,5 +88,15 @@ class TrainCarSelection {
             this.visibleCardsStocks[spot].removeAll();
             this.visibleCardsStocks[spot].addToStockWithId(card.type, ''+card.id);
         });
+    }
+
+    public setTrainCarCount(count: number) {
+        this.trainCarGauge.setCount(count);
+        document.getElementById(`train-car-deck-level`).dataset.level = `${Math.min(10, Math.floor(count / 10))}`;
+    }
+
+    public setDestinationCount(count: number) {
+        this.destinationGauge.setCount(count);
+        document.getElementById(`destination-deck-level`).dataset.level = `${Math.min(10, Math.floor(count / 10))}`;
     }
 }

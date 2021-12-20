@@ -356,7 +356,7 @@ class TicketToRide implements TicketToRideGame {
         } else {
             // TODO notif to player board ?
         }
-        this.trainCarSelection.destinationGauge.setCount(notif.args.remainingDestinationsInDeck);
+        this.trainCarSelection.setDestinationCount(notif.args.remainingDestinationsInDeck);
     }
 
     notif_trainCarPicked(notif: Notif<NotifTrainCarsPickedArgs>) {
@@ -367,7 +367,7 @@ class TicketToRide implements TicketToRideGame {
         } else {
             // TODO notif to player board ?        
         }
-        this.trainCarSelection.trainCarGauge.setCount(notif.args.remainingTrainCarsInDeck);
+        this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }
 
     notif_newCardsOnTable(notif: Notif<NotifNewCardsOnTableArgs>) {
