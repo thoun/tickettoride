@@ -3,8 +3,8 @@
   user-select: none;
 
   #map-zoom {
-    flex: 1;
-    max-width: calc(100% - 250px);
+    //flex: 1;
+    max-width: 100%; //calc(100% - 250px);
 
     &.scrollable {
       overflow: auto;
@@ -50,94 +50,104 @@
   -ms-overflow-style: none;  /* IE 10+ */
 }
 
+#map-and-deck {
+  display: grid;
+  grid-template-columns: auto 250px;
+  transform-origin: top left;
+}
+
+#map-zoom {
+  position: relative;  
+
+  .side {
+    position: absolute;
+    pointer-events: none;
+
+    &.left {
+      background: url('img/border-map-left.png');
+      width: 9px;
+      //height: 876px;
+      left: 0;
+      top: 180px;
+      bottom: 180px;
+    }
+
+    &.right {
+      background: url('img/border-map-right.png');
+      width: 8px;
+      //height: 876px;
+      right: 0;
+      top: 180px;
+      bottom: 180px;
+    }
+
+    &.top {
+      background: url('img/border-map-top.png');
+      //width: 1541px;
+      height: 8px;
+      left: 180px;
+      right: 180px;
+      top: 0;
+    }
+
+    &.bottom {
+      background: url('img/border-map-bottom.png');
+      //width: 1541px;
+      height: 9px;
+      left: 180px;
+      right: 180px;
+      bottom: 0;
+    }
+  }
+
+  .corner {
+    position: absolute;
+    pointer-events: none;
+    width: 180px;
+    height: 180px;
+
+    &.top-left {
+      background: url('img/border-map-corner-top-left.png');
+      left: 0;
+      top: 0;
+    }
+
+    &.top-right {
+      background: url('img/border-map-corner-top-right.png');
+      right: 0;
+      top: 0;
+    }
+
+    &.bottom-left {
+      background: url('img/border-map-corner-bottom-left.png');
+      left: 0;
+      bottom: 0;
+    }
+
+    &.bottom-right {
+      background: url('img/border-map-corner-bottom-right.png');
+      right: 0;
+      bottom: 0;
+    }
+  }
+
+  .illustration {
+    position: absolute;
+    pointer-events: none;
+    background: url('img/border-map-illustration.png');
+    left: 0;
+    bottom: 0;
+    width: 258px;
+    height: 206px;
+  }
+}
+
 #map {
     position: relative;
     width: 1650px;
     height: 1064px;
     background: url('img/map.jpg');
     transform-origin: top left;
-
-    .side {
-      position: absolute;
-      pointer-events: none;
-
-      &.left {
-        background: url('img/border-map-left.png');
-        width: 9px;
-        //height: 876px;
-        left: 0;
-        top: 180px;
-        bottom: 180px;
-      }
-
-      &.right {
-        background: url('img/border-map-right.png');
-        width: 8px;
-        //height: 876px;
-        right: 0;
-        top: 180px;
-        bottom: 180px;
-      }
-
-      &.top {
-        background: url('img/border-map-top.png');
-        //width: 1541px;
-        height: 8px;
-        left: 180px;
-        right: 180px;
-        top: 0;
-      }
-
-      &.bottom {
-        background: url('img/border-map-bottom.png');
-        //width: 1541px;
-        height: 9px;
-        left: 180px;
-        right: 180px;
-        bottom: 0;
-      }
-    }
-
-    .corner {
-      position: absolute;
-      pointer-events: none;
-      width: 180px;
-      height: 180px;
-
-      &.top-left {
-        background: url('img/border-map-corner-top-left.png');
-        left: 0;
-        top: 0;
-      }
-
-      &.top-right {
-        background: url('img/border-map-corner-top-right.png');
-        right: 0;
-        top: 0;
-      }
-
-      &.bottom-left {
-        background: url('img/border-map-corner-bottom-left.png');
-        left: 0;
-        bottom: 0;
-      }
-
-      &.bottom-right {
-        background: url('img/border-map-corner-bottom-right.png');
-        right: 0;
-        bottom: 0;
-      }
-    }
-
-    .illustration {
-      position: absolute;
-      pointer-events: none;
-      background: url('img/border-map-illustration.png');
-      left: 0;
-      bottom: 0;
-      width: 258px;
-      height: 206px;
-    }
 }
 
 /*.point-marker {
@@ -248,22 +258,22 @@
   }
 
   &[data-player-color="ff0000"] {
-    background-image: url('img/wagons-red.png');
+    background-image: url('img/wagons-red.png'), url('img/wagons-shadow.png');
   }
 
   &[data-player-color="008000"] {
-    background-image: url('img/wagons-green.png');
+    background-image: url('img/wagons-green.png'), url('img/wagons-shadow.png');
   }
 
   &[data-player-color="0000ff"] {
-    background-image: url('img/wagons-blue.png');
+    background-image: url('img/wagons-blue.png'), url('img/wagons-shadow.png');
   }
 
   &[data-player-color="ffa500"] {
-    background-image: url('img/wagons-yellow.png');
+    background-image: url('img/wagons-yellow.png'), url('img/wagons-shadow.png');
   }
 
   &[data-player-color="982fff"] {
-    background-image: url('img/wagons-purple.png');
+    background-image: url('img/wagons-purple.png'), url('img/wagons-shadow.png');
   }
 }

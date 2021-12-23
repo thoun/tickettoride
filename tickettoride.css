@@ -51,8 +51,7 @@
   user-select: none;
 }
 #map-zoom-wrapper #map-zoom {
-  flex: 1;
-  max-width: calc(100% - 250px);
+  max-width: 100%;
 }
 #map-zoom-wrapper #map-zoom.scrollable {
   overflow: auto;
@@ -95,72 +94,74 @@
   /* IE 10+ */
 }
 
-#map {
-  position: relative;
-  width: 1650px;
-  height: 1064px;
-  background: url("img/map.jpg");
+#map-and-deck {
+  display: grid;
+  grid-template-columns: auto 250px;
   transform-origin: top left;
 }
-#map .side {
+
+#map-zoom {
+  position: relative;
+}
+#map-zoom .side {
   position: absolute;
   pointer-events: none;
 }
-#map .side.left {
+#map-zoom .side.left {
   background: url("img/border-map-left.png");
   width: 9px;
   left: 0;
   top: 180px;
   bottom: 180px;
 }
-#map .side.right {
+#map-zoom .side.right {
   background: url("img/border-map-right.png");
   width: 8px;
   right: 0;
   top: 180px;
   bottom: 180px;
 }
-#map .side.top {
+#map-zoom .side.top {
   background: url("img/border-map-top.png");
   height: 8px;
   left: 180px;
   right: 180px;
   top: 0;
 }
-#map .side.bottom {
+#map-zoom .side.bottom {
   background: url("img/border-map-bottom.png");
   height: 9px;
   left: 180px;
   right: 180px;
   bottom: 0;
 }
-#map .corner {
+#map-zoom .corner {
   position: absolute;
   pointer-events: none;
   width: 180px;
   height: 180px;
 }
-#map .corner.top-left {
+#map-zoom .corner.top-left {
   background: url("img/border-map-corner-top-left.png");
   left: 0;
   top: 0;
 }
-#map .corner.top-right {
+#map-zoom .corner.top-right {
   background: url("img/border-map-corner-top-right.png");
   right: 0;
   top: 0;
 }
-#map .corner.bottom-left {
+#map-zoom .corner.bottom-left {
   background: url("img/border-map-corner-bottom-left.png");
   left: 0;
   bottom: 0;
 }
-#map .corner.bottom-right {
+#map-zoom .corner.bottom-right {
   background: url("img/border-map-corner-bottom-right.png");
   right: 0;
   bottom: 0;
 }
-#map .illustration {
+#map-zoom .illustration {
   position: absolute;
   pointer-events: none;
   background: url("img/border-map-illustration.png");
@@ -168,6 +169,14 @@
   bottom: 0;
   width: 258px;
   height: 206px;
+}
+
+#map {
+  position: relative;
+  width: 1650px;
+  height: 1064px;
+  background: url("img/map.jpg");
+  transform-origin: top left;
 }
 
 /*.point-marker {
@@ -371,19 +380,19 @@
   background-position: 100% 100%;
 }
 .wagon[data-player-color=ff0000] {
-  background-image: url("img/wagons-red.png");
+  background-image: url("img/wagons-red.png"), url("img/wagons-shadow.png");
 }
 .wagon[data-player-color="008000"] {
-  background-image: url("img/wagons-green.png");
+  background-image: url("img/wagons-green.png"), url("img/wagons-shadow.png");
 }
 .wagon[data-player-color="0000ff"] {
-  background-image: url("img/wagons-blue.png");
+  background-image: url("img/wagons-blue.png"), url("img/wagons-shadow.png");
 }
 .wagon[data-player-color=ffa500] {
-  background-image: url("img/wagons-yellow.png");
+  background-image: url("img/wagons-yellow.png"), url("img/wagons-shadow.png");
 }
 .wagon[data-player-color="982fff"] {
-  background-image: url("img/wagons-purple.png");
+  background-image: url("img/wagons-purple.png"), url("img/wagons-shadow.png");
 }
 
 #train-car-deck {
@@ -494,6 +503,11 @@
   pointer-events: none;
   cursor: default;
 }
+#train-car-deck #visible-train-cards {
+  transform-origin: 0 0;
+  transform: scale(0.9);
+  margin-bottom: -90px;
+}
 
 .gauge {
   width: 50px;
@@ -591,8 +605,4 @@ html {
 .stockitem.disabled {
   filter: contrast(0.6);
   cursor: not-allowed;
-}
-
-#map-and-deck {
-  display: flex;
 }

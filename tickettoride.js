@@ -715,9 +715,9 @@ var TtrMap = /** @class */ (function () {
         this.pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 };
         this.zoomed = false;
         // map border
-        dojo.place("<div class=\"illustration\"></div>", 'map');
-        SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map'); });
-        CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'map'); });
+        dojo.place("<div class=\"illustration\"></div>", 'map-zoom');
+        SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map-zoom'); });
+        CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'map-zoom'); });
         /*let html = '';
 
         // points
@@ -740,13 +740,14 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     ], ${COLORS[route.color]}),`).join('\n'));*/
         //this.movePoints();
         this.setClaimedRoutes(claimedRoutes);
+        this.mapAndDeckDiv = document.getElementById('map-and-deck');
         this.mapZoomDiv = document.getElementById('map-zoom');
         this.mapDiv = document.getElementById('map');
         // Attach the handler
         this.mapDiv.addEventListener('mousedown', function (e) { return _this.mouseDownHandler(e); });
         document.addEventListener('mousemove', function (e) { return _this.mouseMoveHandler(e); });
         document.addEventListener('mouseup', function (e) { return _this.mouseUpHandler(); });
-        document.getElementById('zoom-button').addEventListener('mouseup', function () { return _this.toggleZoom(); });
+        document.getElementById('zoom-button').addEventListener('click', function () { return _this.toggleZoom(); });
     }
     /*public setPoints(playerId: number, points: number) {
         this.points.set(playerId, points);
@@ -812,14 +813,15 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     };
     TtrMap.prototype.setAutoZoom = function () {
         var _this = this;
-        var zoomWrapperWidth = this.mapDiv.clientWidth;
-        if (!zoomWrapperWidth) {
+        var mapAndDeckWidth = this.mapDiv.clientWidth + document.getElementById('train-car-deck').clientWidth;
+        if (!mapAndDeckWidth) {
             setTimeout(function () { return _this.setAutoZoom(); }, 200);
             return;
         }
-        this.scale = Math.min(1, (document.getElementById('game_play_area').clientWidth - 250) / zoomWrapperWidth);
-        this.mapDiv.style.transform = this.zoomed || this.scale === 1 ? '' : "scale(" + this.scale + ")";
-        this.mapZoomDiv.style.height = this.scale === 1 ? '' : this.mapDiv.clientHeight * this.scale + "px";
+        this.scale = Math.min(1, document.getElementById('game_play_area').clientWidth / mapAndDeckWidth);
+        this.mapAndDeckDiv.style.transform = this.scale === 1 ? '' : "scale(" + this.scale + ")";
+        this.mapAndDeckDiv.style.marginRight = "-" + (1 - this.scale) * 100 + "%";
+        this.mapAndDeckDiv.style.height = this.scale === 1 ? '' : this.mapDiv.clientHeight * this.scale + "px";
     };
     TtrMap.prototype.mouseDownHandler = function (e) {
         if (!this.zoomed) {
@@ -855,7 +857,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     };
     TtrMap.prototype.toggleZoom = function () {
         this.zoomed = !this.zoomed;
-        this.mapDiv.style.transform = this.zoomed || this.scale === 1 ? '' : "scale(" + this.scale + ")";
+        this.mapDiv.style.transform = this.zoomed ? "scale(1.8)" : '';
         dojo.toggleClass('zoom-button', 'zoomed', this.zoomed);
         dojo.toggleClass('map-zoom', 'scrollable', this.zoomed);
         if (!this.zoomed) {
@@ -873,9 +875,11 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
                 return document.getElementById("city" + city).dataset.selectedDestination = 'false';
             });
         }
-        [destination.from, destination.to].forEach(function (city) {
-            return document.getElementById("city" + city).dataset.selectedDestination = 'true';
-        });
+        if (destination) {
+            [destination.from, destination.to].forEach(function (city) {
+                return document.getElementById("city" + city).dataset.selectedDestination = 'true';
+            });
+        }
     };
     TtrMap.prototype.setHoveredRoute = function (route, valid) {
         if (route) {

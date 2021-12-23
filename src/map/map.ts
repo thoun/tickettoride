@@ -584,6 +584,7 @@ const ROUTES = [
 class TtrMap {
     //private points = new Map<number, number>();
     private scale: number;
+    private mapAndDeckDiv: HTMLDivElement;
     private mapZoomDiv: HTMLDivElement;
     private mapDiv: HTMLDivElement;
     private pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 };
@@ -595,9 +596,9 @@ class TtrMap {
         claimedRoutes: ClaimedRoute[],
     ) {
         // map border
-        dojo.place(`<div class="illustration"></div>`, 'map');
-        SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'map'));
-        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map'));
+        dojo.place(`<div class="illustration"></div>`, 'map-zoom');
+        SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'map-zoom'));
+        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map-zoom'));
 
         /*let html = '';
 
@@ -634,13 +635,14 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         //this.movePoints();
         this.setClaimedRoutes(claimedRoutes);
 
+        this.mapAndDeckDiv = document.getElementById('map-and-deck') as HTMLDivElement;
         this.mapZoomDiv = document.getElementById('map-zoom') as HTMLDivElement;
         this.mapDiv = document.getElementById('map') as HTMLDivElement;
         // Attach the handler
         this.mapDiv.addEventListener('mousedown', e => this.mouseDownHandler(e));
         document.addEventListener('mousemove', e => this.mouseMoveHandler(e));
         document.addEventListener('mouseup', e => this.mouseUpHandler());
-        document.getElementById('zoom-button').addEventListener('mouseup', () => this.toggleZoom());
+        document.getElementById('zoom-button').addEventListener('click', () => this.toggleZoom());
     }
 
     /*public setPoints(playerId: number, points: number) {
@@ -711,17 +713,18 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     }
 
     public setAutoZoom() {
-        const zoomWrapperWidth = this.mapDiv.clientWidth;
+        const mapAndDeckWidth = this.mapDiv.clientWidth + document.getElementById('train-car-deck').clientWidth;
 
-        if (!zoomWrapperWidth) {
+        if (!mapAndDeckWidth) {
             setTimeout(() => this.setAutoZoom(), 200);
             return;
         }
 
-        this.scale = Math.min(1, (document.getElementById('game_play_area').clientWidth - 250) / zoomWrapperWidth);
+        this.scale = Math.min(1, document.getElementById('game_play_area').clientWidth / mapAndDeckWidth);
 
-        this.mapDiv.style.transform = this.zoomed || this.scale === 1 ? '' : `scale(${this.scale})`;
-        this.mapZoomDiv.style.height = this.scale === 1 ? '' : `${this.mapDiv.clientHeight * this.scale}px`;
+        this.mapAndDeckDiv.style.transform = this.scale === 1 ? '' : `scale(${this.scale})`;
+        this.mapAndDeckDiv.style.marginRight = `-${(1 - this.scale) * 100}%`;
+        this.mapAndDeckDiv.style.height = this.scale === 1 ? '' : `${this.mapDiv.clientHeight * this.scale}px`;
     }
 
     private mouseDownHandler(e: MouseEvent) {
@@ -765,7 +768,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
 
     private toggleZoom() {      
         this.zoomed = !this.zoomed;
-        this.mapDiv.style.transform = this.zoomed || this.scale === 1 ? '' : `scale(${this.scale})`;
+        this.mapDiv.style.transform = this.zoomed ? `scale(1.8)` : '';
         dojo.toggleClass('zoom-button', 'zoomed', this.zoomed);
         dojo.toggleClass('map-zoom', 'scrollable', this.zoomed);
 
@@ -786,9 +789,11 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             );
         }
 
-        [destination.from, destination.to].forEach(city => 
-            document.getElementById(`city${city}`).dataset.selectedDestination = 'true'
-        );
+        if (destination) {
+            [destination.from, destination.to].forEach(city => 
+                document.getElementById(`city${city}`).dataset.selectedDestination = 'true'
+            );
+        }
     }
 
     public setHoveredRoute(route: Route | null, valid: boolean | null) {
