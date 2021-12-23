@@ -24,7 +24,7 @@
             </div>
 
             <div id="destination-deck" class="hidden">
-                <div id="destination-stock" class="whiteblock"></div>
+                <div id="destination-stock"></div>
             </div>
         </div>
     </div>
