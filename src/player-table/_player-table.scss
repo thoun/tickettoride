@@ -1,29 +1,10 @@
+@import 'player-destinations';
+
 .player-table {
     display: grid;
-    grid-template-columns: auto 250px;
+    grid-template-columns: 270px auto;
 
-    .player-table-destinations {
-        .stockitem {
-            &::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-            }
-
-            &.todo::after {
-                background: url('img/destination-todo.png');
-            }
-            &.done {            
-                mask: url('img/destination-done-mask.png') no-repeat center / contain;
-                -webkit-mask: url('img/destination-done-mask.png') no-repeat center / contain;  
-
-                &::after {
-                    background: url('img/destination-done.png');
-                }  
-            }
-        }
+    &.double-column-destinations {
+        grid-template-columns: 305px auto;
     }
 }

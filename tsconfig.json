@@ -17,6 +17,8 @@
         "src/destination-deck/destination-deck.ts",
         "src/train-car-deck/train-car-deck.ts",
         "src/player-table/player-table.ts",
+        "src/player-table/player-destinations.ts",
+        "src/player-table/player-train-cars.ts",
         "src/tickettoride.ts",
         "src/define.ts"
     ]

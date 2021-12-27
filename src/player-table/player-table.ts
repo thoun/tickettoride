@@ -1,90 +1,35 @@
 class PlayerTable {
-    public playerId: number;
-    public trainCarStock: Stock;
-    public destinationStock: Stock;
-    private selectedDestination: Destination;
+    private playerDestinations: PlayerDestinations;
+    private playerTrainCars: PlayerTrainCars;
 
     constructor(
-        private game: TicketToRideGame, 
+        game: TicketToRideGame, 
         player: TicketToRidePlayer,
         trainCars: TrainCar[],
-        private destinations: Destination[],
+        destinations: Destination[],
         completedDestinations: Destination[]) {
 
-        this.playerId = Number(player.id);
-
         let html = `
-        <div id="player-table-${this.playerId}" class="player-table whiteblock">
-            <div id="player-table-${this.playerId}-train-cars" class="player-table-train-cars"></div>
-            <div id="player-table-${this.playerId}-destinations" class="player-table-destinations"></div>
+        <div id="player-table-${player.id}" class="player-table whiteblock">
+            <div id="player-table-${player.id}-destinations" class="player-table-destinations"></div>
+            <div id="player-table-${player.id}-train-cars" class="player-table-train-cars"></div>
         </div>`;
 
         dojo.place(html, 'player-hand');
 
-        // train cars cards        
-
-        this.trainCarStock = new ebg.stock() as Stock;
-        this.trainCarStock.setSelectionAppearance('class');
-        this.trainCarStock.selectionClass = 'selected';
-        this.trainCarStock.create(this.game, $(`player-table-${this.playerId}-train-cars`), CARD_WIDTH, CARD_HEIGHT);
-        this.trainCarStock.setSelectionMode(0);
-        this.trainCarStock.onItemCreate = (cardDiv, cardTypeId) => setupTrainCarCardDiv(cardDiv, cardTypeId);
-        dojo.connect(this.trainCarStock, 'onChangeSelection', this, (_, itemId: string) => {
-            if (this.trainCarStock.getSelectedItems().length) {
-                //this.game.cardClick(0, Number(itemId));
-            }
-            this.trainCarStock.unselectAll();
-        });
-        setupTrainCarCards(this.trainCarStock);
-
-        this.addTrainCars(trainCars);
-
-        // destination cards
-
-        this.destinationStock = new ebg.stock() as Stock;
-        this.destinationStock.setSelectionAppearance('class');
-        this.destinationStock.selectionClass = 'selected';
-        this.destinationStock.create(this.game, $(`player-table-${this.playerId}-destinations`), CARD_WIDTH, CARD_HEIGHT);
-        this.destinationStock.setSelectionMode(1);
-        this.destinationStock.image_items_per_row = 10;
-        this.destinationStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupDestinationCardDiv(cardDiv, type);
-        setupDestinationCards(this.destinationStock);
-        dojo.connect(this.destinationStock, 'onChangeSelection', this, () => this.activateNextDestination());
-
-        this.addDestinations(destinations);
-        destinations.filter(destination => completedDestinations.some(d => d.id == destination.id)).forEach(destination => this.markDestinationComplete(destination));
-        
-        this.activateNextDestination();
-        document.getElementById(`player-table-${this.playerId}-destinations`).addEventListener('click', () => this.activateNextDestination());
+        this.playerDestinations = new PlayerDestinations(game, player, destinations, completedDestinations);
+        this.playerTrainCars = new PlayerTrainCars(game, player, trainCars);
     }
-        
-    public addDestinations(destinations: Destination[], originStock?: Stock) {
-        destinations.forEach(destination => {
-            const from = document.getElementById(`${originStock ? originStock.container_div.id : 'destination-stock'}_item_${destination.id}`)?.id || 'destination-stock';
-            this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id, from);
-        });
-        originStock?.removeAll();
 
-        this.destinations.push(...destinations);
+    public addDestinations(destinations: Destination[], originStock?: Stock) {
+        this.playerDestinations.addDestinations(destinations, originStock);
     }
 
     public markDestinationComplete(destination: Destination) {
-        document.getElementById(`${this.destinationStock.container_div.id}_item_${destination.id}`).classList.add('done');
+        this.playerDestinations.markDestinationComplete(destination);
     }
     
     public addTrainCars(trainCars: TrainCar[], stocks?: TrainCarSelection) {
-        trainCars.forEach(trainCar => {
-            const stock = stocks ? stocks.visibleCardsStocks[trainCar.location_arg] : null;
-            const from = document.getElementById(`${stock ? stock.container_div.id : 'train-car-deck'}_item_${trainCar.id}`)?.id || 'train-car-deck';
-            this.trainCarStock.addToStockWithId(trainCar.type, ''+trainCar.id, from);
-            stock?.removeAll();
-        });
-    }
-
-    public activateNextDestination() {
-        const index = this.destinations.indexOf(this.selectedDestination);
-        const newIndex = (index + 1) % this.destinations.length;
-        this.game.setActiveDestination(this.destinations[newIndex], this.selectedDestination);
-        this.selectedDestination = this.destinations[newIndex];
+        this.playerTrainCars.addTrainCars(trainCars, stocks);
     }
 }

@@ -1,0 +1,72 @@
+.player-table-destinations {
+    position: relative;
+
+    &.double-column {
+        width: 300px;
+
+        .done {
+            left: 35px;
+        }
+    }
+
+    .player-table-destinations-column {
+        position: absolute;
+        left: 0;
+        width: 250px;
+        height: 100%;
+        pointer-events: none;
+
+        &.front {
+            z-index: 1;
+        }
+    }
+
+    .destination-card {
+        position: absolute;
+        left: 0px; 
+        width: 250px; 
+        height: 161px; 
+        background-image: url("img/destinations.jpg");
+        border-radius: 6px;
+        cursor: pointer;
+        pointer-events: all;
+
+        /*&::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        &.todo::after {
+            background: url('img/destination-todo.png');
+        }
+        &.done {            
+            mask: url('img/destination-done-mask.png') no-repeat center / contain;
+            -webkit-mask: url('img/destination-done-mask.png') no-repeat center / contain;  
+
+            &::after {
+                background: url('img/destination-done.png');
+            }  
+        }*/
+    }
+
+    .done {
+        .destination-card {
+            mask: url('img/destination-done-mask.png') no-repeat center / contain;
+            -webkit-mask: url('img/destination-done-mask.png') no-repeat center / contain;  
+
+            &::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: url('img/destination-done.png');
+            }  
+        }
+    }
+}

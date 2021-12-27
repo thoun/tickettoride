@@ -8,6 +8,8 @@ declare const g_gamethemeurl;
 declare const board: HTMLDivElement;*/
 var CARD_WIDTH = 250;
 var CARD_HEIGHT = 161;
+var DESTINATION_CARD_SHIFT = 35;
+var DESTINATION_CARD_COLUMN_SHIFT = 35;
 function setupTrainCarCards(stock) {
     var trainCarsUrl = g_gamethemeurl + "img/train-cards.jpg";
     for (var type = 0; type <= 8; type++) {
@@ -1026,12 +1028,124 @@ var TrainCarSelection = /** @class */ (function () {
 }());
 var PlayerTable = /** @class */ (function () {
     function PlayerTable(game, player, trainCars, destinations, completedDestinations) {
+        var html = "\n        <div id=\"player-table-" + player.id + "\" class=\"player-table whiteblock\">\n            <div id=\"player-table-" + player.id + "-destinations\" class=\"player-table-destinations\"></div>\n            <div id=\"player-table-" + player.id + "-train-cars\" class=\"player-table-train-cars\"></div>\n        </div>";
+        dojo.place(html, 'player-hand');
+        this.playerDestinations = new PlayerDestinations(game, player, destinations, completedDestinations);
+        this.playerTrainCars = new PlayerTrainCars(game, player, trainCars);
+    }
+    PlayerTable.prototype.addDestinations = function (destinations, originStock) {
+        this.playerDestinations.addDestinations(destinations, originStock);
+    };
+    PlayerTable.prototype.markDestinationComplete = function (destination) {
+        this.playerDestinations.markDestinationComplete(destination);
+    };
+    PlayerTable.prototype.addTrainCars = function (trainCars, stocks) {
+        this.playerTrainCars.addTrainCars(trainCars, stocks);
+    };
+    return PlayerTable;
+}());
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+var IMAGE_ITEMS_PER_ROW = 10;
+var PlayerDestinations = /** @class */ (function () {
+    function PlayerDestinations(game, player, destinations, completedDestinations) {
         var _this = this;
         this.game = game;
-        this.destinations = destinations;
+        this.selectedDestination = null;
+        this.destinationsTodo = [];
+        this.destinationsDone = [];
         this.playerId = Number(player.id);
-        var html = "\n        <div id=\"player-table-" + this.playerId + "\" class=\"player-table whiteblock\">\n            <div id=\"player-table-" + this.playerId + "-train-cars\" class=\"player-table-train-cars\"></div>\n            <div id=\"player-table-" + this.playerId + "-destinations\" class=\"player-table-destinations\"></div>\n        </div>";
-        dojo.place(html, 'player-hand');
+        var html = "\n        <div id=\"player-table-" + player.id + "-destinations-todo\" class=\"player-table-destinations-column todo\"></div>\n        <div id=\"player-table-" + player.id + "-destinations-done\" class=\"player-table-destinations-column done\"></div>\n        ";
+        dojo.place(html, "player-table-" + player.id + "-destinations");
+        // destination cards
+        /*this.destinationStock = new ebg.stock() as Stock;
+        this.destinationStock.setSelectionAppearance('class');
+        this.destinationStock.selectionClass = 'selected';
+        this.destinationStock.create(this.game, $(`player-table-${this.playerId}-destinations`), CARD_WIDTH, CARD_HEIGHT);
+        this.destinationStock.setSelectionMode(1);
+        this.destinationStock.image_items_per_row = 10;
+        this.destinationStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupDestinationCardDiv(cardDiv, type);
+        setupDestinationCards(this.destinationStock);
+        dojo.connect(this.destinationStock, 'onChangeSelection', this, () => this.activateNextDestination());*/
+        this.addDestinations(destinations);
+        destinations.filter(function (destination) { return completedDestinations.some(function (d) { return d.id == destination.id; }); }).forEach(function (destination) { return _this.markDestinationComplete(destination); });
+        this.activateNextDestination(this.destinationsTodo);
+    }
+    PlayerDestinations.prototype.addDestinations = function (destinations, originStock) {
+        var _a;
+        var _this = this;
+        destinations.forEach(function (destination) {
+            //const from = document.getElementById(`${originStock ? originStock.container_div.id : 'destination-stock'}_item_${destination.id}`)?.id || 'destination-stock';
+            //this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id, from);
+            var imagePosition = destination.type_arg - 1;
+            var row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
+            var xBackgroundPercent = (imagePosition - (row * IMAGE_ITEMS_PER_ROW)) * 100;
+            var yBackgroundPercent = row * 100;
+            var html = "\n            <div id=\"destination-card-" + destination.id + "\" class=\"destination-card\" style=\"background-position: -" + xBackgroundPercent + "% -" + yBackgroundPercent + "%;\"></div>\n            ";
+            dojo.place(html, "player-table-" + _this.playerId + "-destinations-todo");
+            document.getElementById("destination-card-" + destination.id).addEventListener('click', function () { return _this.activateNextDestination(_this.destinationsDone.some(function (d) { return d.id == destination.id; }) ? _this.destinationsDone : _this.destinationsTodo); });
+        });
+        originStock === null || originStock === void 0 ? void 0 : originStock.removeAll();
+        (_a = this.destinationsTodo).push.apply(_a, destinations);
+        this.destinationColumnsUpdated();
+    };
+    PlayerDestinations.prototype.markDestinationComplete = function (destination) {
+        //document.getElementById(`${this.destinationStock.container_div.id}_item_${destination.id}`).classList.add('done');
+        var index = this.destinationsTodo.findIndex(function (d) { return d.id == destination.id; });
+        if (index !== -1) {
+            this.destinationsTodo.splice(index, 1);
+        }
+        this.destinationsDone.push(destination);
+        document.getElementById("player-table-" + this.playerId + "-destinations-done").appendChild(document.getElementById("destination-card-" + destination.id));
+        this.destinationColumnsUpdated();
+    };
+    PlayerDestinations.prototype.activateNextDestination = function (destinationList) {
+        var _this = this;
+        var oldSelectedDestination = this.selectedDestination;
+        if (this.selectedDestination && destinationList.some(function (d) { return d.id == _this.selectedDestination.id; }) && destinationList.length > 1) {
+            destinationList.splice.apply(destinationList, __spreadArray([destinationList.length, 0], destinationList.splice(0, 1), false));
+        }
+        this.selectedDestination = destinationList[0];
+        this.game.setActiveDestination(this.selectedDestination, oldSelectedDestination);
+        document.getElementById("player-table-" + this.playerId + "-destinations-todo").classList.toggle('front', destinationList == this.destinationsTodo);
+        document.getElementById("player-table-" + this.playerId + "-destinations-done").classList.toggle('front', destinationList == this.destinationsDone);
+        this.destinationColumnsUpdated();
+    };
+    PlayerDestinations.prototype.destinationColumnsUpdated = function () {
+        var doubleColumn = this.destinationsTodo.length > 0 && this.destinationsDone.length > 0;
+        document.getElementById("player-table-" + this.playerId).classList.toggle('double-column-destinations', doubleColumn);
+        document.getElementById("player-table-" + this.playerId + "-destinations").classList.toggle('double-column', doubleColumn);
+        var maxBottom = Math.max(this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_COLUMN_SHIFT : 0), this.placeCards(this.destinationsDone));
+        document.getElementById("player-table-" + this.playerId + "-destinations").style.height = maxBottom + CARD_HEIGHT + "px";
+    };
+    PlayerDestinations.prototype.placeCards = function (list, originalBottom) {
+        if (originalBottom === void 0) { originalBottom = 0; }
+        var maxBottom = 0;
+        list.forEach(function (destination, index) {
+            var bottom = originalBottom + index * DESTINATION_CARD_SHIFT;
+            var card = document.getElementById("destination-card-" + destination.id);
+            card.parentElement.prepend(card);
+            card.style.bottom = bottom + "px";
+            if (bottom > maxBottom) {
+                maxBottom = bottom;
+            }
+        });
+        return maxBottom;
+    };
+    return PlayerDestinations;
+}());
+var PlayerTrainCars = /** @class */ (function () {
+    function PlayerTrainCars(game, player, trainCars) {
+        var _this = this;
+        this.game = game;
+        this.playerId = Number(player.id);
         // train cars cards        
         this.trainCarStock = new ebg.stock();
         this.trainCarStock.setSelectionAppearance('class');
@@ -1047,36 +1161,8 @@ var PlayerTable = /** @class */ (function () {
         });
         setupTrainCarCards(this.trainCarStock);
         this.addTrainCars(trainCars);
-        // destination cards
-        this.destinationStock = new ebg.stock();
-        this.destinationStock.setSelectionAppearance('class');
-        this.destinationStock.selectionClass = 'selected';
-        this.destinationStock.create(this.game, $("player-table-" + this.playerId + "-destinations"), CARD_WIDTH, CARD_HEIGHT);
-        this.destinationStock.setSelectionMode(1);
-        this.destinationStock.image_items_per_row = 10;
-        this.destinationStock.onItemCreate = function (cardDiv, type) { return setupDestinationCardDiv(cardDiv, type); };
-        setupDestinationCards(this.destinationStock);
-        dojo.connect(this.destinationStock, 'onChangeSelection', this, function () { return _this.activateNextDestination(); });
-        this.addDestinations(destinations);
-        destinations.filter(function (destination) { return completedDestinations.some(function (d) { return d.id == destination.id; }); }).forEach(function (destination) { return _this.markDestinationComplete(destination); });
-        this.activateNextDestination();
-        document.getElementById("player-table-" + this.playerId + "-destinations").addEventListener('click', function () { return _this.activateNextDestination(); });
     }
-    PlayerTable.prototype.addDestinations = function (destinations, originStock) {
-        var _a;
-        var _this = this;
-        destinations.forEach(function (destination) {
-            var _a;
-            var from = ((_a = document.getElementById((originStock ? originStock.container_div.id : 'destination-stock') + "_item_" + destination.id)) === null || _a === void 0 ? void 0 : _a.id) || 'destination-stock';
-            _this.destinationStock.addToStockWithId(destination.type_arg, '' + destination.id, from);
-        });
-        originStock === null || originStock === void 0 ? void 0 : originStock.removeAll();
-        (_a = this.destinations).push.apply(_a, destinations);
-    };
-    PlayerTable.prototype.markDestinationComplete = function (destination) {
-        document.getElementById(this.destinationStock.container_div.id + "_item_" + destination.id).classList.add('done');
-    };
-    PlayerTable.prototype.addTrainCars = function (trainCars, stocks) {
+    PlayerTrainCars.prototype.addTrainCars = function (trainCars, stocks) {
         var _this = this;
         trainCars.forEach(function (trainCar) {
             var _a;
@@ -1086,13 +1172,7 @@ var PlayerTable = /** @class */ (function () {
             stock === null || stock === void 0 ? void 0 : stock.removeAll();
         });
     };
-    PlayerTable.prototype.activateNextDestination = function () {
-        var index = this.destinations.indexOf(this.selectedDestination);
-        var newIndex = (index + 1) % this.destinations.length;
-        this.game.setActiveDestination(this.destinations[newIndex], this.selectedDestination);
-        this.selectedDestination = this.destinations[newIndex];
-    };
-    return PlayerTable;
+    return PlayerTrainCars;
 }());
 var ANIMATION_MS = 500;
 var isDebug = window.location.host == 'studio.boardgamearena.com';

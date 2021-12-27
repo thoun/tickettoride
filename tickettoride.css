@@ -566,27 +566,75 @@
   border-radius: 6px;
 }
 
-.player-table {
-  display: grid;
-  grid-template-columns: auto 250px;
+.player-table-destinations {
+  position: relative;
 }
-.player-table .player-table-destinations .stockitem::after {
+.player-table-destinations.double-column {
+  width: 300px;
+}
+.player-table-destinations.double-column .done {
+  left: 35px;
+}
+.player-table-destinations .player-table-destinations-column {
+  position: absolute;
+  left: 0;
+  width: 250px;
+  height: 100%;
+  pointer-events: none;
+}
+.player-table-destinations .player-table-destinations-column.front {
+  z-index: 1;
+}
+.player-table-destinations .destination-card {
+  position: absolute;
+  left: 0px;
+  width: 250px;
+  height: 161px;
+  background-image: url("img/destinations.jpg");
+  border-radius: 6px;
+  cursor: pointer;
+  pointer-events: all;
+  /*&::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+  }
+
+  &.todo::after {
+      background: url('img/destination-todo.png');
+  }
+  &.done {            
+      mask: url('img/destination-done-mask.png') no-repeat center / contain;
+      -webkit-mask: url('img/destination-done-mask.png') no-repeat center / contain;  
+
+      &::after {
+          background: url('img/destination-done.png');
+      }  
+  }*/
+}
+.player-table-destinations .done .destination-card {
+  mask: url("img/destination-done-mask.png") no-repeat center/contain;
+  -webkit-mask: url("img/destination-done-mask.png") no-repeat center/contain;
+}
+.player-table-destinations .done .destination-card::after {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-}
-.player-table .player-table-destinations .stockitem.todo::after {
-  background: url("img/destination-todo.png");
-}
-.player-table .player-table-destinations .stockitem.done {
-  mask: url("img/destination-done-mask.png") no-repeat center/contain;
-  -webkit-mask: url("img/destination-done-mask.png") no-repeat center/contain;
-}
-.player-table .player-table-destinations .stockitem.done::after {
   background: url("img/destination-done.png");
+}
+
+.player-table {
+  display: grid;
+  grid-template-columns: 270px auto;
+}
+.player-table.double-column-destinations {
+  grid-template-columns: 305px auto;
 }
 
 html {
