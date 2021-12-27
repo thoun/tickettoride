@@ -23,28 +23,16 @@ class PlayerDestinations {
 
         dojo.place(html, `player-table-${player.id}-destinations`);
 
-        // destination cards
-
-        /*this.destinationStock = new ebg.stock() as Stock;
-        this.destinationStock.setSelectionAppearance('class');
-        this.destinationStock.selectionClass = 'selected';
-        this.destinationStock.create(this.game, $(`player-table-${this.playerId}-destinations`), CARD_WIDTH, CARD_HEIGHT);
-        this.destinationStock.setSelectionMode(1);
-        this.destinationStock.image_items_per_row = 10;
-        this.destinationStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupDestinationCardDiv(cardDiv, type);
-        setupDestinationCards(this.destinationStock);
-        dojo.connect(this.destinationStock, 'onChangeSelection', this, () => this.activateNextDestination());*/
-
         this.addDestinations(destinations);
-        destinations.filter(destination => completedDestinations.some(d => d.id == destination.id)).forEach(destination => this.markDestinationComplete(destination));
+        destinations.filter(destination => completedDestinations.some(d => d.id == destination.id)).forEach(destination => 
+            this.markDestinationComplete(destination)
+        );
         
         this.activateNextDestination(this.destinationsTodo);
     }
         
     public addDestinations(destinations: Destination[], originStock?: Stock) {
         destinations.forEach(destination => {
-            //const from = document.getElementById(`${originStock ? originStock.container_div.id : 'destination-stock'}_item_${destination.id}`)?.id || 'destination-stock';
-            //this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id, from);
             
 
             const imagePosition = destination.type_arg - 1;
@@ -57,11 +45,15 @@ class PlayerDestinations {
             `;
 
             dojo.place(html, `player-table-${this.playerId}-destinations-todo`);
-
             
-            document.getElementById(`destination-card-${destination.id}`).addEventListener('click', () => this.activateNextDestination(
+            const card = document.getElementById(`destination-card-${destination.id}`);
+            card.addEventListener('click', () => this.activateNextDestination(
                 this.destinationsDone.some(d => d.id == destination.id) ? this.destinationsDone : this.destinationsTodo
             ));
+
+            if (originStock) {
+                this.addAnimationFrom(card, document.getElementById(`${originStock.container_div.id}_item_${destination.id}`));
+            }
         });
 
         originStock?.removeAll();
@@ -72,8 +64,6 @@ class PlayerDestinations {
     }
 
     public markDestinationComplete(destination: Destination) {
-        //document.getElementById(`${this.destinationStock.container_div.id}_item_${destination.id}`).classList.add('done');
-
         const index = this.destinationsTodo.findIndex(d => d.id == destination.id);
         if (index !== -1) {
             this.destinationsTodo.splice(index, 1);
@@ -105,7 +95,7 @@ class PlayerDestinations {
         document.getElementById(`player-table-${this.playerId}-destinations`).classList.toggle('double-column', doubleColumn);
 
         const maxBottom = Math.max(
-            this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_COLUMN_SHIFT : 0),
+            this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_SHIFT : 0),
             this.placeCards(this.destinationsDone),
         );
 
@@ -126,5 +116,28 @@ class PlayerDestinations {
         });
 
         return maxBottom;
+    }
+    
+    private addAnimationFrom(card: HTMLElement, from: HTMLElement) {
+        if (document.visibilityState === 'hidden' || (this.game as any).instantaneousMode) {
+            return;
+        }
+
+        const destinationBR = card.getBoundingClientRect();
+        const originBR = from.getBoundingClientRect();
+
+        const deltaX = destinationBR.left - originBR.left;
+        const deltaY = destinationBR.top - originBR.top;
+
+        card.style.zIndex = '10';
+        card.style.transition = `transform 0.5s linear`;
+        const zoom = 1; // TODO?
+        card.style.transform = `translate(${-deltaX/zoom}px, ${-deltaY/zoom}px)`;
+        setTimeout(() => card.style.transform = null);
+
+        setTimeout(() => {
+            card.style.zIndex = null;
+            card.style.transition = null;            
+        }, 500);
     }
 }

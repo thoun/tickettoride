@@ -9,8 +9,7 @@ declare const board: HTMLDivElement;*/
 
 const CARD_WIDTH = 250;
 const CARD_HEIGHT = 161;
-const DESTINATION_CARD_SHIFT = 35;
-const DESTINATION_CARD_COLUMN_SHIFT = 35;
+const DESTINATION_CARD_SHIFT = 32;
 
 function setupTrainCarCards(stock: Stock) {
     const trainCarsUrl = `${g_gamethemeurl}img/train-cards.jpg`;

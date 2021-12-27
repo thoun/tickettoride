@@ -8,8 +8,7 @@ declare const g_gamethemeurl;
 declare const board: HTMLDivElement;*/
 var CARD_WIDTH = 250;
 var CARD_HEIGHT = 161;
-var DESTINATION_CARD_SHIFT = 35;
-var DESTINATION_CARD_COLUMN_SHIFT = 35;
+var DESTINATION_CARD_SHIFT = 32;
 function setupTrainCarCards(stock) {
     var trainCarsUrl = g_gamethemeurl + "img/train-cards.jpg";
     for (var type = 0; type <= 8; type++) {
@@ -1064,40 +1063,33 @@ var PlayerDestinations = /** @class */ (function () {
         this.playerId = Number(player.id);
         var html = "\n        <div id=\"player-table-" + player.id + "-destinations-todo\" class=\"player-table-destinations-column todo\"></div>\n        <div id=\"player-table-" + player.id + "-destinations-done\" class=\"player-table-destinations-column done\"></div>\n        ";
         dojo.place(html, "player-table-" + player.id + "-destinations");
-        // destination cards
-        /*this.destinationStock = new ebg.stock() as Stock;
-        this.destinationStock.setSelectionAppearance('class');
-        this.destinationStock.selectionClass = 'selected';
-        this.destinationStock.create(this.game, $(`player-table-${this.playerId}-destinations`), CARD_WIDTH, CARD_HEIGHT);
-        this.destinationStock.setSelectionMode(1);
-        this.destinationStock.image_items_per_row = 10;
-        this.destinationStock.onItemCreate = (cardDiv: HTMLDivElement, type: number) => setupDestinationCardDiv(cardDiv, type);
-        setupDestinationCards(this.destinationStock);
-        dojo.connect(this.destinationStock, 'onChangeSelection', this, () => this.activateNextDestination());*/
         this.addDestinations(destinations);
-        destinations.filter(function (destination) { return completedDestinations.some(function (d) { return d.id == destination.id; }); }).forEach(function (destination) { return _this.markDestinationComplete(destination); });
+        destinations.filter(function (destination) { return completedDestinations.some(function (d) { return d.id == destination.id; }); }).forEach(function (destination) {
+            return _this.markDestinationComplete(destination);
+        });
         this.activateNextDestination(this.destinationsTodo);
     }
     PlayerDestinations.prototype.addDestinations = function (destinations, originStock) {
         var _a;
         var _this = this;
         destinations.forEach(function (destination) {
-            //const from = document.getElementById(`${originStock ? originStock.container_div.id : 'destination-stock'}_item_${destination.id}`)?.id || 'destination-stock';
-            //this.destinationStock.addToStockWithId(destination.type_arg, ''+destination.id, from);
             var imagePosition = destination.type_arg - 1;
             var row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
             var xBackgroundPercent = (imagePosition - (row * IMAGE_ITEMS_PER_ROW)) * 100;
             var yBackgroundPercent = row * 100;
             var html = "\n            <div id=\"destination-card-" + destination.id + "\" class=\"destination-card\" style=\"background-position: -" + xBackgroundPercent + "% -" + yBackgroundPercent + "%;\"></div>\n            ";
             dojo.place(html, "player-table-" + _this.playerId + "-destinations-todo");
-            document.getElementById("destination-card-" + destination.id).addEventListener('click', function () { return _this.activateNextDestination(_this.destinationsDone.some(function (d) { return d.id == destination.id; }) ? _this.destinationsDone : _this.destinationsTodo); });
+            var card = document.getElementById("destination-card-" + destination.id);
+            card.addEventListener('click', function () { return _this.activateNextDestination(_this.destinationsDone.some(function (d) { return d.id == destination.id; }) ? _this.destinationsDone : _this.destinationsTodo); });
+            if (originStock) {
+                _this.addAnimationFrom(card, document.getElementById(originStock.container_div.id + "_item_" + destination.id));
+            }
         });
         originStock === null || originStock === void 0 ? void 0 : originStock.removeAll();
         (_a = this.destinationsTodo).push.apply(_a, destinations);
         this.destinationColumnsUpdated();
     };
     PlayerDestinations.prototype.markDestinationComplete = function (destination) {
-        //document.getElementById(`${this.destinationStock.container_div.id}_item_${destination.id}`).classList.add('done');
         var index = this.destinationsTodo.findIndex(function (d) { return d.id == destination.id; });
         if (index !== -1) {
             this.destinationsTodo.splice(index, 1);
@@ -1122,7 +1114,7 @@ var PlayerDestinations = /** @class */ (function () {
         var doubleColumn = this.destinationsTodo.length > 0 && this.destinationsDone.length > 0;
         document.getElementById("player-table-" + this.playerId).classList.toggle('double-column-destinations', doubleColumn);
         document.getElementById("player-table-" + this.playerId + "-destinations").classList.toggle('double-column', doubleColumn);
-        var maxBottom = Math.max(this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_COLUMN_SHIFT : 0), this.placeCards(this.destinationsDone));
+        var maxBottom = Math.max(this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_SHIFT : 0), this.placeCards(this.destinationsDone));
         document.getElementById("player-table-" + this.playerId + "-destinations").style.height = maxBottom + CARD_HEIGHT + "px";
     };
     PlayerDestinations.prototype.placeCards = function (list, originalBottom) {
@@ -1138,6 +1130,24 @@ var PlayerDestinations = /** @class */ (function () {
             }
         });
         return maxBottom;
+    };
+    PlayerDestinations.prototype.addAnimationFrom = function (card, from) {
+        if (document.visibilityState === 'hidden' || this.game.instantaneousMode) {
+            return;
+        }
+        var destinationBR = card.getBoundingClientRect();
+        var originBR = from.getBoundingClientRect();
+        var deltaX = destinationBR.left - originBR.left;
+        var deltaY = destinationBR.top - originBR.top;
+        card.style.zIndex = '10';
+        card.style.transition = "transform 0.5s linear";
+        var zoom = 1; // TODO?
+        card.style.transform = "translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
+        setTimeout(function () { return card.style.transform = null; });
+        setTimeout(function () {
+            card.style.zIndex = null;
+            card.style.transition = null;
+        }, 500);
     };
     return PlayerDestinations;
 }());
