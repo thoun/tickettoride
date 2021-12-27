@@ -28,29 +28,9 @@
         height: 161px; 
         background-image: url("img/destinations.jpg");
         border-radius: 6px;
+        box-shadow: 0 0 8px 1px black;
         cursor: pointer;
         pointer-events: all;
-
-        /*&::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-        }
-
-        &.todo::after {
-            background: url('img/destination-todo.png');
-        }
-        &.done {            
-            mask: url('img/destination-done-mask.png') no-repeat center / contain;
-            -webkit-mask: url('img/destination-done-mask.png') no-repeat center / contain;  
-
-            &::after {
-                background: url('img/destination-done.png');
-            }  
-        }*/
     }
 
     .done {

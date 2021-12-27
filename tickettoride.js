@@ -1175,11 +1175,44 @@ var PlayerTrainCars = /** @class */ (function () {
     PlayerTrainCars.prototype.addTrainCars = function (trainCars, stocks) {
         var _this = this;
         trainCars.forEach(function (trainCar) {
-            var _a;
-            var stock = stocks ? stocks.visibleCardsStocks[trainCar.location_arg] : null;
-            var from = ((_a = document.getElementById((stock ? stock.container_div.id : 'train-car-deck') + "_item_" + trainCar.id)) === null || _a === void 0 ? void 0 : _a.id) || 'train-car-deck';
-            _this.trainCarStock.addToStockWithId(trainCar.type, '' + trainCar.id, from);
-            stock === null || stock === void 0 ? void 0 : stock.removeAll();
+            var group = _this.getGroup(trainCar.type);
+            var imagePosition = trainCar.type;
+            //const row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
+            var xBackgroundPercent = (imagePosition /* - (row * IMAGE_ITEMS_PER_ROW)*/) * 100;
+            //const yBackgroundPercent = row * 100;
+            var html = "\n            <div id=\"train-car-card-" + trainCar.id + "\" class=\"train-car-card\" style=\"background-position: -" + xBackgroundPercent + "% 50%;\"></div>\n            ";
+            dojo.place(html, group);
+            // TODO update group counter
+            /* TODO const card = document.getElementById(`destination-card-${trainCar.id}`);
+            card.addEventListener('click', () => this.activateNextDestination(
+                this.destinationsDone.some(d => d.id == trainCar.id) ? this.destinationsDone : this.destinationsTodo
+            ));
+
+            // TODO animation
+            if (originStock) {
+                this.addAnimationFrom(card, document.getElementById(`${originStock.container_div.id}_item_${trainCar.id}`));
+            }*/
+        });
+        this.updateCounters();
+    };
+    PlayerTrainCars.prototype.getGroup = function (type) {
+        var group = document.getElementById("train-car-group-" + type);
+        if (!group) {
+            dojo.place("\n            <div id=\"train-car-group-" + type + "\" class=\"train-car-group\" data-type=\"" + type + "\">\n                <div id=\"train-car-group-" + type + "-counter\" class=\"train-car-group-counter\">0</div>\n            </div>\n            ", "player-table-" + this.playerId + "-train-cars");
+            group = document.getElementById("train-car-group-" + type);
+            // TODO handle click on group
+        }
+        return group;
+    };
+    PlayerTrainCars.prototype.updateCounters = function () {
+        var groups = Array.from(document.getElementsByClassName('train-car-group'));
+        var middleIndex = (groups.length - 1) / 2;
+        groups.forEach(function (groupDiv, index) {
+            var distanceFromIndex = index - middleIndex;
+            groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = "" + (groupDiv.childElementCount - 1);
+            groupDiv.style.transform = "translateY(" + Math.pow(Math.abs(distanceFromIndex) * 2, 2) + "px) rotate(" + (distanceFromIndex) * 4 + "deg)";
+            groupDiv.parentNode.appendChild(groupDiv);
+            // add rotation to underneath cards
         });
     };
     return PlayerTrainCars;

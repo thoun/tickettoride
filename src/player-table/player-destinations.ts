@@ -33,8 +33,6 @@ class PlayerDestinations {
         
     public addDestinations(destinations: Destination[], originStock?: Stock) {
         destinations.forEach(destination => {
-            
-
             const imagePosition = destination.type_arg - 1;
             const row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
             const xBackgroundPercent = (imagePosition - (row * IMAGE_ITEMS_PER_ROW)) * 100;

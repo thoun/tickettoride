@@ -592,28 +592,9 @@
   height: 161px;
   background-image: url("img/destinations.jpg");
   border-radius: 6px;
+  box-shadow: 0 0 8px 1px black;
   cursor: pointer;
   pointer-events: all;
-  /*&::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-  }
-
-  &.todo::after {
-      background: url('img/destination-todo.png');
-  }
-  &.done {            
-      mask: url('img/destination-done-mask.png') no-repeat center / contain;
-      -webkit-mask: url('img/destination-done-mask.png') no-repeat center / contain;  
-
-      &::after {
-          background: url('img/destination-done.png');
-      }  
-  }*/
 }
 .player-table-destinations .done .destination-card {
   mask: url("img/destination-done-mask.png") no-repeat center/contain;
@@ -627,6 +608,45 @@
   right: 0;
   bottom: 0;
   background: url("img/destination-done.png");
+}
+
+.player-table-train-cars {
+  display: flex;
+  justify-content: center;
+}
+.player-table-train-cars .train-car-group {
+  position: relative;
+  left: 0px;
+  width: 170px;
+  height: 260px;
+  cursor: pointer;
+  margin: 0 -20px;
+  transform-origin: top center;
+}
+.player-table-train-cars .train-car-group .train-car-group-counter {
+  width: 100%;
+  text-align: center;
+  font-size: 600%;
+  color: white;
+  -webkit-text-stroke: 3px black;
+  position: relative;
+  z-index: 1;
+  font-weight: bold;
+  margin-top: 15px;
+  pointer-events: none;
+}
+.player-table-train-cars .train-car-group .train-car-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 161px;
+  background-image: url("img/train-cards.jpg");
+  border-radius: 6px;
+  box-shadow: 0 0 8px 1px black;
+  pointer-events: none;
+  transform-origin: center center;
+  transform: rotate(90deg) translate(48px, 41px);
 }
 
 .player-table {
