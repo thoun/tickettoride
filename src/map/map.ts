@@ -623,8 +623,30 @@ class TtrMap {
                 dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route space" 
                     style="transform: translate(${space.x}px, ${space.y}px) rotate(${space.angle}deg)"
                     title="${CITIES_NAMES[route.from]} to ${CITIES_NAMES[route.to]}, ${(route.spaces as any).length} ${COLORS[route.color]}"
+                    data-route="${route.id}"
                 ></div>`, 'map');
-                document.getElementById(`route${route.id}-space${spaceIndex}`).addEventListener('click', () => this.game.claimRoute(route.id));   
+                const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
+                spaceDiv.addEventListener('click', () => this.game.claimRoute(route.id));   
+                const enterover = (e) => {
+                    e.preventDefault();
+                    document.querySelectorAll(`.space[data-route="${route.id}"]`).forEach(spaceDiv => spaceDiv.classList.add('drag-over'));
+                };
+                spaceDiv.addEventListener('dragenter', enterover);
+                spaceDiv.addEventListener('dragover', enterover);
+                spaceDiv.addEventListener('dragleave', (e) => {
+                    document.querySelectorAll(`.space[data-route="${route.id}"]`).forEach(spaceDiv => spaceDiv.classList.remove('drag-over'));
+                });
+                spaceDiv.addEventListener('drop', (e) => {
+                    document.querySelectorAll(`.space[data-route="${route.id}"]`).forEach(spaceDiv => spaceDiv.classList.remove('drag-over'));
+                
+                    // get the draggable element
+                    //const color = Number(e.dataTransfer.getData('text/plain'));   
+                    
+                    this.game.claimRoute(route.id);
+                
+                    // display the draggable element
+                    //draggable.classList.remove('hide');
+                });
             })
         );
 

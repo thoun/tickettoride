@@ -32,16 +32,14 @@ class PlayerTrainCars {
         trainCars.forEach(trainCar => {
             const group = this.getGroup(trainCar.type);
 
-            const imagePosition = trainCar.type;
-            //const row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
-            const xBackgroundPercent = (imagePosition/* - (row * IMAGE_ITEMS_PER_ROW)*/) * 100;
-            //const yBackgroundPercent = row * 100;
+            const xBackgroundPercent = trainCar.type * 100;
+            const deg = Math.round(-4 + Math.random() * 8);
 
             let html = `
-            <div id="train-car-card-${trainCar.id}" class="train-car-card" style="background-position: -${xBackgroundPercent}% 50%;"></div>
+            <div id="train-car-card-${trainCar.id}" class="train-car-card" style="background-position: -${xBackgroundPercent}% 50%; transform: rotate(${deg}deg);"></div>
             `;
 
-            dojo.place(html, group);
+            dojo.place(html, group.getElementsByClassName('train-car-cards')[0] as HTMLElement);
 
             // TODO update group counter
             
@@ -59,6 +57,11 @@ class PlayerTrainCars {
 
         this.updateCounters();
     }
+
+    public setDraggable(draggable: boolean) {
+        const groups = Array.from(document.getElementsByClassName('train-car-group')) as HTMLDivElement[];
+        groups.forEach(groupDiv => groupDiv.setAttribute('draggable', draggable.toString()));
+    }
     
     private getGroup(type: number) {
         let group = document.getElementById(`train-car-group-${type}`);
@@ -66,10 +69,21 @@ class PlayerTrainCars {
             dojo.place(`
             <div id="train-car-group-${type}" class="train-car-group" data-type="${type}">
                 <div id="train-car-group-${type}-counter" class="train-car-group-counter">0</div>
+                <div id="train-car-group-${type}-cards" class="train-car-cards"></div>
             </div>
             `, `player-table-${this.playerId}-train-cars`);
 
             group = document.getElementById(`train-car-group-${type}`);
+
+            group.addEventListener('dragstart', (e) => {
+                const target = e.target as HTMLDivElement;
+                e.dataTransfer.setData('text/plain', target.dataset.type);
+                /*setTimeout(() => {
+                    target.classList.add('hide');
+                }, 0);*/
+            });
+
+            group.addEventListener('click', () => (this.game as any).showMessage(_("Drag the cards on the route you want to claim"), 'info'));   
 
             // TODO handle click on group
         }
@@ -83,7 +97,8 @@ class PlayerTrainCars {
 
         groups.forEach((groupDiv, index) => {
             const distanceFromIndex = index - middleIndex;
-            groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = `${groupDiv.childElementCount - 1}`;
+            const count = groupDiv.getElementsByClassName('train-car-card').length;
+            groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = `${count > 1 ? count : ''}`;
             groupDiv.style.transform = `translateY(${Math.pow(Math.abs(distanceFromIndex) * 2, 2)}px) rotate(${(distanceFromIndex) * 4}deg)`;
             groupDiv.parentNode.appendChild(groupDiv);
 

@@ -732,8 +732,26 @@ var TtrMap = /** @class */ (function () {
         });
         ROUTES.forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                    style=\"transform: translate(" + space.x + "px, " + space.y + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES_NAMES[route.from] + " to " + CITIES_NAMES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                ></div>", 'map');
-                document.getElementById("route" + route.id + "-space" + spaceIndex).addEventListener('click', function () { return _this.game.claimRoute(route.id); });
+                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                    style=\"transform: translate(" + space.x + "px, " + space.y + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES_NAMES[route.from] + " to " + CITIES_NAMES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                    data-route=\"" + route.id + "\"\n                ></div>", 'map');
+                var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
+                spaceDiv.addEventListener('click', function () { return _this.game.claimRoute(route.id); });
+                var enterover = function (e) {
+                    e.preventDefault();
+                    document.querySelectorAll(".space[data-route=\"" + route.id + "\"]").forEach(function (spaceDiv) { return spaceDiv.classList.add('drag-over'); });
+                };
+                spaceDiv.addEventListener('dragenter', enterover);
+                spaceDiv.addEventListener('dragover', enterover);
+                spaceDiv.addEventListener('dragleave', function (e) {
+                    document.querySelectorAll(".space[data-route=\"" + route.id + "\"]").forEach(function (spaceDiv) { return spaceDiv.classList.remove('drag-over'); });
+                });
+                spaceDiv.addEventListener('drop', function (e) {
+                    document.querySelectorAll(".space[data-route=\"" + route.id + "\"]").forEach(function (spaceDiv) { return spaceDiv.classList.remove('drag-over'); });
+                    // get the draggable element
+                    //const color = Number(e.dataTransfer.getData('text/plain'));   
+                    _this.game.claimRoute(route.id);
+                    // display the draggable element
+                    //draggable.classList.remove('hide');
+                });
             });
         });
         /*console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
@@ -1041,6 +1059,9 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.addTrainCars = function (trainCars, stocks) {
         this.playerTrainCars.addTrainCars(trainCars, stocks);
     };
+    PlayerTable.prototype.setDraggable = function (draggable) {
+        this.playerTrainCars.setDraggable(draggable);
+    };
     return PlayerTable;
 }());
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
@@ -1176,12 +1197,10 @@ var PlayerTrainCars = /** @class */ (function () {
         var _this = this;
         trainCars.forEach(function (trainCar) {
             var group = _this.getGroup(trainCar.type);
-            var imagePosition = trainCar.type;
-            //const row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
-            var xBackgroundPercent = (imagePosition /* - (row * IMAGE_ITEMS_PER_ROW)*/) * 100;
-            //const yBackgroundPercent = row * 100;
-            var html = "\n            <div id=\"train-car-card-" + trainCar.id + "\" class=\"train-car-card\" style=\"background-position: -" + xBackgroundPercent + "% 50%;\"></div>\n            ";
-            dojo.place(html, group);
+            var xBackgroundPercent = trainCar.type * 100;
+            var deg = Math.round(-4 + Math.random() * 8);
+            var html = "\n            <div id=\"train-car-card-" + trainCar.id + "\" class=\"train-car-card\" style=\"background-position: -" + xBackgroundPercent + "% 50%; transform: rotate(" + deg + "deg);\"></div>\n            ";
+            dojo.place(html, group.getElementsByClassName('train-car-cards')[0]);
             // TODO update group counter
             /* TODO const card = document.getElementById(`destination-card-${trainCar.id}`);
             card.addEventListener('click', () => this.activateNextDestination(
@@ -1195,11 +1214,24 @@ var PlayerTrainCars = /** @class */ (function () {
         });
         this.updateCounters();
     };
+    PlayerTrainCars.prototype.setDraggable = function (draggable) {
+        var groups = Array.from(document.getElementsByClassName('train-car-group'));
+        groups.forEach(function (groupDiv) { return groupDiv.setAttribute('draggable', draggable.toString()); });
+    };
     PlayerTrainCars.prototype.getGroup = function (type) {
+        var _this = this;
         var group = document.getElementById("train-car-group-" + type);
         if (!group) {
-            dojo.place("\n            <div id=\"train-car-group-" + type + "\" class=\"train-car-group\" data-type=\"" + type + "\">\n                <div id=\"train-car-group-" + type + "-counter\" class=\"train-car-group-counter\">0</div>\n            </div>\n            ", "player-table-" + this.playerId + "-train-cars");
+            dojo.place("\n            <div id=\"train-car-group-" + type + "\" class=\"train-car-group\" data-type=\"" + type + "\">\n                <div id=\"train-car-group-" + type + "-counter\" class=\"train-car-group-counter\">0</div>\n                <div id=\"train-car-group-" + type + "-cards\" class=\"train-car-cards\"></div>\n            </div>\n            ", "player-table-" + this.playerId + "-train-cars");
             group = document.getElementById("train-car-group-" + type);
+            group.addEventListener('dragstart', function (e) {
+                var target = e.target;
+                e.dataTransfer.setData('text/plain', target.dataset.type);
+                /*setTimeout(() => {
+                    target.classList.add('hide');
+                }, 0);*/
+            });
+            group.addEventListener('click', function () { return _this.game.showMessage(_("Drag the cards on the route you want to claim"), 'info'); });
             // TODO handle click on group
         }
         return group;
@@ -1209,7 +1241,8 @@ var PlayerTrainCars = /** @class */ (function () {
         var middleIndex = (groups.length - 1) / 2;
         groups.forEach(function (groupDiv, index) {
             var distanceFromIndex = index - middleIndex;
-            groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = "" + (groupDiv.childElementCount - 1);
+            var count = groupDiv.getElementsByClassName('train-car-card').length;
+            groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = "" + (count > 1 ? count : '');
             groupDiv.style.transform = "translateY(" + Math.pow(Math.abs(distanceFromIndex) * 2, 2) + "px) rotate(" + (distanceFromIndex) * 4 + "deg)";
             groupDiv.parentNode.appendChild(groupDiv);
             // add rotation to underneath cards
@@ -1286,8 +1319,10 @@ var TicketToRide = /** @class */ (function () {
         }
     };
     TicketToRide.prototype.onEnteringChooseAction = function (args) {
+        var _a;
         this.trainCarSelection.setSelectableTopDeck(this.isCurrentPlayerActive(), args.maxHiddenCardsPick);
         this.map.setSelectableRoutes(this.isCurrentPlayerActive(), args.possibleRoutes);
+        (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(this.isCurrentPlayerActive());
     };
     TicketToRide.prototype.onEnteringDrawSecondCard = function (args) {
         this.trainCarSelection.setSelectableTopDeck(this.isCurrentPlayerActive(), args.maxHiddenCardsPick);
@@ -1304,6 +1339,7 @@ var TicketToRide = /** @class */ (function () {
     //                 You can use this method to perform some user interface changes at this moment.
     //
     TicketToRide.prototype.onLeavingState = function (stateName) {
+        var _a;
         log('Leaving state: ' + stateName);
         switch (stateName) {
             case 'chooseInitialDestinations':
@@ -1312,6 +1348,7 @@ var TicketToRide = /** @class */ (function () {
                 break;
             case 'chooseAction':
                 this.map.setSelectableRoutes(false, []);
+                (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(false);
                 break;
             case 'drawSecondCard':
                 this.trainCarSelection.removeSelectableVisibleCards();

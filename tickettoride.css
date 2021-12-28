@@ -260,6 +260,10 @@
   height: 5px;
   z-index: 5;
 }
+.route.drag-over {
+  box-shadow: 0 0 5px 5px white;
+  background: gold;
+}
 
 .wagon {
   position: absolute;
@@ -613,15 +617,19 @@
 .player-table-train-cars {
   display: flex;
   justify-content: center;
+  min-height: 335px;
 }
 .player-table-train-cars .train-car-group {
   position: relative;
   left: 0px;
   width: 170px;
   height: 260px;
-  cursor: pointer;
   margin: 0 -20px;
   transform-origin: top center;
+  user-select: none;
+}
+.player-table-train-cars .train-car-group[draggable=true] {
+  cursor: pointer;
 }
 .player-table-train-cars .train-car-group .train-car-group-counter {
   width: 100%;
@@ -635,6 +643,16 @@
   margin-top: 15px;
   pointer-events: none;
 }
+.player-table-train-cars .train-car-group .train-car-cards {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 161px;
+  pointer-events: none;
+  transform-origin: center center;
+  transform: rotate(90deg) translate(48px, 41px);
+}
 .player-table-train-cars .train-car-group .train-car-card {
   position: absolute;
   top: 0;
@@ -644,9 +662,7 @@
   background-image: url("img/train-cards.jpg");
   border-radius: 6px;
   box-shadow: 0 0 8px 1px black;
-  pointer-events: none;
   transform-origin: center center;
-  transform: rotate(90deg) translate(48px, 41px);
 }
 
 .player-table {
