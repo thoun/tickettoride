@@ -243,6 +243,14 @@ class TicketToRide implements TicketToRideGame {
         this.map.setActiveDestination(destination, previousDestination);
     }
 
+    public canClaimRoute(route: Route, cardsColor: number): boolean {
+        return (
+            route.color == 0 || cardsColor == 0 || route.color == cardsColor
+        ) && (
+            (this.gamedatas.gamestate.args as EnteringChooseActionArgs).possibleRoutes.some(pr => pr.id == route.id)
+        );
+    }
+
     public chooseInitialDestinations() {
         if(!(this as any).checkAction('chooseInitialDestinations')) {
             return;
@@ -304,13 +312,14 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
-    public claimRoute(routeId: number) {
+    public claimRoute(routeId: number, color: number) {
         if(!(this as any).checkAction('claimRoute')) {
             return;
         }
 
         this.takeAction('claimRoute', {
-            routeId
+            routeId,
+            color
         });
     }
 
@@ -390,6 +399,9 @@ class TicketToRide implements TicketToRideGame {
             playerId,
             routeId: route.id
         }]);
+        if (playerId == this.getPlayerId()) {
+            this.playerTable.removeCards(notif.args.removeCards);
+        }
     }
 
     notif_destinationCompleted(notif: Notif<NotifDestinationCompletedArgs>) {

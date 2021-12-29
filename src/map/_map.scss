@@ -34,12 +34,6 @@
   }
 }
 
-@media screen and (min-width: 1800px) {
-  #zoom-button {
-    display: none;
-  }
-}
-
 .disable-scrollbars::-webkit-scrollbar {
   background: transparent; /* Chrome/Safari/Webkit */
   width: 0px;
@@ -148,6 +142,10 @@
     height: 1064px;
     background: url('img/map.jpg');
     transform-origin: top left;
+
+    /*&.drag-over {
+      cursor: crosshair;
+    }*/
 }
 
 /*.point-marker {
@@ -224,11 +222,11 @@
   border-radius: 8px;
   padding: 5px;
   margin: 5px;
-  pointer-events: none;
+  //pointer-events: none;
 
   &.selectable {
     border-color: black;
-    pointer-events: all;
+    //pointer-events: all;
   }
 
   &.space {

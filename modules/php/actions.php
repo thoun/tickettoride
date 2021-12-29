@@ -116,7 +116,7 @@ trait ActionTrait {
         $this->gamestate->nextState('drawDestinations'); 
     }
   	
-    public function claimRoute(int $routeId) {
+    public function claimRoute(int $routeId, int $color) {
         self::checkAction('claimRoute');
         
         $playerId = intval(self::getActivePlayerId());
@@ -133,7 +133,7 @@ trait ActionTrait {
         }
         
         $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
-        $colorAndLocomotiveCards = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars);
+        $colorAndLocomotiveCards = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color);
         
         if ($colorAndLocomotiveCards == null || count($colorAndLocomotiveCards) < $route->number) {
             throw new BgaUserException("Not enough cards to claim the route.");
@@ -142,10 +142,9 @@ trait ActionTrait {
         usort($colorAndLocomotiveCards, function ($card1, $card2) {
             return $card1->type < $card2->type;
         });
-        // TODO check color cards are first after usort
 
-        $idsToRemove = array_slice(array_keys($colorAndLocomotiveCards), 0, $route->number);
-        $this->trainCars->moveCards($idsToRemove, 'discard');
+        $cardsToRemove = array_slice($colorAndLocomotiveCards, 0, $route->number);
+        $this->trainCars->moveCards(array_map(function ($card) { return $card->id; }, $cardsToRemove), 'discard');
 
         // save claimed route
         self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
@@ -156,6 +155,7 @@ trait ActionTrait {
 
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $route->number WHERE player_id = $playerId");
 
+        // TODO add private for new hand
         self::notifyAllPlayers('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s)'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
@@ -164,6 +164,7 @@ trait ActionTrait {
             'from' => $this->CITIES[$route->from],
             'to' => $this->CITIES[$route->to],
             'number' => $route->number,
+            'removeCards' => $cardsToRemove,
         ]);
 
         self::incStat(1, 'claimedRoutes');

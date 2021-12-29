@@ -79,9 +79,10 @@ interface TicketToRideGame extends Game {
     getPlayerId(): number;
     onVisibleTrainCarCardClick(itemId: number, stock: Stock): void;
     onHiddenTrainCarDeckClick(number: number): void;
-    claimRoute(id: number): void;
+    claimRoute(id: number, color: number): void;
     isColorBlindMode(): boolean;
     setActiveDestination(destination: Destination, previousDestination?: Destination): void;
+    canClaimRoute(route: Route, cardsColor: number): boolean;
 }
 
 interface EnteringChooseDestinationsArgs {
@@ -140,6 +141,7 @@ interface NotifNewCardsOnTableArgs {
 interface NotifClaimedRouteArgs {
     playerId: number;
     route: Route;
+    removeCards: TrainCar[];
 }
 
 interface NotifDestinationCompletedArgs {

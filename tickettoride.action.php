@@ -104,8 +104,9 @@
         self::setAjaxMode();
 
         $routeId = self::getArg("routeId", AT_posint, true);
+        $color = self::getArg("color", AT_posint, true);
 
-        $this->game->claimRoute($routeId);
+        $this->game->claimRoute($routeId, $color);
 
         self::ajaxResponse();
     }

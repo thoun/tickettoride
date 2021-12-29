@@ -2,54 +2,73 @@
     display: flex;
     justify-content: center;
     min-height: 335px;
+}
 
-    .train-car-group {
+.train-car-group {
+    position: relative;
+    left: 0px; 
+    width: 170px; 
+    height: 260px;
+    margin: 0 -20px;
+    transform-origin: top center;
+    user-select: none;
+
+    &[draggable="true"] {
+        cursor: pointer;
+    }
+
+    &.hide {
+        display: none;
+    }
+
+    .train-car-group-counter {
+        width: 100%;
+        text-align: center;
+        font-size: 600%;
+        color: white;
+        -webkit-text-stroke: 3px black;
         position: relative;
-        left: 0px; 
-        width: 170px; 
-        height: 260px;
-        margin: 0 -20px;
-        transform-origin: top center;
-        user-select: none;
+        z-index: 1;
+        font-weight: bold;
+        margin-top: 15px;
+        pointer-events: none;
+    }
 
-        &[draggable="true"] {
-            cursor: pointer;
-        }
+    .train-car-cards {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 250px; 
+        height: 161px;
+        pointer-events: none;
+        transform-origin: center center;
+        transform: rotate(90deg) translate(48px, 41px);
+    }
 
-        .train-car-group-counter {
-            width: 100%;
-            text-align: center;
-            font-size: 600%;
-            color: white;
-            -webkit-text-stroke: 3px black;
-            position: relative;
-            z-index: 1;
-            font-weight: bold;
-            margin-top: 15px;
-            pointer-events: none;
-        }
+    .train-car-card {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 250px; 
+        height: 161px; 
+        background-image: url("img/train-cards.jpg");
+        border-radius: 6px;
+        box-shadow: 0 0 8px 1px black;
+        transform-origin: center center;
+    }
+
+    &.drag {
+        position: absolute;
+        top: -1000px;
+        left: -1000px;
+        width: 190px; 
+        height: 280px;
+        padding-top: 10px;
+        zoom: 0.5; //transform: scale(0.5); doesn't work but zoom does
 
         .train-car-cards {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 250px; 
-            height: 161px;
-            pointer-events: none;
-            transform-origin: center center;
-            transform: rotate(90deg) translate(48px, 41px);
-        }
-
-        .train-car-card {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 250px; 
-            height: 161px; 
-            background-image: url("img/train-cards.jpg");
-            border-radius: 6px;
-            box-shadow: 0 0 8px 1px black;
-            transform-origin: center center;
+            top: 10px;
+            left: 10px;
         }
     }
 }

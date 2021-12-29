@@ -626,26 +626,25 @@ class TtrMap {
                     data-route="${route.id}"
                 ></div>`, 'map');
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
-                spaceDiv.addEventListener('click', () => this.game.claimRoute(route.id));   
-                const enterover = (e) => {
-                    e.preventDefault();
-                    document.querySelectorAll(`.space[data-route="${route.id}"]`).forEach(spaceDiv => spaceDiv.classList.add('drag-over'));
+                //spaceDiv.addEventListener('click', () => this.game.claimRoute(route.id));   
+                const enterover = (e: DragEvent) => {
+                    const cardsColor = Number(this.mapDiv.dataset.dragColor);
+                    const canClaimRoute = this.game.canClaimRoute(route, cardsColor);
+                    this.setHoveredRoute(route, canClaimRoute);
+                    if (canClaimRoute) {
+                        e.preventDefault();
+                    }
                 };
                 spaceDiv.addEventListener('dragenter', enterover);
                 spaceDiv.addEventListener('dragover', enterover);
                 spaceDiv.addEventListener('dragleave', (e) => {
-                    document.querySelectorAll(`.space[data-route="${route.id}"]`).forEach(spaceDiv => spaceDiv.classList.remove('drag-over'));
+                    this.setHoveredRoute(null);
                 });
                 spaceDiv.addEventListener('drop', (e) => {
-                    document.querySelectorAll(`.space[data-route="${route.id}"]`).forEach(spaceDiv => spaceDiv.classList.remove('drag-over'));
-                
-                    // get the draggable element
-                    //const color = Number(e.dataTransfer.getData('text/plain'));   
+                    this.setHoveredRoute(null);
+                    const cardsColor = Number(this.mapDiv.dataset.dragColor);
                     
-                    this.game.claimRoute(route.id);
-                
-                    // display the draggable element
-                    //draggable.classList.remove('hide');
+                    this.game.claimRoute(route.id, cardsColor);
                 });
             })
         );
@@ -665,6 +664,10 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         document.addEventListener('mousemove', e => this.mouseMoveHandler(e));
         document.addEventListener('mouseup', e => this.mouseUpHandler());
         document.getElementById('zoom-button').addEventListener('click', () => this.toggleZoom());
+        
+        /*this.mapDiv.addEventListener('dragenter', e => this.mapDiv.classList.add('drag-over'));
+        this.mapDiv.addEventListener('dragleave', e => this.mapDiv.classList.remove('drag-over'));
+        this.mapDiv.addEventListener('drop', e => this.mapDiv.classList.remove('drag-over'));*/
     }
 
     /*public setPoints(playerId: number, points: number) {
@@ -818,7 +821,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         }
     }
 
-    public setHoveredRoute(route: Route | null, valid: boolean | null) {
+    public setHoveredRoute(route: Route | null, valid: boolean | null = null) {
         if (route) {
             [route.from, route.to].forEach(city => {
                 const cityDiv = document.getElementById(`city${city}`);
@@ -828,6 +831,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         } else {
             ROUTES.forEach(r => [r.from, r.to].forEach(city => 
                 document.getElementById(`city${city}`).dataset.hovered = 'false'
+                // document.querySelectorAll(`.space[data-route="${route.id}"]`).forEach(spaceDiv => spaceDiv.classList.add('drag-over'));
             ));
         }
     }

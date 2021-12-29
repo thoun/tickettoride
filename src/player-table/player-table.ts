@@ -32,6 +32,10 @@ class PlayerTable {
     public addTrainCars(trainCars: TrainCar[], stocks?: TrainCarSelection) {
         this.playerTrainCars.addTrainCars(trainCars, stocks);
     }
+    
+    public removeCards(removeCards: TrainCar[]) {
+        this.playerTrainCars.removeCards(removeCards);
+    }
 
     public setDraggable(draggable: boolean) {
         this.playerTrainCars.setDraggable(draggable);

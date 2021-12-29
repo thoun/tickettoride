@@ -76,11 +76,6 @@
   background-position: 0% 50%;
 }
 
-@media screen and (min-width: 1800px) {
-  #zoom-button {
-    display: none;
-  }
-}
 .disable-scrollbars::-webkit-scrollbar {
   background: transparent;
   /* Chrome/Safari/Webkit */
@@ -177,6 +172,9 @@
   height: 1064px;
   background: url("img/map.jpg");
   transform-origin: top left;
+  /*&.drag-over {
+    cursor: crosshair;
+  }*/
 }
 
 /*.point-marker {
@@ -246,11 +244,9 @@
   border-radius: 8px;
   padding: 5px;
   margin: 5px;
-  pointer-events: none;
 }
 .route.selectable {
   border-color: black;
-  pointer-events: all;
 }
 .route.space {
   position: absolute;
@@ -619,7 +615,8 @@
   justify-content: center;
   min-height: 335px;
 }
-.player-table-train-cars .train-car-group {
+
+.train-car-group {
   position: relative;
   left: 0px;
   width: 170px;
@@ -628,10 +625,13 @@
   transform-origin: top center;
   user-select: none;
 }
-.player-table-train-cars .train-car-group[draggable=true] {
+.train-car-group[draggable=true] {
   cursor: pointer;
 }
-.player-table-train-cars .train-car-group .train-car-group-counter {
+.train-car-group.hide {
+  display: none;
+}
+.train-car-group .train-car-group-counter {
   width: 100%;
   text-align: center;
   font-size: 600%;
@@ -643,7 +643,7 @@
   margin-top: 15px;
   pointer-events: none;
 }
-.player-table-train-cars .train-car-group .train-car-cards {
+.train-car-group .train-car-cards {
   position: absolute;
   top: 0;
   left: 0;
@@ -653,7 +653,7 @@
   transform-origin: center center;
   transform: rotate(90deg) translate(48px, 41px);
 }
-.player-table-train-cars .train-car-group .train-car-card {
+.train-car-group .train-car-card {
   position: absolute;
   top: 0;
   left: 0;
@@ -663,6 +663,19 @@
   border-radius: 6px;
   box-shadow: 0 0 8px 1px black;
   transform-origin: center center;
+}
+.train-car-group.drag {
+  position: absolute;
+  top: -1000px;
+  left: -1000px;
+  width: 190px;
+  height: 280px;
+  padding-top: 10px;
+  zoom: 0.5;
+}
+.train-car-group.drag .train-car-cards {
+  top: 10px;
+  left: 10px;
 }
 
 .player-table {

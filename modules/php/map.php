@@ -98,12 +98,16 @@ trait MapTrait {
      * If player cannot pay, returns null.
      * If player can pay return cards to pay for the route.
      */
-    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars) {
+    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, int $color = 0) {
         if ($remainingTrainCars < $route->number) {
             return null; // not enough remaining meeples
         }
 
-        $colorsToTest = $route->color > 0 ? [$route->color] : [1,2,3,4,5,6,7,8];
+        if ($color > 0 && $route->color > 0 && $color != $route->color) {
+            return null;
+        }
+
+        $colorsToTest = $color > 0 ? [$color] : [1,2,3,4,5,6,7,8];
         $locomotiveCards = array_filter($trainCarsHand, function ($card) { return $card->type == 0; });
         
         // route is gray, check for each possible color

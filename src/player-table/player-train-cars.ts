@@ -57,6 +57,22 @@ class PlayerTrainCars {
 
         this.updateCounters();
     }
+    
+    public removeCards(removeCards: TrainCar[]) {
+        removeCards.forEach(card => {
+            const div = document.getElementById(`train-car-card-${card.id}`);
+            if (div) {
+                const groupDiv = div.closest('.train-car-group');
+
+                div.parentElement.removeChild(div);
+
+                if (!groupDiv.getElementsByClassName('train-car-card').length) {
+                    groupDiv.parentElement.removeChild(groupDiv);
+                }
+                this.updateCounters();
+            }
+        });
+    }
 
     public setDraggable(draggable: boolean) {
         const groups = Array.from(document.getElementsByClassName('train-car-group')) as HTMLDivElement[];
@@ -76,16 +92,33 @@ class PlayerTrainCars {
             group = document.getElementById(`train-car-group-${type}`);
 
             group.addEventListener('dragstart', (e) => {
-                const target = e.target as HTMLDivElement;
-                e.dataTransfer.setData('text/plain', target.dataset.type);
-                /*setTimeout(() => {
-                    target.classList.add('hide');
-                }, 0);*/
+                const dt = e.dataTransfer;
+                dt.effectAllowed = 'move';
+                
+                document.getElementById('map').dataset.dragColor = ''+type;
+                
+                // we generate a clone of group (without positionning with transform on the group)
+                const groupClone = document.createElement('div');
+                groupClone.classList.add('train-car-group', 'drag');
+                groupClone.innerHTML = group.innerHTML;
+                document.body.appendChild(groupClone);
+                groupClone.offsetHeight;
+
+                dt.setDragImage(groupClone, -10, -25);
+                setTimeout(() => document.body.removeChild(groupClone));
+                
+
+                //train-car-group-0
+                setTimeout(() => {
+                    group.classList.add('hide');
+                }, 0);
+            });
+            group.addEventListener('dragend', (e) => {
+                group.classList.remove('hide');
+                document.getElementById('map').dataset.dragColor = '';
             });
 
-            group.addEventListener('click', () => (this.game as any).showMessage(_("Drag the cards on the route you want to claim"), 'info'));   
-
-            // TODO handle click on group
+            group.addEventListener('click', () => (this.game as any).showMessage(_("Drag the cards on the route you want to claim"), 'info')); 
         }
         return group;
     }
