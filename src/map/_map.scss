@@ -50,7 +50,7 @@
   transform-origin: top left;
 }
 
-#map-zoom {
+#map-and-borders {
   position: relative;  
 
   .side {
@@ -136,10 +136,14 @@
   }
 }
 
+#map-zoom {
+  position: relative;
+}
+
 #map {
     position: relative;
-    width: 1650px;
-    height: 1064px;
+    width: 1744px;//1650
+    height: 1125px;
     background: url('img/map.jpg');
     transform-origin: top left;
 

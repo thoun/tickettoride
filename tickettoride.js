@@ -129,8 +129,7 @@ function setupDestinationCardDiv(cardDiv, cardTypeId) {
     //const destination = DESTINATIONS.find(d => d.id == Number(cardTypeId));
     //cardDiv.innerHTML = `<span><strong>${CITIES_NAMES[destination.from]}</strong> to <strong>${CITIES_NAMES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
 }
-var POINT_CASE_SIZE = 25.5;
-var BOARD_POINTS_MARGIN = 38;
+var FACTOR = 1.057;
 var SIDES = ['left', 'right', 'top', 'bottom'];
 var CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 var City = /** @class */ (function () {
@@ -716,9 +715,9 @@ var TtrMap = /** @class */ (function () {
         this.pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 };
         this.zoomed = false;
         // map border
-        dojo.place("<div class=\"illustration\"></div>", 'map-zoom');
-        SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map-zoom'); });
-        CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'map-zoom'); });
+        dojo.place("<div class=\"illustration\"></div>", 'map-and-borders');
+        SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map-and-borders'); });
+        CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'map-and-borders'); });
         /*let html = '';
 
         // points
@@ -728,11 +727,11 @@ var TtrMap = /** @class */ (function () {
         });
         dojo.place(html, 'map');*/
         CITIES.forEach(function (city) {
-            return dojo.place("<div id=\"city" + city.id + "\" class=\"city\" \n                style=\"transform: translate(" + city.x + "px, " + city.y + "px)\"\n                title=\"" + CITIES_NAMES[city.id] + "\"\n            ></div>", 'map');
+            return dojo.place("<div id=\"city" + city.id + "\" class=\"city\" \n                style=\"transform: translate(" + city.x * FACTOR + "px, " + city.y * FACTOR + "px)\"\n                title=\"" + CITIES_NAMES[city.id] + "\"\n            ></div>", 'map');
         });
         ROUTES.forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                    style=\"transform: translate(" + space.x + "px, " + space.y + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES_NAMES[route.from] + " to " + CITIES_NAMES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                    data-route=\"" + route.id + "\"\n                ></div>", 'map');
+                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                    style=\"transform: translate(" + space.x * FACTOR + "px, " + space.y * FACTOR + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES_NAMES[route.from] + " to " + CITIES_NAMES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                    data-route=\"" + route.id + "\"\n                ></div>", 'map');
                 var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
                 //spaceDiv.addEventListener('click', () => this.game.claimRoute(route.id));   
                 var enterover = function (e) {
@@ -830,7 +829,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
                 while (angle >= 180) {
                     angle -= 180;
                 }
-                dojo.place("<div class=\"wagon angle" + Math.round(angle * 36 / 180) + "\" data-player-color=\"" + color + "\" style=\"transform: translate(" + space.x + "px, " + space.y + "px)\"></div>", 'map');
+                dojo.place("<div class=\"wagon angle" + Math.round(angle * 36 / 180) + "\" data-player-color=\"" + color + "\" style=\"transform: translate(" + space.x * FACTOR + "px, " + space.y * FACTOR + "px)\"></div>", 'map');
             });
         });
     };
@@ -867,9 +866,10 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         // How far the mouse has been moved
         var dx = e.clientX - this.pos.x;
         var dy = e.clientY - this.pos.y;
+        var factor = 0.1;
         // Scroll the element
-        this.mapZoomDiv.scrollTop -= dy;
-        this.mapZoomDiv.scrollLeft -= dx;
+        this.mapZoomDiv.scrollTop -= dy * factor;
+        this.mapZoomDiv.scrollLeft -= dx * factor;
     };
     TtrMap.prototype.mouseUpHandler = function () {
         if (!this.zoomed || !this.pos.dragging) {

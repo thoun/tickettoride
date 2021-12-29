@@ -2,8 +2,10 @@
 
 <div id="map-zoom-wrapper">
     <div id="map-and-deck">
-        <div id="map-zoom" class="disable-scrollbars">
-            <div id="map"></div>
+        <div id="map-and-borders">
+            <div id="map-zoom" class="disable-scrollbars">
+                <div id="map"></div>
+            </div>
         </div>
 
         <div id="train-car-deck">

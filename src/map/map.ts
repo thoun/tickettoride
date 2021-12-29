@@ -1,5 +1,4 @@
-const POINT_CASE_SIZE = 25.5;
-const BOARD_POINTS_MARGIN = 38;
+const FACTOR = 1.057;
 
 const SIDES = ['left', 'right', 'top', 'bottom'];
 const CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
@@ -596,9 +595,9 @@ class TtrMap {
         claimedRoutes: ClaimedRoute[],
     ) {
         // map border
-        dojo.place(`<div class="illustration"></div>`, 'map-zoom');
-        SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'map-zoom'));
-        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map-zoom'));
+        dojo.place(`<div class="illustration"></div>`, 'map-and-borders');
+        SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'map-and-borders'));
+        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map-and-borders'));
 
         /*let html = '';
 
@@ -612,7 +611,7 @@ class TtrMap {
 
         CITIES.forEach(city => 
             dojo.place(`<div id="city${city.id}" class="city" 
-                style="transform: translate(${city.x}px, ${city.y}px)"
+                style="transform: translate(${city.x*FACTOR}px, ${city.y*FACTOR}px)"
                 title="${CITIES_NAMES[city.id]}"
             ></div>`, 'map')
         );
@@ -621,7 +620,7 @@ class TtrMap {
         ROUTES.forEach(route => 
             route.spaces.forEach((space, spaceIndex) => {
                 dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route space" 
-                    style="transform: translate(${space.x}px, ${space.y}px) rotate(${space.angle}deg)"
+                    style="transform: translate(${space.x*FACTOR}px, ${space.y*FACTOR}px) rotate(${space.angle}deg)"
                     title="${CITIES_NAMES[route.from]} to ${CITIES_NAMES[route.to]}, ${(route.spaces as any).length} ${COLORS[route.color]}"
                     data-route="${route.id}"
                 ></div>`, 'map');
@@ -732,7 +731,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
                 while (angle >= 180) {
                     angle -= 180;
                 }
-                dojo.place(`<div class="wagon angle${Math.round(angle * 36 / 180)}" data-player-color="${color}" style="transform: translate(${space.x}px, ${space.y}px)"></div>`, 'map');
+                dojo.place(`<div class="wagon angle${Math.round(angle * 36 / 180)}" data-player-color="${color}" style="transform: translate(${space.x*FACTOR}px, ${space.y*FACTOR}px)"></div>`, 'map');
             });
         });
     }
@@ -777,9 +776,11 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         const dx = e.clientX - this.pos.x;
         const dy = e.clientY - this.pos.y;
 
+        const factor = 0.1;
+
         // Scroll the element
-        this.mapZoomDiv.scrollTop -= dy;
-        this.mapZoomDiv.scrollLeft -= dx;
+        this.mapZoomDiv.scrollTop -= dy*factor;
+        this.mapZoomDiv.scrollLeft -= dx*factor;
     }
 
     private mouseUpHandler() {

@@ -95,68 +95,68 @@
   transform-origin: top left;
 }
 
-#map-zoom {
+#map-and-borders {
   position: relative;
 }
-#map-zoom .side {
+#map-and-borders .side {
   position: absolute;
   pointer-events: none;
 }
-#map-zoom .side.left {
+#map-and-borders .side.left {
   background: url("img/border-map-left.png");
   width: 9px;
   left: 0;
   top: 180px;
   bottom: 180px;
 }
-#map-zoom .side.right {
+#map-and-borders .side.right {
   background: url("img/border-map-right.png");
   width: 8px;
   right: 0;
   top: 180px;
   bottom: 180px;
 }
-#map-zoom .side.top {
+#map-and-borders .side.top {
   background: url("img/border-map-top.png");
   height: 8px;
   left: 180px;
   right: 180px;
   top: 0;
 }
-#map-zoom .side.bottom {
+#map-and-borders .side.bottom {
   background: url("img/border-map-bottom.png");
   height: 9px;
   left: 180px;
   right: 180px;
   bottom: 0;
 }
-#map-zoom .corner {
+#map-and-borders .corner {
   position: absolute;
   pointer-events: none;
   width: 180px;
   height: 180px;
 }
-#map-zoom .corner.top-left {
+#map-and-borders .corner.top-left {
   background: url("img/border-map-corner-top-left.png");
   left: 0;
   top: 0;
 }
-#map-zoom .corner.top-right {
+#map-and-borders .corner.top-right {
   background: url("img/border-map-corner-top-right.png");
   right: 0;
   top: 0;
 }
-#map-zoom .corner.bottom-left {
+#map-and-borders .corner.bottom-left {
   background: url("img/border-map-corner-bottom-left.png");
   left: 0;
   bottom: 0;
 }
-#map-zoom .corner.bottom-right {
+#map-and-borders .corner.bottom-right {
   background: url("img/border-map-corner-bottom-right.png");
   right: 0;
   bottom: 0;
 }
-#map-zoom .illustration {
+#map-and-borders .illustration {
   position: absolute;
   pointer-events: none;
   background: url("img/border-map-illustration.png");
@@ -166,10 +166,14 @@
   height: 206px;
 }
 
+#map-zoom {
+  position: relative;
+}
+
 #map {
   position: relative;
-  width: 1650px;
-  height: 1064px;
+  width: 1744px;
+  height: 1125px;
   background: url("img/map.jpg");
   transform-origin: top left;
   /*&.drag-over {
@@ -408,6 +412,7 @@
 #train-car-deck .hidden-pile {
   position: relative;
   display: flex;
+  height: 192px;
 }
 #train-car-deck .hidden-pile .deck-level {
   position: absolute;
@@ -416,6 +421,8 @@
   right: 0;
   bottom: 0;
   pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 #train-car-deck .hidden-pile #train-car-deck-level[data-level="1"] {
   background-image: url("img/deck-cardLevel-10.png");
@@ -513,7 +520,7 @@
   width: 50px;
   height: 158px;
   position: absolute;
-  right: 0;
+  right: 15px;
   top: 10px;
 }
 .gauge .inner {
