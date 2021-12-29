@@ -105,6 +105,7 @@
 #map-and-borders .side {
   position: absolute;
   pointer-events: none;
+  z-index: 6;
 }
 #map-and-borders .side.left {
   background: url("img/border-map-left.png");
@@ -139,6 +140,7 @@
   pointer-events: none;
   width: 180px;
   height: 180px;
+  z-index: 6;
 }
 #map-and-borders .corner.top-left {
   background: url("img/border-map-corner-top-left.png");
@@ -168,6 +170,23 @@
   bottom: 0;
   width: 258px;
   height: 206px;
+  z-index: 4;
+}
+
+#map-destination-highlight-shadow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: #00000099;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+#map-destination-highlight-shadow[data-visible=true] {
+  opacity: 1;
 }
 
 #map-zoom {
@@ -232,18 +251,46 @@
   display: inline-block;
   width: 60px;
   height: 60px;
-  border-radius: 50px;
+  border-radius: 50%;
   margin: -30px;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 .city[data-selected-destination=true] {
   background: rgba(0, 0, 200, 0.3);
+  opacity: 1;
 }
 .city[data-hovered=true][data-valid=true] {
   background: rgba(0, 200, 0, 0.3);
+  opacity: 1;
 }
 .city[data-hovered=true][data-valid=false] {
   background: rgba(200, 0, 0, 0.3);
+  opacity: 1;
+}
+.city[data-selectable=true] {
+  position: relative;
+  z-index: 8;
+  background: rgba(0, 0, 200, 0.3);
+  opacity: 1;
+}
+.city[data-selectable=true]:not([data-selected=true]):not([data-highlight=true]) {
+  width: 38px;
+  height: 38px;
+  margin: -19px;
+}
+.city[data-selected=true] {
+  position: relative;
+  z-index: 8;
+  background: rgba(0, 0, 200, 0.6);
+  opacity: 1;
+}
+.city[data-highlight=true] {
+  position: relative;
+  z-index: 8;
+  background: rgba(0, 200, 0, 0.6);
+  opacity: 1;
 }
 
 .route {
@@ -252,9 +299,14 @@
   border-radius: 8px;
   padding: 5px;
   margin: 5px;
-}
-.route.selectable {
-  border-color: black;
+  /*&.selectable {
+    border-color: black;
+    //pointer-events: all;
+  }*/
+  /*&.drag-over {
+    box-shadow: 0 0 5px 5px white;
+    background: gold;
+  }*/
 }
 .route.space {
   position: absolute;
@@ -263,10 +315,6 @@
   width: 43px;
   height: 5px;
   z-index: 5;
-}
-.route.drag-over {
-  box-shadow: 0 0 5px 5px white;
-  background: gold;
 }
 
 .wagon {
@@ -565,6 +613,9 @@
   display: none;
 }
 
+#destination-stock {
+  left: 10px;
+}
 #destination-stock .stockitem.selected::after {
   content: "";
   position: absolute;

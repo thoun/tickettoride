@@ -85,6 +85,10 @@ class TicketToRide implements TicketToRideGame {
         log('Entering state: '+stateName, args.args);
 
         switch (stateName) {
+            case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
+                const chooseDestinationsArgs = args.args as EnteringChooseDestinationsArgs;
+                chooseDestinationsArgs._private.destinations.forEach(destination => this.map.setSelectableDestination(destination, true));
+                break;
             case 'chooseAction':
                 this.onEnteringChooseAction(args.args as EnteringChooseActionArgs);
                 break;
@@ -100,7 +104,7 @@ class TicketToRide implements TicketToRideGame {
     private onEnteringChooseAction(args: EnteringChooseActionArgs) {
         this.trainCarSelection.setSelectableTopDeck((this as any).isCurrentPlayerActive(), args.maxHiddenCardsPick);
         
-        this.map.setSelectableRoutes((this as any).isCurrentPlayerActive(), args.possibleRoutes);
+        //this.map.setSelectableRoutes((this as any).isCurrentPlayerActive(), args.possibleRoutes);
 
         this.playerTable?.setDraggable((this as any).isCurrentPlayerActive());
     }
@@ -126,9 +130,14 @@ class TicketToRide implements TicketToRideGame {
         switch (stateName) {
             case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
+                const chooseDestinationsArgs = this.gamedatas.gamestate.args as EnteringChooseDestinationsArgs;
+                chooseDestinationsArgs._private.destinations.forEach(destination => {
+                    this.map.setSelectedDestination(destination, false);
+                    this.map.setSelectableDestination(destination, false);
+                });
                 break;
             case 'chooseAction':
-                this.map.setSelectableRoutes(false, []);
+                //this.map.setSelectableRoutes(false, []);
                 this.playerTable?.setDraggable(false);
                 break;
             case 'drawSecondCard':
@@ -249,6 +258,14 @@ class TicketToRide implements TicketToRideGame {
         ) && (
             (this.gamedatas.gamestate.args as EnteringChooseActionArgs).possibleRoutes.some(pr => pr.id == route.id)
         );
+    }
+
+    public setHighligthedDestination(destination: Destination | null): void {
+        this.map.setHighligthedDestination(destination);
+    }
+    
+    public setSelectedDestination(destination: Destination, visible: boolean): void {
+        this.map.setSelectedDestination(destination, visible);
     }
 
     public chooseInitialDestinations() {

@@ -674,7 +674,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.movePoints();
     }*/
     
-    public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
+    /*public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
         if (selectable) {
             possibleRoutes.forEach(route => ROUTES.find(r => r.id == route.id).spaces.forEach((_, index) => 
                 document.getElementById(`route${route.id}-space${index}`)?.classList.add('selectable'))
@@ -682,7 +682,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         } else {            
             dojo.query('.route').removeClass('selectable');
         }
-    }
+    }*/
 
     /*private getPointsCoordinates(points: number) {
         const top = points < 86 ? Math.min(Math.max(points - 34, 0), 17) * POINT_CASE_SIZE : (102 - points) * POINT_CASE_SIZE;
@@ -836,5 +836,34 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
                 // document.querySelectorAll(`.space[data-route="${route.id}"]`).forEach(spaceDiv => spaceDiv.classList.add('drag-over'));
             ));
         }
+    }
+
+    public setSelectableDestination(destination: Destination, visible: boolean): void {
+        [destination.from, destination.to].forEach(city => {
+            document.getElementById(`city${city}`).dataset.selectable = ''+visible;
+        });
+    }
+    public setSelectedDestination(destination: Destination, visible: boolean): void {
+        [destination.from, destination.to].forEach(city => {
+            document.getElementById(`city${city}`).dataset.selected = ''+visible;
+        });
+    }
+
+    public setHighligthedDestination(destination: Destination | null): void {
+        const visible = Boolean(destination).toString();
+        const shadow = document.getElementById('map-destination-highlight-shadow');
+        shadow.dataset.visible = visible;
+
+        let cities;
+        if (destination) {
+            shadow.dataset.from = ''+destination.from;
+            shadow.dataset.to = ''+destination.to;
+            cities = [destination.from, destination.to];
+        } else {
+            cities = [shadow.dataset.from, shadow.dataset.to];
+        }
+        cities.forEach(city => {
+            document.getElementById(`city${city}`).dataset.highlight = visible;
+        });
     }
 }

@@ -17,6 +17,8 @@
 }
 
 #destination-stock {
+  left: 10px;
+  
   .stockitem {
 
     &.selected::after {

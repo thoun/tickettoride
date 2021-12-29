@@ -775,14 +775,15 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.points.set(playerId, points);
         this.movePoints();
     }*/
-    TtrMap.prototype.setSelectableRoutes = function (selectable, possibleRoutes) {
+    /*public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
         if (selectable) {
-            possibleRoutes.forEach(function (route) { return ROUTES.find(function (r) { return r.id == route.id; }).spaces.forEach(function (_, index) { var _a; return (_a = document.getElementById("route" + route.id + "-space" + index)) === null || _a === void 0 ? void 0 : _a.classList.add('selectable'); }); });
-        }
-        else {
+            possibleRoutes.forEach(route => ROUTES.find(r => r.id == route.id).spaces.forEach((_, index) =>
+                document.getElementById(`route${route.id}-space${index}`)?.classList.add('selectable'))
+            );
+        } else {
             dojo.query('.route').removeClass('selectable');
         }
-    };
+    }*/
     /*private getPointsCoordinates(points: number) {
         const top = points < 86 ? Math.min(Math.max(points - 34, 0), 17) * POINT_CASE_SIZE : (102 - points) * POINT_CASE_SIZE;
         const left = points < 52 ? Math.min(points, 34) * POINT_CASE_SIZE : (33 - Math.max(points - 52, 0))*POINT_CASE_SIZE;
@@ -922,6 +923,33 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             ); });
         }
     };
+    TtrMap.prototype.setSelectableDestination = function (destination, visible) {
+        [destination.from, destination.to].forEach(function (city) {
+            document.getElementById("city" + city).dataset.selectable = '' + visible;
+        });
+    };
+    TtrMap.prototype.setSelectedDestination = function (destination, visible) {
+        [destination.from, destination.to].forEach(function (city) {
+            document.getElementById("city" + city).dataset.selected = '' + visible;
+        });
+    };
+    TtrMap.prototype.setHighligthedDestination = function (destination) {
+        var visible = Boolean(destination).toString();
+        var shadow = document.getElementById('map-destination-highlight-shadow');
+        shadow.dataset.visible = visible;
+        var cities;
+        if (destination) {
+            shadow.dataset.from = '' + destination.from;
+            shadow.dataset.to = '' + destination.to;
+            cities = [destination.from, destination.to];
+        }
+        else {
+            cities = [shadow.dataset.from, shadow.dataset.to];
+        }
+        cities.forEach(function (city) {
+            document.getElementById("city" + city).dataset.highlight = visible;
+        });
+    };
     return TtrMap;
 }());
 var DestinationSelection = /** @class */ (function () {
@@ -933,9 +961,10 @@ var DestinationSelection = /** @class */ (function () {
         this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $("destination-stock"), CARD_WIDTH, CARD_HEIGHT);
-        this.destinations.onItemCreate = function (cardDiv, cardTypeId) { return setupDestinationCardDiv(cardDiv, cardTypeId); };
+        //this.destinations.onItemCreate = (cardDiv: HTMLDivElement, cardTypeId) => setupDestinationCardDiv(cardDiv, cardTypeId);
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
+        this.destinations.item_margin = 20;
         dojo.connect(this.destinations, 'onChangeSelection', this, function () {
             if (document.getElementById('chooseInitialDestinations_button')) {
                 dojo.toggleClass('chooseInitialDestinations_button', 'disabled', _this.destinations.getSelectedItems().length < _this.minimumDestinations);
@@ -949,7 +978,13 @@ var DestinationSelection = /** @class */ (function () {
     DestinationSelection.prototype.setCards = function (destinations, minimumDestinations) {
         var _this = this;
         dojo.removeClass('destination-deck', 'hidden');
-        destinations.forEach(function (destination) { return _this.destinations.addToStockWithId(destination.type_arg, '' + destination.id); });
+        destinations.forEach(function (destination) {
+            _this.destinations.addToStockWithId(destination.type_arg, '' + destination.id);
+            var cardDiv = document.getElementById("destination-stock_item_" + destination.id);
+            cardDiv.addEventListener('mouseenter', function () { return _this.game.setHighligthedDestination(destination); });
+            cardDiv.addEventListener('mouseleave', function () { return _this.game.setHighligthedDestination(null); });
+            cardDiv.addEventListener('click', function () { return _this.game.setSelectedDestination(destination, _this.destinations.getSelectedItems().some(function (item) { return Number(item.id) == destination.id; })); });
+        });
         this.minimumDestinations = minimumDestinations;
     };
     DestinationSelection.prototype.hide = function () {
@@ -1113,6 +1148,8 @@ var PlayerDestinations = /** @class */ (function () {
             dojo.place(html, "player-table-" + _this.playerId + "-destinations-todo");
             var card = document.getElementById("destination-card-" + destination.id);
             card.addEventListener('click', function () { return _this.activateNextDestination(_this.destinationsDone.some(function (d) { return d.id == destination.id; }) ? _this.destinationsDone : _this.destinationsTodo); });
+            card.addEventListener('mouseenter', function () { return _this.game.setHighligthedDestination(destination); });
+            card.addEventListener('mouseleave', function () { return _this.game.setHighligthedDestination(null); });
             if (originStock) {
                 _this.addAnimationFrom(card, document.getElementById(originStock.container_div.id + "_item_" + destination.id));
             }
@@ -1343,8 +1380,14 @@ var TicketToRide = /** @class */ (function () {
     //                  You can use this method to perform some user interface changes at this moment.
     //
     TicketToRide.prototype.onEnteringState = function (stateName, args) {
+        var _this = this;
         log('Entering state: ' + stateName, args.args);
         switch (stateName) {
+            case 'chooseInitialDestinations':
+            case 'chooseAdditionalDestinations':
+                var chooseDestinationsArgs = args.args;
+                chooseDestinationsArgs._private.destinations.forEach(function (destination) { return _this.map.setSelectableDestination(destination, true); });
+                break;
             case 'chooseAction':
                 this.onEnteringChooseAction(args.args);
                 break;
@@ -1359,7 +1402,7 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.onEnteringChooseAction = function (args) {
         var _a;
         this.trainCarSelection.setSelectableTopDeck(this.isCurrentPlayerActive(), args.maxHiddenCardsPick);
-        this.map.setSelectableRoutes(this.isCurrentPlayerActive(), args.possibleRoutes);
+        //this.map.setSelectableRoutes((this as any).isCurrentPlayerActive(), args.possibleRoutes);
         (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(this.isCurrentPlayerActive());
     };
     TicketToRide.prototype.onEnteringDrawSecondCard = function (args) {
@@ -1377,15 +1420,21 @@ var TicketToRide = /** @class */ (function () {
     //                 You can use this method to perform some user interface changes at this moment.
     //
     TicketToRide.prototype.onLeavingState = function (stateName) {
+        var _this = this;
         var _a;
         log('Leaving state: ' + stateName);
         switch (stateName) {
             case 'chooseInitialDestinations':
             case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
+                var chooseDestinationsArgs = this.gamedatas.gamestate.args;
+                chooseDestinationsArgs._private.destinations.forEach(function (destination) {
+                    _this.map.setSelectedDestination(destination, false);
+                    _this.map.setSelectableDestination(destination, false);
+                });
                 break;
             case 'chooseAction':
-                this.map.setSelectableRoutes(false, []);
+                //this.map.setSelectableRoutes(false, []);
                 (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(false);
                 break;
             case 'drawSecondCard':
@@ -1472,6 +1521,12 @@ var TicketToRide = /** @class */ (function () {
     };
     TicketToRide.prototype.canClaimRoute = function (route, cardsColor) {
         return (route.color == 0 || cardsColor == 0 || route.color == cardsColor) && (this.gamedatas.gamestate.args.possibleRoutes.some(function (pr) { return pr.id == route.id; }));
+    };
+    TicketToRide.prototype.setHighligthedDestination = function (destination) {
+        this.map.setHighligthedDestination(destination);
+    };
+    TicketToRide.prototype.setSelectedDestination = function (destination, visible) {
+        this.map.setSelectedDestination(destination, visible);
     };
     TicketToRide.prototype.chooseInitialDestinations = function () {
         if (!this.checkAction('chooseInitialDestinations')) {

@@ -83,6 +83,8 @@ interface TicketToRideGame extends Game {
     isColorBlindMode(): boolean;
     setActiveDestination(destination: Destination, previousDestination?: Destination): void;
     canClaimRoute(route: Route, cardsColor: number): boolean;
+    setHighligthedDestination(destination: Destination | null): void;
+    setSelectedDestination(destination: Destination, visible: boolean): void;
 }
 
 interface EnteringChooseDestinationsArgs {
