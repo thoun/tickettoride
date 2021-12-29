@@ -61,9 +61,10 @@
     position: absolute;
     pointer-events: none;
     z-index: 6;
+    background-size: 100% 100%;
 
     &.left {
-      background: url('img/border-map-left.png');
+      background-image: url('img/border-map-left.png');
       width: 9px;
       //height: 876px;
       left: 0;
@@ -72,7 +73,7 @@
     }
 
     &.right {
-      background: url('img/border-map-right.png');
+      background-image: url('img/border-map-right.png');
       width: 8px;
       //height: 876px;
       right: 0;
@@ -81,7 +82,7 @@
     }
 
     &.top {
-      background: url('img/border-map-top.png');
+      background-image: url('img/border-map-top.png');
       //width: 1541px;
       height: 8px;
       left: 180px;
@@ -90,7 +91,7 @@
     }
 
     &.bottom {
-      background: url('img/border-map-bottom.png');
+      background-image: url('img/border-map-bottom.png');
       //width: 1541px;
       height: 9px;
       left: 180px;
