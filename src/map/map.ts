@@ -583,7 +583,7 @@ const ROUTES = [
 class TtrMap {
     //private points = new Map<number, number>();
     private scale: number;
-    private mapAndDeckDiv: HTMLDivElement;
+    private resizedDiv: HTMLDivElement;
     private mapZoomDiv: HTMLDivElement;
     private mapDiv: HTMLDivElement;
     private pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 };
@@ -655,7 +655,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         //this.movePoints();
         this.setClaimedRoutes(claimedRoutes);
 
-        this.mapAndDeckDiv = document.getElementById('map-and-deck') as HTMLDivElement;
+        this.resizedDiv = document.getElementById('resized') as HTMLDivElement;
         this.mapZoomDiv = document.getElementById('map-zoom') as HTMLDivElement;
         this.mapDiv = document.getElementById('map') as HTMLDivElement;
         // Attach the handler
@@ -746,9 +746,10 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
 
         this.scale = Math.min(1, document.getElementById('game_play_area').clientWidth / mapAndDeckWidth);
 
-        this.mapAndDeckDiv.style.transform = this.scale === 1 ? '' : `scale(${this.scale})`;
-        this.mapAndDeckDiv.style.marginRight = `-${(1 - this.scale) * 100}%`;
-        this.mapAndDeckDiv.style.height = this.scale === 1 ? '' : `${this.mapDiv.clientHeight * this.scale}px`;
+        this.resizedDiv.style.transform = this.scale === 1 ? '' : `scale(${this.scale})`;
+        this.resizedDiv.style.marginRight = `-${(1 - this.scale) * 100}%`;
+        this.resizedDiv.style.marginBottom = `-${(1 - this.scale) * 100}%`;
+        //this.resizedDiv.style.height = this.scale === 1 ? '' : `${this.resizedDiv.clientHeight * this.scale}px`;
     }
 
     private mouseDownHandler(e: MouseEvent) {

@@ -44,6 +44,10 @@
   -ms-overflow-style: none;  /* IE 10+ */
 }
 
+#resized {  
+  transform-origin: top left;
+}
+
 #map-and-deck {
   display: grid;
   grid-template-columns: auto 250px;
