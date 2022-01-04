@@ -25,8 +25,8 @@ class PlayerTable {
         this.playerDestinations.addDestinations(destinations, originStock);
     }
 
-    public markDestinationComplete(destination: Destination) {
-        this.playerDestinations.markDestinationComplete(destination);
+    public markDestinationComplete(destination: Destination, animation: boolean) {
+        this.playerDestinations.markDestinationComplete(destination, animation);
     }
     
     public addTrainCars(trainCars: TrainCar[], stocks?: TrainCarSelection) {

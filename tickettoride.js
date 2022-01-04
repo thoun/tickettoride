@@ -1146,8 +1146,8 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.addDestinations = function (destinations, originStock) {
         this.playerDestinations.addDestinations(destinations, originStock);
     };
-    PlayerTable.prototype.markDestinationComplete = function (destination) {
-        this.playerDestinations.markDestinationComplete(destination);
+    PlayerTable.prototype.markDestinationComplete = function (destination, animation) {
+        this.playerDestinations.markDestinationComplete(destination, animation);
     };
     PlayerTable.prototype.addTrainCars = function (trainCars, stocks) {
         this.playerTrainCars.addTrainCars(trainCars, stocks);
@@ -1170,6 +1170,48 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 var IMAGE_ITEMS_PER_ROW = 10;
+var DestinationCompleteAnimation = /** @class */ (function () {
+    function DestinationCompleteAnimation(destination, zoom, markDestinationCompleteNoAnimation) {
+        this.destination = destination;
+        this.zoom = zoom;
+        this.markDestinationCompleteNoAnimation = markDestinationCompleteNoAnimation;
+    }
+    DestinationCompleteAnimation.prototype.animate = function () {
+        var _this = this;
+        return new Promise(function (resolve) {
+            var x = 1270;
+            var y = -230;
+            var card = document.getElementById("destination-card-" + _this.destination.id);
+            card.classList.add('animated');
+            card.style.transform = "translate(" + x + "px, " + y + "px)";
+            var shadow = document.getElementById('map-destination-highlight-shadow');
+            shadow.dataset.visible = 'true';
+            setTimeout(function () {
+                card.classList.remove('animated');
+                setTimeout(function () {
+                    var brBefore = card.getBoundingClientRect();
+                    _this.markDestinationCompleteNoAnimation(_this.destination);
+                    var brAfter = card.getBoundingClientRect();
+                    x += (brBefore.x - brAfter.x) / _this.zoom;
+                    y += (brBefore.y - brAfter.y) / _this.zoom;
+                    card.style.transform = "translate(" + x + "px, " + y + "px)";
+                    setTimeout(function () {
+                        card.classList.add('animated');
+                        setTimeout(function () {
+                            var shadow = document.getElementById('map-destination-highlight-shadow');
+                            shadow.dataset.visible = 'false';
+                            card.style.transform = "";
+                            setTimeout(function () {
+                                resolve(_this);
+                            }, 500);
+                        }, 500);
+                    }, 500);
+                }, 1);
+            }, 750);
+        });
+    };
+    return DestinationCompleteAnimation;
+}());
 var PlayerDestinations = /** @class */ (function () {
     function PlayerDestinations(game, player, destinations, completedDestinations) {
         var _this = this;
@@ -1177,12 +1219,13 @@ var PlayerDestinations = /** @class */ (function () {
         this.selectedDestination = null;
         this.destinationsTodo = [];
         this.destinationsDone = [];
+        this.animations = [];
         this.playerId = Number(player.id);
         var html = "\n        <div id=\"player-table-" + player.id + "-destinations-todo\" class=\"player-table-destinations-column todo\"></div>\n        <div id=\"player-table-" + player.id + "-destinations-done\" class=\"player-table-destinations-column done\"></div>\n        ";
         dojo.place(html, "player-table-" + player.id + "-destinations");
         this.addDestinations(destinations);
         destinations.filter(function (destination) { return completedDestinations.some(function (d) { return d.id == destination.id; }); }).forEach(function (destination) {
-            return _this.markDestinationComplete(destination);
+            return _this.markDestinationComplete(destination, false);
         });
         this.activateNextDestination(this.destinationsTodo);
     }
@@ -1208,7 +1251,7 @@ var PlayerDestinations = /** @class */ (function () {
         (_a = this.destinationsTodo).push.apply(_a, destinations);
         this.destinationColumnsUpdated();
     };
-    PlayerDestinations.prototype.markDestinationComplete = function (destination) {
+    PlayerDestinations.prototype.markDestinationCompleteNoAnimation = function (destination) {
         var index = this.destinationsTodo.findIndex(function (d) { return d.id == destination.id; });
         if (index !== -1) {
             this.destinationsTodo.splice(index, 1);
@@ -1216,6 +1259,31 @@ var PlayerDestinations = /** @class */ (function () {
         this.destinationsDone.push(destination);
         document.getElementById("player-table-" + this.playerId + "-destinations-done").appendChild(document.getElementById("destination-card-" + destination.id));
         this.destinationColumnsUpdated();
+    };
+    PlayerDestinations.prototype.markDestinationComplete = function (destination, animation) {
+        var _this = this;
+        if (animation && !(document.visibilityState === 'hidden' || this.game.instantaneousMode)) {
+            var newDac = new DestinationCompleteAnimation(destination, this.game.getZoom(), function (d) { return _this.markDestinationCompleteNoAnimation(d); });
+            this.animations.push(newDac);
+            if (this.animations.length === 1) {
+                this.animations[0].animate().then(function (dac) { return _this.endAnimation(dac); });
+            }
+            ;
+        }
+        else {
+            this.markDestinationCompleteNoAnimation(destination);
+        }
+    };
+    PlayerDestinations.prototype.endAnimation = function (ended) {
+        var _this = this;
+        var index = this.animations.indexOf(ended);
+        if (index !== -1) {
+            this.animations.splice(index, 1);
+        }
+        if (this.animations.length >= 1) {
+            this.animations[0].animate().then(function (dac) { return _this.endAnimation(dac); });
+        }
+        ;
     };
     PlayerDestinations.prototype.activateNextDestination = function (destinationList) {
         var _this = this;
@@ -1367,7 +1435,6 @@ var PlayerTrainCars = /** @class */ (function () {
             groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = "" + (count > 1 ? count : '');
             groupDiv.style.transform = "translateY(" + Math.pow(Math.abs(distanceFromIndex) * 2, 2) + "px) rotate(" + (distanceFromIndex) * 4 + "deg)";
             groupDiv.parentNode.appendChild(groupDiv);
-            // add rotation to underneath cards
         });
     };
     PlayerTrainCars.prototype.addAnimationFrom = function (card, from) {
@@ -1762,7 +1829,7 @@ var TicketToRide = /** @class */ (function () {
         var destination = notif.args.destination;
         this.completedDestinationsCounter.incValue(1);
         this.gamedatas.completedDestinations.push(destination);
-        this.playerTable.markDestinationComplete(destination);
+        this.playerTable.markDestinationComplete(destination, true);
     };
     TicketToRide.prototype.notif_lastTurn = function () {
         dojo.place("<div id=\"last-round\">\n            " + _("This is the final round!") + "\n        </div>", 'page-title');

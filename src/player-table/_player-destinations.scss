@@ -15,9 +15,10 @@
         width: 250px;
         height: 100%;
         pointer-events: none;
+        z-index: 50;
 
         &.front {
-            z-index: 1;
+            z-index: 51;
         }
     }
 
@@ -31,6 +32,10 @@
         box-shadow: 0 0 8px 1px black;
         cursor: pointer;
         pointer-events: all;
+
+        &.animated {
+            transition: transform 0.5s;
+        }
     }
 
     .done {

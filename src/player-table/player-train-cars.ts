@@ -128,8 +128,6 @@ class PlayerTrainCars {
             groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = `${count > 1 ? count : ''}`;
             groupDiv.style.transform = `translateY(${Math.pow(Math.abs(distanceFromIndex) * 2, 2)}px) rotate(${(distanceFromIndex) * 4}deg)`;
             groupDiv.parentNode.appendChild(groupDiv);
-
-            // add rotation to underneath cards
         });
     }
     

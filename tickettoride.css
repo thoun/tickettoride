@@ -663,9 +663,10 @@
   width: 250px;
   height: 100%;
   pointer-events: none;
+  z-index: 50;
 }
 .player-table-destinations .player-table-destinations-column.front {
-  z-index: 1;
+  z-index: 51;
 }
 .player-table-destinations .destination-card {
   position: absolute;
@@ -677,6 +678,9 @@
   box-shadow: 0 0 8px 1px black;
   cursor: pointer;
   pointer-events: all;
+}
+.player-table-destinations .destination-card.animated {
+  transition: transform 0.5s;
 }
 .player-table-destinations .done .destination-card {
   mask: url("img/destination-done-mask.png") no-repeat center/contain;

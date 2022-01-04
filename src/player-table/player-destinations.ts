@@ -1,12 +1,65 @@
 
 const IMAGE_ITEMS_PER_ROW = 10;
 
+class DestinationCompleteAnimation {
+
+    constructor(
+        private destination: Destination,
+        private zoom: number,
+        private markDestinationCompleteNoAnimation: (destination: Destination) => void,
+    ) {}
+
+    public animate(): Promise<DestinationCompleteAnimation> {
+        return new Promise(resolve => {
+            let x = 1270;
+            let y = -230;
+            const card = document.getElementById(`destination-card-${this.destination.id}`);
+            card.classList.add('animated');
+            card.style.transform = `translate(${x}px, ${y}px)`;
+    
+            const shadow = document.getElementById('map-destination-highlight-shadow');
+            shadow.dataset.visible = 'true';
+    
+            setTimeout(() => {
+                card.classList.remove('animated');
+    
+                setTimeout(() => {
+    
+                    const brBefore = card.getBoundingClientRect();
+                    this.markDestinationCompleteNoAnimation(this.destination);
+                    const brAfter = card.getBoundingClientRect();
+                    x += (brBefore.x - brAfter.x)/this.zoom;
+                    y += (brBefore.y - brAfter.y)/this.zoom;
+                    card.style.transform = `translate(${x}px, ${y}px)`;
+    
+                    setTimeout(() => {
+                        card.classList.add('animated');
+                        
+                        setTimeout(() => {
+                            const shadow = document.getElementById('map-destination-highlight-shadow');
+                            shadow.dataset.visible = 'false';
+    
+                            card.style.transform = ``;
+    
+                            setTimeout(() => {
+                                resolve(this);
+                            }, 500);
+                        }, 500);
+                    }, 500);
+    
+                }, 1);
+            }, 750);
+        });
+    }
+}
+
 class PlayerDestinations {
     public playerId: number;
     public destinationStock: Stock;
     private selectedDestination: Destination | null = null;
     private destinationsTodo: Destination[] = [];
     private destinationsDone: Destination[] = [];
+    private animations: DestinationCompleteAnimation[] = [];
 
     constructor(
         private game: TicketToRideGame, 
@@ -25,7 +78,7 @@ class PlayerDestinations {
 
         this.addDestinations(destinations);
         destinations.filter(destination => completedDestinations.some(d => d.id == destination.id)).forEach(destination => 
-            this.markDestinationComplete(destination)
+            this.markDestinationComplete(destination, false)
         );
         
         this.activateNextDestination(this.destinationsTodo);
@@ -64,7 +117,7 @@ class PlayerDestinations {
         this.destinationColumnsUpdated();
     }
 
-    public markDestinationComplete(destination: Destination) {
+    public markDestinationCompleteNoAnimation(destination: Destination) {
         const index = this.destinationsTodo.findIndex(d => d.id == destination.id);
         if (index !== -1) {
             this.destinationsTodo.splice(index, 1);
@@ -73,6 +126,30 @@ class PlayerDestinations {
 
         document.getElementById(`player-table-${this.playerId}-destinations-done`).appendChild(document.getElementById(`destination-card-${destination.id}`));
         this.destinationColumnsUpdated();
+    }
+
+    public markDestinationComplete(destination: Destination, animation: boolean) {
+        if (animation && !(document.visibilityState === 'hidden' || (this.game as any).instantaneousMode)) {
+            const newDac = new DestinationCompleteAnimation(destination, this.game.getZoom(), d => this.markDestinationCompleteNoAnimation(d));
+
+            this.animations.push(newDac);
+            if (this.animations.length === 1) {
+                this.animations[0].animate().then(dac => this.endAnimation(dac));
+            };
+        } else {
+            this.markDestinationCompleteNoAnimation(destination);
+        }
+    }
+
+    public endAnimation(ended: DestinationCompleteAnimation) {
+        const index = this.animations.indexOf(ended);
+        if (index !== -1) {
+            this.animations.splice(index, 1);
+        }
+
+        if (this.animations.length >= 1) {
+            this.animations[0].animate().then(dac => this.endAnimation(dac));
+        };
     }
 
     public activateNextDestination(destinationList: Destination[]) {

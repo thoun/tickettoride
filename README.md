@@ -36,4 +36,5 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 go on tests dir and start execute file, for example `php ./tickettoride.game.test-longest-path.php` / `php ./tickettoride.game.test-destination-completed.php`
 
 # TODO
-front
+move gauges next to map
+end score
