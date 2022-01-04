@@ -28,8 +28,8 @@ $game_options = [];
 
 $game_preferences = [
     201 => [
-        'name' => totranslate('Show color-blind indications'),
-        'needReload' => true,
+        'name' => totranslate('Show buttons for hidden cards selection'),
+        'needReload' => false,
         'values' => [
             1 => [ 'name' => totranslate('Enabled')],
             2 => [ 'name' => totranslate('Disabled')],

@@ -554,14 +554,17 @@
 #train-car-deck .hidden-pile .button.right-radius {
   border-radius: 0 10px 10px 0;
 }
-#train-car-deck .hidden-pile.selectable .button {
+#train-car-deck .hidden-pile.buttonselection.selectable .button {
   display: flex;
   cursor: pointer;
 }
-#train-car-deck .hidden-pile.selectable .button.hidden {
+#train-car-deck .hidden-pile.buttonselection.selectable .button.hidden {
   visibility: hidden;
   pointer-events: none;
   cursor: default;
+}
+#train-car-deck .hidden-pile:not(.buttonselection).selectable {
+  cursor: pointer;
 }
 #train-car-deck #visible-train-cards {
   transform-origin: 0 0;

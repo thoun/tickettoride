@@ -67,6 +67,7 @@ class TicketToRide implements TicketToRideGame {
         }
 
         this.setupNotifications();
+        this.setupPreferences();
 
         (this as any).onScreenWidthChange = () => {
             this.map.setAutoZoom();
@@ -180,12 +181,43 @@ class TicketToRide implements TicketToRideGame {
 
     ///////////////////////////////////////////////////
 
-    public getPlayerId(): number {
-        return Number((this as any).player_id);
+    private setupPreferences() {
+        // Extract the ID and value from the UI control
+        const onchange = (e) => {
+          var match = e.target.id.match(/^preference_control_(\d+)$/);
+          if (!match) {
+            return;
+          }
+          var prefId = +match[1];
+          var prefValue = +e.target.value;
+          (this as any).prefs[prefId].value = prefValue;
+          this.onPreferenceChange(prefId, prefValue);
+        }
+        
+        // Call onPreferenceChange() when any value changes
+        dojo.query(".preference_control").connect("onchange", onchange);
+        
+        // Call onPreferenceChange() now
+        dojo.forEach(
+          dojo.query("#ingame_menu_content .preference_control"),
+          el => onchange({ target: el })
+        );
+
+        try {
+            (document.getElementById('preference_control_203').closest(".preference_choice") as HTMLDivElement).style.display = 'none';
+        } catch (e) {}
+    }
+      
+    private onPreferenceChange(prefId: number, prefValue: number) {
+        switch (prefId) {
+            case 201:  
+                dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', prefValue == 1);
+                break;
+        }
     }
 
-    public isColorBlindMode(): boolean {
-        return (this as any).prefs[201].value == 1;
+    public getPlayerId(): number {
+        return Number((this as any).player_id);
     }
 
     private createPlayerPanels(gamedatas: TicketToRideGamedatas) {
@@ -229,12 +261,6 @@ class TicketToRide implements TicketToRideGame {
                 this.completedDestinationsCounter = new ebg.counter();
                 this.completedDestinationsCounter.create(`completed-destinations-counter-${player.id}`);
                 this.completedDestinationsCounter.setValue(gamedatas.completedDestinations.length);
-            }
-            
-            if (this.isColorBlindMode()) {
-                dojo.place(`
-                <div class="point-marker color-blind meeple-player-${player.id}" data-player-no="${player.playerNo}" style="background-color: #${player.color};"></div>
-                `, `player_board_${player.id}`);
             }
         });
 

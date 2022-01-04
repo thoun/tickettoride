@@ -1,3 +1,5 @@
+const DBL_CLICK_TIMEOUT = 300;
+
 class Gauge {
     private levelDiv: HTMLDivElement;
 
@@ -22,6 +24,7 @@ class TrainCarSelection {
     public visibleCardsStocks: Stock[] = [];
     private trainCarGauge: Gauge;
     private destinationGauge: Gauge;
+    private dblClickTimeout = null;
 
     constructor(
         private game: TicketToRideGame,
@@ -34,6 +37,18 @@ class TrainCarSelection {
 
         document.getElementById('train-car-deck-hidden-pile1').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(1));
         document.getElementById('train-car-deck-hidden-pile2').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(2));
+
+        document.getElementById('train-car-deck-hidden-pile').addEventListener('click', () => {
+            if (this.dblClickTimeout) {
+                clearTimeout(this.dblClickTimeout);
+                this.dblClickTimeout = null;
+                this.game.onHiddenTrainCarDeckClick(2);
+            } else if (!dojo.hasClass('train-car-deck-hidden-pile', 'buttonselection')) {
+                this.dblClickTimeout = setTimeout(() => {
+                    this.game.onHiddenTrainCarDeckClick(1);
+                }, DBL_CLICK_TIMEOUT);
+            }
+        });
 
         for (let i=1; i<=5; i++) {
             this.visibleCardsStocks[i] = new ebg.stock() as Stock;
@@ -98,5 +113,9 @@ class TrainCarSelection {
     public setDestinationCount(count: number) {
         this.destinationGauge.setCount(count);
         document.getElementById(`destination-deck-level`).dataset.level = `${Math.min(10, Math.floor(count / 10))}`;
+    }
+
+    public setCardSelectionButtons(visible: boolean) {
+        dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', visible);
     }
 }

@@ -845,6 +845,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.resizedDiv.style.transform = this.scale === 1 ? '' : "scale(" + this.scale + ")";
         this.resizedDiv.style.marginRight = "-" + (1 - this.scale) * 100 + "%";
         this.resizedDiv.style.marginBottom = "-" + (1 - this.scale) * 100 + "%";
+        document.getElementById('map-zoom-wrapper').style.height = this.resizedDiv.clientHeight * this.scale + "px";
         //this.resizedDiv.style.height = this.scale === 1 ? '' : `${this.resizedDiv.clientHeight * this.scale}px`;
     };
     TtrMap.prototype.mouseDownHandler = function (e) {
@@ -996,6 +997,7 @@ var DestinationSelection = /** @class */ (function () {
     };
     return DestinationSelection;
 }());
+var DBL_CLICK_TIMEOUT = 300;
 var Gauge = /** @class */ (function () {
     function Gauge(conainerId, className, max) {
         this.max = max;
@@ -1012,8 +1014,21 @@ var TrainCarSelection = /** @class */ (function () {
         var _this = this;
         this.game = game;
         this.visibleCardsStocks = [];
+        this.dblClickTimeout = null;
         document.getElementById('train-car-deck-hidden-pile1').addEventListener('click', function () { return _this.game.onHiddenTrainCarDeckClick(1); });
         document.getElementById('train-car-deck-hidden-pile2').addEventListener('click', function () { return _this.game.onHiddenTrainCarDeckClick(2); });
+        document.getElementById('train-car-deck-hidden-pile').addEventListener('click', function () {
+            if (_this.dblClickTimeout) {
+                clearTimeout(_this.dblClickTimeout);
+                _this.dblClickTimeout = null;
+                _this.game.onHiddenTrainCarDeckClick(2);
+            }
+            else if (!dojo.hasClass('train-car-deck-hidden-pile', 'buttonselection')) {
+                _this.dblClickTimeout = setTimeout(function () {
+                    _this.game.onHiddenTrainCarDeckClick(1);
+                }, DBL_CLICK_TIMEOUT);
+            }
+        });
         var _loop_1 = function (i) {
             this_1.visibleCardsStocks[i] = new ebg.stock();
             this_1.visibleCardsStocks[i].setSelectionAppearance('class');
@@ -1083,6 +1098,9 @@ var TrainCarSelection = /** @class */ (function () {
     TrainCarSelection.prototype.setDestinationCount = function (count) {
         this.destinationGauge.setCount(count);
         document.getElementById("destination-deck-level").dataset.level = "" + Math.min(10, Math.floor(count / 10));
+    };
+    TrainCarSelection.prototype.setCardSelectionButtons = function (visible) {
+        dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', visible);
     };
     return TrainCarSelection;
 }());
@@ -1369,6 +1387,7 @@ var TicketToRide = /** @class */ (function () {
             this.onEnteringEndScore(true);
         }
         this.setupNotifications();
+        this.setupPreferences();
         this.onScreenWidthChange = function () {
             _this.map.setAutoZoom();
         };
@@ -1472,11 +1491,37 @@ var TicketToRide = /** @class */ (function () {
     ///////////////////////////////////////////////////
     //// Utility methods
     ///////////////////////////////////////////////////
+    TicketToRide.prototype.setupPreferences = function () {
+        var _this = this;
+        // Extract the ID and value from the UI control
+        var onchange = function (e) {
+            var match = e.target.id.match(/^preference_control_(\d+)$/);
+            if (!match) {
+                return;
+            }
+            var prefId = +match[1];
+            var prefValue = +e.target.value;
+            _this.prefs[prefId].value = prefValue;
+            _this.onPreferenceChange(prefId, prefValue);
+        };
+        // Call onPreferenceChange() when any value changes
+        dojo.query(".preference_control").connect("onchange", onchange);
+        // Call onPreferenceChange() now
+        dojo.forEach(dojo.query("#ingame_menu_content .preference_control"), function (el) { return onchange({ target: el }); });
+        try {
+            document.getElementById('preference_control_203').closest(".preference_choice").style.display = 'none';
+        }
+        catch (e) { }
+    };
+    TicketToRide.prototype.onPreferenceChange = function (prefId, prefValue) {
+        switch (prefId) {
+            case 201:
+                dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', prefValue == 1);
+                break;
+        }
+    };
     TicketToRide.prototype.getPlayerId = function () {
         return Number(this.player_id);
-    };
-    TicketToRide.prototype.isColorBlindMode = function () {
-        return this.prefs[201].value == 1;
     };
     TicketToRide.prototype.createPlayerPanels = function (gamedatas) {
         var _this = this;
@@ -1501,9 +1546,6 @@ var TicketToRide = /** @class */ (function () {
                 _this.completedDestinationsCounter = new ebg.counter();
                 _this.completedDestinationsCounter.create("completed-destinations-counter-" + player.id);
                 _this.completedDestinationsCounter.setValue(gamedatas.completedDestinations.length);
-            }
-            if (_this.isColorBlindMode()) {
-                dojo.place("\n                <div class=\"point-marker color-blind meeple-player-" + player.id + "\" data-player-no=\"" + player.playerNo + "\" style=\"background-color: #" + player.color + ";\"></div>\n                ", "player_board_" + player.id);
             }
         });
         this.addTooltipHtmlToClass('train-car-counter', _("Remaining train cars"));

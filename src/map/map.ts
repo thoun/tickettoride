@@ -749,6 +749,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.resizedDiv.style.transform = this.scale === 1 ? '' : `scale(${this.scale})`;
         this.resizedDiv.style.marginRight = `-${(1 - this.scale) * 100}%`;
         this.resizedDiv.style.marginBottom = `-${(1 - this.scale) * 100}%`;
+        document.getElementById('map-zoom-wrapper').style.height = `${this.resizedDiv.clientHeight * this.scale}px`;
         //this.resizedDiv.style.height = this.scale === 1 ? '' : `${this.resizedDiv.clientHeight * this.scale}px`;
     }
 

@@ -80,7 +80,6 @@ interface TicketToRideGame extends Game {
     onVisibleTrainCarCardClick(itemId: number, stock: Stock): void;
     onHiddenTrainCarDeckClick(number: number): void;
     claimRoute(id: number, color: number): void;
-    isColorBlindMode(): boolean;
     setActiveDestination(destination: Destination, previousDestination?: Destination): void;
     canClaimRoute(route: Route, cardsColor: number): boolean;
     setHighligthedDestination(destination: Destination | null): void;

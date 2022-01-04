@@ -63,15 +63,19 @@
             }
         }
 
-        &.selectable .button {
+        &.buttonselection.selectable .button {
             display: flex;
             cursor: pointer;
         }
 
-        &.selectable .button.hidden {
+        &.buttonselection.selectable .button.hidden {
             visibility: hidden;
             pointer-events: none;
             cursor: default;
+        }
+
+        &:not(.buttonselection).selectable {
+            cursor: pointer;
         }
     }
 
