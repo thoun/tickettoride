@@ -625,30 +625,7 @@ class TtrMap {
                     data-route="${route.id}"
                 ></div>`, 'map');
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
-                //spaceDiv.addEventListener('click', () => this.game.claimRoute(route.id));   
-                const enterover = (e: DragEvent) => {
-                    const cardsColor = Number(this.mapDiv.dataset.dragColor);
-                    const canClaimRoute = this.game.canClaimRoute(route, cardsColor);
-                    this.setHoveredRoute(route, canClaimRoute);
-                    if (canClaimRoute) {
-                        e.preventDefault();
-                    }
-                };
-                spaceDiv.addEventListener('dragenter', enterover);
-                spaceDiv.addEventListener('dragover', enterover);
-                spaceDiv.addEventListener('dragleave', (e) => {
-                    this.setHoveredRoute(null);
-                });
-                spaceDiv.addEventListener('drop', (e) => {
-                    if (document.getElementById('map').dataset.dragColor == '') {
-                        return;
-                    }
-
-                    this.setHoveredRoute(null);
-                    const cardsColor = Number(this.mapDiv.dataset.dragColor);
-                    document.getElementById('map').dataset.dragColor = '';
-                    this.game.claimRoute(route.id, cardsColor);
-                });
+                this.setSpaceEvents(spaceDiv, route);
             })
         );
 
@@ -671,6 +648,33 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         /*this.mapDiv.addEventListener('dragenter', e => this.mapDiv.classList.add('drag-over'));
         this.mapDiv.addEventListener('dragleave', e => this.mapDiv.classList.remove('drag-over'));
         this.mapDiv.addEventListener('drop', e => this.mapDiv.classList.remove('drag-over'));*/
+    }
+    
+    private enterover(e: DragEvent, route: Route) {
+        const cardsColor = Number(this.mapDiv.dataset.dragColor);
+        const canClaimRoute = this.game.canClaimRoute(route, cardsColor);
+        this.setHoveredRoute(route, canClaimRoute);
+        if (canClaimRoute) {
+            e.preventDefault();
+        }
+    };
+
+    private setSpaceEvents(spaceDiv: HTMLElement, route: Route) {
+        spaceDiv.addEventListener('dragenter', e => this.enterover(e, route));
+        spaceDiv.addEventListener('dragover', e => this.enterover(e, route));
+        spaceDiv.addEventListener('dragleave', (e) => {
+            this.setHoveredRoute(null);
+        });
+        spaceDiv.addEventListener('drop', () => {
+            if (document.getElementById('map').dataset.dragColor == '') {
+                return;
+            }
+
+            this.setHoveredRoute(null);
+            const cardsColor = Number(this.mapDiv.dataset.dragColor);
+            document.getElementById('map').dataset.dragColor = '';
+            this.game.claimRoute(route.id, cardsColor);
+        });
     }
 
     /*public setPoints(playerId: number, points: number) {
@@ -724,19 +728,30 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         claimedRoutes.forEach(claimedRoute => {
             const route = ROUTES.find(r => r.id == claimedRoute.routeId);
             const color = this.players.find(player => Number(player.id) == claimedRoute.playerId).color;
-            route.spaces.forEach((space, spaceIndex) => {
+            this.setWagons(route, color);
+        });
+    }
+
+    private setWagons(route: Route, color: string, phantom: boolean = false) {
+        route.spaces.forEach((space, spaceIndex) => {
+            const id = `wagon-route${route.id}-space${spaceIndex}${phantom ? '-phantom' : ''}`;
+            if (document.getElementById(id)) {
+                return;
+            }
+
+            if (!phantom) {
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
                 spaceDiv.parentElement.removeChild(spaceDiv);
+            }
 
-                let angle = -space.angle;
-                while (angle < 0) {
-                    angle += 180;
-                }
-                while (angle >= 180) {
-                    angle -= 180;
-                }
-                dojo.place(`<div class="wagon angle${Math.round(angle * 36 / 180)}" data-player-color="${color}" style="transform: translate(${space.x*FACTOR}px, ${space.y*FACTOR}px)"></div>`, 'map');
-            });
+            let angle = -space.angle;
+            while (angle < 0) {
+                angle += 180;
+            }
+            while (angle >= 180) {
+                angle -= 180;
+            }
+            dojo.place(`<div id="${id}" class="wagon angle${Math.round(angle * 36 / 180)} ${phantom ? 'phantom' : ''}" data-player-color="${color}" style="transform: translate(${space.x * FACTOR}px, ${space.y * FACTOR}px)"></div>`, 'map');
         });
     }
 
@@ -833,16 +848,25 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
 
     public setHoveredRoute(route: Route | null, valid: boolean | null = null) {
         if (route) {
+
             [route.from, route.to].forEach(city => {
                 const cityDiv = document.getElementById(`city${city}`);
                 cityDiv.dataset.hovered = 'true';
                 cityDiv.dataset.valid = valid.toString();
             });
+
+            if (valid) {
+                this.setWagons(route, this.game.getPlayerColor(), true);
+            }
+
         } else {
+
             ROUTES.forEach(r => [r.from, r.to].forEach(city => 
                 document.getElementById(`city${city}`).dataset.hovered = 'false'
-                // document.querySelectorAll(`.space[data-route="${route.id}"]`).forEach(spaceDiv => spaceDiv.classList.add('drag-over'));
             ));
+
+            // remove phantom wagons
+            this.mapDiv.querySelectorAll('.wagon.phantom').forEach(spaceDiv => spaceDiv.parentElement.removeChild(spaceDiv));
         }
     }
 

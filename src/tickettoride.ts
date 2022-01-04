@@ -297,6 +297,10 @@ class TicketToRide implements TicketToRideGame {
     public setDestinationsToConnect(destinations: Destination[]): void {
         this.map.setDestinationsToConnect(destinations);
     }
+    
+    public getPlayerColor(): string {
+        return this.gamedatas.players[this.getPlayerId()]?.color;
+    }
 
     public chooseInitialDestinations() {
         if(!(this as any).checkAction('chooseInitialDestinations')) {

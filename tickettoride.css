@@ -464,6 +464,9 @@
 .wagon[data-player-color="982fff"] {
   background-image: url("img/wagons-purple.png"), url("img/wagons-shadow.png");
 }
+.wagon.phantom {
+  opacity: 0.5;
+}
 
 #train-car-deck {
   position: relative;
