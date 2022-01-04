@@ -41,18 +41,12 @@ class PlayerTrainCars {
 
             dojo.place(html, group.getElementsByClassName('train-car-cards')[0] as HTMLElement);
 
-            // TODO update group counter
-            
-            /* TODO const card = document.getElementById(`destination-card-${trainCar.id}`);
-            card.addEventListener('click', () => this.activateNextDestination(
-                this.destinationsDone.some(d => d.id == trainCar.id) ? this.destinationsDone : this.destinationsTodo
-            ));
-
-            // TODO animation
-            if (originStock) {
-                this.addAnimationFrom(card, document.getElementById(`${originStock.container_div.id}_item_${trainCar.id}`));
-            }*/
-
+            const originStock = stocks?.visibleCardsStocks?.find(stock => stock?.items.some(item => Number(item.id) == trainCar.id));
+            const card = document.getElementById(`train-car-card-${trainCar.id}`);
+            this.addAnimationFrom(card, originStock ? 
+                document.getElementById(`${originStock.container_div.id}_item_${trainCar.id}`) :
+                document.getElementById(`train-car-deck-hidden-pile`)
+            );
         });
 
         this.updateCounters();
@@ -137,5 +131,28 @@ class PlayerTrainCars {
 
             // add rotation to underneath cards
         });
+    }
+    
+    private addAnimationFrom(card: HTMLElement, from: HTMLElement) {
+        if (document.visibilityState === 'hidden' || (this.game as any).instantaneousMode) {
+            return;
+        }
+
+        const destinationBR = card.getBoundingClientRect();
+        const originBR = from.getBoundingClientRect();
+
+        const deltaX = destinationBR.left - originBR.left;
+        const deltaY = destinationBR.top - originBR.top;
+
+        card.style.zIndex = '10';
+        card.style.transition = `transform 0.5s linear`;
+        const zoom = this.game.getZoom();
+        card.style.transform = `rotate(-90deg) translate(${-deltaX/zoom}px, ${-deltaY/zoom}px)`;
+        setTimeout(() => card.style.transform = null);
+
+        setTimeout(() => {
+            card.style.zIndex = null;
+            card.style.transition = null;            
+        }, 500);
     }
 }

@@ -774,6 +774,10 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         document.getElementById('map-zoom-wrapper').style.height = `${this.resizedDiv.clientHeight * this.scale}px`;
         //this.resizedDiv.style.height = this.scale === 1 ? '' : `${this.resizedDiv.clientHeight * this.scale}px`;
     }
+    
+    public getZoom(): number {
+        return this.scale;
+    }
 
     private mouseDownHandler(e: MouseEvent) {
         if (!this.zoomed) {

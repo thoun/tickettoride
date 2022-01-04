@@ -866,6 +866,9 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         document.getElementById('map-zoom-wrapper').style.height = this.resizedDiv.clientHeight * this.scale + "px";
         //this.resizedDiv.style.height = this.scale === 1 ? '' : `${this.resizedDiv.clientHeight * this.scale}px`;
     };
+    TtrMap.prototype.getZoom = function () {
+        return this.scale;
+    };
     TtrMap.prototype.mouseDownHandler = function (e) {
         if (!this.zoomed) {
             return;
@@ -1258,7 +1261,7 @@ var PlayerDestinations = /** @class */ (function () {
         var deltaY = destinationBR.top - originBR.top;
         card.style.zIndex = '10';
         card.style.transition = "transform 0.5s linear";
-        var zoom = 1; // TODO?
+        var zoom = this.game.getZoom();
         card.style.transform = "translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
         setTimeout(function () { return card.style.transform = null; });
         setTimeout(function () {
@@ -1292,21 +1295,17 @@ var PlayerTrainCars = /** @class */ (function () {
     PlayerTrainCars.prototype.addTrainCars = function (trainCars, stocks) {
         var _this = this;
         trainCars.forEach(function (trainCar) {
+            var _a;
             var group = _this.getGroup(trainCar.type);
             var xBackgroundPercent = trainCar.type * 100;
             var deg = Math.round(-4 + Math.random() * 8);
             var html = "\n            <div id=\"train-car-card-" + trainCar.id + "\" class=\"train-car-card\" style=\"background-position: -" + xBackgroundPercent + "% 50%; transform: rotate(" + deg + "deg);\"></div>\n            ";
             dojo.place(html, group.getElementsByClassName('train-car-cards')[0]);
-            // TODO update group counter
-            /* TODO const card = document.getElementById(`destination-card-${trainCar.id}`);
-            card.addEventListener('click', () => this.activateNextDestination(
-                this.destinationsDone.some(d => d.id == trainCar.id) ? this.destinationsDone : this.destinationsTodo
-            ));
-
-            // TODO animation
-            if (originStock) {
-                this.addAnimationFrom(card, document.getElementById(`${originStock.container_div.id}_item_${trainCar.id}`));
-            }*/
+            var originStock = (_a = stocks === null || stocks === void 0 ? void 0 : stocks.visibleCardsStocks) === null || _a === void 0 ? void 0 : _a.find(function (stock) { return stock === null || stock === void 0 ? void 0 : stock.items.some(function (item) { return Number(item.id) == trainCar.id; }); });
+            var card = document.getElementById("train-car-card-" + trainCar.id);
+            _this.addAnimationFrom(card, originStock ?
+                document.getElementById(originStock.container_div.id + "_item_" + trainCar.id) :
+                document.getElementById("train-car-deck-hidden-pile"));
         });
         this.updateCounters();
     };
@@ -1370,6 +1369,24 @@ var PlayerTrainCars = /** @class */ (function () {
             groupDiv.parentNode.appendChild(groupDiv);
             // add rotation to underneath cards
         });
+    };
+    PlayerTrainCars.prototype.addAnimationFrom = function (card, from) {
+        if (document.visibilityState === 'hidden' || this.game.instantaneousMode) {
+            return;
+        }
+        var destinationBR = card.getBoundingClientRect();
+        var originBR = from.getBoundingClientRect();
+        var deltaX = destinationBR.left - originBR.left;
+        var deltaY = destinationBR.top - originBR.top;
+        card.style.zIndex = '10';
+        card.style.transition = "transform 0.5s linear";
+        var zoom = this.game.getZoom();
+        card.style.transform = "rotate(-90deg) translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
+        setTimeout(function () { return card.style.transform = null; });
+        setTimeout(function () {
+            card.style.zIndex = null;
+            card.style.transition = null;
+        }, 500);
     };
     return PlayerTrainCars;
 }());
@@ -1602,6 +1619,9 @@ var TicketToRide = /** @class */ (function () {
     };
     TicketToRide.prototype.setDestinationsToConnect = function (destinations) {
         this.map.setDestinationsToConnect(destinations);
+    };
+    TicketToRide.prototype.getZoom = function () {
+        return this.map.getZoom();
     };
     TicketToRide.prototype.getPlayerColor = function () {
         var _a;

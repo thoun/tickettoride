@@ -101,7 +101,7 @@ class PlayerDestinations {
         );
 
         document.getElementById(`player-table-${this.playerId}-destinations`).style.height = `${maxBottom + CARD_HEIGHT}px`;
-        
+
         this.game.setDestinationsToConnect(this.destinationsTodo);
     }
 
@@ -134,13 +134,13 @@ class PlayerDestinations {
 
         card.style.zIndex = '10';
         card.style.transition = `transform 0.5s linear`;
-        const zoom = 1; // TODO?
+        const zoom = this.game.getZoom();
         card.style.transform = `translate(${-deltaX/zoom}px, ${-deltaY/zoom}px)`;
         setTimeout(() => card.style.transform = null);
 
         setTimeout(() => {
             card.style.zIndex = null;
-            card.style.transition = null;            
+            card.style.transition = null;
         }, 500);
     }
 }

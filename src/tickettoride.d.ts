@@ -76,6 +76,7 @@ interface TicketToRideGamedatas {
 }
 
 interface TicketToRideGame extends Game {
+    getZoom(): number;
     getPlayerColor(): string;
     setDestinationsToConnect(destinations: Destination[]): void;
     getPlayerId(): number;

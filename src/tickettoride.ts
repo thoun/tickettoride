@@ -298,6 +298,10 @@ class TicketToRide implements TicketToRideGame {
         this.map.setDestinationsToConnect(destinations);
     }
     
+    public getZoom(): number {
+        return this.map.getZoom();
+    }
+    
     public getPlayerColor(): string {
         return this.gamedatas.players[this.getPlayerId()]?.color;
     }
