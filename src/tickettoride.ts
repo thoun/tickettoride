@@ -294,6 +294,10 @@ class TicketToRide implements TicketToRideGame {
         this.map.setSelectedDestination(destination, visible);
     }
 
+    public setDestinationsToConnect(destinations: Destination[]): void {
+        this.map.setDestinationsToConnect(destinations);
+    }
+
     public chooseInitialDestinations() {
         if(!(this as any).checkAction('chooseInitialDestinations')) {
             return;
@@ -465,6 +469,12 @@ class TicketToRide implements TicketToRideGame {
     public format_string_recursive(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
+                if (typeof args.from == 'string' && args.from[0] != '<') {
+                    args.from = `<strong>${args.from}</strong>`;
+                }
+                if (typeof args.to == 'string' && args.to[0] != '<') {
+                    args.to = `<strong>${args.to}</strong>`;
+                }
                 /*if (typeof args.lineNumber === 'number') {
                     args.lineNumber = `<strong>${args.line}</strong>`;
                 }

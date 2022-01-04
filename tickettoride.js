@@ -247,7 +247,7 @@ var ROUTES = [
         new RouteSpace(1559.99, 219.03, 122),
         new RouteSpace(1527.45, 271.29, 122),
     ], RED),
-    new Route(12, 3, 10, [
+    new Route(100, 3, 10, [
         new RouteSpace(357, 120, 50),
         new RouteSpace(397, 168, 50),
         new RouteSpace(436, 215, 50),
@@ -748,8 +748,12 @@ var TtrMap = /** @class */ (function () {
                     _this.setHoveredRoute(null);
                 });
                 spaceDiv.addEventListener('drop', function (e) {
+                    if (document.getElementById('map').dataset.dragColor == '') {
+                        return;
+                    }
                     _this.setHoveredRoute(null);
                     var cardsColor = Number(_this.mapDiv.dataset.dragColor);
+                    document.getElementById('map').dataset.dragColor = '';
                     _this.game.claimRoute(route.id, cardsColor);
                 });
             });
@@ -841,7 +845,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             setTimeout(function () { return _this.setAutoZoom(); }, 200);
             return;
         }
-        this.scale = Math.min(1, document.getElementById('game_play_area').clientWidth / mapAndDeckWidth);
+        this.scale = Math.min(1, document.getElementById('game_play_area').clientWidth / mapAndDeckWidth, (window.innerHeight - 80) / this.resizedDiv.clientHeight);
         this.resizedDiv.style.transform = this.scale === 1 ? '' : "scale(" + this.scale + ")";
         this.resizedDiv.style.marginRight = "-" + (1 - this.scale) * 100 + "%";
         this.resizedDiv.style.marginBottom = "-" + (1 - this.scale) * 100 + "%";
@@ -932,6 +936,14 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     TtrMap.prototype.setSelectedDestination = function (destination, visible) {
         [destination.from, destination.to].forEach(function (city) {
             document.getElementById("city" + city).dataset.selected = '' + visible;
+        });
+    };
+    TtrMap.prototype.setDestinationsToConnect = function (destinations) {
+        this.mapDiv.querySelectorAll(".city[data-to-connect]").forEach(function (city) { return city.dataset.toConnect = 'false'; });
+        var cities = [];
+        destinations.forEach(function (destination) { return cities.push(destination.from, destination.to); });
+        cities.forEach(function (city) {
+            document.getElementById("city" + city).dataset.toConnect = 'true';
         });
     };
     TtrMap.prototype.setHighligthedDestination = function (destination) {
@@ -1203,6 +1215,7 @@ var PlayerDestinations = /** @class */ (function () {
         document.getElementById("player-table-" + this.playerId + "-destinations").classList.toggle('double-column', doubleColumn);
         var maxBottom = Math.max(this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_SHIFT : 0), this.placeCards(this.destinationsDone));
         document.getElementById("player-table-" + this.playerId + "-destinations").style.height = maxBottom + CARD_HEIGHT + "px";
+        this.game.setDestinationsToConnect(this.destinationsTodo);
     };
     PlayerDestinations.prototype.placeCards = function (list, originalBottom) {
         if (originalBottom === void 0) { originalBottom = 0; }
@@ -1570,6 +1583,9 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.setSelectedDestination = function (destination, visible) {
         this.map.setSelectedDestination(destination, visible);
     };
+    TicketToRide.prototype.setDestinationsToConnect = function (destinations) {
+        this.map.setDestinationsToConnect(destinations);
+    };
     TicketToRide.prototype.chooseInitialDestinations = function () {
         if (!this.checkAction('chooseInitialDestinations')) {
             return;
@@ -1715,6 +1731,12 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.format_string_recursive = function (log, args) {
         try {
             if (log && args && !args.processed) {
+                if (typeof args.from == 'string' && args.from[0] != '<') {
+                    args.from = "<strong>" + args.from + "</strong>";
+                }
+                if (typeof args.to == 'string' && args.to[0] != '<') {
+                    args.to = "<strong>" + args.to + "</strong>";
+                }
                 /*if (typeof args.lineNumber === 'number') {
                     args.lineNumber = `<strong>${args.line}</strong>`;
                 }

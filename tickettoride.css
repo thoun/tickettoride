@@ -49,6 +49,8 @@
 #map-zoom-wrapper {
   position: relative;
   user-select: none;
+  display: flex;
+  justify-content: center;
 }
 #map-zoom-wrapper #map-zoom {
   max-width: 100%;
@@ -60,8 +62,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 60px;
-  height: 60px;
+  width: 120px;
+  height: 120px;
   cursor: pointer;
   background: url("img/zoom.png");
   background-position: 66.66% 50%;
@@ -80,6 +82,7 @@
   background: transparent;
   /* Chrome/Safari/Webkit */
   width: 0px;
+  display: none;
 }
 
 .disable-scrollbars {
@@ -269,6 +272,16 @@
 .city[data-hovered=true][data-valid=false] {
   background: rgba(200, 0, 0, 0.3);
   opacity: 1;
+}
+.city[data-to-connect=true] {
+  position: relative;
+  background: rgba(0, 200, 0, 0.3);
+  opacity: 1;
+}
+.city[data-to-connect=true]:not([data-selected=true]):not([data-highlight=true]) {
+  width: 38px;
+  height: 38px;
+  margin: -19px;
 }
 .city[data-selectable=true] {
   position: relative;

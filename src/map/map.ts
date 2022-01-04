@@ -119,7 +119,7 @@ const ROUTES = [
         new RouteSpace(1559.99, 219.03, 122),
         new RouteSpace(1527.45, 271.29, 122),
     ], RED),
-    new Route(12, 3, 10, [
+    new Route(100, 3, 10, [
         new RouteSpace(357, 120, 50),
         new RouteSpace(397, 168, 50),
         new RouteSpace(436, 215, 50),
@@ -640,9 +640,13 @@ class TtrMap {
                     this.setHoveredRoute(null);
                 });
                 spaceDiv.addEventListener('drop', (e) => {
+                    if (document.getElementById('map').dataset.dragColor == '') {
+                        return;
+                    }
+
                     this.setHoveredRoute(null);
                     const cardsColor = Number(this.mapDiv.dataset.dragColor);
-                    
+                    document.getElementById('map').dataset.dragColor = '';
                     this.game.claimRoute(route.id, cardsColor);
                 });
             })
@@ -744,7 +748,10 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             return;
         }
 
-        this.scale = Math.min(1, document.getElementById('game_play_area').clientWidth / mapAndDeckWidth);
+        this.scale = Math.min(1, 
+            document.getElementById('game_play_area').clientWidth / mapAndDeckWidth,
+            (window.innerHeight - 80) / this.resizedDiv.clientHeight,
+        );
 
         this.resizedDiv.style.transform = this.scale === 1 ? '' : `scale(${this.scale})`;
         this.resizedDiv.style.marginRight = `-${(1 - this.scale) * 100}%`;
@@ -847,6 +854,14 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     public setSelectedDestination(destination: Destination, visible: boolean): void {
         [destination.from, destination.to].forEach(city => {
             document.getElementById(`city${city}`).dataset.selected = ''+visible;
+        });
+    }
+    public setDestinationsToConnect(destinations: Destination[]): void {
+        this.mapDiv.querySelectorAll(`.city[data-to-connect]`).forEach((city: HTMLElement) => city.dataset.toConnect = 'false');
+        const cities = [];
+        destinations.forEach(destination => cities.push(destination.from, destination.to));
+        cities.forEach(city => {
+            document.getElementById(`city${city}`).dataset.toConnect = 'true';
         });
     }
 

@@ -76,6 +76,7 @@ interface TicketToRideGamedatas {
 }
 
 interface TicketToRideGame extends Game {
+    setDestinationsToConnect(destinations: Destination[]): void;
     getPlayerId(): number;
     onVisibleTrainCarCardClick(itemId: number, stock: Stock): void;
     onHiddenTrainCarDeckClick(number: number): void;

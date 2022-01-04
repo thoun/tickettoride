@@ -155,7 +155,6 @@ trait ActionTrait {
 
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $route->number WHERE player_id = $playerId");
 
-        // TODO add private for new hand
         self::notifyAllPlayers('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s)'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),

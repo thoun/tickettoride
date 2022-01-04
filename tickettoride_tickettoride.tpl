@@ -32,9 +32,9 @@
                 </div>
             </div>
         </div>
+        <div id="zoom-button"></div>
         <div id="player-hand"></div>
     </div>
-    <div id="zoom-button"></div>
 </div>
 
 

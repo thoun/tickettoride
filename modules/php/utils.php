@@ -116,7 +116,7 @@ trait UtilTrait {
             if (!in_array($destination->id, $alreadyCompleted) && $this->isDestinationCompleted($playerId, $destination)) {
                 self::DbQuery("UPDATE `destination` SET `completed` = 1 where `card_id` = $destination->id");
 
-                self::notifyPlayer($playerId, 'destinationCompleted', clienttranslate('${you} completed a new destination : ${from}-${to}'), [
+                self::notifyPlayer($playerId, 'destinationCompleted', clienttranslate('${you} completed a new destination : ${from} - ${to}'), [
                     'playerId' => $playerId,
                     'player_name' => $this->getPlayerName($playerId),
                     'destination' => $destination,

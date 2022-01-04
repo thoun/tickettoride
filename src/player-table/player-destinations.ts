@@ -101,6 +101,8 @@ class PlayerDestinations {
         );
 
         document.getElementById(`player-table-${this.playerId}-destinations`).style.height = `${maxBottom + CARD_HEIGHT}px`;
+        
+        this.game.setDestinationsToConnect(this.destinationsTodo);
     }
 
     private placeCards(list: Destination[], originalBottom: number = 0): number {
