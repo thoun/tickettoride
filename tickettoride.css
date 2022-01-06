@@ -592,7 +592,7 @@
   width: 50px;
   height: 158px;
   position: absolute;
-  right: 15px;
+  left: 0;
   top: 10px;
 }
 .gauge .inner {
@@ -770,6 +770,50 @@
 }
 .player-table.double-column-destinations {
   grid-template-columns: 305px auto;
+}
+
+#score {
+  display: none;
+  justify-content: center;
+}
+#score #table-wrapper {
+  padding: 40px;
+  background: url("img/score-background.png");
+  background-size: 100% 100%;
+}
+#score #table-wrapper table tbody tr {
+  border-top: 1px solid white;
+}
+#score #table-wrapper table td:not(:first-child), #score #table-wrapper table th:not(:first-child) {
+  border-left: 1px solid white;
+}
+#score #table-wrapper table tr {
+  height: 40px;
+}
+#score #table-wrapper table tr th {
+  text-align: center;
+  color: white;
+  text-shadow: 0px 0px 1px black, 0px 0px 2px black, 0px 0px 3px black;
+  padding: 8px;
+}
+#score #table-wrapper table tr td {
+  width: 100px;
+  text-align: center;
+}
+#score #table-wrapper table tr td:not(:first-child) {
+  font-size: 150%;
+  color: white;
+  text-shadow: 0px 0px 1px black, 0px 0px 2px black, 0px 0px 3px black;
+}
+#score #table-wrapper table tr td.player-name {
+  width: 181px;
+  font-weight: bold;
+  text-shadow: 0px 0px 1px white, 0px 0px 2px white, 0px 0px 3px white;
+  word-break: break-all;
+  font-size: 120%;
+}
+#score #table-wrapper table tr td.total {
+  font-weight: bold;
 }
 
 html {

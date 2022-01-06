@@ -1182,32 +1182,66 @@ var DestinationCompleteAnimation = /** @class */ (function () {
             var x = 1270;
             var y = -230;
             var card = document.getElementById("destination-card-" + _this.destination.id);
-            card.classList.add('animated');
-            card.style.transform = "translate(" + x + "px, " + y + "px)";
+            //card.classList.add('animated');
+            //card.style.transform = `translate(${x}px, ${y}px)`;
+            card.animate([
+                // keyframes
+                { transform: '' },
+                { transform: "translate(" + x + "px, " + y + "px)" }
+            ], {
+                // timing options
+                duration: 500,
+            });
             var shadow = document.getElementById('map-destination-highlight-shadow');
             shadow.dataset.visible = 'true';
-            setTimeout(function () {
+            /*setTimeout(() => {
                 card.classList.remove('animated');
-                setTimeout(function () {
-                    var brBefore = card.getBoundingClientRect();
-                    _this.markDestinationCompleteNoAnimation(_this.destination);
-                    var brAfter = card.getBoundingClientRect();
-                    x += (brBefore.x - brAfter.x) / _this.zoom;
-                    y += (brBefore.y - brAfter.y) / _this.zoom;
-                    card.style.transform = "translate(" + x + "px, " + y + "px)";
-                    setTimeout(function () {
+    
+                setTimeout(() => {
+    
+                    const brBefore = card.getBoundingClientRect();
+                    this.markDestinationCompleteNoAnimation(this.destination);
+                    const brAfter = card.getBoundingClientRect();
+                    x += (brBefore.x - brAfter.x)/this.zoom;
+                    y += (brBefore.y - brAfter.y)/this.zoom;
+
+                    card.animate([
+                        // keyframes
+                        { transform: '' },
+                        { transform: `translate(${x}px, ${y}px)` }
+                    ], {
+                        // timing options
+                        duration: 500,
+                    });
+
+                    /*card.style.transform = `translate(${x}px, ${y}px)`;
+    
+                    setTimeout(() => {
                         card.classList.add('animated');
-                        setTimeout(function () {
-                            var shadow = document.getElementById('map-destination-highlight-shadow');
+                        
+                        setTimeout(() => {
+                            const shadow = document.getElementById('map-destination-highlight-shadow');
                             shadow.dataset.visible = 'false';
-                            card.style.transform = "";
-                            setTimeout(function () {
-                                resolve(_this);
+    
+                            //card.style.transform = ``;
+                            card.animate([
+                                // keyframes
+                                { transform: 'translate(50px, 80px)' },
+                                { transform: '' }
+                            ], {
+                                // timing options
+                                duration: 500,
+                            });
+    
+                            setTimeout(() => {
+                                resolve(this);
                             }, 500);
+                            
                         }, 500);
-                    }, 500);
+                    }, 500);*_/
+    
                 }, 1);
-            }, 750);
+            }, 750);*/
         });
     };
     return DestinationCompleteAnimation;
@@ -1497,7 +1531,7 @@ var TicketToRide = /** @class */ (function () {
         if (gamedatas.lastTurn) {
             this.notif_lastTurn();
         }
-        if (Number(gamedatas.gamestate.id) >= 98) { // score or end
+        if (Number(gamedatas.gamestate.id) >= 90) { // score or end
             this.onEnteringEndScore(true);
         }
         this.setupNotifications();
@@ -1548,6 +1582,43 @@ var TicketToRide = /** @class */ (function () {
         if (lastTurnBar) {
             lastTurnBar.style.display = 'none';
         }
+        /*document.getElementById('score').style.display = 'flex';
+
+        const headers = document.getElementById('scoretr');
+        if (!headers.childElementCount) {
+            dojo.place(`
+                <th></th>
+                <th id="th-before-end-score" class="before-end-score">${_("Score at last day")}</th>
+                <th id="th-cards-score" class="cards-score">${_("Adventurer and companions")}</th>
+                <th id="th-board-score" class="board-score">${_("Journey board")}</th>
+                <th id="th-fireflies-score" class="fireflies-score">${_("Fireflies")}</th>
+                <th id="th-footprints-score" class="footprints-score">${_("Footprint tokens")}</th>
+                <th id="th-after-end-score" class="after-end-score">${_("Final score")}</th>
+            `, headers);
+        }
+
+        Object.values(this.gamedatas.players).forEach(player => {
+            //if we are a reload of end state, we display values, else we wait for notifications
+            const playerScore = fromReload ? (player as any) : null;
+
+            //const firefliesScore = fromReload && Number(player.id) > 0 ? (this.fireflyCounters[player.id].getValue() >= this.companionCounters[player.id].getValue() ? 10 : 0) : undefined;
+            //const footprintsScore = fromReload ? this.footprintCounters[player.id].getValue() : undefined;
+
+            dojo.place(`<tr id="score${player.id}">
+                <td class="player-name" style="color: #${player.color}">${Number(player.id) == 0 ? 'Tom' : player.name}</td>
+                <td id="before-end-score${player.id}" class="score-number before-end-score">${playerScore?.scoreBeforeEnd !== undefined ? playerScore.scoreBeforeEnd : ''}</td>
+                <td id="cards-score${player.id}" class="score-number cards-score">${playerScore?.scoreCards !== undefined ? playerScore.scoreCards : ''}</td>
+                <td id="board-score${player.id}" class="score-number board-score">${playerScore?.scoreBoard !== undefined ? playerScore.scoreBoard : ''}</td>
+                <td id="after-end-score${player.id}" class="score-number after-end-score total">${playerScore?.scoreAfterEnd !== undefined ? playerScore.scoreAfterEnd : ''}</td>
+            </tr>`, 'score-table-body');
+        });*/
+        /*
+        (this as any).addTooltipHtmlToClass('before-end-score', _("Score before the final count."));
+        (this as any).addTooltipHtmlToClass('cards-score', _("Total number of bursts of light on adventurer and companions."));
+        (this as any).addTooltipHtmlToClass('board-score', _("Number of bursts of light indicated on the islands on which players have placed their boats."));
+        (this as any).addTooltipHtmlToClass('fireflies-score', _("Total number of fireflies in player possession, represented on companions and tokens. If there is many or more fireflies than companions, player score an additional 10 bursts of light."));
+        (this as any).addTooltipHtmlToClass('footprints-score', _("1 burst of light per footprint in player possession."));
+    */
     };
     // onLeavingState: this method is called each time we are leaving a game state.
     //                 You can use this method to perform some user interface changes at this moment.
