@@ -40,6 +40,10 @@ interface TicketToRidePlayer extends Player {
     trainCarsCount: number;
     destinationsCount: number;
     remainingTrainCarsCount: number;
+
+    // for end score
+    completedDestinations?: Destination[];
+    longestPath: number;
 }
 
 /**

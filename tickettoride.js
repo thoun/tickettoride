@@ -1182,66 +1182,32 @@ var DestinationCompleteAnimation = /** @class */ (function () {
             var x = 1270;
             var y = -230;
             var card = document.getElementById("destination-card-" + _this.destination.id);
-            //card.classList.add('animated');
-            //card.style.transform = `translate(${x}px, ${y}px)`;
-            card.animate([
-                // keyframes
-                { transform: '' },
-                { transform: "translate(" + x + "px, " + y + "px)" }
-            ], {
-                // timing options
-                duration: 500,
-            });
+            card.classList.add('animated');
+            card.style.transform = "translate(" + x + "px, " + y + "px)";
             var shadow = document.getElementById('map-destination-highlight-shadow');
             shadow.dataset.visible = 'true';
-            /*setTimeout(() => {
+            setTimeout(function () {
                 card.classList.remove('animated');
-    
-                setTimeout(() => {
-    
-                    const brBefore = card.getBoundingClientRect();
-                    this.markDestinationCompleteNoAnimation(this.destination);
-                    const brAfter = card.getBoundingClientRect();
-                    x += (brBefore.x - brAfter.x)/this.zoom;
-                    y += (brBefore.y - brAfter.y)/this.zoom;
-
-                    card.animate([
-                        // keyframes
-                        { transform: '' },
-                        { transform: `translate(${x}px, ${y}px)` }
-                    ], {
-                        // timing options
-                        duration: 500,
-                    });
-
-                    /*card.style.transform = `translate(${x}px, ${y}px)`;
-    
-                    setTimeout(() => {
+                setTimeout(function () {
+                    var brBefore = card.getBoundingClientRect();
+                    _this.markDestinationCompleteNoAnimation(_this.destination);
+                    var brAfter = card.getBoundingClientRect();
+                    x += (brBefore.x - brAfter.x) / _this.zoom;
+                    y += (brBefore.y - brAfter.y) / _this.zoom;
+                    card.style.transform = "translate(" + x + "px, " + y + "px)";
+                    setTimeout(function () {
                         card.classList.add('animated');
-                        
-                        setTimeout(() => {
-                            const shadow = document.getElementById('map-destination-highlight-shadow');
+                        setTimeout(function () {
+                            var shadow = document.getElementById('map-destination-highlight-shadow');
                             shadow.dataset.visible = 'false';
-    
-                            //card.style.transform = ``;
-                            card.animate([
-                                // keyframes
-                                { transform: 'translate(50px, 80px)' },
-                                { transform: '' }
-                            ], {
-                                // timing options
-                                duration: 500,
-                            });
-    
-                            setTimeout(() => {
-                                resolve(this);
+                            card.style.transform = "";
+                            setTimeout(function () {
+                                resolve(_this);
                             }, 500);
-                            
                         }, 500);
-                    }, 500);*_/
-    
+                    }, 500);
                 }, 1);
-            }, 750);*/
+            }, 750);
         });
     };
     return DestinationCompleteAnimation;

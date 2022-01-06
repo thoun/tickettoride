@@ -155,6 +155,9 @@ class TicketToRide extends Table {
         _ when a player refreshes the game page (F5)
     */
     protected function getAllDatas() {
+        $stateName = $this->gamestate->state()['name']; 
+        $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
+
         $result = [];
     
         $currentPlayerId = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
@@ -180,6 +183,11 @@ class TicketToRide extends Table {
             $player['trainCarsCount'] = intval($this->trainCars->countCardInLocation('hand', $playerId));
             $player['destinationsCount'] = intval($this->destinations->countCardInLocation('hand', $playerId));
             $player['remainingTrainCarsCount'] = $this->getRemainingTrainCarsCount($playerId);
+
+            if ($isEnd) {
+                $player['completedDestinations'] = $this->getDestinationsFromDb($this->destinations->getCards($this->getCompletedDestinationsIds($playerId)));
+                $player['longestPath'] = $this->getLongestPath($playerId);
+            }
         }
 
         // deck counters
@@ -188,8 +196,6 @@ class TicketToRide extends Table {
         $result['trainCarDeckMaxCount'] = 110;
         $result['destinationDeckMaxCount'] = 30;
         
-        $stateName = $this->gamestate->state()['name']; 
-        $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
         if (!$isEnd) {
             $result['lastTurn'] = self::getGameStateValue(LAST_TURN) > 0;
             

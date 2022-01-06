@@ -116,11 +116,6 @@ trait StateTrait {
                     'points' => $points,
                     'trainCars' => $bestLongestPath,
                 ]);
-
-                if (!$completed) {
-                    self::incStat(1, 'uncompletedDestinations');
-                    self::incStat(1, 'uncompletedDestinations', $playerId);
-                }
             }
         }
 
