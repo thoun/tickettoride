@@ -1,7 +1,8 @@
 .player-table-train-cars {
     display: flex;
     justify-content: center;
-    min-height: 335px;
+    //min-height: 335px;
+    overflow: hidden;
 }
 
 .train-car-group {

@@ -170,14 +170,17 @@ class PlayerDestinations {
         const doubleColumn = this.destinationsTodo.length > 0 && this.destinationsDone.length > 0;
 
         document.getElementById(`player-table-${this.playerId}`).classList.toggle('double-column-destinations', doubleColumn);
-        document.getElementById(`player-table-${this.playerId}-destinations`).classList.toggle('double-column', doubleColumn);
+        const destinationsDiv = document.getElementById(`player-table-${this.playerId}-destinations`);
+        destinationsDiv .classList.toggle('double-column', doubleColumn);
 
         const maxBottom = Math.max(
             this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_SHIFT : 0),
             this.placeCards(this.destinationsDone),
         );
 
-        document.getElementById(`player-table-${this.playerId}-destinations`).style.height = `${maxBottom + CARD_HEIGHT}px`;
+        const height = `${maxBottom + CARD_HEIGHT}px`;
+        destinationsDiv.style.height = height;
+        document.getElementById(`player-table-${this.playerId}-train-cars`).style.height = height;
 
         this.game.setDestinationsToConnect(this.destinationsTodo);
     }
@@ -185,7 +188,7 @@ class PlayerDestinations {
     private placeCards(list: Destination[], originalBottom: number = 0): number {
         let maxBottom = 0;
         list.forEach((destination, index) => {
-            const bottom = originalBottom + index * DESTINATION_CARD_SHIFT;
+            const bottom = 10 + originalBottom + index * DESTINATION_CARD_SHIFT;
             const card = document.getElementById(`destination-card-${destination.id}`);
             card.parentElement.prepend(card);
             card.style.bottom = `${bottom}px`;

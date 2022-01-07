@@ -859,12 +859,15 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             setTimeout(function () { return _this.setAutoZoom(); }, 200);
             return;
         }
-        this.scale = Math.min(1, document.getElementById('game_play_area').clientWidth / mapAndDeckWidth, (window.innerHeight - 80) / this.resizedDiv.clientHeight);
+        var horizonticalScale = document.getElementById('game_play_area').clientWidth / mapAndDeckWidth;
+        var verticalScale = (window.innerHeight - 80) / this.resizedDiv.clientHeight;
+        this.scale = Math.min(1, horizonticalScale, verticalScale);
         this.resizedDiv.style.transform = this.scale === 1 ? '' : "scale(" + this.scale + ")";
         this.resizedDiv.style.marginRight = "-" + (1 - this.scale) * 100 + "%";
-        this.resizedDiv.style.marginBottom = "-" + (1 - this.scale) * 100 + "%";
-        document.getElementById('map-zoom-wrapper').style.height = this.resizedDiv.clientHeight * this.scale + "px";
-        //this.resizedDiv.style.height = this.scale === 1 ? '' : `${this.resizedDiv.clientHeight * this.scale}px`;
+        this.resizedDiv.style.marginBottom = "-" + (1 - verticalScale) * 100 + "%";
+        var resizedHeight = this.resizedDiv.clientHeight * this.scale + "px";
+        //this.resizedDiv.style.height = resizedHeight;
+        document.getElementById('map-zoom-wrapper').style.height = resizedHeight;
     };
     TtrMap.prototype.getZoom = function () {
         return this.scale;
@@ -1300,16 +1303,19 @@ var PlayerDestinations = /** @class */ (function () {
     PlayerDestinations.prototype.destinationColumnsUpdated = function () {
         var doubleColumn = this.destinationsTodo.length > 0 && this.destinationsDone.length > 0;
         document.getElementById("player-table-" + this.playerId).classList.toggle('double-column-destinations', doubleColumn);
-        document.getElementById("player-table-" + this.playerId + "-destinations").classList.toggle('double-column', doubleColumn);
+        var destinationsDiv = document.getElementById("player-table-" + this.playerId + "-destinations");
+        destinationsDiv.classList.toggle('double-column', doubleColumn);
         var maxBottom = Math.max(this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_SHIFT : 0), this.placeCards(this.destinationsDone));
-        document.getElementById("player-table-" + this.playerId + "-destinations").style.height = maxBottom + CARD_HEIGHT + "px";
+        var height = maxBottom + CARD_HEIGHT + "px";
+        destinationsDiv.style.height = height;
+        document.getElementById("player-table-" + this.playerId + "-train-cars").style.height = height;
         this.game.setDestinationsToConnect(this.destinationsTodo);
     };
     PlayerDestinations.prototype.placeCards = function (list, originalBottom) {
         if (originalBottom === void 0) { originalBottom = 0; }
         var maxBottom = 0;
         list.forEach(function (destination, index) {
-            var bottom = originalBottom + index * DESTINATION_CARD_SHIFT;
+            var bottom = 10 + originalBottom + index * DESTINATION_CARD_SHIFT;
             var card = document.getElementById("destination-card-" + destination.id);
             card.parentElement.prepend(card);
             card.style.bottom = bottom + "px";
@@ -1341,23 +1347,8 @@ var PlayerDestinations = /** @class */ (function () {
 }());
 var PlayerTrainCars = /** @class */ (function () {
     function PlayerTrainCars(game, player, trainCars) {
-        var _this = this;
         this.game = game;
         this.playerId = Number(player.id);
-        // train cars cards        
-        this.trainCarStock = new ebg.stock();
-        this.trainCarStock.setSelectionAppearance('class');
-        this.trainCarStock.selectionClass = 'selected';
-        this.trainCarStock.create(this.game, $("player-table-" + this.playerId + "-train-cars"), CARD_WIDTH, CARD_HEIGHT);
-        this.trainCarStock.setSelectionMode(0);
-        this.trainCarStock.onItemCreate = function (cardDiv, cardTypeId) { return setupTrainCarCardDiv(cardDiv, cardTypeId); };
-        dojo.connect(this.trainCarStock, 'onChangeSelection', this, function (_, itemId) {
-            if (_this.trainCarStock.getSelectedItems().length) {
-                //this.game.cardClick(0, Number(itemId));
-            }
-            _this.trainCarStock.unselectAll();
-        });
-        setupTrainCarCards(this.trainCarStock);
         this.addTrainCars(trainCars);
     }
     PlayerTrainCars.prototype.addTrainCars = function (trainCars, stocks) {

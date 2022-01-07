@@ -699,7 +699,7 @@
 .player-table-train-cars {
   display: flex;
   justify-content: center;
-  min-height: 335px;
+  overflow: hidden;
 }
 
 .train-car-group {
@@ -767,6 +767,7 @@
 .player-table {
   display: grid;
   grid-template-columns: 270px auto;
+  padding-bottom: 0;
 }
 .player-table.double-column-destinations {
   grid-template-columns: 305px auto;

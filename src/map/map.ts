@@ -763,16 +763,16 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             return;
         }
 
-        this.scale = Math.min(1, 
-            document.getElementById('game_play_area').clientWidth / mapAndDeckWidth,
-            (window.innerHeight - 80) / this.resizedDiv.clientHeight,
-        );
+        const horizonticalScale = document.getElementById('game_play_area').clientWidth / mapAndDeckWidth;
+        const verticalScale = (window.innerHeight - 80) / this.resizedDiv.clientHeight;
+        this.scale = Math.min(1, horizonticalScale, verticalScale);
 
         this.resizedDiv.style.transform = this.scale === 1 ? '' : `scale(${this.scale})`;
         this.resizedDiv.style.marginRight = `-${(1 - this.scale) * 100}%`;
-        this.resizedDiv.style.marginBottom = `-${(1 - this.scale) * 100}%`;
-        document.getElementById('map-zoom-wrapper').style.height = `${this.resizedDiv.clientHeight * this.scale}px`;
-        //this.resizedDiv.style.height = this.scale === 1 ? '' : `${this.resizedDiv.clientHeight * this.scale}px`;
+        this.resizedDiv.style.marginBottom = `-${(1 - verticalScale) * 100}%`;
+        const resizedHeight = `${this.resizedDiv.clientHeight * this.scale}px`;
+        //this.resizedDiv.style.height = resizedHeight;
+        document.getElementById('map-zoom-wrapper').style.height = resizedHeight;
     }
     
     public getZoom(): number {
