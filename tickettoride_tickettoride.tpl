@@ -19,6 +19,7 @@
                 <div id="map-zoom" class="disable-scrollbars">
                     <div id="map"></div>
                 </div>
+                <div id="zoom-button"></div>
                 <div id="map-destination-highlight-shadow"></div>
             </div>
 
@@ -44,7 +45,6 @@
                 </div>
             </div>
         </div>
-        <div id="zoom-button"></div>
     </div>
 </div>
 

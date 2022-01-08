@@ -707,6 +707,13 @@ var ROUTES = [
 ];
 var SIDES = ['left', 'right', 'top', 'bottom'];
 var CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
+var MAP_WIDTH = 1744;
+var MAP_HEIGHT = 1125;
+var DECK_WIDTH = 250;
+var PLAYER_WIDTH = 305; // or 270
+var PLAYER_HEIGHT = 257; // avg height (4 destination cards)
+var BOTTOM_RATIO = (MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT + PLAYER_HEIGHT);
+var LEFT_RATIO = (PLAYER_WIDTH + MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT);
 var TtrMap = /** @class */ (function () {
     function TtrMap(game, players, claimedRoutes) {
         var _this = this;
@@ -748,8 +755,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.mapDiv.addEventListener('mousedown', function (e) { return _this.mouseDownHandler(e); });
         document.addEventListener('mousemove', function (e) { return _this.mouseMoveHandler(e); });
         document.addEventListener('mouseup', function (e) { return _this.mouseUpHandler(); });
-        //document.getElementById('zoom-button').addEventListener('click', () => this.toggleZoom()); TODO TEMP
-        document.getElementById('zoom-button').addEventListener('click', function () { return _this.game.playerTable.setPosition(!document.getElementById("player-table").classList.contains('left')); });
+        document.getElementById('zoom-button').addEventListener('click', function () { return _this.toggleZoom(); });
         /*this.mapDiv.addEventListener('dragenter', e => this.mapDiv.classList.add('drag-over'));
         this.mapDiv.addEventListener('dragleave', e => this.mapDiv.classList.remove('drag-over'));
         this.mapDiv.addEventListener('drop', e => this.mapDiv.classList.remove('drag-over'));*/
@@ -855,20 +861,22 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     };
     TtrMap.prototype.setAutoZoom = function () {
         var _this = this;
-        var mapAndDeckWidth = this.mapDiv.clientWidth + document.getElementById('train-car-deck').clientWidth;
-        if (!mapAndDeckWidth) {
+        if (!this.mapDiv.clientWidth) {
             setTimeout(function () { return _this.setAutoZoom(); }, 200);
             return;
         }
-        var horizonticalScale = document.getElementById('game_play_area').clientWidth / mapAndDeckWidth;
-        var verticalScale = (window.innerHeight - 80) / this.resizedDiv.clientHeight;
-        this.scale = Math.min(1, horizonticalScale, verticalScale);
+        var screenRatio = document.getElementById('game_play_area').clientWidth / (window.innerHeight - 80);
+        var leftDistance = Math.abs(LEFT_RATIO - screenRatio);
+        var bottomDistance = Math.abs(BOTTOM_RATIO - screenRatio);
+        var left = leftDistance < bottomDistance;
+        this.game.setPlayerTablePosition(left);
+        var gameWidth = (left ? PLAYER_WIDTH : 0) + MAP_WIDTH + DECK_WIDTH;
+        var gameHeight = MAP_HEIGHT + (left ? 0 : PLAYER_HEIGHT);
+        var horizontalScale = document.getElementById('game_play_area').clientWidth / gameWidth;
+        var verticalScale = (window.innerHeight - 80) / gameHeight;
+        this.scale = Math.min(1, horizontalScale, verticalScale);
         this.resizedDiv.style.transform = this.scale === 1 ? '' : "scale(" + this.scale + ")";
-        this.resizedDiv.style.marginRight = "-" + (1 - this.scale) * 100 + "%";
-        this.resizedDiv.style.marginBottom = "-" + (1 - verticalScale) * 100 + "%";
-        var resizedHeight = this.resizedDiv.clientHeight * this.scale + "px";
-        //this.resizedDiv.style.height = resizedHeight;
-        document.getElementById('map-zoom-wrapper').style.height = resizedHeight;
+        this.resizedDiv.style.marginBottom = "-" + (1 - this.scale) * gameHeight + "px";
     };
     TtrMap.prototype.getZoom = function () {
         return this.scale;
@@ -1146,8 +1154,6 @@ var PlayerTable = /** @class */ (function () {
         dojo.place(html, 'resized');
         this.playerDestinations = new PlayerDestinations(game, player, destinations, completedDestinations);
         this.playerTrainCars = new PlayerTrainCars(game, player, trainCars);
-        // TODO temp
-        //this.setPosition(true);
     }
     PlayerTable.prototype.setPosition = function (left) {
         var playerHandDiv = document.getElementById("player-table");
@@ -1158,6 +1164,7 @@ var PlayerTable = /** @class */ (function () {
             document.getElementById('resized').appendChild(playerHandDiv);
         }
         playerHandDiv.classList.toggle('left', left);
+        this.playerTrainCars.setPosition(left);
     };
     PlayerTable.prototype.addDestinations = function (destinations, originStock) {
         this.playerDestinations.addDestinations(destinations, originStock);
@@ -1380,6 +1387,10 @@ var PlayerTrainCars = /** @class */ (function () {
                 document.getElementById("train-car-deck-hidden-pile"));
         });
         this.updateCounters();
+    };
+    PlayerTrainCars.prototype.setPosition = function (left) {
+        var div = document.getElementById("player-table-" + this.playerId + "-train-cars");
+        div.classList.toggle('left', left);
     };
     PlayerTrainCars.prototype.removeCards = function (removeCards) {
         var _this = this;
@@ -1727,6 +1738,10 @@ var TicketToRide = /** @class */ (function () {
     };
     TicketToRide.prototype.setDestinationsToConnect = function (destinations) {
         this.map.setDestinationsToConnect(destinations);
+    };
+    TicketToRide.prototype.setPlayerTablePosition = function (left) {
+        var _a;
+        (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setPosition(left);
     };
     TicketToRide.prototype.getZoom = function () {
         return this.map.getZoom();

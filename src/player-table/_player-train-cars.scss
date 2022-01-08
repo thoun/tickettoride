@@ -3,6 +3,25 @@
     justify-content: center;
     //min-height: 335px;
     overflow: hidden;
+
+    &.left {
+        flex-direction: column;
+
+        .train-car-group {
+            margin: -40px 0;
+            width: 260px; 
+            height: 170px;
+
+            .train-car-group-counter {
+                margin-top: unset;
+                font-size: 450%;
+            }
+
+            .train-car-cards {
+                transform: unset;
+            }
+        }
+    }
 }
 
 .train-car-group {

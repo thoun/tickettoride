@@ -80,6 +80,7 @@ interface TicketToRideGamedatas {
 }
 
 interface TicketToRideGame extends Game {
+    setPlayerTablePosition(left: boolean);
     getZoom(): number;
     getPlayerColor(): string;
     setDestinationsToConnect(destinations: Destination[]): void;

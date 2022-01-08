@@ -34,6 +34,11 @@ class PlayerTrainCars {
 
         this.updateCounters();
     }
+
+    public setPosition(left: boolean) {
+        const div = document.getElementById(`player-table-${this.playerId}-train-cars`);
+        div.classList.toggle('left', left);
+    }
     
     public removeCards(removeCards: TrainCar[]) {
         removeCards.forEach(card => {

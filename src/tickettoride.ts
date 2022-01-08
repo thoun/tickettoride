@@ -337,6 +337,10 @@ class TicketToRide implements TicketToRideGame {
         this.map.setDestinationsToConnect(destinations);
     }
     
+    public setPlayerTablePosition(left: boolean) {
+        this.playerTable?.setPosition(left);
+    }
+    
     public getZoom(): number {
         return this.map.getZoom();
     }

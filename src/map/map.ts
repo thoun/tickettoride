@@ -1,6 +1,15 @@
 const SIDES = ['left', 'right', 'top', 'bottom'];
 const CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 
+const MAP_WIDTH = 1744;
+const MAP_HEIGHT = 1125;
+const DECK_WIDTH = 250;
+const PLAYER_WIDTH = 305; // or 270
+const PLAYER_HEIGHT = 257; // avg height (4 destination cards)
+
+const BOTTOM_RATIO = (MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT + PLAYER_HEIGHT);
+const LEFT_RATIO = (PLAYER_WIDTH + MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT);
+
 class TtrMap {
     //private points = new Map<number, number>();
     private scale: number;
@@ -64,8 +73,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.mapDiv.addEventListener('mousedown', e => this.mouseDownHandler(e));
         document.addEventListener('mousemove', e => this.mouseMoveHandler(e));
         document.addEventListener('mouseup', e => this.mouseUpHandler());
-        //document.getElementById('zoom-button').addEventListener('click', () => this.toggleZoom()); TODO TEMP
-        document.getElementById('zoom-button').addEventListener('click', () => (this.game as any).playerTable.setPosition(!document.getElementById(`player-table`).classList.contains('left')));
+        document.getElementById('zoom-button').addEventListener('click', () => this.toggleZoom());
         
         /*this.mapDiv.addEventListener('dragenter', e => this.mapDiv.classList.add('drag-over'));
         this.mapDiv.addEventListener('dragleave', e => this.mapDiv.classList.remove('drag-over'));
@@ -178,23 +186,27 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     }
 
     public setAutoZoom() {
-        const mapAndDeckWidth = this.mapDiv.clientWidth + document.getElementById('train-car-deck').clientWidth;
 
-        if (!mapAndDeckWidth) {
+        if (!this.mapDiv.clientWidth) {
             setTimeout(() => this.setAutoZoom(), 200);
             return;
         }
 
-        const horizonticalScale = document.getElementById('game_play_area').clientWidth / mapAndDeckWidth;
-        const verticalScale = (window.innerHeight - 80) / this.resizedDiv.clientHeight;
-        this.scale = Math.min(1, horizonticalScale, verticalScale);
+        const screenRatio = document.getElementById('game_play_area').clientWidth / (window.innerHeight - 80);
+        const leftDistance = Math.abs(LEFT_RATIO - screenRatio);
+        const bottomDistance = Math.abs(BOTTOM_RATIO - screenRatio);
+        const left = leftDistance < bottomDistance;
+        this.game.setPlayerTablePosition(left);
+
+        const gameWidth = (left ? PLAYER_WIDTH : 0) + MAP_WIDTH + DECK_WIDTH;
+        const gameHeight = MAP_HEIGHT + (left ? 0 : PLAYER_HEIGHT);
+
+        const horizontalScale = document.getElementById('game_play_area').clientWidth / gameWidth;
+        const verticalScale = (window.innerHeight - 80) / gameHeight;
+        this.scale = Math.min(1, horizontalScale, verticalScale);
 
         this.resizedDiv.style.transform = this.scale === 1 ? '' : `scale(${this.scale})`;
-        this.resizedDiv.style.marginRight = `-${(1 - this.scale) * 100}%`;
-        this.resizedDiv.style.marginBottom = `-${(1 - verticalScale) * 100}%`;
-        const resizedHeight = `${this.resizedDiv.clientHeight * this.scale}px`;
-        //this.resizedDiv.style.height = resizedHeight;
-        document.getElementById('map-zoom-wrapper').style.height = resizedHeight;
+        this.resizedDiv.style.marginBottom = `-${(1 - this.scale) * gameHeight}px`;
     }
     
     public getZoom(): number {

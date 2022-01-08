@@ -20,9 +20,6 @@ class PlayerTable {
 
         this.playerDestinations = new PlayerDestinations(game, player, destinations, completedDestinations);
         this.playerTrainCars = new PlayerTrainCars(game, player, trainCars);
-
-        // TODO temp
-        //this.setPosition(true);
     }
     
     public setPosition(left: boolean) {
@@ -33,6 +30,8 @@ class PlayerTable {
             document.getElementById('resized').appendChild(playerHandDiv);
         }
         playerHandDiv.classList.toggle('left', left);
+
+        this.playerTrainCars.setPosition(left);
     }
 
     public addDestinations(destinations: Destination[], originStock?: Stock) {

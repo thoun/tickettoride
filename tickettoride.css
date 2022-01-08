@@ -93,12 +93,11 @@
 }
 
 #resized {
-  transform-origin: top left;
+  transform-origin: top center;
 }
 
 #main-line {
   display: flex;
-  transform-origin: top center;
 }
 
 #map-and-borders {
@@ -700,6 +699,21 @@
   justify-content: center;
   overflow: hidden;
 }
+.player-table-train-cars.left {
+  flex-direction: column;
+}
+.player-table-train-cars.left .train-car-group {
+  margin: -40px 0;
+  width: 260px;
+  height: 170px;
+}
+.player-table-train-cars.left .train-car-group .train-car-group-counter {
+  margin-top: unset;
+  font-size: 450%;
+}
+.player-table-train-cars.left .train-car-group .train-car-cards {
+  transform: unset;
+}
 
 .train-car-group {
   position: relative;
@@ -764,23 +778,20 @@
 }
 
 .player-table {
-  display: grid;
+  display: flex;
   background: #FFFFFF80;
 }
-.player-table:not(.left) {
-  grid-template-columns: 270px auto;
+.player-table .player-table-destinations {
+  width: 270px;
 }
-.player-table:not(.left).double-column-destinations {
-  grid-template-columns: 305px auto;
+.player-table.double-column-destinations .player-table-destinations {
+  width: 305px;
+}
+.player-table .player-table-train-cars {
+  flex: 1;
 }
 .player-table.left {
-  grid-template-rows: 270px auto;
-}
-.player-table.left.double-column-destinations {
-  grid-template-rows: 270px auto;
-}
-.player-table.left .player-table-destinations {
-  order: 1;
+  flex-direction: column-reverse;
 }
 
 #score {

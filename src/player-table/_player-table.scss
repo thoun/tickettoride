@@ -2,27 +2,23 @@
 @import 'player-train-cars';
 
 .player-table {
-    display: grid;
+    display: flex;
     background: #FFFFFF80;
 
-    &:not(.left) {
-        grid-template-columns: 270px auto;
-
-        &.double-column-destinations {
-            grid-template-columns: 305px auto;
+    .player-table-destinations {
+        width: 270px;
+    }
+    &.double-column-destinations {
+        .player-table-destinations {
+            width: 305px;
         }
-
+    }
+    
+    .player-table-train-cars {
+        flex: 1;
     }
 
     &.left {
-        grid-template-rows: 270px auto;
-
-        &.double-column-destinations {
-            grid-template-rows: 270px auto;
-        }
-
-        .player-table-destinations {
-            order: 1;
-        }
+        flex-direction: column-reverse;
     }
 }

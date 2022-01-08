@@ -47,13 +47,12 @@
   -ms-overflow-style: none;  /* IE 10+ */
 }
 
-#resized {  
-  transform-origin: top left;
+#resized {
+  transform-origin: top center;
 }
 
 #main-line {
   display: flex;
-  transform-origin: top center;
 }
 
 #map-and-borders {
@@ -169,7 +168,7 @@
 
 #map {
     position: relative;
-    width: 1744px;//1650
+    width: 1744px;
     height: 1125px;
     background: url('img/map.jpg');
     transform-origin: top left;
