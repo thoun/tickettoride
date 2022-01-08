@@ -6,7 +6,7 @@
 define('INITIAL_TRAIN_CAR_CARDS_IN_HAND', 4); // Number of train car cards in hand, for each player, at the beginning of the game.
 define('VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS', true); // Says if it is possible to take only one visible locomotive.
 define('RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES', 3); // Resets visible cards when 3 locomotives are visible (null means disabled)
-define('TRAIN_CARS_NUMBER_TO_START_LAST_TURN', /* TODO TEMP 2*/44); // 2 means 0, 1, or 2 will start last turn
+define('TRAIN_CARS_NUMBER_TO_START_LAST_TURN', /* TODO TEMP 44*/2); // 2 means 0, 1, or 2 will start last turn
 define('TRAIN_CARS_PER_PLAYER', 45);
 define('INITIAL_DESTINATION_CARD_PICK', 3); // Number of destinations cards shown at the beginning.
 define('INITIAL_DESTINATION_MINIMUM_KEPT', 2); // Minimum number of destinations cards to keep at the beginning.

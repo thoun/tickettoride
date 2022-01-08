@@ -1,56 +1,107 @@
 #score {
     display: none;
     justify-content: center;
+    margin: 10px;
 
     #table-wrapper {
-        padding: 40px;
-        background: url('img/score-background.png');
+        background: url('img/score-background.jpg');
         background-size: 100% 100%;
+        padding: 5px;
 
         table {
-
-            tbody {
-                tr {
-                    border-top: 1px solid white;
-                }
-            }
-
-            td, th {
-                &:not(:first-child) {
-                    border-left: 1px solid white;
-                }
-            }
+            border: 2px solid #FFFFFF80;
 
             tr {
-                height: 40px;
-
-                th {
-                    text-align: center;
-                    color: white;
-                    text-shadow: 0px 0px 1px black, 0px 0px 2px black, 0px 0px 3px black;
-                    padding: 8px;
-                }
+                height: 27px;
 
                 td {
-                    width: 100px;
+                    border: 2px solid #FFFFFF80;
                     text-align: center;
 
-                    &:not(:first-child) {
-                        font-size: 150%;
-                        color: white;
-                        text-shadow: 0px 0px 1px black, 0px 0px 2px black, 0px 0px 3px black;
+                    &.player-name {
+                        width: 170px;
+                        font-weight: bold;
+                        text-overflow: ellipsis;
                     }
 
-                    &.player-name {
-                        width: 181px;
-                        font-weight: bold;
-                        text-shadow: 0px 0px 1px white, 0px 0px 2px white, 0px 0px 3px white;
-                        word-break: break-all;
-                        font-size: 120%;
+                    &.destinations {
+                        width: 100px;
+                    }
+
+                    &.train {
+                        position: relative;
+                        overflow: hidden;
+                        width: 300px;
+
+                        .train-image {
+                            position: absolute;
+                            top: 0;
+                            right: 100%;
+                            background: url('img/score-trains.png');
+                            width: 556px;
+                            height: 20px;
+                            transition: right 0.5s;
+
+                            &[data-player-color="ff0000"] {
+                              background-position: 0% 100%;
+                            }
+                        
+                            &[data-player-color="008000"] {
+                              background-position: 0% 50%;
+                            }
+                        
+                            &[data-player-color="0000ff"] {
+                              background-position: 0% 25%;
+                            }
+                        
+                            &[data-player-color="ffa500"] {
+                              background-position: 0% 0%;
+                            }
+                        
+                            &[data-player-color="982fff"] {
+                              background-position: 0% 75%;
+                            }
+                        }
                     }
 
                     &.total {
                         font-weight: bold;
+                        color: white;
+                        width: 60px;
+                    }
+                }
+
+                &.highlight {
+                    td {
+                        color: black;
+                        position: relative;
+                        z-index: 2;  
+
+                        &::before {
+                            position: absolute;
+                            content: '';
+                            z-index: -1;
+                            top: 0;
+                            bottom: 0;
+                            background: url('img/score-highlight.png');
+                            background-size: auto 100%;
+                        }
+
+                        &.player-name {    
+                            &::before {
+                                left: -28px;
+                                right: -8px;
+                                background-position: 0% 50%;
+                            }
+                        }
+                        
+                        &.total {
+                            &::before {
+                                left: -8px;
+                                right: -28px;
+                                background-position: 100% 50%;
+                            }
+                        }
                     }
                 }
             }

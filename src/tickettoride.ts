@@ -1,4 +1,5 @@
 const ANIMATION_MS = 500;
+const SCORE_MS = 1500;
 
 const isDebug = window.location.host == 'studio.boardgamearena.com';
 const log = isDebug ? console.log.bind(window.console) : function () { };
@@ -121,36 +122,28 @@ class TicketToRide implements TicketToRideGame {
             lastTurnBar.style.display = 'none';
         }
 
-        /*document.getElementById('score').style.display = 'flex';
-
-        const headers = document.getElementById('scoretr');
-        if (!headers.childElementCount) {
-            dojo.place(`
-                <th></th>
-                <th id="th-before-end-score" class="before-end-score">${_("Score at last day")}</th>
-                <th id="th-cards-score" class="cards-score">${_("Adventurer and companions")}</th>
-                <th id="th-board-score" class="board-score">${_("Journey board")}</th>
-                <th id="th-fireflies-score" class="fireflies-score">${_("Fireflies")}</th>
-                <th id="th-footprints-score" class="footprints-score">${_("Footprint tokens")}</th>
-                <th id="th-after-end-score" class="after-end-score">${_("Final score")}</th>
-            `, headers);
-        }
+        document.getElementById('score').style.display = 'flex';
 
         Object.values(this.gamedatas.players).forEach(player => {
-            //if we are a reload of end state, we display values, else we wait for notifications
-            const playerScore = fromReload ? (player as any) : null;
-
-            //const firefliesScore = fromReload && Number(player.id) > 0 ? (this.fireflyCounters[player.id].getValue() >= this.companionCounters[player.id].getValue() ? 10 : 0) : undefined;
-            //const footprintsScore = fromReload ? this.footprintCounters[player.id].getValue() : undefined;
+            // if we are a reload of end state, we display values, else we wait for notifications
 
             dojo.place(`<tr id="score${player.id}">
-                <td class="player-name" style="color: #${player.color}">${Number(player.id) == 0 ? 'Tom' : player.name}</td>
-                <td id="before-end-score${player.id}" class="score-number before-end-score">${playerScore?.scoreBeforeEnd !== undefined ? playerScore.scoreBeforeEnd : ''}</td>
-                <td id="cards-score${player.id}" class="score-number cards-score">${playerScore?.scoreCards !== undefined ? playerScore.scoreCards : ''}</td>
-                <td id="board-score${player.id}" class="score-number board-score">${playerScore?.scoreBoard !== undefined ? playerScore.scoreBoard : ''}</td>
-                <td id="after-end-score${player.id}" class="score-number after-end-score total">${playerScore?.scoreAfterEnd !== undefined ? playerScore.scoreAfterEnd : ''}</td>
+                <td id="score-name-${player.id}" class="player-name" style="color: #${player.color}">${player.name}</td>
+                <td id="destinations-score-${player.id}" class="destinations"></td>
+                <td id="train-score-${player.id}" class="train">
+                    <div id="train-image-${player.id}" class="train-image" data-player-color="${player.color}"></div>
+                </td>
+                <td id="end-score-${player.id}" class="total">${fromReload ? player.score : ''}</td>
             </tr>`, 'score-table-body');
-        });*/
+        });
+
+        if (fromReload) {
+            Object.values(this.gamedatas.players).forEach(player => {
+                if (Number(player.score) == this.gamedatas.bestScore) {
+                    this.highlightWinnerScore(player.id);
+                }
+            });
+        }
 
         /*
         (this as any).addTooltipHtmlToClass('before-end-score', _("Score before the final count."));
@@ -427,6 +420,16 @@ class TicketToRide implements TicketToRideGame {
         (this as any).ajaxcall(`/tickettoride/tickettoride/${action}.html`, data, this, () => {});
     }
 
+    private setScore(playerId: number | string, column: string, score: number) {
+        const cell = document.getElementById(`${column}-${playerId}`);
+        cell.innerHTML = `${score}`;
+    }
+
+    private highlightWinnerScore(playerId: number | string) {
+        document.getElementById(`score${playerId}`).classList.add('highlight');
+        document.getElementById(`score-name-${playerId}`).style.color = '';
+    }
+
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
 
@@ -450,6 +453,8 @@ class TicketToRide implements TicketToRideGame {
             ['destinationsPicked', 1],
             ['trainCarPicked', 1],
             ['lastTurn', 1],
+            ['bestScore', 1],
+            ['scoreTotal', SCORE_MS],
         ];
 
         notifs.forEach((notif) => {
@@ -514,6 +519,20 @@ class TicketToRide implements TicketToRideGame {
             ${_("This is the final round!")}
         </div>`, 'page-title');
     }
+    
+    notif_bestScore(notif: Notif<NotifBestScoreArgs>) {
+        this.gamedatas.bestScore = notif.args.bestScore;
+
+        Object.values(this.gamedatas.players).forEach(player => {
+            const scorePercent = (this as any).scoreCtrl[player.id]?.getValue() / Math.max(0, this.gamedatas.bestScore);
+            document.getElementById(`train-image-${player.id}`).style.right = `${Math.max(0, 100 - scorePercent)}%`;
+        });
+    }
+
+    notif_scoreTotal(notif: Notif<NotifScorePointArgs>) {
+        log('notif_scoreTotal', notif.args);
+        this.setScore(notif.args.playerId, 'end-score', notif.args.points);
+    }
 
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
@@ -526,20 +545,6 @@ class TicketToRide implements TicketToRideGame {
                 if (typeof args.to == 'string' && args.to[0] != '<') {
                     args.to = `<strong>${args.to}</strong>`;
                 }
-                /*if (typeof args.lineNumber === 'number') {
-                    args.lineNumber = `<strong>${args.line}</strong>`;
-                }
-
-                if (log.indexOf('${number} ${color}') !== -1 && typeof args.type === 'number') {
-
-                    const number = args.number;
-                    let html = '';
-                    for (let i=0; i<number; i++) {
-                        html += `<div class="tile tile${args.type}"></div>`;
-                    }
-
-                    log = _(log).replace('${number} ${color}', html);
-                }*/
             }
         } catch (e) {
             console.error(log,args,"Exception thrown", e.stack);

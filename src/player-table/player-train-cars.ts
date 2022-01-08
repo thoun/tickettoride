@@ -118,7 +118,7 @@ class PlayerTrainCars {
             const distanceFromIndex = index - middleIndex;
             const count = groupDiv.getElementsByClassName('train-car-card').length;
             groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = `${count > 1 ? count : ''}`;
-            groupDiv.style.transform = `translate${this.left ? 'X(-' : 'Y('}${Math.pow(Math.abs(distanceFromIndex) * 2, 2)}px) rotate(${(distanceFromIndex) * 4}deg)`;
+            groupDiv.style.transform = `translate${this.left ? 'X(-' : 'Y('}${Math.pow(Math.abs(distanceFromIndex) * 2, 2)}px) rotate(${(/*this.left ? -distanceFromIndex :*/ distanceFromIndex) * 4}deg)`;
             groupDiv.parentNode.appendChild(groupDiv);
         });
     }

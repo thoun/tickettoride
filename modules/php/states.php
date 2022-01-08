@@ -57,8 +57,23 @@ trait StateTrait {
     }
 
     function stEndScore() {
-        $sql = "SELECT player_id id, player_name FROM player ORDER BY player_no ASC";
+        $sql = "SELECT player_id id, player_score score FROM player ORDER BY player_no ASC";
         $players = self::getCollectionFromDb($sql);
+
+        $routesScore = [];
+        foreach ($players as $playerId => $playerDb) {
+            $routesScore[$playerId] = intval($playerDb['score']);
+        }
+
+        $totalScore = [];
+        foreach ($players as $playerId => $playerDb) {
+            $totalScore[$playerId] = $routesScore[$playerId];
+        }
+
+        $bestScore = max($totalScore);
+        self::notifyAllPlayers('bestScore', '', [
+            'bestScore' => $bestScore,
+        ]);
 
         // completed/failed destinations 
         foreach ($players as $playerId => $playerDb) {
@@ -66,7 +81,7 @@ trait StateTrait {
             $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
 
             foreach ($destinations as $destination) {
-                $completed = $this->isDestinationCompleted($playerId, $destination);
+                $completed = boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
                 $points = $completed ? $destination->points : -$destination->points;
                 
                 $message = clienttranslate('${player_name} ${gainsloses} ${delta} points with ${from} to ${to} destination');
@@ -136,6 +151,16 @@ trait StateTrait {
             } else {
                 self::setStat(0, 'averageClaimedRouteLength', $playerId);
             }
+        }
+
+        foreach ($players as $playerId => $playerDb) {
+            $points = $totalScore[$playerId];
+            
+            self::notifyAllPlayers('scoreTotal', clienttranslate('${player_name} has ${points} points in total'), [
+                'playerId' => $playerId,
+                'player_name' => $this->getPlayerName($playerId),
+                'points' => $points,
+            ]);
         }
 
         $this->gamestate->nextState('endGame');

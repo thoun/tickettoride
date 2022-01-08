@@ -158,3 +158,12 @@ interface NotifDestinationCompletedArgs {
     playerId: number;
     destination: Destination;
 }
+
+interface NotifBestScoreArgs {
+    bestScore: number;
+}
+
+interface NotifScorePointArgs {
+    playerId: number;
+    points: number;
+}

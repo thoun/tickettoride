@@ -1451,7 +1451,7 @@ var PlayerTrainCars = /** @class */ (function () {
             var distanceFromIndex = index - middleIndex;
             var count = groupDiv.getElementsByClassName('train-car-card').length;
             groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = "" + (count > 1 ? count : '');
-            groupDiv.style.transform = "translate" + (_this.left ? 'X(-' : 'Y(') + Math.pow(Math.abs(distanceFromIndex) * 2, 2) + "px) rotate(" + (distanceFromIndex) * 4 + "deg)";
+            groupDiv.style.transform = "translate" + (_this.left ? 'X(-' : 'Y(') + Math.pow(Math.abs(distanceFromIndex) * 2, 2) + "px) rotate(" + ( /*this.left ? -distanceFromIndex :*/distanceFromIndex) * 4 + "deg)";
             groupDiv.parentNode.appendChild(groupDiv);
         });
     };
@@ -1476,6 +1476,7 @@ var PlayerTrainCars = /** @class */ (function () {
     return PlayerTrainCars;
 }());
 var ANIMATION_MS = 500;
+var SCORE_MS = 1500;
 var isDebug = window.location.host == 'studio.boardgamearena.com';
 var log = isDebug ? console.log.bind(window.console) : function () { };
 var TicketToRide = /** @class */ (function () {
@@ -1561,41 +1562,24 @@ var TicketToRide = /** @class */ (function () {
         this.trainCarSelection.setSelectableVisibleCards(args.availableVisibleCards);
     };
     TicketToRide.prototype.onEnteringEndScore = function (fromReload) {
+        var _this = this;
         if (fromReload === void 0) { fromReload = false; }
         var lastTurnBar = document.getElementById('last-round');
         if (lastTurnBar) {
             lastTurnBar.style.display = 'none';
         }
-        /*document.getElementById('score').style.display = 'flex';
-
-        const headers = document.getElementById('scoretr');
-        if (!headers.childElementCount) {
-            dojo.place(`
-                <th></th>
-                <th id="th-before-end-score" class="before-end-score">${_("Score at last day")}</th>
-                <th id="th-cards-score" class="cards-score">${_("Adventurer and companions")}</th>
-                <th id="th-board-score" class="board-score">${_("Journey board")}</th>
-                <th id="th-fireflies-score" class="fireflies-score">${_("Fireflies")}</th>
-                <th id="th-footprints-score" class="footprints-score">${_("Footprint tokens")}</th>
-                <th id="th-after-end-score" class="after-end-score">${_("Final score")}</th>
-            `, headers);
+        document.getElementById('score').style.display = 'flex';
+        Object.values(this.gamedatas.players).forEach(function (player) {
+            // if we are a reload of end state, we display values, else we wait for notifications
+            dojo.place("<tr id=\"score" + player.id + "\">\n                <td id=\"score-name-" + player.id + "\" class=\"player-name\" style=\"color: #" + player.color + "\">" + player.name + "</td>\n                <td id=\"destinations-score-" + player.id + "\" class=\"destinations\"></td>\n                <td id=\"train-score-" + player.id + "\" class=\"train\">\n                    <div id=\"train-image-" + player.id + "\" class=\"train-image\" data-player-color=\"" + player.color + "\"></div>\n                </td>\n                <td id=\"end-score-" + player.id + "\" class=\"total\">" + (fromReload ? player.score : '') + "</td>\n            </tr>", 'score-table-body');
+        });
+        if (fromReload) {
+            Object.values(this.gamedatas.players).forEach(function (player) {
+                if (Number(player.score) == _this.gamedatas.bestScore) {
+                    _this.highlightWinnerScore(player.id);
+                }
+            });
         }
-
-        Object.values(this.gamedatas.players).forEach(player => {
-            //if we are a reload of end state, we display values, else we wait for notifications
-            const playerScore = fromReload ? (player as any) : null;
-
-            //const firefliesScore = fromReload && Number(player.id) > 0 ? (this.fireflyCounters[player.id].getValue() >= this.companionCounters[player.id].getValue() ? 10 : 0) : undefined;
-            //const footprintsScore = fromReload ? this.footprintCounters[player.id].getValue() : undefined;
-
-            dojo.place(`<tr id="score${player.id}">
-                <td class="player-name" style="color: #${player.color}">${Number(player.id) == 0 ? 'Tom' : player.name}</td>
-                <td id="before-end-score${player.id}" class="score-number before-end-score">${playerScore?.scoreBeforeEnd !== undefined ? playerScore.scoreBeforeEnd : ''}</td>
-                <td id="cards-score${player.id}" class="score-number cards-score">${playerScore?.scoreCards !== undefined ? playerScore.scoreCards : ''}</td>
-                <td id="board-score${player.id}" class="score-number board-score">${playerScore?.scoreBoard !== undefined ? playerScore.scoreBoard : ''}</td>
-                <td id="after-end-score${player.id}" class="score-number after-end-score total">${playerScore?.scoreAfterEnd !== undefined ? playerScore.scoreAfterEnd : ''}</td>
-            </tr>`, 'score-table-body');
-        });*/
         /*
         (this as any).addTooltipHtmlToClass('before-end-score', _("Score before the final count."));
         (this as any).addTooltipHtmlToClass('cards-score', _("Total number of bursts of light on adventurer and companions."));
@@ -1813,6 +1797,14 @@ var TicketToRide = /** @class */ (function () {
         data.lock = true;
         this.ajaxcall("/tickettoride/tickettoride/" + action + ".html", data, this, function () { });
     };
+    TicketToRide.prototype.setScore = function (playerId, column, score) {
+        var cell = document.getElementById(column + "-" + playerId);
+        cell.innerHTML = "" + score;
+    };
+    TicketToRide.prototype.highlightWinnerScore = function (playerId) {
+        document.getElementById("score" + playerId).classList.add('highlight');
+        document.getElementById("score-name-" + playerId).style.color = '';
+    };
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
     /*
@@ -1835,6 +1827,8 @@ var TicketToRide = /** @class */ (function () {
             ['destinationsPicked', 1],
             ['trainCarPicked', 1],
             ['lastTurn', 1],
+            ['bestScore', 1],
+            ['scoreTotal', SCORE_MS],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, "notif_" + notif[0]);
@@ -1893,6 +1887,19 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.notif_lastTurn = function () {
         dojo.place("<div id=\"last-round\">\n            " + _("This is the final round!") + "\n        </div>", 'page-title');
     };
+    TicketToRide.prototype.notif_bestScore = function (notif) {
+        var _this = this;
+        this.gamedatas.bestScore = notif.args.bestScore;
+        Object.values(this.gamedatas.players).forEach(function (player) {
+            var _a;
+            var scorePercent = ((_a = _this.scoreCtrl[player.id]) === null || _a === void 0 ? void 0 : _a.getValue()) / Math.max(0, _this.gamedatas.bestScore);
+            document.getElementById("train-image-" + player.id).style.right = Math.max(0, 100 - scorePercent) + "%";
+        });
+    };
+    TicketToRide.prototype.notif_scoreTotal = function (notif) {
+        log('notif_scoreTotal', notif.args);
+        this.setScore(notif.args.playerId, 'end-score', notif.args.points);
+    };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
     TicketToRide.prototype.format_string_recursive = function (log, args) {
@@ -1904,20 +1911,6 @@ var TicketToRide = /** @class */ (function () {
                 if (typeof args.to == 'string' && args.to[0] != '<') {
                     args.to = "<strong>" + args.to + "</strong>";
                 }
-                /*if (typeof args.lineNumber === 'number') {
-                    args.lineNumber = `<strong>${args.line}</strong>`;
-                }
-
-                if (log.indexOf('${number} ${color}') !== -1 && typeof args.type === 'number') {
-
-                    const number = args.number;
-                    let html = '';
-                    for (let i=0; i<number; i++) {
-                        html += `<div class="tile tile${args.type}"></div>`;
-                    }
-
-                    log = _(log).replace('${number} ${color}', html);
-                }*/
             }
         }
         catch (e) {

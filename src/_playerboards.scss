@@ -36,26 +36,24 @@
   &.train {
     background-image: url('img/train-icons.png');
 
-    
+    &[data-player-color="ff0000"] {
+      background-position: #{3 * 100% / 4} 0%;
+    }
 
-  &[data-player-color="ff0000"] {
-    background-position: #{3 * 100% / 4} 0%;
-  }
+    &[data-player-color="008000"] {
+      background-position: #{1 * 100% / 4} 0%;
+    }
 
-  &[data-player-color="008000"] {
-    background-position: #{1 * 100% / 4} 0%;
-  }
+    &[data-player-color="0000ff"] {
+      background-position: #{0 * 100% / 4} 0%;
+    }
 
-  &[data-player-color="0000ff"] {
-    background-position: #{0 * 100% / 4} 0%;
-  }
+    &[data-player-color="ffa500"] {
+      background-position: #{4 * 100% / 4} 0%;
+    }
 
-  &[data-player-color="ffa500"] {
-    background-position: #{4 * 100% / 4} 0%;
-  }
-
-  &[data-player-color="982fff"] {
-    background-position: #{2 * 100% / 4} 0%;
-  }
+    &[data-player-color="982fff"] {
+      background-position: #{2 * 100% / 4} 0%;
+    }
   }
 }

@@ -1,10 +1,10 @@
 .player-table-train-cars {
     display: flex;
     justify-content: center;
-    //min-height: 335px;
     overflow: hidden;
 
     &.left {
+        //flex-direction: column-reverse;
         flex-direction: column;
 
         .train-car-group {
