@@ -130,8 +130,6 @@ function setupDestinationCardDiv(cardDiv, cardTypeId) {
     //cardDiv.innerHTML = `<span><strong>${CITIES_NAMES[destination.from]}</strong> to <strong>${CITIES_NAMES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
 }
 var FACTOR = 1.057;
-var SIDES = ['left', 'right', 'top', 'bottom'];
-var CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 var City = /** @class */ (function () {
     function City(id, x, y) {
         this.id = id;
@@ -707,6 +705,8 @@ var ROUTES = [
         new RouteSpace(106, 156, 89),
     ], GRAY),
 ];
+var SIDES = ['left', 'right', 'top', 'bottom'];
+var CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 var TtrMap = /** @class */ (function () {
     function TtrMap(game, players, claimedRoutes) {
         var _this = this;
@@ -748,7 +748,8 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.mapDiv.addEventListener('mousedown', function (e) { return _this.mouseDownHandler(e); });
         document.addEventListener('mousemove', function (e) { return _this.mouseMoveHandler(e); });
         document.addEventListener('mouseup', function (e) { return _this.mouseUpHandler(); });
-        document.getElementById('zoom-button').addEventListener('click', function () { return _this.toggleZoom(); });
+        //document.getElementById('zoom-button').addEventListener('click', () => this.toggleZoom()); TODO TEMP
+        document.getElementById('zoom-button').addEventListener('click', function () { return _this.game.playerTable.setPosition(!document.getElementById("player-table").classList.contains('left')); });
         /*this.mapDiv.addEventListener('dragenter', e => this.mapDiv.classList.add('drag-over'));
         this.mapDiv.addEventListener('dragleave', e => this.mapDiv.classList.remove('drag-over'));
         this.mapDiv.addEventListener('drop', e => this.mapDiv.classList.remove('drag-over'));*/
@@ -1327,7 +1328,7 @@ var PlayerDestinations = /** @class */ (function () {
         if (originalBottom === void 0) { originalBottom = 0; }
         var maxBottom = 0;
         list.forEach(function (destination, index) {
-            var bottom = 10 + originalBottom + index * DESTINATION_CARD_SHIFT;
+            var bottom = originalBottom + index * DESTINATION_CARD_SHIFT;
             var card = document.getElementById("destination-card-" + destination.id);
             card.parentElement.prepend(card);
             card.style.bottom = bottom + "px";

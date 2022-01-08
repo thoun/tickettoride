@@ -188,7 +188,7 @@ class PlayerDestinations {
     private placeCards(list: Destination[], originalBottom: number = 0): number {
         let maxBottom = 0;
         list.forEach((destination, index) => {
-            const bottom = 10 + originalBottom + index * DESTINATION_CARD_SHIFT;
+            const bottom = originalBottom + index * DESTINATION_CARD_SHIFT;
             const card = document.getElementById(`destination-card-${destination.id}`);
             card.parentElement.prepend(card);
             card.style.bottom = `${bottom}px`;
