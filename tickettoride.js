@@ -1141,11 +1141,23 @@ var TrainCarSelection = /** @class */ (function () {
 }());
 var PlayerTable = /** @class */ (function () {
     function PlayerTable(game, player, trainCars, destinations, completedDestinations) {
-        var html = "\n        <div id=\"player-table-" + player.id + "\" class=\"player-table whiteblock\">\n            <div id=\"player-table-" + player.id + "-destinations\" class=\"player-table-destinations\"></div>\n            <div id=\"player-table-" + player.id + "-train-cars\" class=\"player-table-train-cars\"></div>\n        </div>";
-        dojo.place(html, 'player-hand');
+        var html = "\n            <div id=\"player-table\" class=\"player-table\">\n                <div id=\"player-table-" + player.id + "-destinations\" class=\"player-table-destinations\"></div>\n                <div id=\"player-table-" + player.id + "-train-cars\" class=\"player-table-train-cars\"></div>\n            </div>\n        ";
+        dojo.place(html, 'resized');
         this.playerDestinations = new PlayerDestinations(game, player, destinations, completedDestinations);
         this.playerTrainCars = new PlayerTrainCars(game, player, trainCars);
+        // TODO temp
+        //this.setPosition(true);
     }
+    PlayerTable.prototype.setPosition = function (left) {
+        var playerHandDiv = document.getElementById("player-table");
+        if (left) {
+            document.getElementById('main-line').prepend(playerHandDiv);
+        }
+        else {
+            document.getElementById('resized').appendChild(playerHandDiv);
+        }
+        playerHandDiv.classList.toggle('left', left);
+    };
     PlayerTable.prototype.addDestinations = function (destinations, originStock) {
         this.playerDestinations.addDestinations(destinations, originStock);
     };
@@ -1302,7 +1314,7 @@ var PlayerDestinations = /** @class */ (function () {
     };
     PlayerDestinations.prototype.destinationColumnsUpdated = function () {
         var doubleColumn = this.destinationsTodo.length > 0 && this.destinationsDone.length > 0;
-        document.getElementById("player-table-" + this.playerId).classList.toggle('double-column-destinations', doubleColumn);
+        document.getElementById("player-table").classList.toggle('double-column-destinations', doubleColumn);
         var destinationsDiv = document.getElementById("player-table-" + this.playerId + "-destinations");
         destinationsDiv.classList.toggle('double-column', doubleColumn);
         var maxBottom = Math.max(this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_SHIFT : 0), this.placeCards(this.destinationsDone));

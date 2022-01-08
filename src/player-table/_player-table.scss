@@ -3,10 +3,26 @@
 
 .player-table {
     display: grid;
-    grid-template-columns: 270px auto;
-    padding-bottom: 0;
+    background: #FFFFFF80;
 
-    &.double-column-destinations {
-        grid-template-columns: 305px auto;
+    &:not(.left) {
+        grid-template-columns: 270px auto;
+
+        &.double-column-destinations {
+            grid-template-columns: 305px auto;
+        }
+
+    }
+
+    &.left {
+        grid-template-rows: 270px auto;
+
+        &.double-column-destinations {
+            grid-template-rows: 270px auto;
+        }
+
+        .player-table-destinations {
+            order: 1;
+        }
     }
 }

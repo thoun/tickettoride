@@ -96,10 +96,9 @@
   transform-origin: top left;
 }
 
-#map-and-deck {
-  display: grid;
-  grid-template-columns: auto 250px;
-  transform-origin: top left;
+#main-line {
+  display: flex;
+  transform-origin: top center;
 }
 
 #map-and-borders {
@@ -766,11 +765,22 @@
 
 .player-table {
   display: grid;
-  grid-template-columns: 270px auto;
-  padding-bottom: 0;
+  background: #FFFFFF80;
 }
-.player-table.double-column-destinations {
+.player-table:not(.left) {
+  grid-template-columns: 270px auto;
+}
+.player-table:not(.left).double-column-destinations {
   grid-template-columns: 305px auto;
+}
+.player-table.left {
+  grid-template-rows: 270px auto;
+}
+.player-table.left.double-column-destinations {
+  grid-template-rows: 270px auto;
+}
+.player-table.left .player-table-destinations {
+  order: 1;
 }
 
 #score {

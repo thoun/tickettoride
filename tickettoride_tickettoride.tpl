@@ -14,7 +14,7 @@
 
 <div id="map-zoom-wrapper">
     <div id="resized">
-        <div id="map-and-deck">
+        <div id="main-line">
             <div id="map-and-borders">
                 <div id="map-zoom" class="disable-scrollbars">
                     <div id="map"></div>
@@ -45,7 +45,6 @@
             </div>
         </div>
         <div id="zoom-button"></div>
-        <div id="player-hand"></div>
     </div>
 </div>
 

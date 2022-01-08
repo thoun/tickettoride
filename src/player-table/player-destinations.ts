@@ -169,7 +169,7 @@ class PlayerDestinations {
     private destinationColumnsUpdated() {
         const doubleColumn = this.destinationsTodo.length > 0 && this.destinationsDone.length > 0;
 
-        document.getElementById(`player-table-${this.playerId}`).classList.toggle('double-column-destinations', doubleColumn);
+        document.getElementById(`player-table`).classList.toggle('double-column-destinations', doubleColumn);
         const destinationsDiv = document.getElementById(`player-table-${this.playerId}-destinations`);
         destinationsDiv .classList.toggle('double-column', doubleColumn);
 

@@ -10,15 +10,29 @@ class PlayerTable {
         completedDestinations: Destination[]) {
 
         let html = `
-        <div id="player-table-${player.id}" class="player-table whiteblock">
-            <div id="player-table-${player.id}-destinations" class="player-table-destinations"></div>
-            <div id="player-table-${player.id}-train-cars" class="player-table-train-cars"></div>
-        </div>`;
+            <div id="player-table" class="player-table">
+                <div id="player-table-${player.id}-destinations" class="player-table-destinations"></div>
+                <div id="player-table-${player.id}-train-cars" class="player-table-train-cars"></div>
+            </div>
+        `;
 
-        dojo.place(html, 'player-hand');
+        dojo.place(html, 'resized');
 
         this.playerDestinations = new PlayerDestinations(game, player, destinations, completedDestinations);
         this.playerTrainCars = new PlayerTrainCars(game, player, trainCars);
+
+        // TODO temp
+        //this.setPosition(true);
+    }
+    
+    public setPosition(left: boolean) {
+        const playerHandDiv = document.getElementById(`player-table`);
+        if (left) {
+            document.getElementById('main-line').prepend(playerHandDiv);
+        } else {
+            document.getElementById('resized').appendChild(playerHandDiv);
+        }
+        playerHandDiv.classList.toggle('left', left);
     }
 
     public addDestinations(destinations: Destination[], originStock?: Stock) {

@@ -51,10 +51,9 @@
   transform-origin: top left;
 }
 
-#map-and-deck {
-  display: grid;
-  grid-template-columns: auto 250px;
-  transform-origin: top left;
+#main-line {
+  display: flex;
+  transform-origin: top center;
 }
 
 #map-and-borders {
