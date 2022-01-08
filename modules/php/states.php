@@ -112,7 +112,7 @@ trait StateTrait {
             self::setStat($bestLongestPath, 'longestPath');
             foreach ($longestPathWinners as $playerId) {
                 $points = POINTS_FOR_LONGEST_PATH;
-                $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${points} points with longest continuous path : ${trainCars} train cars'), [
+                $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with longest continuous path : ${trainCars} train cars'), [
                     'points' => $points,
                     'trainCars' => $bestLongestPath,
                 ]);
@@ -123,10 +123,19 @@ trait StateTrait {
         if (POINTS_FOR_GLOBETROTTER !== null) {
         }
 
-        // averageClaimedRouteLength stat = playedTrainCars / claimedRoutes
-        self::setStat(self::getStat('playedTrainCars') / (float)self::getStat('claimedRoutes'), 'averageClaimedRouteLength');
+        $claimedRoutes = intval(self::getStat('claimedRoutes'));
+        if ($claimedRoutes > 0) {
+            self::setStat(self::getStat('playedTrainCars') / (float)$claimedRoutes, 'averageClaimedRouteLength');
+        } else {
+            self::setStat(0, 'averageClaimedRouteLength'); 
+        }
         foreach ($players as $playerId => $playerDb) {
-            self::setStat(self::getStat('playedTrainCars', $playerId) / (float)self::getStat('claimedRoutes', $playerId), 'averageClaimedRouteLength', $playerId);
+            $claimedRoutes = intval(self::getStat('claimedRoutes', $playerId));
+            if ($claimedRoutes > 0) {
+                self::setStat(self::getStat('playedTrainCars', $playerId) / (float)$claimedRoutes, 'averageClaimedRouteLength', $playerId);
+            } else {
+                self::setStat(0, 'averageClaimedRouteLength', $playerId);
+            }
         }
 
         $this->gamestate->nextState('endGame');

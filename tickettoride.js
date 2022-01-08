@@ -1389,8 +1389,10 @@ var PlayerTrainCars = /** @class */ (function () {
         this.updateCounters();
     };
     PlayerTrainCars.prototype.setPosition = function (left) {
+        this.left = left;
         var div = document.getElementById("player-table-" + this.playerId + "-train-cars");
         div.classList.toggle('left', left);
+        this.updateCounters(); // to realign
     };
     PlayerTrainCars.prototype.removeCards = function (removeCards) {
         var _this = this;
@@ -1442,13 +1444,14 @@ var PlayerTrainCars = /** @class */ (function () {
         return group;
     };
     PlayerTrainCars.prototype.updateCounters = function () {
+        var _this = this;
         var groups = Array.from(document.getElementsByClassName('train-car-group'));
         var middleIndex = (groups.length - 1) / 2;
         groups.forEach(function (groupDiv, index) {
             var distanceFromIndex = index - middleIndex;
             var count = groupDiv.getElementsByClassName('train-car-card').length;
             groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = "" + (count > 1 ? count : '');
-            groupDiv.style.transform = "translateY(" + Math.pow(Math.abs(distanceFromIndex) * 2, 2) + "px) rotate(" + (distanceFromIndex) * 4 + "deg)";
+            groupDiv.style.transform = "translate" + (_this.left ? 'X(-' : 'Y(') + Math.pow(Math.abs(distanceFromIndex) * 2, 2) + "px) rotate(" + (distanceFromIndex) * 4 + "deg)";
             groupDiv.parentNode.appendChild(groupDiv);
         });
     };

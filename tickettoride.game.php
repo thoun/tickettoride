@@ -196,7 +196,9 @@ class TicketToRide extends Table {
         $result['trainCarDeckMaxCount'] = 110;
         $result['destinationDeckMaxCount'] = 30;
         
-        if (!$isEnd) {
+        if ($isEnd) {
+            $result['bestScore'] = max(array_map(function($player) { return intval($player['score']); }, $result['players']));
+        } else {
             $result['lastTurn'] = self::getGameStateValue(LAST_TURN) > 0;
             
         }

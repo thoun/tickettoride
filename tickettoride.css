@@ -780,6 +780,7 @@
 .player-table {
   display: flex;
   background: #FFFFFF80;
+  z-index: 1;
 }
 .player-table .player-table-destinations {
   width: 270px;
