@@ -60,60 +60,33 @@ trait StateTrait {
         $sql = "SELECT player_id id, player_score score FROM player ORDER BY player_no ASC";
         $players = self::getCollectionFromDb($sql);
 
-        $routesScore = [];
-        foreach ($players as $playerId => $playerDb) {
-            $routesScore[$playerId] = intval($playerDb['score']);
-        }
-
+        // points gained during the game : claimed routes
         $totalScore = [];
         foreach ($players as $playerId => $playerDb) {
-            $totalScore[$playerId] = $routesScore[$playerId];
+            $totalScore[$playerId] = intval($playerDb['score']);
         }
 
-        $bestScore = max($totalScore);
-        self::notifyAllPlayers('bestScore', '', [
-            'bestScore' => $bestScore,
-        ]);
-
         // completed/failed destinations 
+        $destinationsResults = [];
         foreach ($players as $playerId => $playerDb) {
+            $destinationsResults[$playerId] = [];
 
             $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
 
             foreach ($destinations as $destination) {
-                $completed = boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
-                $points = $completed ? $destination->points : -$destination->points;
-                
-                $message = clienttranslate('${player_name} ${gainsloses} ${delta} points with ${from} to ${to} destination');
-                $this->incScore($playerId, $points, $message, [
-                    'delta' => $destination->points,
-                    'from' => $this->CITIES[$destination->from],
-                    'to' => $this->CITIES[$destination->to],
-                    'i18n' => ['gainsloses'],
-                    'gainsloses' => $completed ? clienttranslate('gains') : clienttranslate('loses')
-                ]);
-
-                if (!$completed) {
-                    self::incStat(1, 'uncompletedDestinations');
-                    self::incStat(1, 'uncompletedDestinations', $playerId);
-                }
+                $destination->completed = boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
+                $totalScore[$playerId] += $destination->completed ? $destination->points : -$destination->points;
             }
         }
 
         // Longest continuous path 
+        $playersLongestPaths = [];
+        $longestPathWinners = [];
+        $bestLongestPath = null;
         if (POINTS_FOR_LONGEST_PATH !== null) {
-            $playersLongestPaths = [];
             foreach ($players as $playerId => $playerDb) {
                 $longestPath = $this->getLongestPath($playerId);
                 $playersLongestPaths[$playerId] = $longestPath;
-
-                self::notifyAllPlayers('longestPath', clienttranslate('${player_name} longest continuous path is ${length} train-cars long'), [
-                    'playerId' => $playerId,
-                    'player_name' => $this->getPlayerName($playerId),
-                    'length' => $longestPath,
-                ]);
-
-                self::setStat($longestPath, 'longestPath', $playerId);
             }
 
             $longestPathBySize = [];
@@ -123,7 +96,62 @@ trait StateTrait {
                     [$playerId];
             }
             $bestLongestPath = array_key_last($longestPathBySize);
-            $longestPathWinners = $longestPathBySize[$bestLongestPath];   
+            $longestPathWinners = $longestPathBySize[$bestLongestPath];  
+            
+            foreach ($longestPathWinners as $playerId) {
+                $totalScore[$playerId] += POINTS_FOR_LONGEST_PATH;
+            }
+        }
+
+        // Globetrotter
+        if (POINTS_FOR_GLOBETROTTER !== null) {
+            // we send notifications here for Globetrotter when the map supports it
+        }
+
+        // we need to send bestScore before all score notifs, because train animations will show score ratio over best score
+        $bestScore = max($totalScore);
+        self::notifyAllPlayers('bestScore', '', [
+            'bestScore' => $bestScore,
+        ]);
+
+        // now we can send score notifications
+
+        // completed/failed destinations 
+        foreach ($destinationsResults as $playerId => $destinations) {
+
+            foreach ($destinations as $destination) {
+                $points = $destination->completed ? $destination->points : -$destination->points;
+                
+                $message = clienttranslate('${player_name} ${gainsloses} ${delta} points with ${from} to ${to} destination');
+                $this->incScore($playerId, $points, $message, [
+                    'delta' => $destination->points,
+                    'from' => $this->CITIES[$destination->from],
+                    'to' => $this->CITIES[$destination->to],
+                    'i18n' => ['gainsloses'],
+                    'gainsloses' => $destination->completed ? clienttranslate('gains') : clienttranslate('loses'),
+                ]);
+
+                if (!$destination->completed) {
+                    self::incStat(1, 'uncompletedDestinations');
+                    self::incStat(1, 'uncompletedDestinations', $playerId);
+                }
+            }
+        }
+
+        // Longest continuous path 
+        if (POINTS_FOR_LONGEST_PATH !== null) {
+            foreach ($players as $playerId => $playerDb) {
+                $longestPath = $playersLongestPaths[$playerId];
+
+                self::notifyAllPlayers('longestPath', clienttranslate('${player_name} longest continuous path is ${length} train-cars long'), [
+                    'playerId' => $playerId,
+                    'player_name' => $this->getPlayerName($playerId),
+                    'length' => $longestPath,
+                ]);
+
+                self::setStat($longestPath, 'longestPath', $playerId);
+            }
+             
             self::setStat($bestLongestPath, 'longestPath');
             foreach ($longestPathWinners as $playerId) {
                 $points = POINTS_FOR_LONGEST_PATH;
@@ -136,6 +164,7 @@ trait StateTrait {
 
         // Globetrotter
         if (POINTS_FOR_GLOBETROTTER !== null) {
+            // we send notifications here for Globetrotter when the map supports it
         }
 
         $claimedRoutes = intval(self::getStat('claimedRoutes'));
