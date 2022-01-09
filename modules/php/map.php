@@ -20,7 +20,7 @@ trait MapTrait {
 
         // remove routes user can't pay
         $claimableRoutes = array_values(array_filter($claimableRoutes, function($unclaimedRoute) use ($trainCarsHand, $remainingTrainCars) {
-            return $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars) !== null;
+           return $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars) !== null;
         }));
 
         $doubleRouteAllowed = $this->isDoubleRouteAllowed();
@@ -107,7 +107,12 @@ trait MapTrait {
             return null;
         }
 
-        $colorsToTest = $color > 0 ? [$color] : [1,2,3,4,5,6,7,8];
+        $colorsToTest = [1,2,3,4,5,6,7,8];
+        if ($color > 0) {
+            $colorsToTest = [$color];
+        } else if ($route->color > 0) {
+            $colorsToTest = [$route->color];
+        }
         $locomotiveCards = array_filter($trainCarsHand, function ($card) { return $card->type == 0; });
         
         // route is gray, check for each possible color

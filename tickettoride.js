@@ -738,7 +738,7 @@ var TtrMap = /** @class */ (function () {
         });
         ROUTES.forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route space\" \n                    style=\"transform: translate(" + space.x * FACTOR + "px, " + space.y * FACTOR + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES_NAMES[route.from] + " to " + CITIES_NAMES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                    data-route=\"" + route.id + "\"\n                ></div>", 'map');
+                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + space.x * FACTOR + "px, " + space.y * FACTOR + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES_NAMES[route.from] + " to " + CITIES_NAMES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", 'map');
                 var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
                 _this.setSpaceEvents(spaceDiv, route);
             });
@@ -785,20 +785,27 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             document.getElementById('map').dataset.dragColor = '';
             _this.game.claimRoute(route.id, cardsColor);
         });
+        spaceDiv.addEventListener('click', function () {
+            if (route.color > 0) {
+                _this.game.claimRoute(route.id, route.color);
+            }
+            else {
+                console.log('select color to use');
+            }
+        });
     };
     /*public setPoints(playerId: number, points: number) {
         this.points.set(playerId, points);
         this.movePoints();
     }*/
-    /*public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
+    TtrMap.prototype.setSelectableRoutes = function (selectable, possibleRoutes) {
         if (selectable) {
-            possibleRoutes.forEach(route => ROUTES.find(r => r.id == route.id).spaces.forEach((_, index) =>
-                document.getElementById(`route${route.id}-space${index}`)?.classList.add('selectable'))
-            );
-        } else {
-            dojo.query('.route').removeClass('selectable');
+            possibleRoutes.forEach(function (route) { return ROUTES.find(function (r) { return r.id == route.id; }).spaces.forEach(function (_, index) { var _a; return (_a = document.getElementById("route" + route.id + "-space" + index)) === null || _a === void 0 ? void 0 : _a.classList.add('selectable'); }); });
         }
-    }*/
+        else {
+            dojo.query('.route-space').removeClass('selectable');
+        }
+    };
     /*private getPointsCoordinates(points: number) {
         const top = points < 86 ? Math.min(Math.max(points - 34, 0), 17) * POINT_CASE_SIZE : (102 - points) * POINT_CASE_SIZE;
         const left = points < 52 ? Math.min(points, 34) * POINT_CASE_SIZE : (33 - Math.max(points - 52, 0))*POINT_CASE_SIZE;
@@ -1554,7 +1561,7 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.onEnteringChooseAction = function (args) {
         var _a;
         this.trainCarSelection.setSelectableTopDeck(this.isCurrentPlayerActive(), args.maxHiddenCardsPick);
-        //this.map.setSelectableRoutes((this as any).isCurrentPlayerActive(), args.possibleRoutes);
+        this.map.setSelectableRoutes(this.isCurrentPlayerActive(), args.possibleRoutes);
         (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(this.isCurrentPlayerActive());
     };
     TicketToRide.prototype.onEnteringDrawSecondCard = function (args) {
@@ -1606,7 +1613,7 @@ var TicketToRide = /** @class */ (function () {
                 });
                 break;
             case 'chooseAction':
-                //this.map.setSelectableRoutes(false, []);
+                this.map.setSelectableRoutes(false, []);
                 (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(false);
                 break;
             case 'drawSecondCard':

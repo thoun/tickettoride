@@ -38,5 +38,6 @@ go on tests dir and start execute file, for example `php ./tickettoride.game.tes
 # TODO
 check animations when 2 destinations completed at the same time
 check picking already complete destination
-allow to build route by clicking on it
+select card color on gray road click
 end score
+confirm for route claim ?

@@ -106,7 +106,7 @@ class TicketToRide implements TicketToRideGame {
     private onEnteringChooseAction(args: EnteringChooseActionArgs) {
         this.trainCarSelection.setSelectableTopDeck((this as any).isCurrentPlayerActive(), args.maxHiddenCardsPick);
         
-        //this.map.setSelectableRoutes((this as any).isCurrentPlayerActive(), args.possibleRoutes);
+        this.map.setSelectableRoutes((this as any).isCurrentPlayerActive(), args.possibleRoutes);
 
         this.playerTable?.setDraggable((this as any).isCurrentPlayerActive());
     }
@@ -170,7 +170,7 @@ class TicketToRide implements TicketToRideGame {
                 });
                 break;
             case 'chooseAction':
-                //this.map.setSelectableRoutes(false, []);
+                this.map.setSelectableRoutes(false, []);
                 this.playerTable?.setDraggable(false);
                 break;
             case 'drawSecondCard':

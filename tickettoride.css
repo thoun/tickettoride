@@ -305,28 +305,56 @@
   opacity: 1;
 }
 
-.route {
+.route-space {
   display: inline-block;
-  border: 3px solid transparent;
   border-radius: 8px;
-  padding: 5px;
-  margin: 5px;
-  /*&.selectable {
-    border-color: black;
-    //pointer-events: all;
-  }*/
-  /*&.drag-over {
-    box-shadow: 0 0 5px 5px white;
-    background: gold;
-  }*/
-}
-.route.space {
+  margin: 10px;
   position: absolute;
   top: 0;
   left: 0;
-  width: 43px;
-  height: 5px;
+  width: 53px;
+  height: 15px;
   z-index: 5;
+}
+.route-space.selectable {
+  cursor: pointer;
+}
+.route-space.selectable::before {
+  content: "";
+  position: absolute;
+  top: -15px;
+  bottom: -15px;
+  left: -10px;
+  right: -10px;
+  background: url("img/road-highlight.png");
+  background-size: auto 100%;
+}
+.route-space.selectable[data-color="0"]::before {
+  background-position: 0% 50%;
+}
+.route-space.selectable[data-color="1"]::before {
+  background-position: 12.5% 50%;
+}
+.route-space.selectable[data-color="2"]::before {
+  background-position: 25% 50%;
+}
+.route-space.selectable[data-color="3"]::before {
+  background-position: 37.5% 50%;
+}
+.route-space.selectable[data-color="4"]::before {
+  background-position: 50% 50%;
+}
+.route-space.selectable[data-color="5"]::before {
+  background-position: 62.5% 50%;
+}
+.route-space.selectable[data-color="6"]::before {
+  background-position: 75% 50%;
+}
+.route-space.selectable[data-color="7"]::before {
+  background-position: 87.5% 50%;
+}
+.route-space.selectable[data-color="8"]::before {
+  background-position: 100% 50%;
 }
 
 .wagon {

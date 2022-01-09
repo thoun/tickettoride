@@ -49,10 +49,10 @@ class TtrMap {
 
         ROUTES.forEach(route => 
             route.spaces.forEach((space, spaceIndex) => {
-                dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route space" 
+                dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route-space" 
                     style="transform: translate(${space.x*FACTOR}px, ${space.y*FACTOR}px) rotate(${space.angle}deg)"
                     title="${CITIES_NAMES[route.from]} to ${CITIES_NAMES[route.to]}, ${(route.spaces as any).length} ${COLORS[route.color]}"
-                    data-route="${route.id}"
+                    data-route="${route.id}" data-color="${route.color}"
                 ></div>`, 'map');
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
                 this.setSpaceEvents(spaceDiv, route);
@@ -105,6 +105,13 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             document.getElementById('map').dataset.dragColor = '';
             this.game.claimRoute(route.id, cardsColor);
         });
+        spaceDiv.addEventListener('click', () => {
+            if (route.color > 0) {
+                this.game.claimRoute(route.id, route.color);
+            } else {
+                console.log('select color to use');
+            }
+        });
     }
 
     /*public setPoints(playerId: number, points: number) {
@@ -112,15 +119,15 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.movePoints();
     }*/
     
-    /*public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
+    public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
         if (selectable) {
             possibleRoutes.forEach(route => ROUTES.find(r => r.id == route.id).spaces.forEach((_, index) => 
                 document.getElementById(`route${route.id}-space${index}`)?.classList.add('selectable'))
             );
         } else {            
-            dojo.query('.route').removeClass('selectable');
+            dojo.query('.route-space').removeClass('selectable');
         }
-    }*/
+    }
 
     /*private getPointsCoordinates(points: number) {
         const top = points < 86 ? Math.min(Math.max(points - 34, 0), 17) * POINT_CASE_SIZE : (102 - points) * POINT_CASE_SIZE;
