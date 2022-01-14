@@ -1473,7 +1473,7 @@ var PlayerTrainCars = /** @class */ (function () {
         card.style.zIndex = '10';
         card.style.transition = "transform 0.5s linear";
         var zoom = this.game.getZoom();
-        card.style.transform = "rotate(-90deg) translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
+        card.style.transform = (this.left ? '' : 'rotate(-90deg) ') + "translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
         setTimeout(function () { return card.style.transform = null; });
         setTimeout(function () {
             card.style.zIndex = null;
@@ -1860,12 +1860,13 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.notif_trainCarPicked = function (notif) {
         var _a, _b;
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
-        var cards = (_b = (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a[this.getPlayerId()]) === null || _b === void 0 ? void 0 : _b.cards;
-        if (cards) {
+        if (notif.args.playerId == this.getPlayerId()) {
+            var cards = notif.args.cards || ((_b = (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a[this.getPlayerId()]) === null || _b === void 0 ? void 0 : _b.cards);
             this.playerTable.addTrainCars(cards, this.trainCarSelection);
         }
         else {
-            // TODO notif to player board ?        
+            // TODO notif to player board ? check with newCardsOnTable
+            //document.getElementById(`train-car-card-counter-${notif.args.playerId}-wrapper`).      
         }
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     };

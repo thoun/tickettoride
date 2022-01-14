@@ -93,11 +93,7 @@ trait TrainCarDeckTrait {
             'player_name' => $this->getPlayerName($playerId),
             'number' => 1,
             'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
-            '_private' => [
-                $playerId => [
-                    'cards' => $this->getTrainCarsFromDb($this->trainCars->getCards([$id])),
-                ],
-            ],
+            'cards' => $this->getTrainCarsFromDb($this->trainCars->getCards([$id])),
         ]);
 
         $this->checkTooMuchLocomotives();

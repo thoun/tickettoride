@@ -480,11 +480,12 @@ class TicketToRide implements TicketToRideGame {
 
     notif_trainCarPicked(notif: Notif<NotifTrainCarsPickedArgs>) {
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
-        const cards = notif.args._private?.[this.getPlayerId()]?.cards;
-        if (cards) {
+        if (notif.args.playerId == this.getPlayerId()) {
+            const cards = notif.args.cards || notif.args._private?.[this.getPlayerId()]?.cards;
             this.playerTable.addTrainCars(cards, this.trainCarSelection);
         } else {
-            // TODO notif to player board ?        
+            // TODO notif to player board ? check with newCardsOnTable
+            //document.getElementById(`train-car-card-counter-${notif.args.playerId}-wrapper`).      
         }
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }

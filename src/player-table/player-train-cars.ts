@@ -137,7 +137,7 @@ class PlayerTrainCars {
         card.style.zIndex = '10';
         card.style.transition = `transform 0.5s linear`;
         const zoom = this.game.getZoom();
-        card.style.transform = `rotate(-90deg) translate(${-deltaX/zoom}px, ${-deltaY/zoom}px)`;
+        card.style.transform = `${this.left ? '' : 'rotate(-90deg) '}translate(${-deltaX/zoom}px, ${-deltaY/zoom}px)`;
         setTimeout(() => card.style.transform = null);
 
         setTimeout(() => {

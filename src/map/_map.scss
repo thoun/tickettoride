@@ -288,15 +288,13 @@
 
 .route-space {
   display: inline-block;
-  border-radius: 8px;
   margin: 10px;
 
   position: absolute;
   top: 0;
   left: 0;
-  width: 53px;
-  height: 15px;
-  z-index: 5; // TODO TEMP
+  width: 54px;
+  height: 16px;
 
   &.selectable {
     cursor: pointer;
@@ -331,6 +329,7 @@
   margin-left: -7px;
   margin-top: -28px;
   background-size: 600%;
+  pointer-events: none;
 
   @for $i from 0 through 35 {
     &.angle#{$i} {

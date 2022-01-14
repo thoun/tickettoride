@@ -13,7 +13,7 @@ trait DebugUtilTrait {
 
         $this->debugSetDestinationInHand(7, 2343492);
 
-        $this->gamestate->changeActivePlayer(2343492);
+        //$this->gamestate->changeActivePlayer(2343492);
     }
 
     function debugSetDestinationInHand($cardType, $playerId) {

@@ -307,14 +307,12 @@
 
 .route-space {
   display: inline-block;
-  border-radius: 8px;
   margin: 10px;
   position: absolute;
   top: 0;
   left: 0;
-  width: 53px;
-  height: 15px;
-  z-index: 5;
+  width: 54px;
+  height: 16px;
 }
 .route-space.selectable {
   cursor: pointer;
@@ -366,6 +364,7 @@
   margin-left: -7px;
   margin-top: -28px;
   background-size: 600%;
+  pointer-events: none;
 }
 .wagon.angle0 {
   background-position: 0% 0%;

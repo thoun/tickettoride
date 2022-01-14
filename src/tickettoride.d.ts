@@ -133,11 +133,12 @@ interface NotifTrainCarsPickedArgs {
     playerId: number;
     number: number;
     remainingTrainCarsInDeck: number;
-    _private: {
+    _private?: {
         [playerId: number]: {
             cards: TrainCar[];
         };        
     };
+    cards?: TrainCar[];
 }
 
 interface NotifNewCardsOnTableArgs {
