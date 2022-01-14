@@ -164,7 +164,7 @@ class TicketToRide implements TicketToRideGame {
             case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
                 const chooseDestinationsArgs = this.gamedatas.gamestate.args as EnteringChooseDestinationsArgs;
-                chooseDestinationsArgs._private.destinations.forEach(destination => {
+                chooseDestinationsArgs?._private.destinations.forEach(destination => {
                     this.map.setSelectedDestination(destination, false);
                     this.map.setSelectableDestination(destination, false);
                 });
@@ -341,6 +341,24 @@ class TicketToRide implements TicketToRideGame {
     public getPlayerColor(): string {
         return this.gamedatas.players[this.getPlayerId()]?.color;
     }
+    
+    public clickedRoute(route: Route): void { 
+        document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
+        if (route.color > 0) {
+            this.claimRoute(route.id, route.color);
+        } else {
+            const possibleColors: number[] = this.playerTable?.getPossibleColors(route) || [];
+            console.log(possibleColors);
+
+            if (possibleColors.length == 1) {
+                this.claimRoute(route.id, possibleColors[0]);
+            } else if (possibleColors.length > 1) {
+                possibleColors.forEach(color => {
+                    (this as any).addActionButton(`claimRouteWithColor_button${color}`, dojo.string.substitute(_("Use ${color}"), {'color': _(COLORS[color])}), () => this.claimRoute(route.id, color));
+                });
+            }
+        }
+    }
 
     public chooseInitialDestinations() {
         if(!(this as any).checkAction('chooseInitialDestinations')) {
@@ -497,8 +515,8 @@ class TicketToRide implements TicketToRideGame {
     notif_claimedRoute(notif: Notif<NotifClaimedRouteArgs>) {
         const playerId = notif.args.playerId;
         const route: Route = notif.args.route;
-        this.trainCarCardCounters[playerId].incValue(-route.number);
-        this.trainCarCounters[playerId].incValue(-route.number);
+        this.trainCarCardCounters[playerId].incValue(-route.spaces.length);
+        this.trainCarCounters[playerId].incValue(-route.spaces.length);
         this.map.setClaimedRoutes([{
             playerId,
             routeId: route.id

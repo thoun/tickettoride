@@ -37,15 +37,15 @@ const GREEN = 8;
 
 // TODO TEMP
 const COLORS = [
-  'GRAY',
-  'PINK',
-  'WHITE',
-  'BLUE',
-  'YELLOW',
-  'ORANGE',
-  'BLACK',
-  'RED',
-  'GREEN',
+  'Gray',
+  'Pink',
+  'White',
+  'Blue',
+  'Yellow',
+  'Orange',
+  'Black',
+  'Red',
+  'Green',
 ];
 function setupTrainCarCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
     cardDiv.title = Number(cardTypeId) == 0 ? 'Locomotive' : COLORS[Number(cardTypeId)];

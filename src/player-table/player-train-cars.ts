@@ -117,6 +117,7 @@ class PlayerTrainCars {
         groups.forEach((groupDiv, index) => {
             const distanceFromIndex = index - middleIndex;
             const count = groupDiv.getElementsByClassName('train-car-card').length;
+            groupDiv.dataset.count = ''+count;
             groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = `${count > 1 ? count : ''}`;
             groupDiv.style.transform = `translate${this.left ? 'X(-' : 'Y('}${Math.pow(Math.abs(distanceFromIndex) * 2, 2)}px) rotate(${(/*this.left ? -distanceFromIndex :*/ distanceFromIndex) * 4}deg)`;
             groupDiv.parentNode.appendChild(groupDiv);
@@ -144,5 +145,26 @@ class PlayerTrainCars {
             card.style.zIndex = null;
             card.style.transition = null;            
         }, 500);
+    }
+    
+    public getPossibleColors(route: Route): number[] {
+        const groups = Array.from(document.getElementsByClassName('train-car-group')) as HTMLDivElement[];
+
+        const locomotiveGroup = groups.find(groupDiv => groupDiv.dataset.type == '0');
+        const locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
+
+        const possibleColors = [];
+
+        groups.forEach(groupDiv => {
+            const count = Number(groupDiv.dataset.count);
+            if (count + locomotives >= route.spaces.length) {
+                const color = Number(groupDiv.dataset.type);
+                if (color > 0) {
+                    possibleColors.push(color);
+                }
+            } 
+        });
+
+        return possibleColors;
     }
 }

@@ -26,7 +26,7 @@ interface Route {
     id: number;
     from: number;
     to: number;
-    number: number;
+    spaces: any[];
     color: number;
 }
 
@@ -81,6 +81,7 @@ interface TicketToRideGamedatas {
 }
 
 interface TicketToRideGame extends Game {
+    clickedRoute(route: Route): void;
     setPlayerTablePosition(left: boolean);
     getZoom(): number;
     getPlayerColor(): string;

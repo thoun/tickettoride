@@ -30,6 +30,9 @@ trait ActionTrait {
 
         $this->keepAdditionalDestinationCards($playerId, $ids);
 
+        // player may have already completed picked destinations
+        $this->checkCompletedDestinations($playerId);
+
         self::incStat(count($ids), 'keptAdditionalDestinationCards', $playerId);
         
         $this->gamestate->nextState('nextPlayer');

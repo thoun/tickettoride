@@ -51,12 +51,12 @@ class TtrMap {
             route.spaces.forEach((space, spaceIndex) => {
                 dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route-space" 
                     style="transform: translate(${space.x*FACTOR}px, ${space.y*FACTOR}px) rotate(${space.angle}deg)"
-                    title="${CITIES_NAMES[route.from]} to ${CITIES_NAMES[route.to]}, ${(route.spaces as any).length} ${COLORS[route.color]}"
+                    title="${CITIES_NAMES[route.from]} to ${CITIES_NAMES[route.to]}, ${(route.spaces as any).length} ${_(COLORS[route.color])}"
                     data-route="${route.id}" data-color="${route.color}"
                 ></div>`, 'map');
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
                 this.setSpaceEvents(spaceDiv, route);
-            })
+            }) // TODO translate title
         );
 
         /*console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
@@ -106,11 +106,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             this.game.claimRoute(route.id, cardsColor);
         });
         spaceDiv.addEventListener('click', () => {
-            if (route.color > 0) {
-                this.game.claimRoute(route.id, route.color);
-            } else {
-                console.log('select color to use');
-            }
+            this.game.clickedRoute(route);
         });
     }
 

@@ -32,15 +32,15 @@ var RED = 7;
 var GREEN = 8;
 // TODO TEMP
 var COLORS = [
-    'GRAY',
-    'PINK',
-    'WHITE',
-    'BLUE',
-    'YELLOW',
-    'ORANGE',
-    'BLACK',
-    'RED',
-    'GREEN',
+    'Gray',
+    'Pink',
+    'White',
+    'Blue',
+    'Yellow',
+    'Orange',
+    'Black',
+    'Red',
+    'Green',
 ];
 function setupTrainCarCardDiv(cardDiv, cardTypeId) {
     cardDiv.title = Number(cardTypeId) == 0 ? 'Locomotive' : COLORS[Number(cardTypeId)];
@@ -738,11 +738,12 @@ var TtrMap = /** @class */ (function () {
         });
         ROUTES.forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + space.x * FACTOR + "px, " + space.y * FACTOR + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES_NAMES[route.from] + " to " + CITIES_NAMES[route.to] + ", " + route.spaces.length + " " + COLORS[route.color] + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", 'map');
+                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + space.x * FACTOR + "px, " + space.y * FACTOR + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES_NAMES[route.from] + " to " + CITIES_NAMES[route.to] + ", " + route.spaces.length + " " + _(COLORS[route.color]) + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", 'map');
                 var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
                 _this.setSpaceEvents(spaceDiv, route);
             });
-        });
+        } // TODO translate title
+        );
         /*console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
 ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFixed(2)}, ${(space.y*0.986 + 10).toFixed(2)}, ${space.angle}),`).join('\n')}
     ], ${COLORS[route.color]}),`).join('\n'));*/
@@ -786,12 +787,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             _this.game.claimRoute(route.id, cardsColor);
         });
         spaceDiv.addEventListener('click', function () {
-            if (route.color > 0) {
-                _this.game.claimRoute(route.id, route.color);
-            }
-            else {
-                console.log('select color to use');
-            }
+            _this.game.clickedRoute(route);
         });
     };
     /*public setPoints(playerId: number, points: number) {
@@ -1189,6 +1185,9 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.setDraggable = function (draggable) {
         this.playerTrainCars.setDraggable(draggable);
     };
+    PlayerTable.prototype.getPossibleColors = function (route) {
+        return this.playerTrainCars.getPossibleColors(route);
+    };
     return PlayerTable;
 }());
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
@@ -1470,6 +1469,7 @@ var PlayerTrainCars = /** @class */ (function () {
         groups.forEach(function (groupDiv, index) {
             var distanceFromIndex = index - middleIndex;
             var count = groupDiv.getElementsByClassName('train-car-card').length;
+            groupDiv.dataset.count = '' + count;
             groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = "" + (count > 1 ? count : '');
             groupDiv.style.transform = "translate" + (_this.left ? 'X(-' : 'Y(') + Math.pow(Math.abs(distanceFromIndex) * 2, 2) + "px) rotate(" + ( /*this.left ? -distanceFromIndex :*/distanceFromIndex) * 4 + "deg)";
             groupDiv.parentNode.appendChild(groupDiv);
@@ -1492,6 +1492,22 @@ var PlayerTrainCars = /** @class */ (function () {
             card.style.zIndex = null;
             card.style.transition = null;
         }, 500);
+    };
+    PlayerTrainCars.prototype.getPossibleColors = function (route) {
+        var groups = Array.from(document.getElementsByClassName('train-car-group'));
+        var locomotiveGroup = groups.find(function (groupDiv) { return groupDiv.dataset.type == '0'; });
+        var locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
+        var possibleColors = [];
+        groups.forEach(function (groupDiv) {
+            var count = Number(groupDiv.dataset.count);
+            if (count + locomotives >= route.spaces.length) {
+                var color = Number(groupDiv.dataset.type);
+                if (color > 0) {
+                    possibleColors.push(color);
+                }
+            }
+        });
+        return possibleColors;
     };
     return PlayerTrainCars;
 }());
@@ -1620,7 +1636,7 @@ var TicketToRide = /** @class */ (function () {
             case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
                 var chooseDestinationsArgs = this.gamedatas.gamestate.args;
-                chooseDestinationsArgs._private.destinations.forEach(function (destination) {
+                chooseDestinationsArgs === null || chooseDestinationsArgs === void 0 ? void 0 : chooseDestinationsArgs._private.destinations.forEach(function (destination) {
                     _this.map.setSelectedDestination(destination, false);
                     _this.map.setSelectableDestination(destination, false);
                 });
@@ -1757,6 +1773,26 @@ var TicketToRide = /** @class */ (function () {
         var _a;
         return (_a = this.gamedatas.players[this.getPlayerId()]) === null || _a === void 0 ? void 0 : _a.color;
     };
+    TicketToRide.prototype.clickedRoute = function (route) {
+        var _this = this;
+        var _a;
+        document.querySelectorAll("[id^=\"claimRouteWithColor_button\"]").forEach(function (button) { return button.parentElement.removeChild(button); });
+        if (route.color > 0) {
+            this.claimRoute(route.id, route.color);
+        }
+        else {
+            var possibleColors = ((_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.getPossibleColors(route)) || [];
+            console.log(possibleColors);
+            if (possibleColors.length == 1) {
+                this.claimRoute(route.id, possibleColors[0]);
+            }
+            else if (possibleColors.length > 1) {
+                possibleColors.forEach(function (color) {
+                    _this.addActionButton("claimRouteWithColor_button" + color, dojo.string.substitute(_("Use ${color}"), { 'color': _(COLORS[color]) }), function () { return _this.claimRoute(route.id, color); });
+                });
+            }
+        }
+    };
     TicketToRide.prototype.chooseInitialDestinations = function () {
         if (!this.checkAction('chooseInitialDestinations')) {
             return;
@@ -1889,8 +1925,8 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.notif_claimedRoute = function (notif) {
         var playerId = notif.args.playerId;
         var route = notif.args.route;
-        this.trainCarCardCounters[playerId].incValue(-route.number);
-        this.trainCarCounters[playerId].incValue(-route.number);
+        this.trainCarCardCounters[playerId].incValue(-route.spaces.length);
+        this.trainCarCounters[playerId].incValue(-route.spaces.length);
         this.map.setClaimedRoutes([{
                 playerId: playerId,
                 routeId: route.id

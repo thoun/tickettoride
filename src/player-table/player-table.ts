@@ -54,4 +54,8 @@ class PlayerTable {
     public setDraggable(draggable: boolean) {
         this.playerTrainCars.setDraggable(draggable);
     }
+    
+    public getPossibleColors(route: Route): number[] {
+        return this.playerTrainCars.getPossibleColors(route);
+    }
 }
