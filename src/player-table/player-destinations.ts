@@ -2,17 +2,22 @@
 const IMAGE_ITEMS_PER_ROW = 10;
 
 class DestinationCompleteAnimation {
+    private wagons: Element[] = [];
 
     constructor(
         private destination: Destination,
+        destinationRoutes: Route[],
         private zoom: number,
+        private left: boolean,
         private markDestinationCompleteNoAnimation: (destination: Destination) => void,
-    ) {}
+    ) {
+        destinationRoutes.forEach(route => this.wagons.push(...Array.from(document.querySelectorAll(`[id^="wagon-route${route.id}-space"]`))));
+    }
 
     public animate(): Promise<DestinationCompleteAnimation> {
         return new Promise(resolve => {
-            let x = 1270;
-            let y = -230;
+            let x = this.left ? 1544 : 1270;
+            let y = this.left ? 56 : -230;
             const card = document.getElementById(`destination-card-${this.destination.id}`);
             card.classList.add('animated');
             card.style.transform = `translate(${x}px, ${y}px)`;
@@ -31,6 +36,7 @@ class DestinationCompleteAnimation {
                     x += (brBefore.x - brAfter.x)/this.zoom;
                     y += (brBefore.y - brAfter.y)/this.zoom;
                     card.style.transform = `translate(${x}px, ${y}px)`;
+                    this.wagons.forEach(wagon => wagon.classList.add('highlight'));
     
                     setTimeout(() => {
                         card.classList.add('animated');
@@ -42,6 +48,7 @@ class DestinationCompleteAnimation {
                             card.style.transform = ``;
     
                             setTimeout(() => {
+                                this.wagons.forEach(wagon => wagon.classList.remove('highlight'));
                                 resolve(this);
                             }, 500);
                         }, 500);
@@ -60,6 +67,7 @@ class PlayerDestinations {
     private destinationsTodo: Destination[] = [];
     private destinationsDone: Destination[] = [];
     private animations: DestinationCompleteAnimation[] = [];
+    private left: boolean;
 
     constructor(
         private game: TicketToRideGame, 
@@ -78,10 +86,14 @@ class PlayerDestinations {
 
         this.addDestinations(destinations);
         destinations.filter(destination => completedDestinations.some(d => d.id == destination.id)).forEach(destination => 
-            this.markDestinationComplete(destination, false)
+            this.markDestinationComplete(destination)
         );
         
         this.activateNextDestination(this.destinationsTodo);
+    }
+
+    public setPosition(left: boolean) {
+        this.left = left;
     }
         
     public addDestinations(destinations: Destination[], originStock?: Stock) {
@@ -128,9 +140,9 @@ class PlayerDestinations {
         this.destinationColumnsUpdated();
     }
 
-    public markDestinationComplete(destination: Destination, animation: boolean) {
-        if (animation && !(document.visibilityState === 'hidden' || (this.game as any).instantaneousMode)) {
-            const newDac = new DestinationCompleteAnimation(destination, this.game.getZoom(), d => this.markDestinationCompleteNoAnimation(d));
+    public markDestinationComplete(destination: Destination, destinationRoutes?: Route[]) {
+        if (destinationRoutes && !(document.visibilityState === 'hidden' || (this.game as any).instantaneousMode)) {
+            const newDac = new DestinationCompleteAnimation(destination, destinationRoutes, this.game.getZoom(), this.left, d => this.markDestinationCompleteNoAnimation(d));
 
             this.animations.push(newDac);
             if (this.animations.length === 1) {

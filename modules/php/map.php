@@ -2,6 +2,16 @@
 
 require_once(__DIR__.'/objects/route.php');
 
+class ConnectedCity {
+    public /*int*/ $city;
+    public /*array*/ $routes;
+  
+    public function __construct(int $city, array $routes) {
+        $this->city = $city;
+        $this->routes = $routes;
+    } 
+}
+
 trait MapTrait {
 
     /**
@@ -74,13 +84,30 @@ trait MapTrait {
     /**
      * Indicates if destination is completed (continuous path linking both cities).
      */
-    public function isDestinationCompleted(int $playerId, object $destination) {
+    public function getDestinationRoutes(int $playerId, object $destination) {
         $claimedRoutes = $this->getClaimedRoutes($playerId);
         $claimedRoutesIds = array_map(function($claimedRoute) { return $claimedRoute->routeId; }, array_values($claimedRoutes));
 
-        $citiesConnectedToFrom = $this->getAccessibleCitiesFrom($destination->from, [$destination->from], $claimedRoutesIds);
+        $citiesConnectedToFrom = $this->getAccessibleCitiesFrom(new ConnectedCity($destination->from, []), [$destination->from], $claimedRoutesIds);
 
-        return in_array($destination->to, $citiesConnectedToFrom);
+        $validConnections = array_values(array_filter($citiesConnectedToFrom, function($connectedCity) use ($destination) { return $connectedCity->city == $destination->to; }));
+        $count = count($validConnections);
+
+        if ($count == 0) {
+            return null;
+        } else if ($count == 1) {
+            return $validConnections[0]->routes;
+        } else {
+            $shortest = $validConnections[0];
+
+            foreach($validConnections as $validConnection) {
+                if (count($validConnection->routes) < count($shortest->routes)) {
+                    $shortest = $validConnection;
+                }
+            }
+            
+            return $shortest->routes;
+        }
     }
 
     public function getAllRoutes() {
@@ -146,22 +173,23 @@ trait MapTrait {
         return $connectedRoutes;
     }
 
-    private function getAccessibleCitiesFrom(int $from, array $visitedCitiesIds, array $playerClaimedRoutesIds) {
-        $connectedRoutes = $this->getRoutesConnectedToCity($from);
+    // return an array of ConnectedCity
+    private function getAccessibleCitiesFrom(object $connectedCity, array $visitedCitiesIds, array $playerClaimedRoutesIds) {
+        $connectedRoutes = $this->getRoutesConnectedToCity($connectedCity->city);
 
         // we only check route to cities we haven't checked, to avoid infinite loop
-        $claimedConnectedRouteToExplore = array_values(array_filter($connectedRoutes, function($route) use ($from, $visitedCitiesIds, $playerClaimedRoutesIds) {
-            $cityOnOtherSideOfRoute = $route->from == $from ? $route->to : $route->from;
+        $claimedConnectedRouteToExplore = array_values(array_filter($connectedRoutes, function($route) use ($connectedCity, $visitedCitiesIds, $playerClaimedRoutesIds) {
+            $cityOnOtherSideOfRoute = $route->from == $connectedCity->city ? $route->to : $route->from;
             return in_array($route->id, $playerClaimedRoutesIds) && !in_array($cityOnOtherSideOfRoute, $visitedCitiesIds);
         }));
 
-        $connectedCities = array_map(function($route) use ($from) {
-            $cityOnOtherSideOfRoute = $route->from == $from ? $route->to : $route->from;
-            return $cityOnOtherSideOfRoute;
+        $connectedCities = array_map(function($route) use ($connectedCity) {
+            $cityOnOtherSideOfRoute = $route->from == $connectedCity->city ? $route->to : $route->from;
+            return new ConnectedCity($cityOnOtherSideOfRoute, array_merge($connectedCity->routes, [$route]));
         }, $claimedConnectedRouteToExplore);
 
         $recursiveConnectedCities = $connectedCities; // copy
-        $newVisitedCitiesIds = array_merge($visitedCitiesIds, $connectedCities);
+        $newVisitedCitiesIds = array_merge($visitedCitiesIds, array_map(function ($cc) { return $cc->city; }, $connectedCities));
         foreach ($connectedCities as $connectedCity) {
             $recursiveConnectedCities = array_merge(
                 $recursiveConnectedCities, 

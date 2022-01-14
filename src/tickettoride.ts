@@ -512,7 +512,7 @@ class TicketToRide implements TicketToRideGame {
         const destination: Destination = notif.args.destination;
         this.completedDestinationsCounter.incValue(1);
         this.gamedatas.completedDestinations.push(destination);
-        this.playerTable.markDestinationComplete(destination, true);
+        this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
     }
     
     notif_lastTurn() {

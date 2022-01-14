@@ -320,12 +320,13 @@
 .route-space.selectable::before {
   content: "";
   position: absolute;
-  top: -15px;
-  bottom: -15px;
+  top: -20px;
+  bottom: -20px;
   left: -10px;
   right: -10px;
   background: url("img/road-highlight.png");
   background-size: auto 100%;
+  animation: selectable-road-animation 1s alternate-reverse infinite ease-in-out;
 }
 .route-space.selectable[data-color="0"]::before {
   background-position: 0% 50%;
@@ -355,6 +356,14 @@
   background-position: 100% 50%;
 }
 
+@keyframes selectable-road-animation {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
 .wagon {
   position: absolute;
   top: 0;
@@ -491,6 +500,9 @@
 }
 .wagon.phantom {
   opacity: 0.5;
+}
+.wagon.highlight {
+  z-index: 11;
 }
 
 #train-car-deck {
@@ -807,7 +819,7 @@
 .player-table {
   display: flex;
   background: #FFFFFF80;
-  z-index: 1;
+  z-index: 11;
 }
 .player-table .player-table-destinations {
   width: 270px;

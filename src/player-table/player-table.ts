@@ -31,6 +31,7 @@ class PlayerTable {
         }
         playerHandDiv.classList.toggle('left', left);
 
+        this.playerDestinations.setPosition(left);
         this.playerTrainCars.setPosition(left);
     }
 
@@ -38,8 +39,8 @@ class PlayerTable {
         this.playerDestinations.addDestinations(destinations, originStock);
     }
 
-    public markDestinationComplete(destination: Destination, animation: boolean) {
-        this.playerDestinations.markDestinationComplete(destination, animation);
+    public markDestinationComplete(destination: Destination, destinationRoutes?: Route[]) {
+        this.playerDestinations.markDestinationComplete(destination, destinationRoutes);
     }
     
     public addTrainCars(trainCars: TrainCar[], stocks?: TrainCarSelection) {

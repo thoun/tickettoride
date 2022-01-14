@@ -302,12 +302,14 @@
     &::before {
       content: '';
       position: absolute;
-      top: -15px;
-      bottom: -15px;
+      top: -20px;
+      bottom: -20px;
       left: -10px;
       right: -10px;
       background: url('img/road-highlight.png');
       background-size: auto 100%;
+
+      animation: selectable-road-animation 1s alternate-reverse infinite ease-in-out;
     }
     
     @for $i from 0 through 8 {
@@ -317,6 +319,15 @@
         }
       }
     }
+  }
+}
+
+@keyframes selectable-road-animation {
+  from {
+    opacity: 0.5;
+  }
+  to { 
+    opacity: 1;
   }
 }
 
@@ -359,5 +370,9 @@
 
   &.phantom {
     opacity: 0.5;
+  }
+
+  &.highlight {
+    z-index: 11;
   }
 }

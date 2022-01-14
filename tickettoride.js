@@ -1171,13 +1171,14 @@ var PlayerTable = /** @class */ (function () {
             document.getElementById('resized').appendChild(playerHandDiv);
         }
         playerHandDiv.classList.toggle('left', left);
+        this.playerDestinations.setPosition(left);
         this.playerTrainCars.setPosition(left);
     };
     PlayerTable.prototype.addDestinations = function (destinations, originStock) {
         this.playerDestinations.addDestinations(destinations, originStock);
     };
-    PlayerTable.prototype.markDestinationComplete = function (destination, animation) {
-        this.playerDestinations.markDestinationComplete(destination, animation);
+    PlayerTable.prototype.markDestinationComplete = function (destination, destinationRoutes) {
+        this.playerDestinations.markDestinationComplete(destination, destinationRoutes);
     };
     PlayerTable.prototype.addTrainCars = function (trainCars, stocks) {
         this.playerTrainCars.addTrainCars(trainCars, stocks);
@@ -1201,16 +1202,23 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 };
 var IMAGE_ITEMS_PER_ROW = 10;
 var DestinationCompleteAnimation = /** @class */ (function () {
-    function DestinationCompleteAnimation(destination, zoom, markDestinationCompleteNoAnimation) {
+    function DestinationCompleteAnimation(destination, destinationRoutes, zoom, left, markDestinationCompleteNoAnimation) {
+        var _this = this;
         this.destination = destination;
         this.zoom = zoom;
+        this.left = left;
         this.markDestinationCompleteNoAnimation = markDestinationCompleteNoAnimation;
+        this.wagons = [];
+        destinationRoutes.forEach(function (route) {
+            var _a;
+            return (_a = _this.wagons).push.apply(_a, Array.from(document.querySelectorAll("[id^=\"wagon-route" + route.id + "-space\"]")));
+        });
     }
     DestinationCompleteAnimation.prototype.animate = function () {
         var _this = this;
         return new Promise(function (resolve) {
-            var x = 1270;
-            var y = -230;
+            var x = _this.left ? 1544 : 1270;
+            var y = _this.left ? 56 : -230;
             var card = document.getElementById("destination-card-" + _this.destination.id);
             card.classList.add('animated');
             card.style.transform = "translate(" + x + "px, " + y + "px)";
@@ -1225,6 +1233,7 @@ var DestinationCompleteAnimation = /** @class */ (function () {
                     x += (brBefore.x - brAfter.x) / _this.zoom;
                     y += (brBefore.y - brAfter.y) / _this.zoom;
                     card.style.transform = "translate(" + x + "px, " + y + "px)";
+                    _this.wagons.forEach(function (wagon) { return wagon.classList.add('highlight'); });
                     setTimeout(function () {
                         card.classList.add('animated');
                         setTimeout(function () {
@@ -1232,6 +1241,7 @@ var DestinationCompleteAnimation = /** @class */ (function () {
                             shadow.dataset.visible = 'false';
                             card.style.transform = "";
                             setTimeout(function () {
+                                _this.wagons.forEach(function (wagon) { return wagon.classList.remove('highlight'); });
                                 resolve(_this);
                             }, 500);
                         }, 500);
@@ -1255,10 +1265,13 @@ var PlayerDestinations = /** @class */ (function () {
         dojo.place(html, "player-table-" + player.id + "-destinations");
         this.addDestinations(destinations);
         destinations.filter(function (destination) { return completedDestinations.some(function (d) { return d.id == destination.id; }); }).forEach(function (destination) {
-            return _this.markDestinationComplete(destination, false);
+            return _this.markDestinationComplete(destination);
         });
         this.activateNextDestination(this.destinationsTodo);
     }
+    PlayerDestinations.prototype.setPosition = function (left) {
+        this.left = left;
+    };
     PlayerDestinations.prototype.addDestinations = function (destinations, originStock) {
         var _a;
         var _this = this;
@@ -1290,10 +1303,10 @@ var PlayerDestinations = /** @class */ (function () {
         document.getElementById("player-table-" + this.playerId + "-destinations-done").appendChild(document.getElementById("destination-card-" + destination.id));
         this.destinationColumnsUpdated();
     };
-    PlayerDestinations.prototype.markDestinationComplete = function (destination, animation) {
+    PlayerDestinations.prototype.markDestinationComplete = function (destination, destinationRoutes) {
         var _this = this;
-        if (animation && !(document.visibilityState === 'hidden' || this.game.instantaneousMode)) {
-            var newDac = new DestinationCompleteAnimation(destination, this.game.getZoom(), function (d) { return _this.markDestinationCompleteNoAnimation(d); });
+        if (destinationRoutes && !(document.visibilityState === 'hidden' || this.game.instantaneousMode)) {
+            var newDac = new DestinationCompleteAnimation(destination, destinationRoutes, this.game.getZoom(), this.left, function (d) { return _this.markDestinationCompleteNoAnimation(d); });
             this.animations.push(newDac);
             if (this.animations.length === 1) {
                 this.animations[0].animate().then(function (dac) { return _this.endAnimation(dac); });
@@ -1890,7 +1903,7 @@ var TicketToRide = /** @class */ (function () {
         var destination = notif.args.destination;
         this.completedDestinationsCounter.incValue(1);
         this.gamedatas.completedDestinations.push(destination);
-        this.playerTable.markDestinationComplete(destination, true);
+        this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
     };
     TicketToRide.prototype.notif_lastTurn = function () {
         dojo.place("<div id=\"last-round\">\n            " + _("This is the final round!") + "\n        </div>", 'page-title');

@@ -2,7 +2,7 @@
 define("APP_GAMEMODULE_PATH", "../misc/"); // include path to stubs, which defines "table.game.php" and other classes
 require_once ('../tickettoride.game.php');
 
-class TicketToRideTestLongestPath extends TicketToRide { // this is your game class defined in ggg.game.php
+class TicketToRideTestDestinationCompleted extends TicketToRide { // this is your game class defined in ggg.game.php
     function __construct() {
         // parent::__construct();
         include '../material.inc.php';// this is how this normally included, from constructor
@@ -57,59 +57,55 @@ class TicketToRideTestLongestPath extends TicketToRide { // this is your game cl
     // class tests
     function testDestinationCompletedNo() {
 
-        $result = $this->isDestinationCompleted(1, $this->DESTINATIONS[1][20]);
+        $result = $this->getDestinationRoutes(1, $this->DESTINATIONS[1][20]);
 
-        $expected = false;
-        $equal = $result == $expected;
+        $equal = $result == null;
 
         if ($equal) {
             echo "Test1: PASSED\n";
         } else {
             echo "Test1: FAILED\n";
-            echo "Expected: $expected, value: $result\n";
+            echo "Expected: null, value: not null\n";
         }
     }
 
     function testDestinationCompletedYes() {
 
-        $result = $this->isDestinationCompleted(2, $this->DESTINATIONS[1][20]);
+        $result = $this->getDestinationRoutes(2, $this->DESTINATIONS[1][20]);
 
-        $expected = true;
-        $equal = $result == $expected;
+        $equal = $result != null;
 
         if ($equal) {
             echo "Test2: PASSED\n";
         } else {
             echo "Test2: FAILED\n";
-            echo "Expected: $expected, value: $result\n";
+            echo "Expected: not null, value: null\n";
         }
     }
 
     function testDestinationCompletedYes2() {
-        $result = $this->isDestinationCompleted(3, $this->DESTINATIONS[1][7]);
+        $result = $this->getDestinationRoutes(3, $this->DESTINATIONS[1][7]);
 
-        $expected = true;
-        $equal = $result == $expected;
+        $equal = $result != null;
 
         if ($equal) {
             echo "Test3: PASSED\n";
         } else {
             echo "Test3: FAILED\n";
-            echo "Expected: $expected, value: $result\n";
+            echo "Expected: not null, value: null\n";
         }
     }
 
     function testDestinationCompletedYes3() {
-        $result = $this->isDestinationCompleted(4, $this->DESTINATIONS[1][3]);
+        $result = $this->getDestinationRoutes(4, $this->DESTINATIONS[1][3]);
 
-        $expected = true;
-        $equal = $result == $expected;
+        $equal = $result != null;
 
         if ($equal) {
             echo "Test4: PASSED\n";
         } else {
             echo "Test4: FAILED\n";
-            echo "Expected: $expected, value: $result\n";
+            echo "Expected: not null, value: null\n";
         }
     }
 
@@ -121,5 +117,5 @@ class TicketToRideTestLongestPath extends TicketToRide { // this is your game cl
     }
 }
 
-$test1 = new TicketToRideTestLongestPath();
+$test1 = new TicketToRideTestDestinationCompleted();
 $test1->testAll();

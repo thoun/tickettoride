@@ -4,7 +4,7 @@
 .player-table {
     display: flex;
     background: #FFFFFF80;
-    z-index: 1;
+    z-index: 11; // over 10 to be over map shadow
 
     .player-table-destinations {
         width: 270px;

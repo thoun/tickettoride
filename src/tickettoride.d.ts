@@ -158,6 +158,7 @@ interface NotifClaimedRouteArgs {
 interface NotifDestinationCompletedArgs {
     playerId: number;
     destination: Destination;
+    destinationRoutes: Route[];
 }
 
 interface NotifBestScoreArgs {
