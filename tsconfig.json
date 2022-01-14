@@ -20,6 +20,7 @@
         "src/player-table/player-table.ts",
         "src/player-table/player-destinations.ts",
         "src/player-table/player-train-cars.ts",
+        "src/end-score/end-score.ts",
         "src/tickettoride.ts",
         "src/define.ts"
     ]

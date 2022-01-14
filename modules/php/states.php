@@ -68,14 +68,20 @@ trait StateTrait {
 
         // completed/failed destinations 
         $destinationsResults = [];
+        $completedDestinationsCount = [];
         foreach ($players as $playerId => $playerDb) {
             $destinationsResults[$playerId] = [];
+            $completedDestinationsCount[$playerId] = 0;
 
             $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
 
-            foreach ($destinations as $destination) {
-                $destination->completed = boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
-                $totalScore[$playerId] += $destination->completed ? $destination->points : -$destination->points;
+            foreach ($destinations as &$destination) {
+                $completed = boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
+                $destinationsResults[$playerId][] = $destination;
+                $totalScore[$playerId] += $completed ? $destination->points : -$destination->points;
+                if ($completed) {
+                    $completedDestinationsCount[$playerId]++;
+                }
             }
         }
 
@@ -120,18 +126,31 @@ trait StateTrait {
         foreach ($destinationsResults as $playerId => $destinations) {
 
             foreach ($destinations as $destination) {
-                $points = $destination->completed ? $destination->points : -$destination->points;
+                $destinationRoutes = $this->getDestinationRoutes($playerId, $destination);
+                $completed = $destinationRoutes != null;
+                $points = $completed ? $destination->points : -$destination->points;
+
+
+                self::notifyAllPlayers('scoreDestination', clienttranslate('${player_name} reveals ${from} to ${to} destination'), [
+                    'playerId' => $playerId,
+                    'player_name' => $this->getPlayerName($playerId),
+                    'destination' => $destination,
+                    'from' => $this->CITIES[$destination->from],
+                    'to' => $this->CITIES[$destination->to],
+                    'destinationRoutes' => $destinationRoutes,
+                ]);
                 
-                $message = clienttranslate('${player_name} ${gainsloses} ${delta} points with ${from} to ${to} destination');
+                $message = clienttranslate('${player_name} ${gainsloses} ${absdelta} points with ${from} to ${to} destination');
                 $this->incScore($playerId, $points, $message, [
                     'delta' => $destination->points,
+                    'absdelta' => abs($destination->points),
                     'from' => $this->CITIES[$destination->from],
                     'to' => $this->CITIES[$destination->to],
                     'i18n' => ['gainsloses'],
-                    'gainsloses' => $destination->completed ? clienttranslate('gains') : clienttranslate('loses'),
+                    'gainsloses' => $completed ? clienttranslate('gains') : clienttranslate('loses'),
                 ]);
 
-                if (!$destination->completed) {
+                if (!$completed) {
                     self::incStat(1, 'uncompletedDestinations');
                     self::incStat(1, 'uncompletedDestinations', $playerId);
                 }
@@ -180,17 +199,12 @@ trait StateTrait {
             } else {
                 self::setStat(0, 'averageClaimedRouteLength', $playerId);
             }
+
+            $scoreAux = 1000 * $completedDestinationsCount[$playerId] + $playersLongestPaths[$playerId];
+            self::DbQuery("UPDATE player SET `player_score_aux` = $scoreAux where `player_id` = $playerId");
         }
 
-        foreach ($players as $playerId => $playerDb) {
-            $points = $totalScore[$playerId];
-            
-            self::notifyAllPlayers('scoreTotal', clienttranslate('${player_name} has ${points} points in total'), [
-                'playerId' => $playerId,
-                'player_name' => $this->getPlayerName($playerId),
-                'points' => $points,
-            ]);
-        }
+        // TODO highlight winner(s)
 
         $this->gamestate->nextState('endGame');
     }

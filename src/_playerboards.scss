@@ -24,13 +24,22 @@
   height: 32px;
   background-image: url('img/icons.png');
   background-size: auto 100%;
+  background-repeat: no-repeat;
 
   &.train-car-card {
-    background-position: #{0 * 100% / 1} 0%;
+    background-position: #{0 * 100% / 3} 50%;
   }
 
   &.destination-card {
-    background-position: #{1 * 100% / 1} 0%;
+    background-position: #{1 * 100% / 3} 50%;
+  }
+
+  &.completed-destination {
+    background-position: #{2 * 100% / 3} 50%;
+  }
+
+  &.uncompleted-destination {
+    background-position: #{3 * 100% / 3} 50%;
   }
 
   &.train {

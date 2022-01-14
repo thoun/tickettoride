@@ -170,3 +170,8 @@ interface NotifScorePointArgs {
     playerId: number;
     points: number;
 }
+
+interface NotifScoreDestinationArgs {
+    playerId: number;
+    points: number;
+}

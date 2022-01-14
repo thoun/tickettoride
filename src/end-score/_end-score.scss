@@ -26,6 +26,25 @@
 
                     &.destinations {
                         width: 100px;
+
+                        .icons-grid {
+                            display: grid;
+                            grid-template-columns: repeat(3, auto);
+                            grid-template-rows: 25px;
+
+                            .icon {
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                font-weight: bold;
+                                text-shadow: 0 0 1px white, 0 0 2px white, 0 0 3px white, 0 0 4px white;
+
+                                &.destination-card {
+                                    background-size: auto 90%;
+                                    width: 30px;
+                                }
+                            }
+                        }
                     }
 
                     &.train {

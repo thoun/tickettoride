@@ -1511,6 +1511,70 @@ var PlayerTrainCars = /** @class */ (function () {
     };
     return PlayerTrainCars;
 }());
+var EndScore = /** @class */ (function () {
+    function EndScore(game, players, fromReload, bestScore) {
+        var _this = this;
+        this.game = game;
+        this.players = players;
+        this.bestScore = bestScore;
+        this.scoreCounters = [];
+        this.destinationCounters = [];
+        this.completedDestinationCounters = [];
+        this.uncompletedDestinationCounters = [];
+        players.forEach(function (player) {
+            // if we are a reload of end state, we display values, else we wait for notifications
+            dojo.place("<tr id=\"score" + player.id + "\">\n                <td id=\"score-name-" + player.id + "\" class=\"player-name\" style=\"color: #" + player.color + "\">" + player.name + "</td>\n                <td id=\"destinations-score-" + player.id + "\" class=\"destinations\">\n                    <div class=\"icons-grid\">\n                        <div id=\"destination-counter-" + player.id + "\" class=\"icon destination-card\"></div>\n                        <div id=\"completed-destination-counter-" + player.id + "\" class=\"icon completed-destination\"></div>\n                        <div id=\"uncompleted-destination-counter-" + player.id + "\" class=\"icon uncompleted-destination\"></div>\n                    </div>\n                </td>\n                <td id=\"train-score-" + player.id + "\" class=\"train\">\n                    <div id=\"train-image-" + player.id + "\" class=\"train-image\" data-player-color=\"" + player.color + "\"></div>\n                </td>\n                <td id=\"end-score-" + player.id + "\" class=\"total\"></td>\n            </tr>", 'score-table-body');
+            var destinationCounter = new ebg.counter();
+            destinationCounter.create("destination-counter-" + player.id);
+            destinationCounter.setValue(fromReload ? 0 : _this.game.destinationCardCounters[player.id].getValue());
+            _this.destinationCounters[Number(player.id)] = destinationCounter;
+            var completedDestinationCounter = new ebg.counter();
+            completedDestinationCounter.create("completed-destination-counter-" + player.id);
+            completedDestinationCounter.setValue(fromReload ? player.completedDestinations.length : 0);
+            _this.completedDestinationCounters[Number(player.id)] = completedDestinationCounter;
+            var uncompletedDestinationCounter = new ebg.counter();
+            uncompletedDestinationCounter.create("uncompleted-destination-counter-" + player.id);
+            uncompletedDestinationCounter.setValue(fromReload ? destinationCounter.getValue() - completedDestinationCounter.getValue() : 0);
+            _this.uncompletedDestinationCounters[Number(player.id)] = uncompletedDestinationCounter;
+            var scoreCounter = new ebg.counter();
+            scoreCounter.create("end-score-" + player.id);
+            scoreCounter.setValue(Number(player.score));
+            _this.scoreCounters[Number(player.id)] = scoreCounter;
+        });
+        if (fromReload) {
+            this.setBestScore(bestScore);
+            players.forEach(function (player) {
+                if (Number(player.score) == bestScore) {
+                    _this.highlightWinnerScore(player.id);
+                }
+            });
+        }
+    }
+    EndScore.prototype.highlightWinnerScore = function (playerId) {
+        document.getElementById("score" + playerId).classList.add('highlight');
+        document.getElementById("score-name-" + playerId).style.color = '';
+    };
+    EndScore.prototype.setBestScore = function (bestScore) {
+        var _this = this;
+        this.bestScore = bestScore;
+        this.players.forEach(function (player) { return _this.moveTrain(Number(player.id)); });
+    };
+    EndScore.prototype.setPoints = function (playerId, points) {
+        this.scoreCounters[playerId].toValue(points);
+        this.moveTrain(playerId);
+    };
+    EndScore.prototype.moveTrain = function (playerId) {
+        var scorePercent = 100 * this.scoreCounters[playerId].getValue() / Math.max(0, this.bestScore);
+        document.getElementById("train-image-" + playerId).style.right = 100 - scorePercent + "%";
+    };
+    EndScore.prototype.scoreDestination = function (args) {
+        //console.log('notif_destinationCompleted', destination, notif.args.destinationRoutes);
+        // TODO this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
+        (args.destinationRoutes ? this.completedDestinationCounters[args.playerId] : this.uncompletedDestinationCounters[args.playerId]).incValue(1);
+        this.destinationCounters[args.playerId].incValue(-1);
+    };
+    return EndScore;
+}());
 var ANIMATION_MS = 500;
 var SCORE_MS = 1500;
 var isDebug = window.location.host == 'studio.boardgamearena.com';
@@ -1598,24 +1662,13 @@ var TicketToRide = /** @class */ (function () {
         this.trainCarSelection.setSelectableVisibleCards(args.availableVisibleCards);
     };
     TicketToRide.prototype.onEnteringEndScore = function (fromReload) {
-        var _this = this;
         if (fromReload === void 0) { fromReload = false; }
         var lastTurnBar = document.getElementById('last-round');
         if (lastTurnBar) {
             lastTurnBar.style.display = 'none';
         }
         document.getElementById('score').style.display = 'flex';
-        Object.values(this.gamedatas.players).forEach(function (player) {
-            // if we are a reload of end state, we display values, else we wait for notifications
-            dojo.place("<tr id=\"score" + player.id + "\">\n                <td id=\"score-name-" + player.id + "\" class=\"player-name\" style=\"color: #" + player.color + "\">" + player.name + "</td>\n                <td id=\"destinations-score-" + player.id + "\" class=\"destinations\"></td>\n                <td id=\"train-score-" + player.id + "\" class=\"train\">\n                    <div id=\"train-image-" + player.id + "\" class=\"train-image\" data-player-color=\"" + player.color + "\"></div>\n                </td>\n                <td id=\"end-score-" + player.id + "\" class=\"total\">" + (fromReload ? player.score : '') + "</td>\n            </tr>", 'score-table-body');
-        });
-        if (fromReload) {
-            Object.values(this.gamedatas.players).forEach(function (player) {
-                if (Number(player.score) == _this.gamedatas.bestScore) {
-                    _this.highlightWinnerScore(player.id);
-                }
-            });
-        }
+        this.endScore = new EndScore(this, Object.values(this.gamedatas.players), fromReload, this.gamedatas.bestScore);
         /*
         (this as any).addTooltipHtmlToClass('before-end-score', _("Score before the final count."));
         (this as any).addTooltipHtmlToClass('cards-score', _("Total number of bursts of light on adventurer and companions."));
@@ -1853,14 +1906,6 @@ var TicketToRide = /** @class */ (function () {
         data.lock = true;
         this.ajaxcall("/tickettoride/tickettoride/" + action + ".html", data, this, function () { });
     };
-    TicketToRide.prototype.setScore = function (playerId, column, score) {
-        var cell = document.getElementById(column + "-" + playerId);
-        cell.innerHTML = "" + score;
-    };
-    TicketToRide.prototype.highlightWinnerScore = function (playerId) {
-        document.getElementById("score" + playerId).classList.add('highlight');
-        document.getElementById("score-name-" + playerId).style.color = '';
-    };
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
     /*
@@ -1884,7 +1929,7 @@ var TicketToRide = /** @class */ (function () {
             ['trainCarPicked', 1],
             ['lastTurn', 1],
             ['bestScore', 1],
-            ['scoreTotal', SCORE_MS],
+            ['scoreDestination', 2000],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, "notif_" + notif[0]);
@@ -1892,7 +1937,9 @@ var TicketToRide = /** @class */ (function () {
         });
     };
     TicketToRide.prototype.notif_points = function (notif) {
+        var _a;
         this.setPoints(notif.args.playerId, notif.args.points);
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.setPoints(notif.args.playerId, notif.args.points);
     };
     TicketToRide.prototype.notif_destinationsPicked = function (notif) {
         var _a, _b;
@@ -1945,17 +1992,16 @@ var TicketToRide = /** @class */ (function () {
         dojo.place("<div id=\"last-round\">\n            " + _("This is the final round!") + "\n        </div>", 'page-title');
     };
     TicketToRide.prototype.notif_bestScore = function (notif) {
-        var _this = this;
+        var _a;
         this.gamedatas.bestScore = notif.args.bestScore;
-        Object.values(this.gamedatas.players).forEach(function (player) {
-            var _a;
-            var scorePercent = ((_a = _this.scoreCtrl[player.id]) === null || _a === void 0 ? void 0 : _a.getValue()) / Math.max(0, _this.gamedatas.bestScore);
-            document.getElementById("train-image-" + player.id).style.right = Math.max(0, 100 - scorePercent) + "%";
-        });
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.setBestScore(notif.args.bestScore);
     };
-    TicketToRide.prototype.notif_scoreTotal = function (notif) {
-        log('notif_scoreTotal', notif.args);
-        this.setScore(notif.args.playerId, 'end-score', notif.args.points);
+    TicketToRide.prototype.notif_scoreDestination = function (notif) {
+        var _a, _b;
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.scoreDestination(notif.args);
+        if (!notif.args.destinationRoutes) {
+            (_b = document.getElementById("destination-card-" + notif.args.destination.id)) === null || _b === void 0 ? void 0 : _b.classList.add('uncompleted');
+        }
     };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

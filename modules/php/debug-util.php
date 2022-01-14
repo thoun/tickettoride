@@ -13,7 +13,8 @@ trait DebugUtilTrait {
 
         $this->debugSetDestinationInHand(7, 2343492);
 
-        $this->debugClaimAllRoutes(2343492, 0.6);
+        $this->debugClaimAllRoutes(2343492, 0.5);
+        $this->debugSetLastTurn();
 
         //$this->gamestate->changeActivePlayer(2343492);
     }
@@ -34,6 +35,10 @@ trait DebugUtilTrait {
                 $this->debugClaimRoute($playerId, $id);
             }
         }
+    }
+
+    function debugSetLastTurn() {
+        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = ".TRAIN_CARS_NUMBER_TO_START_LAST_TURN);
     }
 
     function debug($debugData) {

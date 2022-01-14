@@ -11,6 +11,7 @@ class TicketToRide implements TicketToRideGame {
     private trainCarSelection: TrainCarSelection;
     private destinationSelection: DestinationSelection;
     private playerTable: PlayerTable = null;
+    private endScore: EndScore;
 
     private trainCarCounters: Counter[] = [];
     private trainCarCardCounters: Counter[] = [];
@@ -124,26 +125,7 @@ class TicketToRide implements TicketToRideGame {
 
         document.getElementById('score').style.display = 'flex';
 
-        Object.values(this.gamedatas.players).forEach(player => {
-            // if we are a reload of end state, we display values, else we wait for notifications
-
-            dojo.place(`<tr id="score${player.id}">
-                <td id="score-name-${player.id}" class="player-name" style="color: #${player.color}">${player.name}</td>
-                <td id="destinations-score-${player.id}" class="destinations"></td>
-                <td id="train-score-${player.id}" class="train">
-                    <div id="train-image-${player.id}" class="train-image" data-player-color="${player.color}"></div>
-                </td>
-                <td id="end-score-${player.id}" class="total">${fromReload ? player.score : ''}</td>
-            </tr>`, 'score-table-body');
-        });
-
-        if (fromReload) {
-            Object.values(this.gamedatas.players).forEach(player => {
-                if (Number(player.score) == this.gamedatas.bestScore) {
-                    this.highlightWinnerScore(player.id);
-                }
-            });
-        }
+        this.endScore = new EndScore(this, Object.values(this.gamedatas.players), fromReload, this.gamedatas.bestScore);
 
         /*
         (this as any).addTooltipHtmlToClass('before-end-score', _("Score before the final count."));
@@ -438,16 +420,6 @@ class TicketToRide implements TicketToRideGame {
         (this as any).ajaxcall(`/tickettoride/tickettoride/${action}.html`, data, this, () => {});
     }
 
-    private setScore(playerId: number | string, column: string, score: number) {
-        const cell = document.getElementById(`${column}-${playerId}`);
-        cell.innerHTML = `${score}`;
-    }
-
-    private highlightWinnerScore(playerId: number | string) {
-        document.getElementById(`score${playerId}`).classList.add('highlight');
-        document.getElementById(`score-name-${playerId}`).style.color = '';
-    }
-
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
 
@@ -472,7 +444,7 @@ class TicketToRide implements TicketToRideGame {
             ['trainCarPicked', 1],
             ['lastTurn', 1],
             ['bestScore', 1],
-            ['scoreTotal', SCORE_MS],
+            ['scoreDestination', 2000],
         ];
 
         notifs.forEach((notif) => {
@@ -483,6 +455,7 @@ class TicketToRide implements TicketToRideGame {
 
     notif_points(notif: Notif<NotifPointsArgs>) {
         this.setPoints(notif.args.playerId, notif.args.points);
+        this.endScore?.setPoints(notif.args.playerId, notif.args.points);
     }
 
     notif_destinationsPicked(notif: Notif<NotifDestinationsPickedArgs>) {
@@ -541,16 +514,14 @@ class TicketToRide implements TicketToRideGame {
     
     notif_bestScore(notif: Notif<NotifBestScoreArgs>) {
         this.gamedatas.bestScore = notif.args.bestScore;
-
-        Object.values(this.gamedatas.players).forEach(player => {
-            const scorePercent = (this as any).scoreCtrl[player.id]?.getValue() / Math.max(0, this.gamedatas.bestScore);
-            document.getElementById(`train-image-${player.id}`).style.right = `${Math.max(0, 100 - scorePercent)}%`;
-        });
+        this.endScore?.setBestScore(notif.args.bestScore);
     }
 
-    notif_scoreTotal(notif: Notif<NotifScorePointArgs>) {
-        log('notif_scoreTotal', notif.args);
-        this.setScore(notif.args.playerId, 'end-score', notif.args.points);
+    notif_scoreDestination(notif: Notif<NotifDestinationCompletedArgs>) {
+        this.endScore?.scoreDestination(notif.args);
+        if (!notif.args.destinationRoutes) {
+            document.getElementById(`destination-card-${notif.args.destination.id}`)?.classList.add('uncompleted');
+        }
     }
 
     /* This enable to inject translatable styled things to logs or action bar */

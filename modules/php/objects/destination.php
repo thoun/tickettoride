@@ -28,7 +28,6 @@ class Destination extends DestinationCard {
     public $location_arg;
     public $type;
     public $type_arg;
-    public $completed;
 
     public function __construct($dbCard, $DESTINATIONS) {
         $this->id = intval($dbCard['id']);

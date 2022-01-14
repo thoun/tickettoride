@@ -36,6 +36,18 @@
         &.animated {
             transition: transform 0.5s;
         }
+
+        &.uncompleted {
+            &::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: url('img/destination-todo.png');
+            }  
+        }
     }
 
     .done {
