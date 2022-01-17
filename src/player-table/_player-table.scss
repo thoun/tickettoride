@@ -4,16 +4,6 @@
 .player-table {
     display: flex;
     background: #FFFFFF80;
-    z-index: 11; // over 10 to be over map shadow
-
-    .player-table-destinations {
-        width: 270px;
-    }
-    &.double-column-destinations {
-        .player-table-destinations {
-            width: 305px;
-        }
-    }
     
     .player-table-train-cars {
         flex: 1;

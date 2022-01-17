@@ -78,15 +78,30 @@ class EndScore {
     }
 
     private moveTrain(playerId: number) {
-        const scorePercent = 100 * this.scoreCounters[playerId].getValue() / Math.max(0, this.bestScore);
+        const scorePercent = 100 * this.scoreCounters[playerId].getValue() / Math.max(50, this.bestScore);
         document.getElementById(`train-image-${playerId}`).style.right = `${100 - scorePercent}%`;
     }
     
-    public scoreDestination(args: NotifDestinationCompletedArgs) {        
-        //console.log('notif_destinationCompleted', destination, notif.args.destinationRoutes);
-        // TODO this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
+    public scoreDestination(playerId: number, destination: Destination, destinationRoutes: Route[]) { 
+        const newDac = new DestinationCompleteAnimation(
+            this.game,
+            destination, 
+            destinationRoutes, 
+            `destination-counter-${playerId}`,
+            `${destinationRoutes ? 'completed' : 'uncompleted'}-destination-counter-${playerId}`,
+            {
+                end: () => {
+                    (destinationRoutes ? this.completedDestinationCounters : this.uncompletedDestinationCounters)[playerId].incValue(1);
+                    this.destinationCounters[playerId].incValue(-1);
+                    if (this.destinationCounters[playerId].getValue() == 0) {
+                        document.getElementById(`destination-counter-${playerId}`).classList.add('hidden');
+                    }
+                },
+            },
+            destinationRoutes ? 'completed' : 'uncompleted',
+            0.25
+        );
 
-        (args.destinationRoutes ? this.completedDestinationCounters[args.playerId] : this.uncompletedDestinationCounters[args.playerId]).incValue(1);
-        this.destinationCounters[args.playerId].incValue(-1);
+        this.game.addAnimation(newDac);
     }
 }

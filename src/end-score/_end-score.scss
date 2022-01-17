@@ -39,10 +39,14 @@
                                 font-weight: bold;
                                 text-shadow: 0 0 1px white, 0 0 2px white, 0 0 3px white, 0 0 4px white;
 
-                                &.destination-card {
+                                &.destination-card:not(.icon) {
                                     background-size: auto 90%;
                                     width: 30px;
                                 }
+                            }
+
+                            .hidden {
+                                visibility: hidden;
                             }
                         }
                     }

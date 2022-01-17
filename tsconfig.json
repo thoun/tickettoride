@@ -13,6 +13,7 @@
         "src/counter.d.ts",
         "src/tickettoride.d.ts",
         "src/stock-utils.ts",
+        "src/destination-animation.ts",
         "src/map/map-material.ts",
         "src/map/map.ts",
         "src/destination-deck/destination-deck.ts",

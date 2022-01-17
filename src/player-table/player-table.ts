@@ -31,7 +31,6 @@ class PlayerTable {
         }
         playerHandDiv.classList.toggle('left', left);
 
-        this.playerDestinations.setPosition(left);
         this.playerTrainCars.setPosition(left);
     }
 

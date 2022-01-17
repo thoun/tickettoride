@@ -1,13 +1,6 @@
 .player-table-destinations {
     position: relative;
-
-    &.double-column {
-        width: 300px;
-
-        .done {
-            left: 35px;
-        }
-    }
+    width: 300px;
 
     .player-table-destinations-column {
         position: absolute;
@@ -20,50 +13,81 @@
         &.front {
             z-index: 51;
         }
-    }
 
-    .destination-card {
+        &.done {
+            left: 35px;
+        }
+
+        .destination-card.hidden-for-animation {
+            visibility: hidden;
+        }
+    }
+}
+
+#map {
+    .destination-card:not(.icon) {
         position: absolute;
-        left: 0px; 
-        width: 250px; 
-        height: 161px; 
-        background-image: url("img/destinations.jpg");
-        border-radius: 6px;
-        box-shadow: 0 0 8px 1px black;
-        cursor: pointer;
-        pointer-events: all;
+        z-index: 20;
+    }
+}
 
-        &.animated {
-            transition: transform 0.5s;
-        }
+.destination-card:not(.icon) {
+    position: absolute;
+    left: 0px; 
+    width: 250px; 
+    height: 161px; 
+    background-image: url("img/destinations.jpg");
+    border-radius: 6px;
+    box-shadow: 0 0 8px 1px black;
+    cursor: pointer;
+    pointer-events: all;
+    transform-origin: top left;
 
-        &.uncompleted {
-            &::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: url('img/destination-todo.png');
-            }  
-        }
+    &.animated {
+        transition: transform 0.5s;
     }
 
-    .done {
-        .destination-card {
-            mask: url('img/destination-done-mask.png') no-repeat center / contain;
-            -webkit-mask: url('img/destination-done-mask.png') no-repeat center / contain;  
+    &.uncompleted {
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('img/destination-todo.png');
+        }  
+    }
+    
+    &.completed {
+        mask: url('img/destination-done-mask.png') no-repeat center / contain;
+        -webkit-mask: url('img/destination-done-mask.png') no-repeat center / contain;  
 
-            &::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: url('img/destination-done.png');
-            }  
-        }
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('img/destination-done.png');
+        }  
+    }
+}
+
+.done {
+    .destination-card:not(.icon) {
+        mask: url('img/destination-done-mask.png') no-repeat center / contain;
+        -webkit-mask: url('img/destination-done-mask.png') no-repeat center / contain;  
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('img/destination-done.png');
+        }  
     }
 }

@@ -129,6 +129,88 @@ function setupDestinationCardDiv(cardDiv, cardTypeId) {
     //const destination = DESTINATIONS.find(d => d.id == Number(cardTypeId));
     //cardDiv.innerHTML = `<span><strong>${CITIES_NAMES[destination.from]}</strong> to <strong>${CITIES_NAMES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
 }
+function getBackgroundInlineStyleForDestination(destination) {
+    var imagePosition = destination.type_arg - 1;
+    var row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
+    var xBackgroundPercent = (imagePosition - (row * IMAGE_ITEMS_PER_ROW)) * 100;
+    var yBackgroundPercent = row * 100;
+    return "background-position: -" + xBackgroundPercent + "% -" + yBackgroundPercent + "%;";
+}
+var DestinationCompleteAnimation = /** @class */ (function () {
+    function DestinationCompleteAnimation(game, destination, destinationRoutes, fromId, toId, actions, state, initialSize) {
+        var _this = this;
+        if (initialSize === void 0) { initialSize = 1; }
+        this.game = game;
+        this.destination = destination;
+        this.fromId = fromId;
+        this.toId = toId;
+        this.actions = actions;
+        this.state = state;
+        this.initialSize = initialSize;
+        this.wagons = [];
+        destinationRoutes === null || destinationRoutes === void 0 ? void 0 : destinationRoutes.forEach(function (route) {
+            var _a;
+            return (_a = _this.wagons).push.apply(_a, Array.from(document.querySelectorAll("[id^=\"wagon-route" + route.id + "-space\"]")));
+        });
+    }
+    DestinationCompleteAnimation.prototype.animate = function () {
+        var _this = this;
+        this.zoom = this.game.getZoom();
+        return new Promise(function (resolve) {
+            var _a, _b;
+            var fromBR = document.getElementById(_this.fromId).getBoundingClientRect();
+            dojo.place("\n            <div id=\"animated-destination-card-" + _this.destination.id + "\" class=\"destination-card\" style=\"" + _this.getCardPosition(_this.destination) + getBackgroundInlineStyleForDestination(_this.destination) + "\"></div>\n            ", 'map');
+            var card = document.getElementById("animated-destination-card-" + _this.destination.id);
+            (_b = (_a = _this.actions).start) === null || _b === void 0 ? void 0 : _b.call(_a, _this.destination);
+            var cardBR = card.getBoundingClientRect();
+            var x = (fromBR.x - cardBR.x) / _this.zoom;
+            var y = (fromBR.y - cardBR.y) / _this.zoom;
+            card.style.transform = "translate(" + x + "px, " + y + "px) scale(" + _this.initialSize + ")";
+            var shadow = document.getElementById('map-destination-highlight-shadow');
+            shadow.dataset.visible = 'true';
+            _this.wagons.forEach(function (wagon) { return wagon.classList.add('highlight'); });
+            _this.game.setSelectedDestination(_this.destination, true);
+            setTimeout(function () {
+                card.classList.add('animated');
+                card.style.transform = "";
+                _this.markComplete(card, cardBR, resolve);
+            }, 100);
+        });
+    };
+    DestinationCompleteAnimation.prototype.markComplete = function (card, cardBR, resolve) {
+        var _this = this;
+        setTimeout(function () {
+            var _a, _b;
+            card.classList.add(_this.state);
+            (_b = (_a = _this.actions).change) === null || _b === void 0 ? void 0 : _b.call(_a, _this.destination);
+            setTimeout(function () {
+                var toBR = document.getElementById(_this.toId).getBoundingClientRect();
+                var x = (toBR.x - cardBR.x) / _this.zoom;
+                var y = (toBR.y - cardBR.y) / _this.zoom;
+                card.style.transform = "translate(" + x + "px, " + y + "px) scale(" + _this.initialSize + ")";
+                setTimeout(function () { return _this.endAnimation(resolve, card); }, 500);
+            }, 500);
+        }, 750);
+    };
+    DestinationCompleteAnimation.prototype.endAnimation = function (resolve, card) {
+        var _a, _b;
+        var shadow = document.getElementById('map-destination-highlight-shadow');
+        shadow.dataset.visible = 'false';
+        this.wagons.forEach(function (wagon) { return wagon.classList.remove('highlight'); });
+        this.game.setSelectedDestination(this.destination, false);
+        resolve(this);
+        this.game.endAnimation(this);
+        (_b = (_a = this.actions).end) === null || _b === void 0 ? void 0 : _b.call(_a, this.destination);
+        card.parentElement.removeChild(card);
+    };
+    DestinationCompleteAnimation.prototype.getCardPosition = function (destination) {
+        var positions = [destination.from, destination.to].map(function (cityId) { return CITIES.find(function (city) { return city.id == cityId; }); });
+        var x = (positions[0].x + positions[1].x) / 2;
+        var y = (positions[0].y + positions[1].y) / 2;
+        return "left: " + (x - CARD_WIDTH / 2) + "px; top: " + (y - CARD_HEIGHT / 2) + "px;";
+    };
+    return DestinationCompleteAnimation;
+}());
 var FACTOR = 1.057;
 var City = /** @class */ (function () {
     function City(id, x, y) {
@@ -710,7 +792,7 @@ var CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 var MAP_WIDTH = 1744;
 var MAP_HEIGHT = 1125;
 var DECK_WIDTH = 250;
-var PLAYER_WIDTH = 305; // or 270
+var PLAYER_WIDTH = 305;
 var PLAYER_HEIGHT = 257; // avg height (4 destination cards)
 var BOTTOM_RATIO = (MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT + PLAYER_HEIGHT);
 var LEFT_RATIO = (PLAYER_WIDTH + MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT);
@@ -1167,7 +1249,6 @@ var PlayerTable = /** @class */ (function () {
             document.getElementById('resized').appendChild(playerHandDiv);
         }
         playerHandDiv.classList.toggle('left', left);
-        this.playerDestinations.setPosition(left);
         this.playerTrainCars.setPosition(left);
     };
     PlayerTable.prototype.addDestinations = function (destinations, originStock) {
@@ -1200,57 +1281,6 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 var IMAGE_ITEMS_PER_ROW = 10;
-var DestinationCompleteAnimation = /** @class */ (function () {
-    function DestinationCompleteAnimation(destination, destinationRoutes, zoom, left, markDestinationCompleteNoAnimation) {
-        var _this = this;
-        this.destination = destination;
-        this.zoom = zoom;
-        this.left = left;
-        this.markDestinationCompleteNoAnimation = markDestinationCompleteNoAnimation;
-        this.wagons = [];
-        destinationRoutes.forEach(function (route) {
-            var _a;
-            return (_a = _this.wagons).push.apply(_a, Array.from(document.querySelectorAll("[id^=\"wagon-route" + route.id + "-space\"]")));
-        });
-    }
-    DestinationCompleteAnimation.prototype.animate = function () {
-        var _this = this;
-        return new Promise(function (resolve) {
-            var x = _this.left ? 1544 : 1270;
-            var y = _this.left ? 56 : -230;
-            var card = document.getElementById("destination-card-" + _this.destination.id);
-            card.classList.add('animated');
-            card.style.transform = "translate(" + x + "px, " + y + "px)";
-            var shadow = document.getElementById('map-destination-highlight-shadow');
-            shadow.dataset.visible = 'true';
-            setTimeout(function () {
-                card.classList.remove('animated');
-                setTimeout(function () {
-                    var brBefore = card.getBoundingClientRect();
-                    _this.markDestinationCompleteNoAnimation(_this.destination);
-                    var brAfter = card.getBoundingClientRect();
-                    x += (brBefore.x - brAfter.x) / _this.zoom;
-                    y += (brBefore.y - brAfter.y) / _this.zoom;
-                    card.style.transform = "translate(" + x + "px, " + y + "px)";
-                    _this.wagons.forEach(function (wagon) { return wagon.classList.add('highlight'); });
-                    setTimeout(function () {
-                        card.classList.add('animated');
-                        setTimeout(function () {
-                            var shadow = document.getElementById('map-destination-highlight-shadow');
-                            shadow.dataset.visible = 'false';
-                            card.style.transform = "";
-                            setTimeout(function () {
-                                _this.wagons.forEach(function (wagon) { return wagon.classList.remove('highlight'); });
-                                resolve(_this);
-                            }, 500);
-                        }, 500);
-                    }, 500);
-                }, 1);
-            }, 750);
-        });
-    };
-    return DestinationCompleteAnimation;
-}());
 var PlayerDestinations = /** @class */ (function () {
     function PlayerDestinations(game, player, destinations, completedDestinations) {
         var _this = this;
@@ -1258,7 +1288,6 @@ var PlayerDestinations = /** @class */ (function () {
         this.selectedDestination = null;
         this.destinationsTodo = [];
         this.destinationsDone = [];
-        this.animations = [];
         this.playerId = Number(player.id);
         var html = "\n        <div id=\"player-table-" + player.id + "-destinations-todo\" class=\"player-table-destinations-column todo\"></div>\n        <div id=\"player-table-" + player.id + "-destinations-done\" class=\"player-table-destinations-column done\"></div>\n        ";
         dojo.place(html, "player-table-" + player.id + "-destinations");
@@ -1268,18 +1297,11 @@ var PlayerDestinations = /** @class */ (function () {
         });
         this.activateNextDestination(this.destinationsTodo);
     }
-    PlayerDestinations.prototype.setPosition = function (left) {
-        this.left = left;
-    };
     PlayerDestinations.prototype.addDestinations = function (destinations, originStock) {
         var _a;
         var _this = this;
         destinations.forEach(function (destination) {
-            var imagePosition = destination.type_arg - 1;
-            var row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
-            var xBackgroundPercent = (imagePosition - (row * IMAGE_ITEMS_PER_ROW)) * 100;
-            var yBackgroundPercent = row * 100;
-            var html = "\n            <div id=\"destination-card-" + destination.id + "\" class=\"destination-card\" style=\"background-position: -" + xBackgroundPercent + "% -" + yBackgroundPercent + "%;\"></div>\n            ";
+            var html = "\n            <div id=\"destination-card-" + destination.id + "\" class=\"destination-card\" style=\"" + getBackgroundInlineStyleForDestination(destination) + "\"></div>\n            ";
             dojo.place(html, "player-table-" + _this.playerId + "-destinations-todo");
             var card = document.getElementById("destination-card-" + destination.id);
             card.addEventListener('click', function () { return _this.activateNextDestination(_this.destinationsDone.some(function (d) { return d.id == destination.id; }) ? _this.destinationsDone : _this.destinationsTodo); });
@@ -1302,30 +1324,22 @@ var PlayerDestinations = /** @class */ (function () {
         document.getElementById("player-table-" + this.playerId + "-destinations-done").appendChild(document.getElementById("destination-card-" + destination.id));
         this.destinationColumnsUpdated();
     };
-    PlayerDestinations.prototype.markDestinationComplete = function (destination, destinationRoutes) {
+    PlayerDestinations.prototype.markDestinationCompleteAnimation = function (destination, destinationRoutes) {
         var _this = this;
+        var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, "destination-card-" + destination.id, "destination-card-" + destination.id, {
+            start: function (d) { return document.getElementById("destination-card-" + d.id).classList.add('hidden-for-animation'); },
+            change: function (d) { return _this.markDestinationCompleteNoAnimation(d); },
+            end: function (d) { return document.getElementById("destination-card-" + d.id).classList.remove('hidden-for-animation'); },
+        }, 'completed');
+        this.game.addAnimation(newDac);
+    };
+    PlayerDestinations.prototype.markDestinationComplete = function (destination, destinationRoutes) {
         if (destinationRoutes && !(document.visibilityState === 'hidden' || this.game.instantaneousMode)) {
-            var newDac = new DestinationCompleteAnimation(destination, destinationRoutes, this.game.getZoom(), this.left, function (d) { return _this.markDestinationCompleteNoAnimation(d); });
-            this.animations.push(newDac);
-            if (this.animations.length === 1) {
-                this.animations[0].animate().then(function (dac) { return _this.endAnimation(dac); });
-            }
-            ;
+            this.markDestinationCompleteAnimation(destination, destinationRoutes);
         }
         else {
             this.markDestinationCompleteNoAnimation(destination);
         }
-    };
-    PlayerDestinations.prototype.endAnimation = function (ended) {
-        var _this = this;
-        var index = this.animations.indexOf(ended);
-        if (index !== -1) {
-            this.animations.splice(index, 1);
-        }
-        if (this.animations.length >= 1) {
-            this.animations[0].animate().then(function (dac) { return _this.endAnimation(dac); });
-        }
-        ;
     };
     PlayerDestinations.prototype.activateNextDestination = function (destinationList) {
         var _this = this;
@@ -1341,9 +1355,7 @@ var PlayerDestinations = /** @class */ (function () {
     };
     PlayerDestinations.prototype.destinationColumnsUpdated = function () {
         var doubleColumn = this.destinationsTodo.length > 0 && this.destinationsDone.length > 0;
-        document.getElementById("player-table").classList.toggle('double-column-destinations', doubleColumn);
         var destinationsDiv = document.getElementById("player-table-" + this.playerId + "-destinations");
-        destinationsDiv.classList.toggle('double-column', doubleColumn);
         var maxBottom = Math.max(this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_SHIFT : 0), this.placeCards(this.destinationsDone));
         var height = maxBottom + CARD_HEIGHT + "px";
         destinationsDiv.style.height = height;
@@ -1564,14 +1576,21 @@ var EndScore = /** @class */ (function () {
         this.moveTrain(playerId);
     };
     EndScore.prototype.moveTrain = function (playerId) {
-        var scorePercent = 100 * this.scoreCounters[playerId].getValue() / Math.max(0, this.bestScore);
+        var scorePercent = 100 * this.scoreCounters[playerId].getValue() / Math.max(50, this.bestScore);
         document.getElementById("train-image-" + playerId).style.right = 100 - scorePercent + "%";
     };
-    EndScore.prototype.scoreDestination = function (args) {
-        //console.log('notif_destinationCompleted', destination, notif.args.destinationRoutes);
-        // TODO this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
-        (args.destinationRoutes ? this.completedDestinationCounters[args.playerId] : this.uncompletedDestinationCounters[args.playerId]).incValue(1);
-        this.destinationCounters[args.playerId].incValue(-1);
+    EndScore.prototype.scoreDestination = function (playerId, destination, destinationRoutes) {
+        var _this = this;
+        var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, "destination-counter-" + playerId, (destinationRoutes ? 'completed' : 'uncompleted') + "-destination-counter-" + playerId, {
+            end: function () {
+                (destinationRoutes ? _this.completedDestinationCounters : _this.uncompletedDestinationCounters)[playerId].incValue(1);
+                _this.destinationCounters[playerId].incValue(-1);
+                if (_this.destinationCounters[playerId].getValue() == 0) {
+                    document.getElementById("destination-counter-" + playerId).classList.add('hidden');
+                }
+            },
+        }, destinationRoutes ? 'completed' : 'uncompleted', 0.25);
+        this.game.addAnimation(newDac);
     };
     return EndScore;
 }());
@@ -1585,6 +1604,7 @@ var TicketToRide = /** @class */ (function () {
         this.trainCarCounters = [];
         this.trainCarCardCounters = [];
         this.destinationCardCounters = [];
+        this.animations = [];
     }
     /*
         setup:
@@ -1633,12 +1653,13 @@ var TicketToRide = /** @class */ (function () {
     //
     TicketToRide.prototype.onEnteringState = function (stateName, args) {
         var _this = this;
+        var _a;
         log('Entering state: ' + stateName, args.args);
         switch (stateName) {
             case 'chooseInitialDestinations':
             case 'chooseAdditionalDestinations':
                 var chooseDestinationsArgs = args.args;
-                chooseDestinationsArgs._private.destinations.forEach(function (destination) { return _this.map.setSelectableDestination(destination, true); });
+                (_a = chooseDestinationsArgs._private) === null || _a === void 0 ? void 0 : _a.destinations.forEach(function (destination) { return _this.map.setSelectableDestination(destination, true); });
                 break;
             case 'chooseAction':
                 this.onEnteringChooseAction(args.args);
@@ -1682,21 +1703,21 @@ var TicketToRide = /** @class */ (function () {
     //
     TicketToRide.prototype.onLeavingState = function (stateName) {
         var _this = this;
-        var _a;
+        var _a, _b;
         log('Leaving state: ' + stateName);
         switch (stateName) {
             case 'chooseInitialDestinations':
             case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
                 var chooseDestinationsArgs = this.gamedatas.gamestate.args;
-                chooseDestinationsArgs === null || chooseDestinationsArgs === void 0 ? void 0 : chooseDestinationsArgs._private.destinations.forEach(function (destination) {
+                (_a = chooseDestinationsArgs._private) === null || _a === void 0 ? void 0 : _a.destinations.forEach(function (destination) {
                     _this.map.setSelectedDestination(destination, false);
                     _this.map.setSelectableDestination(destination, false);
                 });
                 break;
             case 'chooseAction':
                 this.map.setSelectableRoutes(false, []);
-                (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(false);
+                (_b = this.playerTable) === null || _b === void 0 ? void 0 : _b.setDraggable(false);
                 break;
             case 'drawSecondCard':
                 this.trainCarSelection.removeSelectableVisibleCards();
@@ -1825,6 +1846,23 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.getPlayerColor = function () {
         var _a;
         return (_a = this.gamedatas.players[this.getPlayerId()]) === null || _a === void 0 ? void 0 : _a.color;
+    };
+    TicketToRide.prototype.addAnimation = function (animation) {
+        this.animations.push(animation);
+        if (this.animations.length === 1) {
+            this.animations[0].animate();
+        }
+        ;
+    };
+    TicketToRide.prototype.endAnimation = function (ended) {
+        var index = this.animations.indexOf(ended);
+        if (index !== -1) {
+            this.animations.splice(index, 1);
+        }
+        if (this.animations.length >= 1) {
+            this.animations[0].animate();
+        }
+        ;
     };
     TicketToRide.prototype.clickedRoute = function (route) {
         var _this = this;
@@ -2004,7 +2042,7 @@ var TicketToRide = /** @class */ (function () {
     };
     TicketToRide.prototype.notif_scoreDestination = function (notif) {
         var _a, _b;
-        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.scoreDestination(notif.args);
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.scoreDestination(notif.args.playerId, notif.args.destination, notif.args.destinationRoutes);
         if (!notif.args.destinationRoutes) {
             (_b = document.getElementById("destination-card-" + notif.args.destination.id)) === null || _b === void 0 ? void 0 : _b.classList.add('uncompleted');
         }

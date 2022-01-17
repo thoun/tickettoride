@@ -18,6 +18,8 @@ class TicketToRide implements TicketToRideGame {
     private destinationCardCounters: Counter[] = [];
     private completedDestinationsCounter: Counter;
 
+    private animations: DestinationCompleteAnimation[] = [];
+
     constructor() {
     }
     
@@ -90,7 +92,7 @@ class TicketToRide implements TicketToRideGame {
         switch (stateName) {
             case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
                 const chooseDestinationsArgs = args.args as EnteringChooseDestinationsArgs;
-                chooseDestinationsArgs._private.destinations.forEach(destination => this.map.setSelectableDestination(destination, true));
+                chooseDestinationsArgs._private?.destinations.forEach(destination => this.map.setSelectableDestination(destination, true));
                 break;
             case 'chooseAction':
                 this.onEnteringChooseAction(args.args as EnteringChooseActionArgs);
@@ -146,7 +148,7 @@ class TicketToRide implements TicketToRideGame {
             case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
                 const chooseDestinationsArgs = this.gamedatas.gamestate.args as EnteringChooseDestinationsArgs;
-                chooseDestinationsArgs?._private.destinations.forEach(destination => {
+                chooseDestinationsArgs._private?.destinations.forEach(destination => {
                     this.map.setSelectedDestination(destination, false);
                     this.map.setSelectableDestination(destination, false);
                 });
@@ -322,6 +324,24 @@ class TicketToRide implements TicketToRideGame {
     
     public getPlayerColor(): string {
         return this.gamedatas.players[this.getPlayerId()]?.color;
+    }
+
+    public addAnimation(animation: DestinationCompleteAnimation) {
+        this.animations.push(animation);
+            if (this.animations.length === 1) {
+                this.animations[0].animate();
+            };
+    }
+
+    public endAnimation(ended: DestinationCompleteAnimation) {
+        const index = this.animations.indexOf(ended);
+        if (index !== -1) {
+            this.animations.splice(index, 1);
+        }
+
+        if (this.animations.length >= 1) {
+            this.animations[0].animate();
+        };
     }
     
     public clickedRoute(route: Route): void { 
@@ -526,7 +546,7 @@ class TicketToRide implements TicketToRideGame {
     }
 
     notif_scoreDestination(notif: Notif<NotifDestinationCompletedArgs>) {
-        this.endScore?.scoreDestination(notif.args);
+        this.endScore?.scoreDestination(notif.args.playerId, notif.args.destination, notif.args.destinationRoutes);
         if (!notif.args.destinationRoutes) {
             document.getElementById(`destination-card-${notif.args.destination.id}`)?.classList.add('uncompleted');
         }

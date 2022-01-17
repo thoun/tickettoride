@@ -11,9 +11,9 @@ trait DebugUtilTrait {
             return;
         }
 
-        $this->debugSetDestinationInHand(7, 2343492);
+        //$this->debugSetDestinationInHand(7, 2343492);
 
-        $this->debugClaimAllRoutes(2343492, 0.5);
+        $this->debugClaimAllRoutes(2343492, 0.4);
         $this->debugSetLastTurn();
 
         //$this->gamestate->changeActivePlayer(2343492);

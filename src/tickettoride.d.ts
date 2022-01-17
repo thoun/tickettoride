@@ -26,7 +26,7 @@ interface Route {
     id: number;
     from: number;
     to: number;
-    spaces: any[];
+    spaces: RouteSpace[];
     number?: number;
     color: number;
 }
@@ -95,6 +95,8 @@ interface TicketToRideGame extends Game {
     canClaimRoute(route: Route, cardsColor: number): boolean;
     setHighligthedDestination(destination: Destination | null): void;
     setSelectedDestination(destination: Destination, visible: boolean): void;
+    addAnimation(animation: DestinationCompleteAnimation): void;
+    endAnimation(ended: DestinationCompleteAnimation): void;
 }
 
 interface EnteringChooseDestinationsArgs {

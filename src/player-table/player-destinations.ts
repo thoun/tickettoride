@@ -1,73 +1,12 @@
 
 const IMAGE_ITEMS_PER_ROW = 10;
 
-class DestinationCompleteAnimation {
-    private wagons: Element[] = [];
-
-    constructor(
-        private destination: Destination,
-        destinationRoutes: Route[],
-        private zoom: number,
-        private left: boolean,
-        private markDestinationCompleteNoAnimation: (destination: Destination) => void,
-    ) {
-        destinationRoutes.forEach(route => this.wagons.push(...Array.from(document.querySelectorAll(`[id^="wagon-route${route.id}-space"]`))));
-    }
-
-    public animate(): Promise<DestinationCompleteAnimation> {
-        return new Promise(resolve => {
-            let x = this.left ? 1544 : 1270;
-            let y = this.left ? 56 : -230;
-            const card = document.getElementById(`destination-card-${this.destination.id}`);
-            card.classList.add('animated');
-            card.style.transform = `translate(${x}px, ${y}px)`;
-    
-            const shadow = document.getElementById('map-destination-highlight-shadow');
-            shadow.dataset.visible = 'true';
-    
-            setTimeout(() => {
-                card.classList.remove('animated');
-    
-                setTimeout(() => {
-    
-                    const brBefore = card.getBoundingClientRect();
-                    this.markDestinationCompleteNoAnimation(this.destination);
-                    const brAfter = card.getBoundingClientRect();
-                    x += (brBefore.x - brAfter.x)/this.zoom;
-                    y += (brBefore.y - brAfter.y)/this.zoom;
-                    card.style.transform = `translate(${x}px, ${y}px)`;
-                    this.wagons.forEach(wagon => wagon.classList.add('highlight'));
-    
-                    setTimeout(() => {
-                        card.classList.add('animated');
-                        
-                        setTimeout(() => {
-                            const shadow = document.getElementById('map-destination-highlight-shadow');
-                            shadow.dataset.visible = 'false';
-    
-                            card.style.transform = ``;
-    
-                            setTimeout(() => {
-                                this.wagons.forEach(wagon => wagon.classList.remove('highlight'));
-                                resolve(this);
-                            }, 500);
-                        }, 500);
-                    }, 500);
-    
-                }, 1);
-            }, 750);
-        });
-    }
-}
-
 class PlayerDestinations {
     public playerId: number;
     public destinationStock: Stock;
     private selectedDestination: Destination | null = null;
     private destinationsTodo: Destination[] = [];
     private destinationsDone: Destination[] = [];
-    private animations: DestinationCompleteAnimation[] = [];
-    private left: boolean;
 
     constructor(
         private game: TicketToRideGame, 
@@ -91,20 +30,11 @@ class PlayerDestinations {
         
         this.activateNextDestination(this.destinationsTodo);
     }
-
-    public setPosition(left: boolean) {
-        this.left = left;
-    }
         
     public addDestinations(destinations: Destination[], originStock?: Stock) {
         destinations.forEach(destination => {
-            const imagePosition = destination.type_arg - 1;
-            const row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
-            const xBackgroundPercent = (imagePosition - (row * IMAGE_ITEMS_PER_ROW)) * 100;
-            const yBackgroundPercent = row * 100;
-
             let html = `
-            <div id="destination-card-${destination.id}" class="destination-card" style="background-position: -${xBackgroundPercent}% -${yBackgroundPercent}%;"></div>
+            <div id="destination-card-${destination.id}" class="destination-card" style="${getBackgroundInlineStyleForDestination(destination)}"></div>
             `;
 
             dojo.place(html, `player-table-${this.playerId}-destinations-todo`);
@@ -140,28 +70,30 @@ class PlayerDestinations {
         this.destinationColumnsUpdated();
     }
 
+    public markDestinationCompleteAnimation(destination: Destination, destinationRoutes: Route[]) {
+        const newDac = new DestinationCompleteAnimation(
+            this.game,
+            destination, 
+            destinationRoutes, 
+            `destination-card-${destination.id}`,
+            `destination-card-${destination.id}`,
+            { 
+                start: d => document.getElementById(`destination-card-${d.id}`).classList.add('hidden-for-animation'),
+                change: d => this.markDestinationCompleteNoAnimation(d),
+                end: d => document.getElementById(`destination-card-${d.id}`).classList.remove('hidden-for-animation'),
+            },
+            'completed'
+        );
+
+        this.game.addAnimation(newDac);
+    }
+
     public markDestinationComplete(destination: Destination, destinationRoutes?: Route[]) {
         if (destinationRoutes && !(document.visibilityState === 'hidden' || (this.game as any).instantaneousMode)) {
-            const newDac = new DestinationCompleteAnimation(destination, destinationRoutes, this.game.getZoom(), this.left, d => this.markDestinationCompleteNoAnimation(d));
-
-            this.animations.push(newDac);
-            if (this.animations.length === 1) {
-                this.animations[0].animate().then(dac => this.endAnimation(dac));
-            };
+            this.markDestinationCompleteAnimation(destination, destinationRoutes);
         } else {
             this.markDestinationCompleteNoAnimation(destination);
         }
-    }
-
-    public endAnimation(ended: DestinationCompleteAnimation) {
-        const index = this.animations.indexOf(ended);
-        if (index !== -1) {
-            this.animations.splice(index, 1);
-        }
-
-        if (this.animations.length >= 1) {
-            this.animations[0].animate().then(dac => this.endAnimation(dac));
-        };
     }
 
     public activateNextDestination(destinationList: Destination[]) {
@@ -181,9 +113,7 @@ class PlayerDestinations {
     private destinationColumnsUpdated() {
         const doubleColumn = this.destinationsTodo.length > 0 && this.destinationsDone.length > 0;
 
-        document.getElementById(`player-table`).classList.toggle('double-column-destinations', doubleColumn);
         const destinationsDiv = document.getElementById(`player-table-${this.playerId}-destinations`);
-        destinationsDiv .classList.toggle('double-column', doubleColumn);
 
         const maxBottom = Math.max(
             this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_SHIFT : 0),

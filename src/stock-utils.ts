@@ -135,3 +135,11 @@ function setupDestinationCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
     //const destination = DESTINATIONS.find(d => d.id == Number(cardTypeId));
     //cardDiv.innerHTML = `<span><strong>${CITIES_NAMES[destination.from]}</strong> to <strong>${CITIES_NAMES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
 }
+
+function getBackgroundInlineStyleForDestination(destination: Destination) {
+    const imagePosition = destination.type_arg - 1;
+    const row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
+    const xBackgroundPercent = (imagePosition - (row * IMAGE_ITEMS_PER_ROW)) * 100;
+    const yBackgroundPercent = row * 100;
+    return `background-position: -${xBackgroundPercent}% -${yBackgroundPercent}%;`;
+}

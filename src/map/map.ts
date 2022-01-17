@@ -4,7 +4,7 @@ const CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 const MAP_WIDTH = 1744;
 const MAP_HEIGHT = 1125;
 const DECK_WIDTH = 250;
-const PLAYER_WIDTH = 305; // or 270
+const PLAYER_WIDTH = 305;
 const PLAYER_HEIGHT = 257; // avg height (4 destination cards)
 
 const BOTTOM_RATIO = (MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT + PLAYER_HEIGHT);
