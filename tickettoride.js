@@ -1829,6 +1829,9 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.clickedRoute = function (route) {
         var _this = this;
         var _a;
+        if (!this.isCurrentPlayerActive() || !this.canClaimRoute(route, 0)) {
+            return;
+        }
         document.querySelectorAll("[id^=\"claimRouteWithColor_button\"]").forEach(function (button) { return button.parentElement.removeChild(button); });
         if (route.color > 0) {
             this.claimRoute(route.id, route.color);
@@ -1841,7 +1844,10 @@ var TicketToRide = /** @class */ (function () {
             }
             else if (possibleColors.length > 1) {
                 possibleColors.forEach(function (color) {
-                    _this.addActionButton("claimRouteWithColor_button" + color, dojo.string.substitute(_("Use ${color}"), { 'color': _(COLORS[color]) }), function () { return _this.claimRoute(route.id, color); });
+                    var label = dojo.string.substitute(_("Use ${color}"), {
+                        'color': "<div class=\"train-car-color icon\" data-color=\"" + color + "\"></div> " + _(COLORS[color])
+                    });
+                    _this.addActionButton("claimRouteWithColor_button" + color, label, function () { return _this.claimRoute(route.id, color); });
                 });
             }
         }
@@ -1972,8 +1978,8 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.notif_claimedRoute = function (notif) {
         var playerId = notif.args.playerId;
         var route = notif.args.route;
-        this.trainCarCardCounters[playerId].incValue(-route.spaces.length);
-        this.trainCarCounters[playerId].incValue(-route.spaces.length);
+        this.trainCarCardCounters[playerId].incValue(-route.number);
+        this.trainCarCounters[playerId].incValue(-route.number);
         this.map.setClaimedRoutes([{
                 playerId: playerId,
                 routeId: route.id

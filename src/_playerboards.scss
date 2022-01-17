@@ -65,4 +65,19 @@
       background-position: #{2 * 100% / 4} 0%;
     }
   }
+
+  &.train-car-color {
+    background-image: url('img/train-cards.jpg');
+    background-repeat: no-repeat;
+    background-size: 900%;
+    height: 21px;
+    border-radius: 2px;
+    margin: -5px 0px;
+    
+    @for $i from 0 through 8 {
+      &[data-color="#{$i}"] {
+          background-position: #{$i * 100% / 8} 50%;
+      }
+  }
+  }
 }

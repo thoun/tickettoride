@@ -52,6 +52,41 @@
 .icon.train[data-player-color="982fff"] {
   background-position: 50% 0%;
 }
+.icon.train-car-color {
+  background-image: url("img/train-cards.jpg");
+  background-repeat: no-repeat;
+  background-size: 900%;
+  height: 21px;
+  border-radius: 2px;
+  margin: -5px 0px;
+}
+.icon.train-car-color[data-color="0"] {
+  background-position: 0% 50%;
+}
+.icon.train-car-color[data-color="1"] {
+  background-position: 12.5% 50%;
+}
+.icon.train-car-color[data-color="2"] {
+  background-position: 25% 50%;
+}
+.icon.train-car-color[data-color="3"] {
+  background-position: 37.5% 50%;
+}
+.icon.train-car-color[data-color="4"] {
+  background-position: 50% 50%;
+}
+.icon.train-car-color[data-color="5"] {
+  background-position: 62.5% 50%;
+}
+.icon.train-car-color[data-color="6"] {
+  background-position: 75% 50%;
+}
+.icon.train-car-color[data-color="7"] {
+  background-position: 87.5% 50%;
+}
+.icon.train-car-color[data-color="8"] {
+  background-position: 100% 50%;
+}
 
 #map-zoom-wrapper {
   position: relative;

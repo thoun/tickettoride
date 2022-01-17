@@ -325,6 +325,10 @@ class TicketToRide implements TicketToRideGame {
     }
     
     public clickedRoute(route: Route): void { 
+        if(!(this as any).isCurrentPlayerActive() || !this.canClaimRoute(route, 0)) {
+            return;
+        }
+
         document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
         if (route.color > 0) {
             this.claimRoute(route.id, route.color);
@@ -336,7 +340,10 @@ class TicketToRide implements TicketToRideGame {
                 this.claimRoute(route.id, possibleColors[0]);
             } else if (possibleColors.length > 1) {
                 possibleColors.forEach(color => {
-                    (this as any).addActionButton(`claimRouteWithColor_button${color}`, dojo.string.substitute(_("Use ${color}"), {'color': _(COLORS[color])}), () => this.claimRoute(route.id, color));
+                    const label = dojo.string.substitute(_("Use ${color}"), {
+                        'color': `<div class="train-car-color icon" data-color="${color}"></div> ${_(COLORS[color])}`
+                    });
+                    (this as any).addActionButton(`claimRouteWithColor_button${color}`, label, () => this.claimRoute(route.id, color));
                 });
             }
         }
@@ -488,8 +495,9 @@ class TicketToRide implements TicketToRideGame {
     notif_claimedRoute(notif: Notif<NotifClaimedRouteArgs>) {
         const playerId = notif.args.playerId;
         const route: Route = notif.args.route;
-        this.trainCarCardCounters[playerId].incValue(-route.spaces.length);
-        this.trainCarCounters[playerId].incValue(-route.spaces.length);
+
+        this.trainCarCardCounters[playerId].incValue(-route.number);
+        this.trainCarCounters[playerId].incValue(-route.number);
         this.map.setClaimedRoutes([{
             playerId,
             routeId: route.id

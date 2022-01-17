@@ -27,6 +27,7 @@ interface Route {
     from: number;
     to: number;
     spaces: any[];
+    number?: number;
     color: number;
 }
 
