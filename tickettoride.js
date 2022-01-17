@@ -260,10 +260,13 @@ var LongestPathAnimation = /** @class */ (function (_super) {
         this.game.endAnimation(this);
     };
     LongestPathAnimation.prototype.getCardPosition = function () {
-        var positions = [this.routes[0].from, this.routes[this.routes.length - 1].to].map(function (cityId) { return CITIES.find(function (city) { return city.id == cityId; }); });
-        var x = (positions[0].x + positions[1].x) / 2;
-        var y = (positions[0].y + positions[1].y) / 2;
-        console.log("left: " + x + "px; top: " + y + "px;");
+        var x = 100;
+        var y = 100;
+        if (this.routes.length) {
+            var positions = [this.routes[0].from, this.routes[this.routes.length - 1].to].map(function (cityId) { return CITIES.find(function (city) { return city.id == cityId; }); });
+            x = (positions[0].x + positions[1].x) / 2;
+            y = (positions[0].y + positions[1].y) / 2;
+        }
         return "left: " + x + "px; top: " + y + "px;";
     };
     return LongestPathAnimation;
@@ -1611,10 +1614,14 @@ var EndScore = /** @class */ (function () {
             _this.scoreCounters[Number(player.id)] = scoreCounter;
         });
         if (fromReload) {
+            var longestPath_1 = Math.max.apply(Math, players.map(function (player) { return player.longestPathLength; }));
             this.setBestScore(bestScore);
             players.forEach(function (player) {
                 if (Number(player.score) == bestScore) {
                     _this.highlightWinnerScore(player.id);
+                }
+                if (player.longestPathLength == longestPath_1) {
+                    _this.setLongestPathWinner(player.id, longestPath_1);
                 }
             });
         }
@@ -1652,6 +1659,10 @@ var EndScore = /** @class */ (function () {
     EndScore.prototype.showLongestPath = function (playerColor, routes, length) {
         var newDac = new LongestPathAnimation(this.game, routes, length, playerColor);
         this.game.addAnimation(newDac);
+    };
+    EndScore.prototype.setLongestPathWinner = function (playerId, length) {
+        dojo.place("<div id=\"longest-path-bonus-card-" + playerId + "\" class=\"longest-path bonus-card bonus-card-icon\"></div>", "score-name-" + playerId);
+        this.game.addTooltipHtml("longest-path-bonus-card-" + playerId, "\n        <div><strong>" + _('Longest path') + " : " + length + "</strong></div>\n        <div>The player who has the Longest Continuous Path of routes receives this special bonus card and adds 10 points to his score.</div>\n        <div class=\"longest-path bonus-card\"></div>\n        ");
     };
     return EndScore;
 }());
@@ -1751,13 +1762,6 @@ var TicketToRide = /** @class */ (function () {
         }
         document.getElementById('score').style.display = 'flex';
         this.endScore = new EndScore(this, Object.values(this.gamedatas.players), fromReload, this.gamedatas.bestScore);
-        /*
-        (this as any).addTooltipHtmlToClass('before-end-score', _("Score before the final count."));
-        (this as any).addTooltipHtmlToClass('cards-score', _("Total number of bursts of light on adventurer and companions."));
-        (this as any).addTooltipHtmlToClass('board-score', _("Number of bursts of light indicated on the islands on which players have placed their boats."));
-        (this as any).addTooltipHtmlToClass('fireflies-score', _("Total number of fireflies in player possession, represented on companions and tokens. If there is many or more fireflies than companions, player score an additional 10 bursts of light."));
-        (this as any).addTooltipHtmlToClass('footprints-score', _("1 burst of light per footprint in player possession."));
-    */
     };
     // onLeavingState: this method is called each time we are leaving a game state.
     //                 You can use this method to perform some user interface changes at this moment.
@@ -2036,6 +2040,7 @@ var TicketToRide = /** @class */ (function () {
             ['bestScore', 1],
             ['scoreDestination', 2000],
             ['longestPath', 2000],
+            ['longestPathWinner', 1500],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, "notif_" + notif[0]);
@@ -2112,6 +2117,10 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.notif_longestPath = function (notif) {
         var _a;
         (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length);
+    };
+    TicketToRide.prototype.notif_longestPathWinner = function (notif) {
+        var _a;
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.setLongestPathWinner(notif.args.playerId, notif.args.length);
     };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

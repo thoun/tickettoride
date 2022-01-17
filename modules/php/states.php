@@ -179,6 +179,11 @@ trait StateTrait {
                     'points' => $points,
                     'trainCars' => $bestLongestPath,
                 ]);
+
+                self::notifyAllPlayers('longestPathWinner', '', [
+                    'playerId' => $playerId,
+                    'length' => $bestLongestPath,
+                ]);
             }
         }
 

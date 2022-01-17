@@ -32,12 +32,15 @@ class LongestPathAnimation extends WagonsAnimation {
     }
     
     private getCardPosition() {
-        const positions = [this.routes[0].from, this.routes[this.routes.length-1].to].map(cityId => CITIES.find(city => city.id == cityId));
+        let x = 100;
+        let y = 100;
+        if (this.routes.length) {
+            const positions = [this.routes[0].from, this.routes[this.routes.length-1].to].map(cityId => CITIES.find(city => city.id == cityId));
 
-        let x = (positions[0].x + positions[1].x) / 2;
-        let y = (positions[0].y + positions[1].y) / 2;
+            x = (positions[0].x + positions[1].x) / 2;
+            y = (positions[0].y + positions[1].y) / 2;
+        }
 
-        console.log(`left: ${x}px; top: ${y}px;`)
         return `left: ${x}px; top: ${y}px;`;
     }
 }

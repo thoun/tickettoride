@@ -938,6 +938,7 @@
   width: 170px;
   font-weight: bold;
   text-overflow: ellipsis;
+  position: relative;
 }
 #score #table-wrapper table tr td.destinations {
   width: 100px;
@@ -1020,6 +1021,33 @@
   background-position: 100% 50%;
 }
 
+.bonus-card {
+  width: 250px;
+  height: 161px;
+}
+.bonus-card.longest-path {
+  background: url("img/bonus-card-longest-path.png");
+}
+.bonus-card.bonus-card-icon {
+  position: absolute;
+  right: 0;
+  transform-origin: center center;
+  margin: -90px -106px;
+  animation: bonus-card-animation 1.5s 1 forwards ease-in-out;
+  z-index: 25;
+}
+
+@keyframes bonus-card-animation {
+  0% {
+    transform: scale(0.15);
+  }
+  50% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.15);
+  }
+}
 html {
   background: url("img/bg-pattern.jpg");
   background-repeat: repeat;

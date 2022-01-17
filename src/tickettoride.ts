@@ -128,14 +128,6 @@ class TicketToRide implements TicketToRideGame {
         document.getElementById('score').style.display = 'flex';
 
         this.endScore = new EndScore(this, Object.values(this.gamedatas.players), fromReload, this.gamedatas.bestScore);
-
-        /*
-        (this as any).addTooltipHtmlToClass('before-end-score', _("Score before the final count."));
-        (this as any).addTooltipHtmlToClass('cards-score', _("Total number of bursts of light on adventurer and companions."));
-        (this as any).addTooltipHtmlToClass('board-score', _("Number of bursts of light indicated on the islands on which players have placed their boats."));
-        (this as any).addTooltipHtmlToClass('fireflies-score', _("Total number of fireflies in player possession, represented on companions and tokens. If there is many or more fireflies than companions, player score an additional 10 bursts of light."));
-        (this as any).addTooltipHtmlToClass('footprints-score', _("1 burst of light per footprint in player possession."));
-    */
     }
 
     // onLeavingState: this method is called each time we are leaving a game state.
@@ -473,6 +465,7 @@ class TicketToRide implements TicketToRideGame {
             ['bestScore', 1],
             ['scoreDestination', 2000],
             ['longestPath', 2000],
+            ['longestPathWinner', 1500],
         ];
 
         notifs.forEach((notif) => {
@@ -555,6 +548,10 @@ class TicketToRide implements TicketToRideGame {
 
     notif_longestPath(notif: Notif<NotifLongestPathArgs>) {
         this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length);
+    }
+
+    notif_longestPathWinner(notif: Notif<NotifLongestPathArgs>) {
+        this.endScore?.setLongestPathWinner(notif.args.playerId, notif.args.length);
     }
 
     /* This enable to inject translatable styled things to logs or action bar */

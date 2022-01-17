@@ -44,10 +44,7 @@ interface TicketToRidePlayer extends Player {
 
     // for end score
     completedDestinations?: Destination[];
-    longestPath: {
-        length: number;
-        routes: Route[];
-    };
+    longestPathLength: number;
 }
 
 /**
