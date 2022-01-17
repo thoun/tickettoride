@@ -2041,6 +2041,7 @@ var TicketToRide = /** @class */ (function () {
             ['scoreDestination', 2000],
             ['longestPath', 2000],
             ['longestPathWinner', 1500],
+            ['highlightWinnerScore', 1],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, "notif_" + notif[0]);
@@ -2121,6 +2122,10 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.notif_longestPathWinner = function (notif) {
         var _a;
         (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.setLongestPathWinner(notif.args.playerId, notif.args.length);
+    };
+    TicketToRide.prototype.notif_highlightWinnerScore = function (notif) {
+        var _a;
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.highlightWinnerScore(notif.args.playerId);
     };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

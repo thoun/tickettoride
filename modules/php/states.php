@@ -210,7 +210,14 @@ trait StateTrait {
             self::DbQuery("UPDATE player SET `player_score_aux` = $scoreAux where `player_id` = $playerId");
         }
 
-        // TODO highlight winner(s)
+        // highlight winner(s)
+        foreach ($totalScore as $playerId => $playerScore) {
+            if ($playerScore == $bestScore) {
+                self::notifyAllPlayers('highlightWinnerScore', '', [
+                    'playerId' => $playerId,
+                ]);
+            }
+        }
 
         $this->gamestate->nextState('endGame');
     }

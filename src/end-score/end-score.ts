@@ -65,7 +65,7 @@ class EndScore {
         }
     }
 
-    private highlightWinnerScore(playerId: number | string) {
+    public highlightWinnerScore(playerId: number | string) {
         document.getElementById(`score${playerId}`).classList.add('highlight');
         document.getElementById(`score-name-${playerId}`).style.color = '';
     }

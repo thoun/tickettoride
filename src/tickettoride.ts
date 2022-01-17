@@ -466,6 +466,7 @@ class TicketToRide implements TicketToRideGame {
             ['scoreDestination', 2000],
             ['longestPath', 2000],
             ['longestPathWinner', 1500],
+            ['highlightWinnerScore', 1],
         ];
 
         notifs.forEach((notif) => {
@@ -552,6 +553,10 @@ class TicketToRide implements TicketToRideGame {
 
     notif_longestPathWinner(notif: Notif<NotifLongestPathArgs>) {
         this.endScore?.setLongestPathWinner(notif.args.playerId, notif.args.length);
+    }
+
+    notif_highlightWinnerScore(notif: Notif<NotifLongestPathArgs>) {
+        this.endScore?.highlightWinnerScore(notif.args.playerId);
     }
 
     /* This enable to inject translatable styled things to logs or action bar */
