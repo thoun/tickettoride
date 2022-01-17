@@ -44,7 +44,10 @@ interface TicketToRidePlayer extends Player {
 
     // for end score
     completedDestinations?: Destination[];
-    longestPath: number;
+    longestPath: {
+        length: number;
+        routes: Route[];
+    };
 }
 
 /**
@@ -95,8 +98,8 @@ interface TicketToRideGame extends Game {
     canClaimRoute(route: Route, cardsColor: number): boolean;
     setHighligthedDestination(destination: Destination | null): void;
     setSelectedDestination(destination: Destination, visible: boolean): void;
-    addAnimation(animation: DestinationCompleteAnimation): void;
-    endAnimation(ended: DestinationCompleteAnimation): void;
+    addAnimation(animation: WagonsAnimation): void;
+    endAnimation(ended: WagonsAnimation): void;
 }
 
 interface EnteringChooseDestinationsArgs {
@@ -177,4 +180,10 @@ interface NotifScorePointArgs {
 interface NotifScoreDestinationArgs {
     playerId: number;
     points: number;
+}
+
+interface NotifLongestPathArgs {
+    playerId: number;
+    length: number;
+    routes: Route[];
 }

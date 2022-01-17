@@ -104,4 +104,15 @@ class EndScore {
 
         this.game.addAnimation(newDac);
     }
+    
+    public showLongestPath(playerColor: string, routes: Route[], length: number) {
+        const newDac = new LongestPathAnimation(
+            this.game,
+            routes, 
+            length,
+            playerColor
+        );
+
+        this.game.addAnimation(newDac);
+    }
 }

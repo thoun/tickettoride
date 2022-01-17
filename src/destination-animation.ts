@@ -1,11 +1,9 @@
 type DestinationAnimationCallback = (destination: Destination) => void;
 
-class DestinationCompleteAnimation {
-    private wagons: Element[] = [];
-    private zoom: number;
+class DestinationCompleteAnimation extends WagonsAnimation {
 
     constructor(
-        private game: TicketToRideGame,
+        game: TicketToRideGame,
         private destination: Destination,
         destinationRoutes: Route[],
         private fromId: string,
@@ -18,11 +16,10 @@ class DestinationCompleteAnimation {
         private state: 'completed' | 'uncompleted',
         private initialSize: number = 1,
     ) {
-        destinationRoutes?.forEach(route => this.wagons.push(...Array.from(document.querySelectorAll(`[id^="wagon-route${route.id}-space"]`))));
+        super(game, destinationRoutes);
     }
 
-    public animate(): Promise<DestinationCompleteAnimation> {
-        this.zoom = this.game.getZoom();
+    public animate(): Promise<WagonsAnimation> {
         return new Promise(resolve => {
             const fromBR = document.getElementById(this.fromId).getBoundingClientRect();
 
@@ -38,9 +35,7 @@ class DestinationCompleteAnimation {
             const y = (fromBR.y - cardBR.y) / this.zoom;
             card.style.transform = `translate(${x}px, ${y}px) scale(${this.initialSize})`;
     
-            const shadow = document.getElementById('map-destination-highlight-shadow');
-            shadow.dataset.visible = 'true';
-            this.wagons.forEach(wagon => wagon.classList.add('highlight'));
+            this.setWagonsVisibility(true);
             this.game.setSelectedDestination(this.destination, true);
 
             setTimeout(() => {
@@ -71,9 +66,7 @@ class DestinationCompleteAnimation {
     }
 
     private endAnimation(resolve: any, card: HTMLElement) {
-        const shadow = document.getElementById('map-destination-highlight-shadow');
-        shadow.dataset.visible = 'false';
-        this.wagons.forEach(wagon => wagon.classList.remove('highlight'));
+        this.setWagonsVisibility(false);
         this.game.setSelectedDestination(this.destination, false);
 
         resolve(this);

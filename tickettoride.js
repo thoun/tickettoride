@@ -136,26 +136,54 @@ function getBackgroundInlineStyleForDestination(destination) {
     var yBackgroundPercent = row * 100;
     return "background-position: -" + xBackgroundPercent + "% -" + yBackgroundPercent + "%;";
 }
-var DestinationCompleteAnimation = /** @class */ (function () {
-    function DestinationCompleteAnimation(game, destination, destinationRoutes, fromId, toId, actions, state, initialSize) {
+var WagonsAnimation = /** @class */ (function () {
+    function WagonsAnimation(game, destinationRoutes) {
         var _this = this;
-        if (initialSize === void 0) { initialSize = 1; }
         this.game = game;
-        this.destination = destination;
-        this.fromId = fromId;
-        this.toId = toId;
-        this.actions = actions;
-        this.state = state;
-        this.initialSize = initialSize;
         this.wagons = [];
+        this.zoom = this.game.getZoom();
+        this.shadowDiv = document.getElementById('map-destination-highlight-shadow');
         destinationRoutes === null || destinationRoutes === void 0 ? void 0 : destinationRoutes.forEach(function (route) {
             var _a;
             return (_a = _this.wagons).push.apply(_a, Array.from(document.querySelectorAll("[id^=\"wagon-route" + route.id + "-space\"]")));
         });
     }
+    WagonsAnimation.prototype.setWagonsVisibility = function (visible) {
+        this.shadowDiv.dataset.visible = visible ? 'true' : 'false';
+        this.wagons.forEach(function (wagon) { return wagon.classList.toggle('highlight', visible); });
+    };
+    return WagonsAnimation;
+}());
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var DestinationCompleteAnimation = /** @class */ (function (_super) {
+    __extends(DestinationCompleteAnimation, _super);
+    function DestinationCompleteAnimation(game, destination, destinationRoutes, fromId, toId, actions, state, initialSize) {
+        if (initialSize === void 0) { initialSize = 1; }
+        var _this = _super.call(this, game, destinationRoutes) || this;
+        _this.destination = destination;
+        _this.fromId = fromId;
+        _this.toId = toId;
+        _this.actions = actions;
+        _this.state = state;
+        _this.initialSize = initialSize;
+        return _this;
+    }
     DestinationCompleteAnimation.prototype.animate = function () {
         var _this = this;
-        this.zoom = this.game.getZoom();
         return new Promise(function (resolve) {
             var _a, _b;
             var fromBR = document.getElementById(_this.fromId).getBoundingClientRect();
@@ -166,9 +194,7 @@ var DestinationCompleteAnimation = /** @class */ (function () {
             var x = (fromBR.x - cardBR.x) / _this.zoom;
             var y = (fromBR.y - cardBR.y) / _this.zoom;
             card.style.transform = "translate(" + x + "px, " + y + "px) scale(" + _this.initialSize + ")";
-            var shadow = document.getElementById('map-destination-highlight-shadow');
-            shadow.dataset.visible = 'true';
-            _this.wagons.forEach(function (wagon) { return wagon.classList.add('highlight'); });
+            _this.setWagonsVisibility(true);
             _this.game.setSelectedDestination(_this.destination, true);
             setTimeout(function () {
                 card.classList.add('animated');
@@ -194,9 +220,7 @@ var DestinationCompleteAnimation = /** @class */ (function () {
     };
     DestinationCompleteAnimation.prototype.endAnimation = function (resolve, card) {
         var _a, _b;
-        var shadow = document.getElementById('map-destination-highlight-shadow');
-        shadow.dataset.visible = 'false';
-        this.wagons.forEach(function (wagon) { return wagon.classList.remove('highlight'); });
+        this.setWagonsVisibility(false);
         this.game.setSelectedDestination(this.destination, false);
         resolve(this);
         this.game.endAnimation(this);
@@ -210,7 +234,40 @@ var DestinationCompleteAnimation = /** @class */ (function () {
         return "left: " + (x - CARD_WIDTH / 2) + "px; top: " + (y - CARD_HEIGHT / 2) + "px;";
     };
     return DestinationCompleteAnimation;
-}());
+}(WagonsAnimation));
+var LongestPathAnimation = /** @class */ (function (_super) {
+    __extends(LongestPathAnimation, _super);
+    function LongestPathAnimation(game, routes, length, playerColor) {
+        var _this = _super.call(this, game, routes) || this;
+        _this.routes = routes;
+        _this.length = length;
+        _this.playerColor = playerColor;
+        return _this;
+    }
+    LongestPathAnimation.prototype.animate = function () {
+        var _this = this;
+        return new Promise(function (resolve) {
+            dojo.place("\n            <div id=\"longest-path-animation\" style=\"color: #" + _this.playerColor + ";" + _this.getCardPosition() + "\">" + _this.length + "</div>\n            ", 'map');
+            _this.setWagonsVisibility(true);
+            setTimeout(function () { return _this.endAnimation(resolve); }, 1900);
+        });
+    };
+    LongestPathAnimation.prototype.endAnimation = function (resolve) {
+        this.setWagonsVisibility(false);
+        var number = document.getElementById('longest-path-animation');
+        number.parentElement.removeChild(number);
+        resolve(this);
+        this.game.endAnimation(this);
+    };
+    LongestPathAnimation.prototype.getCardPosition = function () {
+        var positions = [this.routes[0].from, this.routes[this.routes.length - 1].to].map(function (cityId) { return CITIES.find(function (city) { return city.id == cityId; }); });
+        var x = (positions[0].x + positions[1].x) / 2;
+        var y = (positions[0].y + positions[1].y) / 2;
+        console.log("left: " + x + "px; top: " + y + "px;");
+        return "left: " + x + "px; top: " + y + "px;";
+    };
+    return LongestPathAnimation;
+}(WagonsAnimation));
 var FACTOR = 1.057;
 var City = /** @class */ (function () {
     function City(id, x, y) {
@@ -1592,6 +1649,10 @@ var EndScore = /** @class */ (function () {
         }, destinationRoutes ? 'completed' : 'uncompleted', 0.25);
         this.game.addAnimation(newDac);
     };
+    EndScore.prototype.showLongestPath = function (playerColor, routes, length) {
+        var newDac = new LongestPathAnimation(this.game, routes, length, playerColor);
+        this.game.addAnimation(newDac);
+    };
     return EndScore;
 }());
 var ANIMATION_MS = 500;
@@ -1974,6 +2035,7 @@ var TicketToRide = /** @class */ (function () {
             ['lastTurn', 1],
             ['bestScore', 1],
             ['scoreDestination', 2000],
+            ['longestPath', 2000],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, "notif_" + notif[0]);
@@ -2046,6 +2108,10 @@ var TicketToRide = /** @class */ (function () {
         if (!notif.args.destinationRoutes) {
             (_b = document.getElementById("destination-card-" + notif.args.destination.id)) === null || _b === void 0 ? void 0 : _b.classList.add('uncompleted');
         }
+    };
+    TicketToRide.prototype.notif_longestPath = function (notif) {
+        var _a;
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length);
     };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

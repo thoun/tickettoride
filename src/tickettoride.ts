@@ -18,7 +18,7 @@ class TicketToRide implements TicketToRideGame {
     private destinationCardCounters: Counter[] = [];
     private completedDestinationsCounter: Counter;
 
-    private animations: DestinationCompleteAnimation[] = [];
+    private animations: WagonsAnimation[] = [];
 
     constructor() {
     }
@@ -326,14 +326,14 @@ class TicketToRide implements TicketToRideGame {
         return this.gamedatas.players[this.getPlayerId()]?.color;
     }
 
-    public addAnimation(animation: DestinationCompleteAnimation) {
+    public addAnimation(animation: WagonsAnimation) {
         this.animations.push(animation);
             if (this.animations.length === 1) {
                 this.animations[0].animate();
             };
     }
 
-    public endAnimation(ended: DestinationCompleteAnimation) {
+    public endAnimation(ended: WagonsAnimation) {
         const index = this.animations.indexOf(ended);
         if (index !== -1) {
             this.animations.splice(index, 1);
@@ -472,6 +472,7 @@ class TicketToRide implements TicketToRideGame {
             ['lastTurn', 1],
             ['bestScore', 1],
             ['scoreDestination', 2000],
+            ['longestPath', 2000],
         ];
 
         notifs.forEach((notif) => {
@@ -550,6 +551,10 @@ class TicketToRide implements TicketToRideGame {
         if (!notif.args.destinationRoutes) {
             document.getElementById(`destination-card-${notif.args.destination.id}`)?.classList.add('uncompleted');
         }
+    }
+
+    notif_longestPath(notif: Notif<NotifLongestPathArgs>) {
+        this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length);
     }
 
     /* This enable to inject translatable styled things to logs or action bar */

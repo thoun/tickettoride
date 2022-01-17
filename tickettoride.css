@@ -547,6 +547,20 @@
   z-index: 11;
 }
 
+#longest-path-animation {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  margin: -60px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 400%;
+  z-index: 21;
+}
+
 #train-car-deck {
   position: relative;
   width: 250px;

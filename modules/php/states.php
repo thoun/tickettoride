@@ -97,8 +97,8 @@ trait StateTrait {
 
             $longestPathBySize = [];
             foreach ($playersLongestPaths as $playerId => $longestPath) {
-                $longestPathBySize[$longestPath] = array_key_exists($longestPath, $longestPathBySize) ?
-                    array_merge($longestPathBySize[$longestPath], [$playerId]):
+                $longestPathBySize[$longestPath->length] = array_key_exists($longestPath->length, $longestPathBySize) ?
+                    array_merge($longestPathBySize[$longestPath->length], [$playerId]):
                     [$playerId];
             }
             $bestLongestPath = array_key_last($longestPathBySize);
@@ -165,10 +165,11 @@ trait StateTrait {
                 self::notifyAllPlayers('longestPath', clienttranslate('${player_name} longest continuous path is ${length} train-cars long'), [
                     'playerId' => $playerId,
                     'player_name' => $this->getPlayerName($playerId),
-                    'length' => $longestPath,
+                    'length' => $longestPath->length,
+                    'routes' => $longestPath->routes,
                 ]);
 
-                self::setStat($longestPath, 'longestPath', $playerId);
+                self::setStat($longestPath->length, 'longestPath', $playerId);
             }
              
             self::setStat($bestLongestPath, 'longestPath');
@@ -200,7 +201,7 @@ trait StateTrait {
                 self::setStat(0, 'averageClaimedRouteLength', $playerId);
             }
 
-            $scoreAux = 1000 * $completedDestinationsCount[$playerId] + $playersLongestPaths[$playerId];
+            $scoreAux = 1000 * $completedDestinationsCount[$playerId] + $playersLongestPaths[$playerId]->length;
             self::DbQuery("UPDATE player SET `player_score_aux` = $scoreAux where `player_id` = $playerId");
         }
 
