@@ -346,7 +346,6 @@ class TicketToRide implements TicketToRideGame {
             this.claimRoute(route.id, route.color);
         } else {
             const possibleColors: number[] = this.playerTable?.getPossibleColors(route) || [];
-            console.log(possibleColors);
 
             if (possibleColors.length == 1) {
                 this.claimRoute(route.id, possibleColors[0]);
@@ -460,7 +459,7 @@ class TicketToRide implements TicketToRideGame {
             ['destinationCompleted', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
-            ['trainCarPicked', 1],
+            ['trainCarPicked', ANIMATION_MS],
             ['lastTurn', 1],
             ['bestScore', 1],
             ['scoreDestination', 2000],
@@ -495,10 +494,9 @@ class TicketToRide implements TicketToRideGame {
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
         if (notif.args.playerId == this.getPlayerId()) {
             const cards = notif.args.cards || notif.args._private?.[this.getPlayerId()]?.cards;
-            this.playerTable.addTrainCars(cards, this.trainCarSelection);
+            this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.from));
         } else {
-            // TODO notif to player board ? check with newCardsOnTable
-            //document.getElementById(`train-car-card-counter-${notif.args.playerId}-wrapper`).      
+            this.trainCarSelection.moveCardToPlayerBoard(notif.args.playerId, notif.args.from, notif.args.cards?.[0].type);
         }
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }

@@ -12,7 +12,7 @@ class PlayerTrainCars {
         this.addTrainCars(trainCars);
     }
     
-    public addTrainCars(trainCars: TrainCar[], stocks?: TrainCarSelection) {
+    public addTrainCars(trainCars: TrainCar[], from?: HTMLElement) {
         trainCars.forEach(trainCar => {
             const group = this.getGroup(trainCar.type);
 
@@ -25,12 +25,10 @@ class PlayerTrainCars {
 
             dojo.place(html, group.getElementsByClassName('train-car-cards')[0] as HTMLElement);
 
-            const originStock = stocks?.visibleCardsStocks?.find(stock => stock?.items.some(item => Number(item.id) == trainCar.id));
-            const card = document.getElementById(`train-car-card-${trainCar.id}`);
-            this.addAnimationFrom(card, originStock ? 
-                document.getElementById(`${originStock.container_div.id}_item_${trainCar.id}`) :
-                document.getElementById(`train-car-deck-hidden-pile`)
-            );
+            if (from) {
+                const card = document.getElementById(`train-car-card-${trainCar.id}`);
+                this.addAnimationFrom(card, group, from);
+            }
         });
 
         this.updateCounters();
@@ -74,6 +72,7 @@ class PlayerTrainCars {
                 <div id="train-car-group-${type}-cards" class="train-car-cards"></div>
             </div>
             `, `player-table-${this.playerId}-train-cars`);
+            this.updateCounters();
 
             group = document.getElementById(`train-car-group-${type}`);
 
@@ -119,15 +118,20 @@ class PlayerTrainCars {
             const count = groupDiv.getElementsByClassName('train-car-card').length;
             groupDiv.dataset.count = ''+count;
             groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = `${count > 1 ? count : ''}`;
-            groupDiv.style.transform = `translate${this.left ? 'X(-' : 'Y('}${Math.pow(Math.abs(distanceFromIndex) * 2, 2)}px) rotate(${(/*this.left ? -distanceFromIndex :*/ distanceFromIndex) * 4}deg)`;
+            const angle = distanceFromIndex * 4;
+            groupDiv.dataset.angle = ''+angle;
+            groupDiv.style.transform = `translate${this.left ? 'X(-' : 'Y('}${Math.pow(Math.abs(distanceFromIndex) * 2, 2)}px) rotate(${angle}deg)`;
             groupDiv.parentNode.appendChild(groupDiv);
         });
     }
     
-    private addAnimationFrom(card: HTMLElement, from: HTMLElement) {
+    private addAnimationFrom(card: HTMLElement, group: HTMLElement, from: HTMLElement) {
         if (document.visibilityState === 'hidden' || (this.game as any).instantaneousMode) {
             return;
         }
+
+        const trainCars = document.getElementById(`player-table-${this.playerId}-train-cars`);
+        trainCars.classList.add('new-card-animation');
 
         const destinationBR = card.getBoundingClientRect();
         const originBR = from.getBoundingClientRect();
@@ -138,12 +142,14 @@ class PlayerTrainCars {
         card.style.zIndex = '10';
         card.style.transition = `transform 0.5s linear`;
         const zoom = this.game.getZoom();
-        card.style.transform = `${this.left ? '' : 'rotate(-90deg) '}translate(${-deltaX/zoom}px, ${-deltaY/zoom}px)`;
-        setTimeout(() => card.style.transform = null);
+        const angle = -Number(group.dataset.angle);
+        card.style.transform = `rotate(${this.left ? angle : angle-90}deg) translate(${-deltaX/zoom}px, ${-deltaY/zoom}px)`;
+        setTimeout(() => card.style.transform = null, 0);
 
         setTimeout(() => {
             card.style.zIndex = null;
-            card.style.transition = null;            
+            card.style.transition = null;   
+            trainCars.classList.remove('new-card-animation');         
         }, 500);
     }
     

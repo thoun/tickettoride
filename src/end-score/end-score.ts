@@ -103,7 +103,7 @@ class EndScore {
                 },
             },
             destinationRoutes ? 'completed' : 'uncompleted',
-            0.25
+            0.15 / this.game.getZoom()
         );
 
         this.game.addAnimation(newDac);

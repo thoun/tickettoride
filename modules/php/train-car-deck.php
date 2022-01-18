@@ -65,6 +65,7 @@ trait TrainCarDeckTrait {
                     'cards' => $cards,
                 ],
             ],
+            'from' => 0, // 0 means hidden
         ]);
     }
 
@@ -86,15 +87,16 @@ trait TrainCarDeckTrait {
 
         $this->trainCars->moveCard($id, 'hand', $playerId);
 
-        $this->placeNewTrainCarCardOnTable($spot);
-
         $this->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes a visible train car card'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'number' => 1,
             'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
             'cards' => $this->getTrainCarsFromDb($this->trainCars->getCards([$id])),
+            'from' => $spot,
         ]);
+
+        $this->placeNewTrainCarCardOnTable($spot);
 
         $this->checkTooMuchLocomotives();
 

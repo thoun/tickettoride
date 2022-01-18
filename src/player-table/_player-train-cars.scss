@@ -3,6 +3,10 @@
     justify-content: center;
     overflow: hidden;
 
+    &.new-card-animation {
+        overflow: visible;
+    }
+
     &.left {
         //flex-direction: column-reverse;
         flex-direction: column;

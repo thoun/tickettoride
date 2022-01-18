@@ -36,4 +36,9 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 go on tests dir and start execute file, for example `php ./tickettoride.game.test-longest-path.php` / `php ./tickettoride.game.test-destination-completed.php`
 
 # TODO
+color player panels
+translate cities names ? confirm with publisher
 confirm for route claim ?
+Zoom option : i don't know why it's slow, or strrange, but the movement is not as direct as it should be and it's "exhausting" (for a boardgamer i guess) to drag it around. A good option would be to have it a bit more "out" of the MAP zone, as it won't and will never cover a single part of it. For this map, Vancouver is a bit covered, and i would prefer it won't. Also, having it a little bit shifted out of the map will help see everything better.
+Also, i would love to get a special frame displayed when zoomin in, so you never forget that you're displaying it magnified. (love the light hovering effect btw).
+For very small screens, i would love a second level zoom, especially for very long mobile screens like mine, where the zooming option is not giving better option than 2 finger/built-in zoom.

@@ -101,7 +101,8 @@ class TrainCarSelection {
         cards.forEach(card => {
             const spot = card.location_arg;
             this.visibleCardsStocks[spot].removeAll();
-            this.visibleCardsStocks[spot].addToStockWithId(card.type, ''+card.id);
+
+            this.visibleCardsStocks[spot].addToStockWithId(card.type, ''+card.id, 'train-car-deck-hidden-pile');
         });
     }
 
@@ -117,5 +118,27 @@ class TrainCarSelection {
 
     public setCardSelectionButtons(visible: boolean) {
         dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', visible);
+    }
+    
+    public getStockElement(from: number): HTMLElement {
+        return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : this.visibleCardsStocks[from].container_div; 
+    }
+    
+    public moveCardToPlayerBoard(playerId: number, from: number, color: number = 0) {
+        dojo.place(`
+        <div id="animated-train-car-card-${from}" class="animated-train-car-card ${from === 0 ? 'from-hidden-pile' : ''}" data-color="${color}"></div>
+        `, this.getStockElement(from));        
+
+        const card = document.getElementById(`animated-train-car-card-${from}`);
+        const cardBR = card.getBoundingClientRect();
+
+        const toBR = document.getElementById(`train-car-card-counter-${playerId}-wrapper`).getBoundingClientRect();
+             
+        const zoom = this.game.getZoom();
+        const x = (toBR.x - cardBR.x) / zoom;
+        const y = (toBR.y - cardBR.y) / zoom;
+
+        card.style.transform = `translate(${x}px, ${y}px) scale(${0.15 / zoom})`;
+        setTimeout(() => card.parentElement?.removeChild(card), 500);
     }
 }

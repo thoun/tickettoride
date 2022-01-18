@@ -709,6 +709,49 @@
   background-image: url("img/gauge-destination-full.png");
 }
 
+.animated-train-car-card {
+  position: absolute;
+  left: 0px;
+  width: 250px;
+  height: 161px;
+  background-image: url("img/train-cards.jpg");
+  border-radius: 6px;
+  box-shadow: 0 0 8px 1px black;
+  pointer-events: none;
+  transform-origin: center center;
+  transition: transform 0.5s;
+}
+.animated-train-car-card.from-hidden-pile {
+  background-image: url("img/deck-cardLevel-10.png");
+}
+.animated-train-car-card[data-color="0"] {
+  background-position: 0% 50%;
+}
+.animated-train-car-card[data-color="1"] {
+  background-position: 12.5% 50%;
+}
+.animated-train-car-card[data-color="2"] {
+  background-position: 25% 50%;
+}
+.animated-train-car-card[data-color="3"] {
+  background-position: 37.5% 50%;
+}
+.animated-train-car-card[data-color="4"] {
+  background-position: 50% 50%;
+}
+.animated-train-car-card[data-color="5"] {
+  background-position: 62.5% 50%;
+}
+.animated-train-car-card[data-color="6"] {
+  background-position: 75% 50%;
+}
+.animated-train-car-card[data-color="7"] {
+  background-position: 87.5% 50%;
+}
+.animated-train-car-card[data-color="8"] {
+  background-position: 100% 50%;
+}
+
 #destination-deck {
   position: absolute;
   top: 0;
@@ -825,6 +868,9 @@
   justify-content: center;
   overflow: hidden;
 }
+.player-table-train-cars.new-card-animation {
+  overflow: visible;
+}
 .player-table-train-cars.left {
   flex-direction: column;
 }
@@ -906,6 +952,7 @@
 .player-table {
   display: flex;
   background: #FFFFFF80;
+  z-index: 25;
 }
 .player-table .player-table-train-cars {
   flex: 1;

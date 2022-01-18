@@ -249,12 +249,8 @@ class TicketToRide extends Table {
     	
         if ($state['type'] === "activeplayer") {
             switch ($statename) {
-                case 'chooseInitialDestinations':
-                    $this->gamestate->nextState('next');
-                    return;
                 default:
-                    $this->jumpToState(ST_NEXT_PLAYER);
-                    //$this->gamestate->nextState("zombiePass");
+                    $this->gamestate->jumpToState(ST_NEXT_PLAYER);
                 	break;
             }
 

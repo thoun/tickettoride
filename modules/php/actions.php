@@ -21,6 +21,7 @@ trait ActionTrait {
         self::incStat(count($ids), 'keptInitialDestinationCards', $playerId);
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
+        self::giveExtraTime($playerId);
     }
     
     public function chooseAdditionalDestinations(array $ids) {

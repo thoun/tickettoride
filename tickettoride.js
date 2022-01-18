@@ -1277,7 +1277,7 @@ var TrainCarSelection = /** @class */ (function () {
         cards.forEach(function (card) {
             var spot = card.location_arg;
             _this.visibleCardsStocks[spot].removeAll();
-            _this.visibleCardsStocks[spot].addToStockWithId(card.type, '' + card.id);
+            _this.visibleCardsStocks[spot].addToStockWithId(card.type, '' + card.id, 'train-car-deck-hidden-pile');
         });
     };
     TrainCarSelection.prototype.setTrainCarCount = function (count) {
@@ -1290,6 +1290,21 @@ var TrainCarSelection = /** @class */ (function () {
     };
     TrainCarSelection.prototype.setCardSelectionButtons = function (visible) {
         dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', visible);
+    };
+    TrainCarSelection.prototype.getStockElement = function (from) {
+        return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : this.visibleCardsStocks[from].container_div;
+    };
+    TrainCarSelection.prototype.moveCardToPlayerBoard = function (playerId, from, color) {
+        if (color === void 0) { color = 0; }
+        dojo.place("\n        <div id=\"animated-train-car-card-" + from + "\" class=\"animated-train-car-card " + (from === 0 ? 'from-hidden-pile' : '') + "\" data-color=\"" + color + "\"></div>\n        ", this.getStockElement(from));
+        var card = document.getElementById("animated-train-car-card-" + from);
+        var cardBR = card.getBoundingClientRect();
+        var toBR = document.getElementById("train-car-card-counter-" + playerId + "-wrapper").getBoundingClientRect();
+        var zoom = this.game.getZoom();
+        var x = (toBR.x - cardBR.x) / zoom;
+        var y = (toBR.y - cardBR.y) / zoom;
+        card.style.transform = "translate(" + x + "px, " + y + "px) scale(" + 0.15 / zoom + ")";
+        setTimeout(function () { var _a; return (_a = card.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(card); }, 500);
     };
     return TrainCarSelection;
 }());
@@ -1317,8 +1332,8 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.markDestinationComplete = function (destination, destinationRoutes) {
         this.playerDestinations.markDestinationComplete(destination, destinationRoutes);
     };
-    PlayerTable.prototype.addTrainCars = function (trainCars, stocks) {
-        this.playerTrainCars.addTrainCars(trainCars, stocks);
+    PlayerTable.prototype.addTrainCars = function (trainCars, from) {
+        this.playerTrainCars.addTrainCars(trainCars, from);
     };
     PlayerTable.prototype.removeCards = function (removeCards) {
         this.playerTrainCars.removeCards(removeCards);
@@ -1462,20 +1477,18 @@ var PlayerTrainCars = /** @class */ (function () {
         this.playerId = Number(player.id);
         this.addTrainCars(trainCars);
     }
-    PlayerTrainCars.prototype.addTrainCars = function (trainCars, stocks) {
+    PlayerTrainCars.prototype.addTrainCars = function (trainCars, from) {
         var _this = this;
         trainCars.forEach(function (trainCar) {
-            var _a;
             var group = _this.getGroup(trainCar.type);
             var xBackgroundPercent = trainCar.type * 100;
             var deg = Math.round(-4 + Math.random() * 8);
             var html = "\n            <div id=\"train-car-card-" + trainCar.id + "\" class=\"train-car-card\" style=\"background-position: -" + xBackgroundPercent + "% 50%; transform: rotate(" + deg + "deg);\"></div>\n            ";
             dojo.place(html, group.getElementsByClassName('train-car-cards')[0]);
-            var originStock = (_a = stocks === null || stocks === void 0 ? void 0 : stocks.visibleCardsStocks) === null || _a === void 0 ? void 0 : _a.find(function (stock) { return stock === null || stock === void 0 ? void 0 : stock.items.some(function (item) { return Number(item.id) == trainCar.id; }); });
-            var card = document.getElementById("train-car-card-" + trainCar.id);
-            _this.addAnimationFrom(card, originStock ?
-                document.getElementById(originStock.container_div.id + "_item_" + trainCar.id) :
-                document.getElementById("train-car-deck-hidden-pile"));
+            if (from) {
+                var card = document.getElementById("train-car-card-" + trainCar.id);
+                _this.addAnimationFrom(card, group, from);
+            }
         });
         this.updateCounters();
     };
@@ -1508,6 +1521,7 @@ var PlayerTrainCars = /** @class */ (function () {
         var group = document.getElementById("train-car-group-" + type);
         if (!group) {
             dojo.place("\n            <div id=\"train-car-group-" + type + "\" class=\"train-car-group\" data-type=\"" + type + "\">\n                <div id=\"train-car-group-" + type + "-counter\" class=\"train-car-group-counter\">0</div>\n                <div id=\"train-car-group-" + type + "-cards\" class=\"train-car-cards\"></div>\n            </div>\n            ", "player-table-" + this.playerId + "-train-cars");
+            this.updateCounters();
             group = document.getElementById("train-car-group-" + type);
             group.addEventListener('dragstart', function (e) {
                 var dt = e.dataTransfer;
@@ -1543,14 +1557,18 @@ var PlayerTrainCars = /** @class */ (function () {
             var count = groupDiv.getElementsByClassName('train-car-card').length;
             groupDiv.dataset.count = '' + count;
             groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = "" + (count > 1 ? count : '');
-            groupDiv.style.transform = "translate" + (_this.left ? 'X(-' : 'Y(') + Math.pow(Math.abs(distanceFromIndex) * 2, 2) + "px) rotate(" + ( /*this.left ? -distanceFromIndex :*/distanceFromIndex) * 4 + "deg)";
+            var angle = distanceFromIndex * 4;
+            groupDiv.dataset.angle = '' + angle;
+            groupDiv.style.transform = "translate" + (_this.left ? 'X(-' : 'Y(') + Math.pow(Math.abs(distanceFromIndex) * 2, 2) + "px) rotate(" + angle + "deg)";
             groupDiv.parentNode.appendChild(groupDiv);
         });
     };
-    PlayerTrainCars.prototype.addAnimationFrom = function (card, from) {
+    PlayerTrainCars.prototype.addAnimationFrom = function (card, group, from) {
         if (document.visibilityState === 'hidden' || this.game.instantaneousMode) {
             return;
         }
+        var trainCars = document.getElementById("player-table-" + this.playerId + "-train-cars");
+        trainCars.classList.add('new-card-animation');
         var destinationBR = card.getBoundingClientRect();
         var originBR = from.getBoundingClientRect();
         var deltaX = destinationBR.left - originBR.left;
@@ -1558,11 +1576,13 @@ var PlayerTrainCars = /** @class */ (function () {
         card.style.zIndex = '10';
         card.style.transition = "transform 0.5s linear";
         var zoom = this.game.getZoom();
-        card.style.transform = (this.left ? '' : 'rotate(-90deg) ') + "translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
-        setTimeout(function () { return card.style.transform = null; });
+        var angle = -Number(group.dataset.angle);
+        card.style.transform = "rotate(" + (this.left ? angle : angle - 90) + "deg) translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
+        setTimeout(function () { return card.style.transform = null; }, 0);
         setTimeout(function () {
             card.style.zIndex = null;
             card.style.transition = null;
+            trainCars.classList.remove('new-card-animation');
         }, 500);
     };
     PlayerTrainCars.prototype.getPossibleColors = function (route) {
@@ -1653,7 +1673,7 @@ var EndScore = /** @class */ (function () {
                     document.getElementById("destination-counter-" + playerId).classList.add('hidden');
                 }
             },
-        }, destinationRoutes ? 'completed' : 'uncompleted', 0.25);
+        }, destinationRoutes ? 'completed' : 'uncompleted', 0.15 / this.game.getZoom());
         this.game.addAnimation(newDac);
     };
     EndScore.prototype.showLongestPath = function (playerColor, routes, length) {
@@ -1941,7 +1961,6 @@ var TicketToRide = /** @class */ (function () {
         }
         else {
             var possibleColors = ((_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.getPossibleColors(route)) || [];
-            console.log(possibleColors);
             if (possibleColors.length == 1) {
                 this.claimRoute(route.id, possibleColors[0]);
             }
@@ -2035,7 +2054,7 @@ var TicketToRide = /** @class */ (function () {
             ['destinationCompleted', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
-            ['trainCarPicked', 1],
+            ['trainCarPicked', ANIMATION_MS],
             ['lastTurn', 1],
             ['bestScore', 1],
             ['scoreDestination', 2000],
@@ -2066,15 +2085,14 @@ var TicketToRide = /** @class */ (function () {
         this.trainCarSelection.setDestinationCount(notif.args.remainingDestinationsInDeck);
     };
     TicketToRide.prototype.notif_trainCarPicked = function (notif) {
-        var _a, _b;
+        var _a, _b, _c;
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
         if (notif.args.playerId == this.getPlayerId()) {
             var cards = notif.args.cards || ((_b = (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a[this.getPlayerId()]) === null || _b === void 0 ? void 0 : _b.cards);
-            this.playerTable.addTrainCars(cards, this.trainCarSelection);
+            this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.from));
         }
         else {
-            // TODO notif to player board ? check with newCardsOnTable
-            //document.getElementById(`train-car-card-counter-${notif.args.playerId}-wrapper`).      
+            this.trainCarSelection.moveCardToPlayerBoard(notif.args.playerId, notif.args.from, (_c = notif.args.cards) === null || _c === void 0 ? void 0 : _c[0].type);
         }
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     };

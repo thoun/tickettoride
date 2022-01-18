@@ -143,6 +143,7 @@ interface NotifTrainCarsPickedArgs {
         };        
     };
     cards?: TrainCar[];
+    from: number; // 0 for hidden, else spot number
 }
 
 interface NotifNewCardsOnTableArgs {

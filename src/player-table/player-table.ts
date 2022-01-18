@@ -42,8 +42,8 @@ class PlayerTable {
         this.playerDestinations.markDestinationComplete(destination, destinationRoutes);
     }
     
-    public addTrainCars(trainCars: TrainCar[], stocks?: TrainCarSelection) {
-        this.playerTrainCars.addTrainCars(trainCars, stocks);
+    public addTrainCars(trainCars: TrainCar[], from?: HTMLElement) {
+        this.playerTrainCars.addTrainCars(trainCars, from);
     }
     
     public removeCards(removeCards: TrainCar[]) {
