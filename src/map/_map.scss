@@ -348,24 +348,11 @@
     }
   }
 
-  &[data-player-color="ff0000"] {
-    background-image: url('img/wagons-red.png'), url('img/wagons-shadow.png');
-  }
-
-  &[data-player-color="008000"] {
-    background-image: url('img/wagons-green.png'), url('img/wagons-shadow.png');
-  }
-
-  &[data-player-color="0000ff"] {
-    background-image: url('img/wagons-blue.png'), url('img/wagons-shadow.png');
-  }
-
-  &[data-player-color="ffa500"] {
-    background-image: url('img/wagons-yellow.png'), url('img/wagons-shadow.png');
-  }
-
-  &[data-player-color="982fff"] {
-    background-image: url('img/wagons-purple.png'), url('img/wagons-shadow.png');
+  
+  @each $name, $color in $player-colors {
+    &[data-player-color="#{$color}"] {
+      background-image: url('img/wagons-#{$name}.png'), url('img/wagons-shadow.png');
+    }
   }
 
   &.phantom {

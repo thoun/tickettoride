@@ -1,13 +1,106 @@
 @charset "UTF-8";
+.player-board {
+  color: white;
+  background: url("img/playerboard-background-bottom.jpg");
+  background-position: bottom;
+  background-size: cover;
+}
+.player-board[data-player-color=e3001a]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  background: url("img/playerboard-background.png"), #e3001a;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 3px 2px black;
+  border-radius: 8px;
+}
+.player-board[data-player-color="41a62a"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  background: url("img/playerboard-background.png"), #41a62a;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 3px 2px black;
+  border-radius: 8px;
+}
+.player-board[data-player-color="0056aa"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  background: url("img/playerboard-background.png"), #0056aa;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 3px 2px black;
+  border-radius: 8px;
+}
+.player-board[data-player-color=ffed00]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  background: url("img/playerboard-background.png"), #ffed00;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 3px 2px black;
+  border-radius: 8px;
+}
+.player-board[data-player-color=af0ac2]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  background: url("img/playerboard-background.png"), #af0ac2;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 3px 2px black;
+  border-radius: 8px;
+}
+.player-board .player-name, .player-board .player-name a {
+  color: white !important;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
+.player-board .player_score_value {
+  font-weight: bold;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
+.player-board .train-car-counter {
+  flex-direction: column;
+  width: 64px;
+  height: 64px;
+  background: url("img/playerboard-train-background.png") no-repeat center;
+  margin: -5px -10px -10px -10px;
+  color: black;
+}
+.player-board .train-car-counter span {
+  margin-top: -5px;
+}
+
 .counters {
   display: flex;
   align-items: center;
   margin: 5px 0;
+  font-weight: bold;
 }
 .counters .counter {
   flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 .counters .counter span {
   padding: 0 5px 0 5px;
@@ -37,19 +130,19 @@
 .icon.train {
   background-image: url("img/train-icons.png");
 }
-.icon.train[data-player-color=ff0000] {
+.icon.train[data-player-color=e3001a] {
   background-position: 75% 0%;
 }
-.icon.train[data-player-color="008000"] {
+.icon.train[data-player-color="41a62a"] {
   background-position: 25% 0%;
 }
-.icon.train[data-player-color="0000ff"] {
+.icon.train[data-player-color="0056aa"] {
   background-position: 0% 0%;
 }
-.icon.train[data-player-color=ffa500] {
+.icon.train[data-player-color=ffed00] {
   background-position: 100% 0%;
 }
-.icon.train[data-player-color="982fff"] {
+.icon.train[data-player-color=af0ac2] {
   background-position: 50% 0%;
 }
 .icon.train-car-color {
@@ -525,19 +618,19 @@
 .wagon.angle35 {
   background-position: 100% 100%;
 }
-.wagon[data-player-color=ff0000] {
+.wagon[data-player-color=e3001a] {
   background-image: url("img/wagons-red.png"), url("img/wagons-shadow.png");
 }
-.wagon[data-player-color="008000"] {
+.wagon[data-player-color="41a62a"] {
   background-image: url("img/wagons-green.png"), url("img/wagons-shadow.png");
 }
-.wagon[data-player-color="0000ff"] {
+.wagon[data-player-color="0056aa"] {
   background-image: url("img/wagons-blue.png"), url("img/wagons-shadow.png");
 }
-.wagon[data-player-color=ffa500] {
+.wagon[data-player-color=ffed00] {
   background-image: url("img/wagons-yellow.png"), url("img/wagons-shadow.png");
 }
-.wagon[data-player-color="982fff"] {
+.wagon[data-player-color=af0ac2] {
   background-image: url("img/wagons-purple.png"), url("img/wagons-shadow.png");
 }
 .wagon.phantom {
@@ -1023,19 +1116,19 @@
   height: 20px;
   transition: right 0.5s;
 }
-#score #table-wrapper table tr td.train .train-image[data-player-color=ff0000] {
+#score #table-wrapper table tr td.train .train-image[data-player-color=e3001a] {
   background-position: 0% 100%;
 }
-#score #table-wrapper table tr td.train .train-image[data-player-color="008000"] {
+#score #table-wrapper table tr td.train .train-image[data-player-color="41a62a"] {
   background-position: 0% 50%;
 }
-#score #table-wrapper table tr td.train .train-image[data-player-color="0000ff"] {
+#score #table-wrapper table tr td.train .train-image[data-player-color="0056aa"] {
   background-position: 0% 25%;
 }
-#score #table-wrapper table tr td.train .train-image[data-player-color=ffa500] {
+#score #table-wrapper table tr td.train .train-image[data-player-color=ffed00] {
   background-position: 0% 0%;
 }
-#score #table-wrapper table tr td.train .train-image[data-player-color="982fff"] {
+#score #table-wrapper table tr td.train .train-image[data-player-color=af0ac2] {
   background-position: 0% 75%;
 }
 #score #table-wrapper table tr td.total {

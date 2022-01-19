@@ -1,3 +1,7 @@
+// old colors (classic BGA colors) : $player-colors: ("red": "ff0000", "green": "008000", "blue": "0000ff", "yellow": "ffa500", "purple": "982fff");
+// new colors (from end score train image)
+$player-colors: ("red": "e3001a", "green": "41a62a", "blue": "0056aa", "yellow": "ffed00", "purple": "af0ac2");
+
 @import 'playerboards';
 @import 'map/map';
 @import 'train-car-deck/train-car-deck';

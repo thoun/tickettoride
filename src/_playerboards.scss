@@ -1,13 +1,61 @@
+.player-board {
+  color: white;
+  background: url('img/playerboard-background-bottom.jpg');
+  background-position: bottom;
+  background-size: cover;
+
+  @each $name, $color in $player-colors {
+
+    &[data-player-color="#{$color}"]::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background:  url('img/playerboard-background.png'), ##{$color};
+      background-size: cover;
+      background-repeat: no-repeat;
+      box-shadow: 0 0 3px 2px black;
+      border-radius: 8px;
+    }
+  }
+
+  .player-name, .player-name a {
+    color: white !important; // to override inline color
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+  }
+  .player_score_value {
+    font-weight: bold;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+  }
+
+  .train-car-counter {
+    flex-direction: column;
+    width: 64px;
+    height: 64px;
+    background: url('img/playerboard-train-background.png') no-repeat center;
+    margin: -5px -10px -10px -10px;
+
+    color: black;
+
+    span {
+      margin-top: -5px;
+    }
+  }
+}
+
 .counters {
   display: flex;
   align-items: center;
   margin: 5px 0;
-  // font-family: 'goodgirl';
+  font-weight: bold;
 
   .counter {
     flex: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
 
     span {
       padding: 0 5px 0 5px;
@@ -45,23 +93,23 @@
   &.train {
     background-image: url('img/train-icons.png');
 
-    &[data-player-color="ff0000"] {
+    &[data-player-color="e3001a"] {
       background-position: #{3 * 100% / 4} 0%;
     }
 
-    &[data-player-color="008000"] {
+    &[data-player-color="41a62a"] {
       background-position: #{1 * 100% / 4} 0%;
     }
 
-    &[data-player-color="0000ff"] {
+    &[data-player-color="0056aa"] {
       background-position: #{0 * 100% / 4} 0%;
     }
 
-    &[data-player-color="ffa500"] {
+    &[data-player-color="ffed00"] {
       background-position: #{4 * 100% / 4} 0%;
     }
 
-    &[data-player-color="982fff"] {
+    &[data-player-color="af0ac2"] {
       background-position: #{2 * 100% / 4} 0%;
     }
   }

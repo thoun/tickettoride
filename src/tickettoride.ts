@@ -233,6 +233,8 @@ class TicketToRide implements TicketToRideGame {
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);
 
+            document.getElementById(`overall_player_board_${player.id}`).dataset.playerColor = player.color;
+
             // public counters
             dojo.place(`<div class="counters">
                 <div id="train-car-counter-${player.id}-wrapper" class="counter train-car-counter">
