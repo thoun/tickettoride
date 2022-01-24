@@ -9,11 +9,11 @@
  * color (0 for gray, else see Color constants)
  */
 class Route {
-    public /*int*/ $id;
-    public /*int*/ $from;
-    public /*int*/ $to;
-    public /*int*/ $number;
-    public /*int*/ $color;
+    public int $id;
+    public int $from;
+    public int $to;
+    public int $number;
+    public int $color;
 
     public function __construct(int $from, int $to, int $number, int $color = 0) {
         $this->from = $from;
@@ -24,8 +24,8 @@ class Route {
 }
 
 class ClaimedRoute {
-    public /*int*/ $routeId;
-    public /*int*/ $playerId;
+    public int $routeId;
+    public int $playerId;
 
     public function __construct(array $db) {
         $this->routeId = intval($db['route_id']);

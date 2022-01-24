@@ -81,6 +81,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     }
     
     private enterover(e: DragEvent, route: Route) {
+        console.log('enterover', e);
         const cardsColor = Number(this.mapDiv.dataset.dragColor);
         const canClaimRoute = this.game.canClaimRoute(route, cardsColor);
         this.setHoveredRoute(route, canClaimRoute);
@@ -93,9 +94,11 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         spaceDiv.addEventListener('dragenter', e => this.enterover(e, route));
         spaceDiv.addEventListener('dragover', e => this.enterover(e, route));
         spaceDiv.addEventListener('dragleave', (e) => {
+            console.log('dragleave', e);
             this.setHoveredRoute(null);
         });
-        spaceDiv.addEventListener('drop', () => {
+        spaceDiv.addEventListener('drop', e => {
+            console.log('drop', e);
             if (document.getElementById('map').dataset.dragColor == '') {
                 return;
             }

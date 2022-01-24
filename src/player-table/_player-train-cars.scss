@@ -39,6 +39,7 @@
 
     &[draggable="true"] {
         cursor: pointer;
+        touch-action: none; // so drag can be used on mobile
     }
 
     &.hide {

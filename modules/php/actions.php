@@ -143,12 +143,10 @@ trait ActionTrait {
             throw new BgaUserException("Not enough cards to claim the route.");
         }
 
-        usort($colorAndLocomotiveCards, function ($card1, $card2) {
-            return $card1->type < $card2->type;
-        });
+        usort($colorAndLocomotiveCards, fn($card1, $card2) => $card1->type < $card2->type);
 
         $cardsToRemove = array_slice($colorAndLocomotiveCards, 0, $route->number);
-        $this->trainCars->moveCards(array_map(function ($card) { return $card->id; }, $cardsToRemove), 'discard');
+        $this->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
 
         // save claimed route
         self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");

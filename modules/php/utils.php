@@ -24,7 +24,7 @@ trait UtilTrait {
      * Transforms a TrainCar Db object array to TrainCar class array.
      */
     function getTrainCarsFromDb(array $dbObjects) {
-        return array_map(function($dbObject) { return $this->getTrainCarFromDb($dbObject); }, array_values($dbObjects));
+        return array_map(fn($dbObject) => $this->getTrainCarFromDb($dbObject), array_values($dbObjects));
     }
 
     /**
@@ -41,7 +41,7 @@ trait UtilTrait {
      * Transforms a Destination Db object array to Destination class array.
      */    
     function getDestinationsFromDb(array $dbObjects) {
-        return array_map(function($dbObject) { return $this->getDestinationFromDb($dbObject); }, array_values($dbObjects));
+        return array_map(fn($dbObject) => $this->getDestinationFromDb($dbObject), array_values($dbObjects));
     }
 
     function getInitialTrainCarsNumber() {
@@ -59,7 +59,7 @@ trait UtilTrait {
     function getNonZombiePlayersIds() {
         $sql = "SELECT player_id FROM player WHERE player_eliminated = 0 AND player_zombie = 0 ORDER BY player_no";
         $dbResults = self::getCollectionFromDB($sql);
-        return array_map(function($dbResult) { return intval($dbResult['player_id']); }, array_values($dbResults));
+        return array_map(fn($dbResult) => intval($dbResult['player_id']), array_values($dbResults));
     }
 
     function getClaimedRoutes($playerId = null) {
@@ -68,7 +68,7 @@ trait UtilTrait {
             $sql .= "WHERE player_id = $playerId ";
         }
         $dbResults = self::getCollectionFromDB($sql);
-        return array_map(function($dbResult) { return new ClaimedRoute($dbResult); }, array_values($dbResults));
+        return array_map(fn($dbResult) => new ClaimedRoute($dbResult), array_values($dbResults));
     }
 
     function getPlayersIds() {
@@ -105,7 +105,7 @@ trait UtilTrait {
     function getCompletedDestinationsIds(int $playerId) {
         $sql = "SELECT `card_id` FROM `destination` WHERE `card_location` = 'hand' AND `card_location_arg` = $playerId AND  `completed` = 1";
         $dbResults = self::getCollectionFromDB($sql);
-        return array_map(function($dbResult) { return intval($dbResult['card_id']); }, array_values($dbResults));
+        return array_map(fn($dbResult) => intval($dbResult['card_id']), array_values($dbResults));
     }
 
     function checkCompletedDestinations(int $playerId) {

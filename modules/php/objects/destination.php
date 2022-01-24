@@ -4,9 +4,9 @@
  * A DestinationCard is the graphic representation of a card (informations on it : from, to and points).
  */
 class DestinationCard {
-    public /*int*/ $from;
-    public /*int*/ $to;
-    public /*int*/ $points;
+    public int $from;
+    public int $to;
+    public int $points;
   
     public function __construct(int $from, int $to, int $points) {
         $this->from = $from;
@@ -23,11 +23,11 @@ class DestinationCard {
  * Type arg : the destination type (DestinationCard id)
  */
 class Destination extends DestinationCard {
-    public $id;
-    public $location;
-    public $location_arg;
-    public $type;
-    public $type_arg;
+    public int $id;
+    public string $location;
+    public int $location_arg;
+    public int $type;
+    public int $type_arg;
 
     public function __construct($dbCard, $DESTINATIONS) {
         $this->id = intval($dbCard['id']);

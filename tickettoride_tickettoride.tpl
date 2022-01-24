@@ -45,5 +45,4 @@
     </div>
 </div>
 
-
 {OVERALL_GAME_FOOTER}

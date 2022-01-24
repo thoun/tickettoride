@@ -77,6 +77,7 @@ class PlayerTrainCars {
             group = document.getElementById(`train-car-group-${type}`);
 
             group.addEventListener('dragstart', (e) => {
+                console.log('dragstart', e);
                 const dt = e.dataTransfer;
                 dt.effectAllowed = 'move';
                 
@@ -92,18 +93,18 @@ class PlayerTrainCars {
                 dt.setDragImage(groupClone, -10, -25);
                 setTimeout(() => document.body.removeChild(groupClone));
                 
-
                 //train-car-group-0
                 setTimeout(() => {
                     group.classList.add('hide');
                 }, 0);
             });
             group.addEventListener('dragend', (e) => {
+                console.log('dragend', e);
                 group.classList.remove('hide');
                 document.getElementById('map').dataset.dragColor = '';
             });
 
-            group.addEventListener('click', () => (this.game as any).showMessage(_("Drag the cards on the route you want to claim"), 'info')); 
+            group.addEventListener('click', () => (this.game as any).showMessage(_("Drag the cards on the route you want to claim, or click on the route to claim"), 'info')); 
         }
         return group;
     }

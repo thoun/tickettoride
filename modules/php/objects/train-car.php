@@ -8,11 +8,11 @@
  * Type arg : unused
  */
 class TrainCar {
-    public $id;
-    public $location;
-    public $location_arg;
-    public $type;
-    //public $type_arg;
+    public int $id;
+    public string $location;
+    public int $location_arg;
+    public int $type;
+    //public int $type_arg;
 
     public function __construct($dbCard) {
         $this->id = intval($dbCard['id']);

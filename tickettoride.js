@@ -904,6 +904,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.mapDiv.addEventListener('drop', e => this.mapDiv.classList.remove('drag-over'));*/
     }
     TtrMap.prototype.enterover = function (e, route) {
+        console.log('enterover', e);
         var cardsColor = Number(this.mapDiv.dataset.dragColor);
         var canClaimRoute = this.game.canClaimRoute(route, cardsColor);
         this.setHoveredRoute(route, canClaimRoute);
@@ -917,9 +918,11 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         spaceDiv.addEventListener('dragenter', function (e) { return _this.enterover(e, route); });
         spaceDiv.addEventListener('dragover', function (e) { return _this.enterover(e, route); });
         spaceDiv.addEventListener('dragleave', function (e) {
+            console.log('dragleave', e);
             _this.setHoveredRoute(null);
         });
-        spaceDiv.addEventListener('drop', function () {
+        spaceDiv.addEventListener('drop', function (e) {
+            console.log('drop', e);
             if (document.getElementById('map').dataset.dragColor == '') {
                 return;
             }
@@ -1524,6 +1527,7 @@ var PlayerTrainCars = /** @class */ (function () {
             this.updateCounters();
             group = document.getElementById("train-car-group-" + type);
             group.addEventListener('dragstart', function (e) {
+                console.log('dragstart', e);
                 var dt = e.dataTransfer;
                 dt.effectAllowed = 'move';
                 document.getElementById('map').dataset.dragColor = '' + type;
@@ -1541,10 +1545,11 @@ var PlayerTrainCars = /** @class */ (function () {
                 }, 0);
             });
             group.addEventListener('dragend', function (e) {
+                console.log('dragend', e);
                 group.classList.remove('hide');
                 document.getElementById('map').dataset.dragColor = '';
             });
-            group.addEventListener('click', function () { return _this.game.showMessage(_("Drag the cards on the route you want to claim"), 'info'); });
+            group.addEventListener('click', function () { return _this.game.showMessage(_("Drag the cards on the route you want to claim, or click on the route to claim"), 'info'); });
         }
         return group;
     };

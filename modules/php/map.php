@@ -3,8 +3,8 @@
 require_once(__DIR__.'/objects/route.php');
 
 class ConnectedCity {
-    public /*int*/ $city;
-    public /*array*/ $routes;
+    public int $city;
+    public array $routes;
   
     public function __construct(int $city, array $routes) {
         $this->city = $city;
@@ -13,8 +13,8 @@ class ConnectedCity {
 }
 
 class LongestPath {
-    public /*int*/ $length;
-    public /*array*/ $routes;
+    public int $length;
+    public array $routes;
   
     public function __construct(int $length, array $routes) {
         $this->length = $length;
@@ -33,15 +33,15 @@ trait MapTrait {
     public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars) {
         $allRoutes = $this->getAllRoutes();
         $claimedRoutes = $this->getClaimedRoutes();
-        $claimedRoutesIds = array_map(function($claimedRoute) { return $claimedRoute->routeId; }, array_values($claimedRoutes));
+        $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
 
         // remove routes already claimed
-        $claimableRoutes = array_filter($allRoutes, function($route) use ($claimedRoutesIds) { return !in_array($route->id, $claimedRoutesIds); });
+        $claimableRoutes = array_filter($allRoutes, fn($route) => !in_array($route->id, $claimedRoutesIds));
 
         // remove routes user can't pay
-        $claimableRoutes = array_values(array_filter($claimableRoutes, function($unclaimedRoute) use ($trainCarsHand, $remainingTrainCars) {
-           return $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars) !== null;
-        }));
+        $claimableRoutes = array_values(array_filter($claimableRoutes, fn($unclaimedRoute) => 
+           $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars) !== null
+        ));
 
         $doubleRouteAllowed = $this->isDoubleRouteAllowed();
         // remove double routes if low player count, or if player already got the other route
@@ -76,7 +76,7 @@ trait MapTrait {
      */
     public function getLongestPath(int $playerId) {
         $claimedRoutes = $this->getClaimedRoutes($playerId);
-        $claimedRoutesIds = array_map(function($claimedRoute) { return $claimedRoute->routeId; }, array_values($claimedRoutes));
+        $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
 
         $longestPath = new LongestPath(0, []);
         
@@ -96,11 +96,11 @@ trait MapTrait {
      */
     public function getDestinationRoutes(int $playerId, object $destination) {
         $claimedRoutes = $this->getClaimedRoutes($playerId);
-        $claimedRoutesIds = array_map(function($claimedRoute) { return $claimedRoute->routeId; }, array_values($claimedRoutes));
+        $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
 
         $citiesConnectedToFrom = $this->getAccessibleCitiesFrom(new ConnectedCity($destination->from, []), [$destination->from], $claimedRoutesIds);
 
-        $validConnections = array_values(array_filter($citiesConnectedToFrom, function($connectedCity) use ($destination) { return $connectedCity->city == $destination->to; }));
+        $validConnections = array_values(array_filter($citiesConnectedToFrom, fn($connectedCity) => $connectedCity->city == $destination->to));
         $count = count($validConnections);
 
         if ($count == 0) {
@@ -150,11 +150,11 @@ trait MapTrait {
         } else if ($route->color > 0) {
             $colorsToTest = [$route->color];
         }
-        $locomotiveCards = array_filter($trainCarsHand, function ($card) { return $card->type == 0; });
+        $locomotiveCards = array_filter($trainCarsHand, fn($card) => $card->type == 0);
         
         // route is gray, check for each possible color
         foreach ($colorsToTest as $color) {
-            $colorCards = array_filter($trainCarsHand, function ($card) use ($color) { return $card->type == $color; });
+            $colorCards = array_filter($trainCarsHand, fn($card) => $card->type == $color);
             if (count($colorCards) + count($locomotiveCards) >= $route->number) {
                 // enough color card (including locomotives)
                 return array_slice(array_merge($colorCards, $locomotiveCards), 0, $route->number); 
@@ -166,9 +166,9 @@ trait MapTrait {
     private function getTwinRoutes(object $route) {
         $allRoutes = $this->getAllRoutes();
 
-        $twinRoutes = array_values(array_filter($allRoutes, function($twinRoute) use ($route) {
-            return $twinRoute->from == $route->from && $twinRoute->to == $route->to && $twinRoute->id != $route->id;
-        }));
+        $twinRoutes = array_values(array_filter($allRoutes, fn($twinRoute) =>
+            $twinRoute->from == $route->from && $twinRoute->to == $route->to && $twinRoute->id != $route->id
+        ));
 
         return $twinRoutes;
     }
@@ -176,9 +176,9 @@ trait MapTrait {
     private function getRoutesConnectedToCity(int $city) {
         $allRoutes = $this->getAllRoutes();
 
-        $connectedRoutes = array_values(array_filter($allRoutes, function($route) use ($city) {
-            return $route->from == $city || $route->to == $city;
-        }));
+        $connectedRoutes = array_values(array_filter($allRoutes, fn($route) =>
+            $route->from == $city || $route->to == $city
+        ));
 
         return $connectedRoutes;
     }
@@ -199,7 +199,7 @@ trait MapTrait {
         }, $claimedConnectedRouteToExplore);
 
         $recursiveConnectedCities = $connectedCities; // copy
-        $newVisitedCitiesIds = array_merge($visitedCitiesIds, array_map(function ($cc) { return $cc->city; }, $connectedCities));
+        $newVisitedCitiesIds = array_merge($visitedCitiesIds, array_map(fn ($cc) => $cc->city, $connectedCities));
         foreach ($connectedCities as $connectedCity) {
             $recursiveConnectedCities = array_merge(
                 $recursiveConnectedCities, 
@@ -224,9 +224,9 @@ trait MapTrait {
         $connectedRoutes = $this->getRoutesConnectedToCity($from);
 
         // we only check route we haven't checked, to avoid infinite loop
-        $claimedConnectedRoutesToExplore = array_values(array_filter($connectedRoutes, function($route) use ($from, $visitedRoutesIds, $playerClaimedRoutesIds) {
-            return in_array($route->id, $playerClaimedRoutesIds) && !in_array($route->id, $visitedRoutesIds);
-        }));
+        $claimedConnectedRoutesToExplore = array_values(array_filter($connectedRoutes, fn($route) =>
+            in_array($route->id, $playerClaimedRoutesIds) && !in_array($route->id, $visitedRoutesIds)
+        ));
 
         $longestPath = new LongestPath(0, []);
 

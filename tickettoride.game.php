@@ -46,14 +46,14 @@ class TicketToRide extends Table {
 	function __construct() {
         parent::__construct();
         
-        self::initGameStateLabels([
+        $this->initGameStateLabels([
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
         ]);
         
-        $this->destinations = self::getNew("module.common.deck");
+        $this->destinations = $this->getNew("module.common.deck");
         $this->destinations->init("destination");
 		
-        $this->trainCars = self::getNew("module.common.deck");
+        $this->trainCars = $this->getNew("module.common.deck");
         $this->trainCars->init("traincar"); 
         $this->trainCars->autoreshuffle = true;
 	}
@@ -74,7 +74,7 @@ class TicketToRide extends Table {
         // Set the colors of the players with HTML color code
         // The default below is red/green/blue/orange/brown
         // The number of colors defined here must correspond to the maximum number of players allowed for the gams
-        $gameinfos = self::getGameinfos();
+        $gameinfos = $this->getGameinfos();
         $default_colors = $gameinfos['player_colors'];
  
         // Create players
@@ -86,47 +86,47 @@ class TicketToRide extends Table {
             $values[] = "('".$playerId."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."', ".$this->getInitialTrainCarsNumber().")";
         }
         $sql .= implode(',', $values);
-        self::DbQuery($sql);
-        self::reattributeColorsBasedOnPreferences($players, $gameinfos['player_colors']);
-        self::reloadPlayersBasicInfos();
+        $this->DbQuery($sql);
+        $this->reattributeColorsBasedOnPreferences($players, $gameinfos['player_colors']);
+        $this->reloadPlayersBasicInfos();
         
         /************ Start the game initialization *****/
 
         // Init global values with their initial values
-        self::setGameStateInitialValue(LAST_TURN, 0);
+        $this->setGameStateInitialValue(LAST_TURN, 0);
         
         // Init game statistics
         // 10+ : other
-        self::initStat('table', 'turnsNumber', 0);
-        self::initStat('player', 'turnsNumber', 0);
+        $this->initStat('table', 'turnsNumber', 0);
+        $this->initStat('player', 'turnsNumber', 0);
         // 20+ : train car cards
-        self::initStat('table', 'collectedTrainCarCards', 0);
-        self::initStat('player', 'collectedTrainCarCards', 0);
-        self::initStat('table', 'collectedHiddenTrainCarCards', 0);
-        self::initStat('player', 'collectedHiddenTrainCarCards', 0);
-        self::initStat('table', 'collectedVisibleTrainCarCards', 0);
-        self::initStat('player', 'collectedVisibleTrainCarCards', 0);
-        self::initStat('table', 'collectedVisibleLocomotives', 0);
-        self::initStat('player', 'collectedVisibleLocomotives', 0);
-        self::initStat('table', 'visibleCardsReplaced', 0);
+        $this->initStat('table', 'collectedTrainCarCards', 0);
+        $this->initStat('player', 'collectedTrainCarCards', 0);
+        $this->initStat('table', 'collectedHiddenTrainCarCards', 0);
+        $this->initStat('player', 'collectedHiddenTrainCarCards', 0);
+        $this->initStat('table', 'collectedVisibleTrainCarCards', 0);
+        $this->initStat('player', 'collectedVisibleTrainCarCards', 0);
+        $this->initStat('table', 'collectedVisibleLocomotives', 0);
+        $this->initStat('player', 'collectedVisibleLocomotives', 0);
+        $this->initStat('table', 'visibleCardsReplaced', 0);
         // 30+ : destination cards
-        self::initStat('table', 'drawDestinationsAction', 0);
-        self::initStat('player', 'drawDestinationsAction', 0);
-        self::initStat('table', 'completedDestinations', 0);
-        self::initStat('player', 'completedDestinations', 0);
-        //self::initStat('table', 'uncompletedDestinations', 0); // only computed at the end
-        //self::initStat('player', 'uncompletedDestinations', 0); // only computed at the end
-        self::initStat('player', 'keptInitialDestinationCards', 0); // player only
-        self::initStat('player', 'keptAdditionalDestinationCards', 0); // player only
+        $this->initStat('table', 'drawDestinationsAction', 0);
+        $this->initStat('player', 'drawDestinationsAction', 0);
+        $this->initStat('table', 'completedDestinations', 0);
+        $this->initStat('player', 'completedDestinations', 0);
+        //$this->initStat('table', 'uncompletedDestinations', 0); // only computed at the end
+        //$this->initStat('player', 'uncompletedDestinations', 0); // only computed at the end
+        $this->initStat('player', 'keptInitialDestinationCards', 0); // player only
+        $this->initStat('player', 'keptAdditionalDestinationCards', 0); // player only
         // 40+ : train cars (meeples)
-        self::initStat('table', 'claimedRoutes', 0);
-        self::initStat('player', 'claimedRoutes', 0);
-        self::initStat('table', 'playedTrainCars', 0);
-        self::initStat('player', 'playedTrainCars', 0);
-        //self::initStat('table', 'averageClaimedRouteLength', 0); // only computed at the end
-        //self::initStat('player', 'averageClaimedRouteLength', 0); // only computed at the end
-        //self::initStat('table', 'longestPath', 0); // only computed at the end
-        //self::initStat('player', 'longestPath', 0); // only computed at the end
+        $this->initStat('table', 'claimedRoutes', 0);
+        $this->initStat('player', 'claimedRoutes', 0);
+        $this->initStat('table', 'playedTrainCars', 0);
+        $this->initStat('player', 'playedTrainCars', 0);
+        //$this->initStat('table', 'averageClaimedRouteLength', 0); // only computed at the end
+        //$this->initStat('player', 'averageClaimedRouteLength', 0); // only computed at the end
+        //$this->initStat('table', 'longestPath', 0); // only computed at the end
+        //$this->initStat('player', 'longestPath', 0); // only computed at the end
 
         // setup the initial game situation here
 
@@ -160,12 +160,12 @@ class TicketToRide extends Table {
 
         $result = [];
     
-        $currentPlayerId = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
+        $currentPlayerId = $this->getCurrentPlayerId();    // !! We must only return informations visible by this player !!
     
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, player_score score, player_no playerNo FROM player ";
-        $result['players'] = self::getCollectionFromDb($sql);
+        $result['players'] = $this->getCollectionFromDb($sql);
   
         // Gather all information about current game situation (visible by player $currentPlayerId).
 
@@ -197,9 +197,9 @@ class TicketToRide extends Table {
         $result['destinationDeckMaxCount'] = 30;
         
         if ($isEnd) {
-            $result['bestScore'] = max(array_map(function($player) { return intval($player['score']); }, $result['players']));
+            $result['bestScore'] = max(array_map(fn($player) => intval($player['score']), $result['players']));
         } else {
-            $result['lastTurn'] = self::getGameStateValue(LAST_TURN) > 0;
+            $result['lastTurn'] = $this->getGameStateValue(LAST_TURN) > 0;
             
         }
   
@@ -293,14 +293,14 @@ class TicketToRide extends Table {
 //            // ! important ! Use DBPREFIX_<table_name> for all tables
 //
 //            $sql = "ALTER TABLE DBPREFIX_xxxxxxx ....";
-//            self::applyDbUpgradeToAllDB( $sql );
+//            $this->applyDbUpgradeToAllDB( $sql );
 //        }
 //        if( $from_version <= 1405061421 )
 //        {
 //            // ! important ! Use DBPREFIX_<table_name> for all tables
 //
 //            $sql = "CREATE TABLE DBPREFIX_xxxxxxx ....";
-//            self::applyDbUpgradeToAllDB( $sql );
+//            $this->applyDbUpgradeToAllDB( $sql );
 //        }
 //        // Please add your future database scheme changes here
 //

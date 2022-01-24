@@ -35,7 +35,7 @@ trait TrainCarDeckTrait {
         $cards = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('table'));
 
         if ($limitToSelectableOnSecondPick && VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS) {
-            $cards = array_values(array_filter($cards, function ($card) { return $card->type != 0; }));
+            $cards = array_values(array_filter($cards, fn($card) => $card->type != 0));
         }
 
         return $cards;
@@ -125,7 +125,7 @@ trait TrainCarDeckTrait {
         }
 
         $cards = $this->getVisibleTrainCarCards();
-        $locomotives = count(array_filter($cards, function ($card) { return $card->type == 0; }));
+        $locomotives = count(array_filter($cards, fn($card) => $card->type == 0));
         if ($locomotives >= RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES) {
             $this->trainCars->moveAllCardsInLocation('table', 'discard');
             $this->placeNewTrainCarCardsOnTable();
