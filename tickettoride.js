@@ -1,11 +1,3 @@
-/*declare const define;
-declare const ebg;
-declare const $;
-declare const dojo: Dojo;
-declare const _;
-declare const g_gamethemeurl;
-
-declare const board: HTMLDivElement;*/
 var CARD_WIDTH = 250;
 var CARD_HEIGHT = 161;
 var DESTINATION_CARD_SHIFT = 32;
@@ -30,20 +22,21 @@ var ORANGE = 5;
 var BLACK = 6;
 var RED = 7;
 var GREEN = 8;
-// TODO TEMP
-var COLORS = [
-    'Gray',
-    'Pink',
-    'White',
-    'Blue',
-    'Yellow',
-    'Orange',
-    'Black',
-    'Red',
-    'Green',
-];
+function getColor(color) {
+    switch (color) {
+        case 0: return _('Gray');
+        case 1: return _('Pink');
+        case 2: return _('White');
+        case 3: return _('Blue');
+        case 4: return _('Yellow');
+        case 5: return _('Orange');
+        case 6: return _('Black');
+        case 7: return _('Red');
+        case 8: return _('Green');
+    }
+}
 function setupTrainCarCardDiv(cardDiv, cardTypeId) {
-    cardDiv.title = Number(cardTypeId) == 0 ? 'Locomotive' : COLORS[Number(cardTypeId)];
+    cardDiv.title = Number(cardTypeId) == 0 ? 'Locomotive' : getColor(Number(cardTypeId));
 }
 var DestinationCard = /** @class */ (function () {
     function DestinationCard(id, from, to, points) {
@@ -880,7 +873,7 @@ var TtrMap = /** @class */ (function () {
         });
         ROUTES.forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + space.x * FACTOR + "px, " + space.y * FACTOR + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES_NAMES[route.from] + " to " + CITIES_NAMES[route.to] + ", " + route.spaces.length + " " + _(COLORS[route.color]) + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", 'map');
+                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + space.x * FACTOR + "px, " + space.y * FACTOR + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + CITIES_NAMES[route.from] + " to " + CITIES_NAMES[route.to] + ", " + route.spaces.length + " " + getColor(route.color) + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", 'map');
                 var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
                 _this.setSpaceEvents(spaceDiv, route);
             });
@@ -888,7 +881,7 @@ var TtrMap = /** @class */ (function () {
         );
         /*console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
 ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFixed(2)}, ${(space.y*0.986 + 10).toFixed(2)}, ${space.angle}),`).join('\n')}
-    ], ${COLORS[route.color]}),`).join('\n'));*/
+    ], ${getColor(route.color)}),`).join('\n'));*/
         //this.movePoints();
         this.setClaimedRoutes(claimedRoutes);
         this.resizedDiv = document.getElementById('resized');
@@ -1973,7 +1966,7 @@ var TicketToRide = /** @class */ (function () {
             else if (possibleColors.length > 1) {
                 possibleColors.forEach(function (color) {
                     var label = dojo.string.substitute(_("Use ${color}"), {
-                        'color': "<div class=\"train-car-color icon\" data-color=\"" + color + "\"></div> " + _(COLORS[color])
+                        'color': "<div class=\"train-car-color icon\" data-color=\"" + color + "\"></div> " + getColor(color)
                     });
                     _this.addActionButton("claimRouteWithColor_button" + color, label, function () { return _this.claimRoute(route.id, color); });
                 });

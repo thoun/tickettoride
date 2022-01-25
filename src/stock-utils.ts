@@ -1,12 +1,3 @@
-/*declare const define;
-declare const ebg;
-declare const $;
-declare const dojo: Dojo;
-declare const _;
-declare const g_gamethemeurl;
-
-declare const board: HTMLDivElement;*/
-
 const CARD_WIDTH = 250;
 const CARD_HEIGHT = 161;
 const DESTINATION_CARD_SHIFT = 32;
@@ -35,20 +26,22 @@ const BLACK = 6;
 const RED = 7;
 const GREEN = 8;
 
-// TODO TEMP
-const COLORS = [
-  'Gray',
-  'Pink',
-  'White',
-  'Blue',
-  'Yellow',
-  'Orange',
-  'Black',
-  'Red',
-  'Green',
-];
+function getColor(color: number) {
+    switch (color) {
+        case 0: return _('Gray');
+        case 1: return _('Pink');
+        case 2: return _('White');
+        case 3: return _('Blue');
+        case 4: return _('Yellow');
+        case 5: return _('Orange');
+        case 6: return _('Black');
+        case 7: return _('Red');
+        case 8: return _('Green');
+    }
+}
+
 function setupTrainCarCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
-    cardDiv.title = Number(cardTypeId) == 0 ? 'Locomotive' : COLORS[Number(cardTypeId)];
+    cardDiv.title = Number(cardTypeId) == 0 ? 'Locomotive' : getColor(Number(cardTypeId));
 }
 
 class DestinationCard {

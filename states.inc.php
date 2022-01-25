@@ -167,7 +167,7 @@ $gameGameStates = [
         "type" => "game",
         "action" => "stEndScore",
         "transitions" => [
-            "endGame" => ST_PLAYER_CHOOSE_ACTION /*TODO TEMP ST_END_GAME*/,
+            "endGame" => ST_END_GAME,
         ],
     ],
 ];

@@ -393,50 +393,44 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s;
-}
-.city[data-selected-destination=true] {
-  background: rgba(0, 0, 200, 0.3);
-  opacity: 1;
+  background: url("img/cities.png");
+  background-size: auto 100%;
+  position: relative;
+  z-index: 1;
 }
 .city[data-hovered=true][data-valid=true] {
-  background: rgba(0, 200, 0, 0.3);
+  background-position-x: 60% !important;
   opacity: 1;
 }
 .city[data-hovered=true][data-valid=false] {
-  background: rgba(200, 0, 0, 0.3);
+  background-position-x: 100% !important;
   opacity: 1;
 }
 .city[data-to-connect=true] {
-  position: relative;
-  background: rgba(0, 200, 0, 0.3);
   opacity: 1;
 }
-.city[data-to-connect=true]:not([data-selected=true]):not([data-highlight=true]) {
-  width: 38px;
-  height: 38px;
-  margin: -19px;
+.city[data-to-connect=true][data-selected-destination=true] {
+  background-position-x: 20%;
+}
+.city[data-to-connect=true]:not([data-selected=true]):not([data-highlight=true]):not([data-selected-destination=true]) {
+  background-position-x: 40%;
 }
 .city[data-selectable=true] {
-  position: relative;
   z-index: 8;
-  background: rgba(0, 0, 200, 0.3);
+  background-position-x: 20%;
   opacity: 1;
 }
 .city[data-selectable=true]:not([data-selected=true]):not([data-highlight=true]) {
-  width: 38px;
-  height: 38px;
-  margin: -19px;
+  background-position-x: 0%;
 }
 .city[data-selected=true] {
-  position: relative;
   z-index: 8;
-  background: rgba(0, 0, 200, 0.6);
+  background-position-x: 20%;
   opacity: 1;
 }
 .city[data-highlight=true] {
-  position: relative;
   z-index: 8;
-  background: rgba(0, 200, 0, 0.6);
+  background-position-x: 60%;
   opacity: 1;
 }
 

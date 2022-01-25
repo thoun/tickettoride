@@ -231,57 +231,50 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s;
-
-  &[data-selected-destination="true"] {
-    background: rgba(0, 0, 200, 0.3);
-    opacity: 1;
-  }
+  background: url('img/cities.png');
+  background-size: auto 100%;
+  position: relative;
+  z-index: 1;
 
   &[data-hovered="true"] {
     &[data-valid="true"] {
-      background: rgba(0, 200, 0, 0.3);
+      background-position-x: 60% !important; // big green circle
       opacity: 1;
     }
     &[data-valid="false"] {
-      background: rgba(200, 0, 0, 0.3);
+      background-position-x: 100% !important; // big red circle
       opacity: 1;
     }
   }
 
   &[data-to-connect="true"] {
-    position: relative;
-    background: rgba(0, 200, 0, 0.3);
+    &[data-selected-destination="true"] {
+      background-position-x: 20%; // big blue circle
+    }
     opacity: 1;
 
-    &:not([data-selected="true"]):not([data-highlight="true"]) {
-      width: 38px;
-      height: 38px;
-      margin: -19px;
+    &:not([data-selected="true"]):not([data-highlight="true"]):not([data-selected-destination="true"]) {
+      background-position-x: 40%; // small green circle
     }
   }
 
   &[data-selectable="true"] {
-    position: relative;
     z-index: 8;
-    background: rgba(0, 0, 200, 0.3);
+    background-position-x: 20%; // big blue circle
     opacity: 1;
 
     &:not([data-selected="true"]):not([data-highlight="true"]) {
-      width: 38px;
-      height: 38px;
-      margin: -19px;
+      background-position-x: 0%; // small blue circle
     }
   }
   &[data-selected="true"] {
-    position: relative;
     z-index: 8;
-    background: rgba(0, 0, 200, 0.6);
+    background-position-x: 20%; // big blue circle
     opacity: 1;
   }
   &[data-highlight="true"] {
-    position: relative;
     z-index: 8;
-    background: rgba(0, 200, 0, 0.6);
+    background-position-x: 60%; // big green circle
     opacity: 1;
   }
 }

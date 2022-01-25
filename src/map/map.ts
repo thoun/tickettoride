@@ -51,7 +51,7 @@ class TtrMap {
             route.spaces.forEach((space, spaceIndex) => {
                 dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route-space" 
                     style="transform: translate(${space.x*FACTOR}px, ${space.y*FACTOR}px) rotate(${space.angle}deg)"
-                    title="${CITIES_NAMES[route.from]} to ${CITIES_NAMES[route.to]}, ${(route.spaces as any).length} ${_(COLORS[route.color])}"
+                    title="${CITIES_NAMES[route.from]} to ${CITIES_NAMES[route.to]}, ${(route.spaces as any).length} ${getColor(route.color)}"
                     data-route="${route.id}" data-color="${route.color}"
                 ></div>`, 'map');
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
@@ -61,7 +61,7 @@ class TtrMap {
 
         /*console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
 ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFixed(2)}, ${(space.y*0.986 + 10).toFixed(2)}, ${space.angle}),`).join('\n')}
-    ], ${COLORS[route.color]}),`).join('\n'));*/
+    ], ${getColor(route.color)}),`).join('\n'));*/
 
         //this.movePoints();
         this.setClaimedRoutes(claimedRoutes);
