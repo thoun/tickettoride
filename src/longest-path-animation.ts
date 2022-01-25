@@ -1,3 +1,6 @@
+/**
+ * Longest path animation : wagons used by longest path are highlighted, and length is displayed over the map.
+ */ 
 class LongestPathAnimation extends WagonsAnimation {
 
     constructor(

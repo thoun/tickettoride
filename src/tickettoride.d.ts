@@ -14,7 +14,6 @@ interface Card {
 }
 
 interface TrainCar extends Card {
-    // TODO
 }
 
 interface Destination extends Card {

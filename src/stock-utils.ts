@@ -41,7 +41,7 @@ function getColor(color: number) {
 }
 
 function setupTrainCarCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
-    cardDiv.title = Number(cardTypeId) == 0 ? 'Locomotive' : getColor(Number(cardTypeId));
+    cardDiv.title = Number(cardTypeId) == 0 ? _('Locomotive') : getColor(Number(cardTypeId));
 }
 
 class DestinationCard {
@@ -124,9 +124,10 @@ const DESTINATIONS = [
     new DestinationCard(29, 36, 11, 12), // Winnipeg	Houston	12
     new DestinationCard(30, 36, 14, 11), // Winnipeg	Little Rock	11
 ];
-function setupDestinationCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
-    //const destination = DESTINATIONS.find(d => d.id == Number(cardTypeId));
-    //cardDiv.innerHTML = `<span><strong>${CITIES_NAMES[destination.from]}</strong> to <strong>${CITIES_NAMES[destination.to]}</strong> (<strong>${destination.points}</strong>)</span>`;
+
+function setupDestinationCardDiv(cardDiv: HTMLDivElement, cardTypeId: number) {
+    const destination = DESTINATIONS.find(d => d.id == cardTypeId);
+    cardDiv.title = `${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[destination.from], to: CITIES_NAMES[destination.to]})}, ${destination.points} ${_('points')}`;
 }
 
 function getBackgroundInlineStyleForDestination(destination: Destination) {

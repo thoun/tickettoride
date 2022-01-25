@@ -1,3 +1,7 @@
+
+/**
+ * Animation with highlighted wagons.
+ */ 
 abstract class WagonsAnimation {
     protected wagons: Element[] = [];
     protected zoom: number;

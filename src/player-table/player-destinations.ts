@@ -1,11 +1,16 @@
 
 const IMAGE_ITEMS_PER_ROW = 10;
 
+/** 
+ * Player's destination cards.
+ */ 
 class PlayerDestinations {
     public playerId: number;
-    public destinationStock: Stock;
+    /** Highlighted destination on the map */ 
     private selectedDestination: Destination | null = null;
+    /** Destinations in "to do" column */ 
     private destinationsTodo: Destination[] = [];
+    /** Destinations in "done" column */ 
     private destinationsDone: Destination[] = [];
 
     constructor(
@@ -28,9 +33,13 @@ class PlayerDestinations {
             this.markDestinationComplete(destination)
         );
         
+        // highlight the first "to do" destination
         this.activateNextDestination(this.destinationsTodo);
     }
         
+    /** 
+     * Add destinations to player's hand.
+     */ 
     public addDestinations(destinations: Destination[], originStock?: Stock) {
         destinations.forEach(destination => {
             let html = `
@@ -39,11 +48,14 @@ class PlayerDestinations {
 
             dojo.place(html, `player-table-${this.playerId}-destinations-todo`);
             
-            const card = document.getElementById(`destination-card-${destination.id}`);
+            const card = document.getElementById(`destination-card-${destination.id}`) as HTMLDivElement;
+            setupDestinationCardDiv(card, destination.type_arg);
+
             card.addEventListener('click', () => this.activateNextDestination(
                 this.destinationsDone.some(d => d.id == destination.id) ? this.destinationsDone : this.destinationsTodo
             ));
             
+            // highlight destination's cities on the map, on mouse over
             card.addEventListener('mouseenter', () => this.game.setHighligthedDestination(destination));
             card.addEventListener('mouseleave', () => this.game.setHighligthedDestination(null));
 
@@ -59,6 +71,9 @@ class PlayerDestinations {
         this.destinationColumnsUpdated();
     }
 
+    /** 
+     * Mark destination as complete (place it on the "complete" column).
+     */ 
     public markDestinationCompleteNoAnimation(destination: Destination) {
         const index = this.destinationsTodo.findIndex(d => d.id == destination.id);
         if (index !== -1) {
@@ -70,6 +85,9 @@ class PlayerDestinations {
         this.destinationColumnsUpdated();
     }
 
+    /** 
+     * Add an animation to mark a destination as complete.
+     */ 
     public markDestinationCompleteAnimation(destination: Destination, destinationRoutes: Route[]) {
         const newDac = new DestinationCompleteAnimation(
             this.game,
@@ -88,6 +106,9 @@ class PlayerDestinations {
         this.game.addAnimation(newDac);
     }
 
+    /** 
+     * Mark a destination as complete.
+     */ 
     public markDestinationComplete(destination: Destination, destinationRoutes?: Route[]) {
         if (destinationRoutes && !(document.visibilityState === 'hidden' || (this.game as any).instantaneousMode)) {
             this.markDestinationCompleteAnimation(destination, destinationRoutes);
@@ -96,6 +117,9 @@ class PlayerDestinations {
         }
     }
 
+    /** 
+     * Highlight another destination.
+     */ 
     public activateNextDestination(destinationList: Destination[]) {
         const oldSelectedDestination = this.selectedDestination;
         if (this.selectedDestination && destinationList.some(d => d.id == this.selectedDestination.id) && destinationList.length > 1) {
@@ -110,6 +134,9 @@ class PlayerDestinations {
         this.destinationColumnsUpdated();
     }
 
+    /** 
+     * Update destination cards placement when there is a change.
+     */ 
     private destinationColumnsUpdated() {
         const doubleColumn = this.destinationsTodo.length > 0 && this.destinationsDone.length > 0;
 
@@ -127,6 +154,9 @@ class PlayerDestinations {
         this.game.setDestinationsToConnect(this.destinationsTodo);
     }
 
+    /** 
+     * Place cards on a column.
+     */ 
     private placeCards(list: Destination[], originalBottom: number = 0): number {
         let maxBottom = 0;
         list.forEach((destination, index) => {
@@ -143,6 +173,9 @@ class PlayerDestinations {
         return maxBottom;
     }
     
+    /** 
+     * Add an animation to to the card (when it is created).
+     */ 
     private addAnimationFrom(card: HTMLElement, from: HTMLElement) {
         if (document.visibilityState === 'hidden' || (this.game as any).instantaneousMode) {
             return;

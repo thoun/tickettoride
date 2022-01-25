@@ -10,15 +10,20 @@ const PLAYER_HEIGHT = 257; // avg height (4 destination cards)
 const BOTTOM_RATIO = (MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT + PLAYER_HEIGHT);
 const LEFT_RATIO = (PLAYER_WIDTH + MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT);
 
+/** 
+ * Map creation and in-map zoom handler.
+ */ 
 class TtrMap {
-    //private points = new Map<number, number>();
     private scale: number;
     private resizedDiv: HTMLDivElement;
     private mapZoomDiv: HTMLDivElement;
     private mapDiv: HTMLDivElement;
-    private pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 };
-    private zoomed = false;
+    private pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 }; // for map drag (if zoomed)
+    private zoomed = false; // indicates if in-map zoom is active
 
+    /** 
+     * Place map corner illustration and borders, cities, routes, and bind events.
+     */ 
     constructor(
         private game: TicketToRideGame,
         private players: TicketToRidePlayer[],
@@ -27,17 +32,7 @@ class TtrMap {
         // map border
         dojo.place(`<div class="illustration"></div>`, 'map-and-borders');
         SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'map-and-borders'));
-        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map-and-borders'));
-
-        /*let html = '';
-
-        // points
-        players.forEach(player => {
-            html += `<div id="player-${player.id}-point-marker" class="point-marker ${this.game.isColorBlindMode() ? 'color-blind' : ''}" data-player-no="${player.playerNo}" style="background: #${player.color};"></div>`;
-            this.points.set(Number(player.id), Number(player.score));
-        });
-        dojo.place(html, 'map');*/
-        
+        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map-and-borders'));        
 
         CITIES.forEach(city => 
             dojo.place(`<div id="city${city.id}" class="city" 
@@ -46,17 +41,16 @@ class TtrMap {
             ></div>`, 'map')
         );
 
-
         ROUTES.forEach(route => 
             route.spaces.forEach((space, spaceIndex) => {
                 dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route-space" 
                     style="transform: translate(${space.x*FACTOR}px, ${space.y*FACTOR}px) rotate(${space.angle}deg)"
-                    title="${CITIES_NAMES[route.from]} to ${CITIES_NAMES[route.to]}, ${(route.spaces as any).length} ${getColor(route.color)}"
+                    title="${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to]})}, ${(route.spaces as any).length} ${getColor(route.color)}"
                     data-route="${route.id}" data-color="${route.color}"
                 ></div>`, 'map');
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
                 this.setSpaceEvents(spaceDiv, route);
-            }) // TODO translate title
+            })
         );
 
         /*console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
@@ -80,7 +74,10 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.mapDiv.addEventListener('drop', e => this.mapDiv.classList.remove('drag-over'));*/
     }
     
-    private enterover(e: DragEvent, route: Route) {
+    /** 
+     * Handle dragging train car cards over a route.
+     */ 
+    private routeDragOver(e: DragEvent, route: Route) {
         console.log('enterover', e);
         const cardsColor = Number(this.mapDiv.dataset.dragColor);
         const canClaimRoute = this.game.canClaimRoute(route, cardsColor);
@@ -89,16 +86,12 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             e.preventDefault();
         }
     };
-
-    private setSpaceEvents(spaceDiv: HTMLElement, route: Route) {
-        spaceDiv.addEventListener('dragenter', e => this.enterover(e, route));
-        spaceDiv.addEventListener('dragover', e => this.enterover(e, route));
-        spaceDiv.addEventListener('dragleave', (e) => {
-            console.log('dragleave', e);
-            this.setHoveredRoute(null);
-        });
-        spaceDiv.addEventListener('drop', e => {
-            console.log('drop', e);
+    
+    /** 
+     * Handle dropping train car cards over a route.
+     */ 
+    private routeDragDrop(e: DragEvent, route: Route) {
+        console.log('drop', e);
             if (document.getElementById('map').dataset.dragColor == '') {
                 return;
             }
@@ -107,17 +100,25 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             const cardsColor = Number(this.mapDiv.dataset.dragColor);
             document.getElementById('map').dataset.dragColor = '';
             this.game.claimRoute(route.id, cardsColor);
-        });
-        spaceDiv.addEventListener('click', () => {
-            this.game.clickedRoute(route);
-        });
-    }
+    };
 
-    /*public setPoints(playerId: number, points: number) {
-        this.points.set(playerId, points);
-        this.movePoints();
-    }*/
+    /** 
+     * Bind events to route space.
+     */ 
+    private setSpaceEvents(spaceDiv: HTMLElement, route: Route) {
+        spaceDiv.addEventListener('dragenter', e => this.routeDragOver(e, route));
+        spaceDiv.addEventListener('dragover', e => this.routeDragOver(e, route));
+        spaceDiv.addEventListener('dragleave', (e) => {
+            console.log('dragleave', e);
+            this.setHoveredRoute(null);
+        });
+        spaceDiv.addEventListener('drop', e => this.routeDragDrop(e, route));
+        spaceDiv.addEventListener('click', () => this.game.clickedRoute(route));
+    }
     
+    /** 
+     * Highlight selectable route spaces.
+     */ 
     public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
         if (selectable) {
             possibleRoutes.forEach(route => ROUTES.find(r => r.id == route.id).spaces.forEach((_, index) => 
@@ -128,39 +129,10 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         }
     }
 
-    /*private getPointsCoordinates(points: number) {
-        const top = points < 86 ? Math.min(Math.max(points - 34, 0), 17) * POINT_CASE_SIZE : (102 - points) * POINT_CASE_SIZE;
-        const left = points < 52 ? Math.min(points, 34) * POINT_CASE_SIZE : (33 - Math.max(points - 52, 0))*POINT_CASE_SIZE;
-
-        return [17 + left, 15 + top];
-    }
-
-    private movePoints() {
-        this.points.forEach((points, playerId) => {
-            const markerDiv = document.getElementById(`player-${playerId}-point-marker`);
-
-            const coordinates = this.getPointsCoordinates(points);
-            const left = coordinates[0];
-            const top = coordinates[1];
-    
-            let topShift = 0;
-            let leftShift = 0;
-            this.points.forEach((iPoints, iPlayerId) => {
-                if (iPoints === points && iPlayerId < playerId) {
-                    topShift += 5;
-                    leftShift += 5;
-                }
-            });
-    
-            markerDiv.style.transform = `translateX(${left + leftShift}px) translateY(${top + topShift}px)`;
-        });
-    }*/
-
+    /** 
+     * Place train cars on claimed routes.
+     */ 
     public setClaimedRoutes(claimedRoutes: ClaimedRoute[]) {
-        /*const claimedRoute = {
-            playerId: 2343492
-        };
-        ROUTES.forEach(route => {*/
         claimedRoutes.forEach(claimedRoute => {
             const route = ROUTES.find(r => r.id == claimedRoute.routeId);
             const color = this.players.find(player => Number(player.id) == claimedRoute.playerId).color;
@@ -168,6 +140,10 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         });
     }
 
+    /** 
+     * Place train cars on a route.
+     * Phantom is for dragging over a route : wagons are showns translucent.
+     */ 
     private setWagons(route: Route, color: string, phantom: boolean = false) {
         route.spaces.forEach((space, spaceIndex) => {
             const id = `wagon-route${route.id}-space${spaceIndex}${phantom ? '-phantom' : ''}`;
@@ -191,6 +167,10 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         });
     }
 
+    /** 
+     * Set map size, depending on available screen size.
+     * Player table will be placed left or bottom, depending on window ratio.
+     */ 
     public setAutoZoom() {
 
         if (!this.mapDiv.clientWidth) {
@@ -215,15 +195,21 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.resizedDiv.style.marginBottom = `-${(1 - this.scale) * gameHeight}px`;
     }
     
+    /** 
+     * Get current zoom.
+     */ 
     public getZoom(): number {
         return this.scale;
     }
 
+    /** 
+     * Handle mouse down, to grap map and scroll in it (imitate mobile touch scroll).
+     */ 
     private mouseDownHandler(e: MouseEvent) {
         if (!this.zoomed) {
             return;
         }
-        //this.mapDiv.style.cursor = 'grabbing';
+        this.mapDiv.style.cursor = 'grabbing';
 
         this.pos = {
             dragging: true,
@@ -235,6 +221,9 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         };
     }
 
+    /** 
+     * Handle mouse move, to grap map and scroll in it (imitate mobile touch scroll).
+     */ 
     private mouseMoveHandler(e: MouseEvent) {
         if (!this.zoomed || !this.pos.dragging) {
             return;
@@ -251,20 +240,28 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.mapZoomDiv.scrollLeft -= dx*factor;
     }
 
+    /** 
+     * Handle mouse up, to grap map and scroll in it (imitate mobile touch scroll).
+     */ 
     private mouseUpHandler() {
         if (!this.zoomed || !this.pos.dragging) {
             return;
         }
         
-        //this.mapDiv.style.cursor = 'grab';
+        this.mapDiv.style.cursor = 'grab';
         this.pos.dragging = false;
     }
 
+    /** 
+     * Handle click on zoom button. Toggle between full map and in-map zoom.
+     */ 
     private toggleZoom() {      
         this.zoomed = !this.zoomed;
         this.mapDiv.style.transform = this.zoomed ? `scale(1.8)` : '';
         dojo.toggleClass('zoom-button', 'zoomed', this.zoomed);
         dojo.toggleClass('map-zoom', 'scrollable', this.zoomed);
+        
+        this.mapDiv.style.cursor = this.zoomed ? 'grab' : 'default';
 
         if (!this.zoomed) {
             this.mapZoomDiv.scrollTop = 0;
@@ -272,6 +269,9 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         }
     }
 
+    /** 
+     * Highlight active destination.
+     */ 
     public setActiveDestination(destination: Destination, previousDestination: Destination = null) {
         if (previousDestination) {
             if (previousDestination.id === destination.id) {
@@ -290,6 +290,9 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         }
     }
 
+    /** 
+     * Highlight hovered route (when dragging train cars).
+     */ 
     public setHoveredRoute(route: Route | null, valid: boolean | null = null) {
         if (route) {
 
@@ -314,16 +317,27 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         }
     }
 
+    /** 
+     * Highlight cities of selectable destination.
+     */ 
     public setSelectableDestination(destination: Destination, visible: boolean): void {
         [destination.from, destination.to].forEach(city => {
             document.getElementById(`city${city}`).dataset.selectable = ''+visible;
         });
     }
+
+    /** 
+     * Highlight cities of selected destination.
+     */ 
     public setSelectedDestination(destination: Destination, visible: boolean): void {
         [destination.from, destination.to].forEach(city => {
             document.getElementById(`city${city}`).dataset.selected = ''+visible;
         });
     }
+
+    /** 
+     * Highlight cities player must connect for its objectives.
+     */ 
     public setDestinationsToConnect(destinations: Destination[]): void {
         this.mapDiv.querySelectorAll(`.city[data-to-connect]`).forEach((city: HTMLElement) => city.dataset.toConnect = 'false');
         const cities = [];
@@ -333,6 +347,9 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         });
     }
 
+    /** 
+     * Highlight destination (on destination mouse over).
+     */ 
     public setHighligthedDestination(destination: Destination | null): void {
         const visible = Boolean(destination).toString();
         const shadow = document.getElementById('map-destination-highlight-shadow');

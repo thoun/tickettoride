@@ -1,5 +1,8 @@
 type DestinationAnimationCallback = (destination: Destination) => void;
 
+/**
+ * Destination animation : destination slides over the map, wagons used by destination are highlighted, destination is mark "done" or "uncomplete", and card slides back to original place.
+ */ 
 class DestinationCompleteAnimation extends WagonsAnimation {
 
     constructor(

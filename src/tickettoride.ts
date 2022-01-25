@@ -106,6 +106,9 @@ class TicketToRide implements TicketToRideGame {
         }
     }
 
+    /**
+     * Show selectable routes, and make train car draggable.
+     */ 
     private onEnteringChooseAction(args: EnteringChooseActionArgs) {
         this.trainCarSelection.setSelectableTopDeck((this as any).isCurrentPlayerActive(), args.maxHiddenCardsPick);
         
@@ -114,11 +117,17 @@ class TicketToRide implements TicketToRideGame {
         this.playerTable?.setDraggable((this as any).isCurrentPlayerActive());
     }
 
+    /**
+     * Allow to pick a second card (locomotives will be grayed).
+     */ 
     private onEnteringDrawSecondCard(args: EnteringDrawSecondCardArgs) {
         this.trainCarSelection.setSelectableTopDeck((this as any).isCurrentPlayerActive(), args.maxHiddenCardsPick);
         this.trainCarSelection.setSelectableVisibleCards(args.availableVisibleCards);
     }
 
+    /**
+     * Show score board.
+     */ 
     private onEnteringEndScore(fromReload: boolean = false) {
         const lastTurnBar = document.getElementById('last-round');
         if (lastTurnBar) {
@@ -189,6 +198,9 @@ class TicketToRide implements TicketToRideGame {
 
     ///////////////////////////////////////////////////
 
+    /**
+     * Handle user preferences changes.
+     */ 
     private setupPreferences() {
         // Extract the ID and value from the UI control
         const onchange = (e) => {
@@ -210,15 +222,14 @@ class TicketToRide implements TicketToRideGame {
           dojo.query("#ingame_menu_content .preference_control"),
           el => onchange({ target: el })
         );
-
-        try {
-            (document.getElementById('preference_control_203').closest(".preference_choice") as HTMLDivElement).style.display = 'none';
-        } catch (e) {}
     }
       
+    /**
+     * Handle user preferences changes.
+     */ 
     private onPreferenceChange(prefId: number, prefValue: number) {
         switch (prefId) {
-            case 201:  
+            case 201: // 1 = buttons, 2 = double click to pick 2 cards
                 dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', prefValue == 1);
                 break;
         }
@@ -228,6 +239,9 @@ class TicketToRide implements TicketToRideGame {
         return Number((this as any).player_id);
     }
 
+    /**
+     * Place counters on player panels.
+     */ 
     private createPlayerPanels(gamedatas: TicketToRideGamedatas) {
 
         Object.values(gamedatas.players).forEach(player => {
@@ -279,15 +293,23 @@ class TicketToRide implements TicketToRideGame {
         (this as any).addTooltipHtmlToClass('destinations-counter', _("Completed / Total destination cards"));
     }
     
+    /**
+     * Update player score.
+     */ 
     private setPoints(playerId: number, points: number) {
         (this as any).scoreCtrl[playerId]?.toValue(points);
-        //this.map.setPoints(playerId, points);
     }
     
+    /** 
+     * Highlight active destination.
+     */ 
     public setActiveDestination(destination: Destination, previousDestination: Destination = null): void {
         this.map.setActiveDestination(destination, previousDestination);
     }
 
+    /** 
+     * Check if a route can be claimed with dragged cards.
+     */ 
     public canClaimRoute(route: Route, cardsColor: number): boolean {
         return (
             route.color == 0 || cardsColor == 0 || route.color == cardsColor
@@ -296,30 +318,51 @@ class TicketToRide implements TicketToRideGame {
         );
     }
 
+    /** 
+     * Highlight destination (on destination mouse over).
+     */ 
     public setHighligthedDestination(destination: Destination | null): void {
         this.map.setHighligthedDestination(destination);
     }
     
+    /** 
+     * Highlight cities of selected destination.
+     */ 
     public setSelectedDestination(destination: Destination, visible: boolean): void {
         this.map.setSelectedDestination(destination, visible);
     }
 
+    /** 
+     * Highlight cities player must connect for its objectives.
+     */ 
     public setDestinationsToConnect(destinations: Destination[]): void {
         this.map.setDestinationsToConnect(destinations);
     }
     
+    /** 
+     * Place player table to the left or the bottom of the map.
+     */ 
     public setPlayerTablePosition(left: boolean) {
         this.playerTable?.setPosition(left);
     }
     
+    /** 
+     * Get current zoom.
+     */ 
     public getZoom(): number {
         return this.map.getZoom();
     }
     
+    /** 
+     * Get player color (hex without #).
+     */ 
     public getPlayerColor(): string {
         return this.gamedatas.players[this.getPlayerId()]?.color;
     }
 
+    /** 
+     * Add an animation to the animation queue, and start it if there is no current animations.
+     */ 
     public addAnimation(animation: WagonsAnimation) {
         this.animations.push(animation);
             if (this.animations.length === 1) {
@@ -327,6 +370,9 @@ class TicketToRide implements TicketToRideGame {
             };
     }
 
+    /** 
+     * Start the next animation in animation queue.
+     */ 
     public endAnimation(ended: WagonsAnimation) {
         const index = this.animations.indexOf(ended);
         if (index !== -1) {
@@ -338,6 +384,9 @@ class TicketToRide implements TicketToRideGame {
         };
     }
     
+    /** 
+     * Handle route click.
+     */ 
     public clickedRoute(route: Route): void { 
         if(!(this as any).isCurrentPlayerActive() || !this.canClaimRoute(route, 0)) {
             return;
@@ -362,6 +411,9 @@ class TicketToRide implements TicketToRideGame {
         }
     }
 
+    /** 
+     * Apply destination selection (initial objectives).
+     */ 
     public chooseInitialDestinations() {
         if(!(this as any).checkAction('chooseInitialDestinations')) {
             return;
@@ -374,6 +426,9 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
+    /** 
+     * Pick destinations.
+     */ 
     public drawDestinations() {
         if(!(this as any).checkAction('drawDestinations')) {
             return;
@@ -382,6 +437,9 @@ class TicketToRide implements TicketToRideGame {
         this.takeAction('drawDestinations');
     }
 
+    /** 
+     * Apply destination selection (additional objectives).
+     */ 
     public chooseAdditionalDestinations() {
         if(!(this as any).checkAction('chooseAdditionalDestinations')) {
             return;
@@ -394,6 +452,9 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
+    /** 
+     * Pick hidden train car(s).
+     */ 
     public onHiddenTrainCarDeckClick(number: number) {
         const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'drawSecondDeckCard' : 'drawDeckCards';
         
@@ -406,6 +467,9 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
+    /** 
+     * Pick visible train car.
+     */ 
     public onVisibleTrainCarCardClick(id: number, stock: Stock) {
         if (dojo.hasClass(`${stock.container_div.id}_item_${id}`, 'disabled')) {
             stock.unselectItem(''+id);
@@ -423,6 +487,9 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
+    /** 
+     * Claim a route.
+     */ 
     public claimRoute(routeId: number, color: number) {
         if(!(this as any).checkAction('claimRoute')) {
             return;
@@ -476,22 +543,29 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
+    /** 
+     * Update player score.
+     */ 
     notif_points(notif: Notif<NotifPointsArgs>) {
         this.setPoints(notif.args.playerId, notif.args.points);
         this.endScore?.setPoints(notif.args.playerId, notif.args.points);
     }
 
+    /** 
+     * Update player destinations.
+     */ 
     notif_destinationsPicked(notif: Notif<NotifDestinationsPickedArgs>) {
         this.destinationCardCounters[notif.args.playerId].incValue(notif.args.number);
         const destinations = notif.args._private?.[this.getPlayerId()]?.destinations;
         if (destinations) {
             this.playerTable.addDestinations(destinations, this.destinationSelection.destinations);
-        } else {
-            // TODO notif to player board ?
         }
         this.trainCarSelection.setDestinationCount(notif.args.remainingDestinationsInDeck);
     }
 
+    /** 
+     * Update player train cars.
+     */ 
     notif_trainCarPicked(notif: Notif<NotifTrainCarsPickedArgs>) {
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
         if (notif.args.playerId == this.getPlayerId()) {
@@ -503,10 +577,16 @@ class TicketToRide implements TicketToRideGame {
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }
 
+    /** 
+     * Update visible cards.
+     */ 
     notif_newCardsOnTable(notif: Notif<NotifNewCardsOnTableArgs>) {
         this.trainCarSelection.setNewCardsOnTable(notif.args.cards);
     }
 
+    /** 
+     * Update claimed routes.
+     */ 
     notif_claimedRoute(notif: Notif<NotifClaimedRouteArgs>) {
         const playerId = notif.args.playerId;
         const route: Route = notif.args.route;
@@ -522,6 +602,9 @@ class TicketToRide implements TicketToRideGame {
         }
     }
 
+    /** 
+     * Mark a destination as complete.
+     */ 
     notif_destinationCompleted(notif: Notif<NotifDestinationCompletedArgs>) {
         const destination: Destination = notif.args.destination;
         this.completedDestinationsCounter.incValue(1);
@@ -529,17 +612,26 @@ class TicketToRide implements TicketToRideGame {
         this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
     }
     
+    /** 
+     * Show last turn banner.
+     */ 
     notif_lastTurn() {
         dojo.place(`<div id="last-round">
             ${_("This is the final round!")}
         </div>`, 'page-title');
     }
     
+    /** 
+     * Save best score for end score animations.
+     */ 
     notif_bestScore(notif: Notif<NotifBestScoreArgs>) {
         this.gamedatas.bestScore = notif.args.bestScore;
         this.endScore?.setBestScore(notif.args.bestScore);
     }
 
+    /** 
+     * Animate a destination for end score.
+     */ 
     notif_scoreDestination(notif: Notif<NotifDestinationCompletedArgs>) {
         this.endScore?.scoreDestination(notif.args.playerId, notif.args.destination, notif.args.destinationRoutes);
         if (!notif.args.destinationRoutes) {
@@ -547,14 +639,23 @@ class TicketToRide implements TicketToRideGame {
         }
     }
 
+    /** 
+     * Animate longest path for end score.
+     */ 
     notif_longestPath(notif: Notif<NotifLongestPathArgs>) {
         this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length);
     }
 
+    /** 
+     * Add longest path badge for end score.
+     */ 
     notif_longestPathWinner(notif: Notif<NotifLongestPathArgs>) {
         this.endScore?.setLongestPathWinner(notif.args.playerId, notif.args.length);
     }
 
+    /** 
+     * Highlight winner for end score.
+     */ 
     notif_highlightWinnerScore(notif: Notif<NotifLongestPathArgs>) {
         this.endScore?.highlightWinnerScore(notif.args.playerId);
     }
@@ -564,6 +665,7 @@ class TicketToRide implements TicketToRideGame {
     public format_string_recursive(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
+                // make cities names in bold 
                 if (typeof args.from == 'string' && args.from[0] != '<') {
                     args.from = `<strong>${args.from}</strong>`;
                 }

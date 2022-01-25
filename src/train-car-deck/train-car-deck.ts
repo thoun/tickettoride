@@ -1,5 +1,8 @@
 const DBL_CLICK_TIMEOUT = 300;
 
+/** 
+ * Level of cards in deck indicator.
+ */ 
 class Gauge {
     private levelDiv: HTMLDivElement;
 
@@ -20,12 +23,18 @@ class Gauge {
     }
 }
 
+/** 
+ * Selection of new train cars.
+ */ 
 class TrainCarSelection {
     public visibleCardsStocks: Stock[] = [];
     private trainCarGauge: Gauge;
     private destinationGauge: Gauge;
     private dblClickTimeout = null;
 
+    /**
+     * Init stocks and gauges.
+     */ 
     constructor(
         private game: TicketToRideGame,
         visibleCards: TrainCar[],
@@ -57,7 +66,6 @@ class TrainCarSelection {
             this.visibleCardsStocks[i].setSelectionMode(1);
             this.visibleCardsStocks[i].create(game, $(`visible-train-cards-stock${i}`), CARD_WIDTH, CARD_HEIGHT);
             this.visibleCardsStocks[i].onItemCreate = (cardDiv, cardTypeId) => setupTrainCarCardDiv(cardDiv, cardTypeId);
-            //this.visibleCardsStock.image_items_per_row = 9;
             this.visibleCardsStocks[i].centerItems = true;
             dojo.connect(this.visibleCardsStocks[i], 'onChangeSelection', this, (_, itemId: string) => this.game.onVisibleTrainCarCardClick(Number(itemId), this.visibleCardsStocks[i]));
             setupTrainCarCards(this.visibleCardsStocks[i]);
@@ -72,12 +80,18 @@ class TrainCarSelection {
         this.setDestinationCount(destinationDeckCount);
     }
 
+    /**
+     * Set selection of hidden cards deck.
+     */ 
     public setSelectableTopDeck(selectable: boolean, number: number = 0) {
         dojo.toggleClass('train-car-deck-hidden-pile', 'selectable', selectable);
         dojo.toggleClass('train-car-deck-hidden-pile1', 'hidden', number < 1);
         dojo.toggleClass('train-car-deck-hidden-pile2', 'hidden', number < 2);
     }
     
+    /**
+     * Set selectable visible cards (locomotive can't be selected if 1 visible card has been picked).
+     */ 
     public setSelectableVisibleCards(availableVisibleCards: TrainCar[]) {
         for (let i=1; i<=5; i++) {
             const stock = this.visibleCardsStocks[i];
@@ -90,13 +104,19 @@ class TrainCarSelection {
         }
     }
 
-    public removeSelectableVisibleCards() {
+    /**
+     * Reset visible cards state.
+     */ 
+     public removeSelectableVisibleCards() {
         for (let i=1; i<=5; i++) {
             const stock = this.visibleCardsStocks[i];
             stock.items.forEach(item => document.getElementById(`${stock.container_div.id}_item_${item.id}`)?.classList.remove('disabled'));
         }
     }
 
+    /**
+     * Set new visible cards.
+     */ 
     public setNewCardsOnTable(cards: TrainCar[]) {
         cards.forEach(card => {
             const spot = card.location_arg;
@@ -106,24 +126,39 @@ class TrainCarSelection {
         });
     }
 
+    /**
+     * Update train car gauge.
+     */ 
     public setTrainCarCount(count: number) {
         this.trainCarGauge.setCount(count);
         document.getElementById(`train-car-deck-level`).dataset.level = `${Math.min(10, Math.floor(count / 10))}`;
     }
 
+    /**
+     * Update destination gauge.
+     */ 
     public setDestinationCount(count: number) {
         this.destinationGauge.setCount(count);
         document.getElementById(`destination-deck-level`).dataset.level = `${Math.min(10, Math.floor(count / 10))}`;
     }
 
+    /**
+     * Make hidden train car cads selection buttons visible (user preference).
+     */ 
     public setCardSelectionButtons(visible: boolean) {
         dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', visible);
     }
     
+    /**
+     * Get HTML Element represented by "from" (0 means invisible, 1 to 5 are visible cards).
+     */ 
     public getStockElement(from: number): HTMLElement {
         return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : this.visibleCardsStocks[from].container_div; 
     }
     
+    /**
+     * Animation when cards are picked by another player.
+     */ 
     public moveCardToPlayerBoard(playerId: number, from: number, color: number = 0) {
         dojo.place(`
         <div id="animated-train-car-card-${from}" class="animated-train-car-card ${from === 0 ? 'from-hidden-pile' : ''}" data-color="${color}"></div>

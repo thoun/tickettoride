@@ -1,3 +1,6 @@
+/** 
+ * Player's train car cards.
+ */ 
 class PlayerTrainCars {
     public playerId: number;
     private left: boolean;
@@ -12,6 +15,9 @@ class PlayerTrainCars {
         this.addTrainCars(trainCars);
     }
     
+    /** 
+     * Add train cars to player's hand.
+     */ 
     public addTrainCars(trainCars: TrainCar[], from?: HTMLElement) {
         trainCars.forEach(trainCar => {
             const group = this.getGroup(trainCar.type);
@@ -34,6 +40,9 @@ class PlayerTrainCars {
         this.updateCounters();
     }
 
+    /** 
+     * Set player table position.
+     */ 
     public setPosition(left: boolean) {
         this.left = left;
         const div = document.getElementById(`player-table-${this.playerId}-train-cars`);
@@ -42,6 +51,9 @@ class PlayerTrainCars {
         this.updateCounters(); // to realign
     }
     
+    /** 
+     * Remove train cars from player's hand.
+     */ 
     public removeCards(removeCards: TrainCar[]) {
         removeCards.forEach(card => {
             const div = document.getElementById(`train-car-card-${card.id}`);
@@ -58,11 +70,18 @@ class PlayerTrainCars {
         });
     }
 
+    /** 
+     * Set if train car cards can be dragged.
+     */ 
     public setDraggable(draggable: boolean) {
         const groups = Array.from(document.getElementsByClassName('train-car-group')) as HTMLDivElement[];
         groups.forEach(groupDiv => groupDiv.setAttribute('draggable', draggable.toString()));
     }
     
+    /** 
+     * Return a group of cards (cards of the same color).
+     * If it doesn't exists, create it.
+     */ 
     private getGroup(type: number) {
         let group = document.getElementById(`train-car-group-${type}`);
         if (!group) {
@@ -109,6 +128,9 @@ class PlayerTrainCars {
         return group;
     }
 
+    /** 
+     * Update counters on color groups.
+     */ 
     private updateCounters() {
         const groups = Array.from(document.getElementsByClassName('train-car-group')) as HTMLDivElement[];
 
@@ -126,6 +148,9 @@ class PlayerTrainCars {
         });
     }
     
+    /** 
+     * Add an animation to to the card (when it is created).
+     */ 
     private addAnimationFrom(card: HTMLElement, group: HTMLElement, from: HTMLElement) {
         if (document.visibilityState === 'hidden' || (this.game as any).instantaneousMode) {
             return;
@@ -154,6 +179,9 @@ class PlayerTrainCars {
         }, 500);
     }
     
+    /** 
+     * Get the colors a player can use to claim a given route.
+     */ 
     public getPossibleColors(route: Route): number[] {
         const groups = Array.from(document.getElementsByClassName('train-car-group')) as HTMLDivElement[];
 

@@ -1,3 +1,6 @@
+/** 
+ * Player table : train car et destination cards.
+ */ 
 class PlayerTable {
     private playerDestinations: PlayerDestinations;
     private playerTrainCars: PlayerTrainCars;
@@ -22,6 +25,9 @@ class PlayerTable {
         this.playerTrainCars = new PlayerTrainCars(game, player, trainCars);
     }
     
+    /** 
+     * Place player table to the left or the bottom of the map.
+     */ 
     public setPosition(left: boolean) {
         const playerHandDiv = document.getElementById(`player-table`);
         if (left) {

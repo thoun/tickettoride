@@ -1,18 +1,27 @@
+/**
+ * End score board.
+ * It will start empty, and notifications will update it and start animations one by one.
+ */ 
 class EndScore {
+    /** Player scores (key is player id) */ 
     private scoreCounters: Counter[] = [];
+    /** Unrevealed destinations counters (key is player id) */ 
     private destinationCounters: Counter[] = [];
+    /** Complete destinations counters (key is player id) */ 
     private completedDestinationCounters: Counter[] = [];
+    /** Uncomplete destinations counters (key is player id) */ 
     private uncompletedDestinationCounters: Counter[] = [];
 
     constructor(
         private game: TicketToRideGame, 
         private players: TicketToRidePlayer[],
+        /** fromReload: if a player refresh when game is over, we skip animations (as there will be no notifications to animate the score board) */ 
         fromReload: boolean,
+        /** bestScore is the top score for the game, so progression shown as train moving forward is relative to best score */ 
         private bestScore: number,
     ) {        
 
         players.forEach(player => {
-            // if we are a reload of end state, we display values, else we wait for notifications
 
             dojo.place(`<tr id="score${player.id}">
                 <td id="score-name-${player.id}" class="player-name" style="color: #${player.color}">${player.name}</td>
@@ -51,6 +60,7 @@ class EndScore {
 
         });
 
+        // if we are at reload of end state, we display values, else we wait for notifications
         if (fromReload) {
             const longestPath = Math.max(...players.map(player => player.longestPathLength));
             this.setBestScore(bestScore);
@@ -65,27 +75,42 @@ class EndScore {
         }
     }
 
+    /** 
+     * Add golden highlight to top score player(s) 
+     */ 
     public highlightWinnerScore(playerId: number | string) {
         document.getElementById(`score${playerId}`).classList.add('highlight');
         document.getElementById(`score-name-${playerId}`).style.color = '';
     }
 
+    /** 
+     * Save best score so we can move trains.
+     */ 
     public setBestScore(bestScore: number) {
         this.bestScore = bestScore;
 
         this.players.forEach(player => this.moveTrain(Number(player.id)));
     }
 
+    /** 
+     * Set score, and animate train to new score.
+     */ 
     public setPoints(playerId: number, points: number) {
         this.scoreCounters[playerId].toValue(points);
         this.moveTrain(playerId);
     }
 
+    /** 
+     * Move train to represent score progression.
+     */ 
     private moveTrain(playerId: number) {
         const scorePercent = 100 * this.scoreCounters[playerId].getValue() / Math.max(50, this.bestScore);
         document.getElementById(`train-image-${playerId}`).style.right = `${100 - scorePercent}%`;
     }
     
+    /** 
+     * Show score animation for a revealed destination.
+     */ 
     public scoreDestination(playerId: number, destination: Destination, destinationRoutes: Route[]) { 
         const newDac = new DestinationCompleteAnimation(
             this.game,
@@ -109,6 +134,9 @@ class EndScore {
         this.game.addAnimation(newDac);
     }
     
+    /** 
+     * Show longest path animation for a player.
+     */ 
     public showLongestPath(playerColor: string, routes: Route[], length: number) {
         const newDac = new LongestPathAnimation(
             this.game,
@@ -120,6 +148,9 @@ class EndScore {
         this.game.addAnimation(newDac);
     }
     
+    /** 
+     * Add longest path badge to the longest path winner(s).
+     */ 
     public setLongestPathWinner(playerId: number | string, length: number) {
         dojo.place(`<div id="longest-path-bonus-card-${playerId}" class="longest-path bonus-card bonus-card-icon"></div>`, `score-name-${playerId}`);
 
