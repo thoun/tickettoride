@@ -849,6 +849,7 @@ var ROUTES = [
         new RouteSpace(106, 156, 89),
     ], GRAY),
 ];
+var DRAG_AUTO_ZOOM_DELAY = 2000;
 var SIDES = ['left', 'right', 'top', 'bottom'];
 var CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 var MAP_WIDTH = 1744;
@@ -858,6 +859,125 @@ var PLAYER_WIDTH = 305;
 var PLAYER_HEIGHT = 257; // avg height (4 destination cards)
 var BOTTOM_RATIO = (MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT + PLAYER_HEIGHT);
 var LEFT_RATIO = (PLAYER_WIDTH + MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT);
+/**
+ * Manager for in-map zoom.
+ */
+var InMapZoomManager = /** @class */ (function () {
+    function InMapZoomManager() {
+        var _this = this;
+        this.pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 }; // for map drag (if zoomed)
+        this.zoomed = false; // indicates if in-map zoom is active
+        this.mapZoomDiv = document.getElementById('map-zoom');
+        this.mapDiv = document.getElementById('map');
+        // Attach the handler
+        this.mapDiv.addEventListener('mousedown', function (e) { return _this.mouseDownHandler(e); });
+        document.addEventListener('mousemove', function (e) { return _this.mouseMoveHandler(e); });
+        document.addEventListener('mouseup', function (e) { return _this.mouseUpHandler(); });
+        document.getElementById('zoom-button').addEventListener('click', function () { return _this.toggleZoom(); });
+        this.mapDiv.addEventListener('dragenter', function (e) {
+            console.log('map dragenter', e);
+        });
+        this.mapDiv.addEventListener('dragover', function (e) {
+            if (e.offsetX !== _this.dragClientX || e.offsetY !== _this.dragClientY) {
+                _this.dragClientX = e.offsetX;
+                _this.dragClientY = e.offsetY;
+                _this.dragOverMouseMoved(e.offsetX, e.offsetY);
+            }
+        });
+        this.mapDiv.addEventListener('dragleave', function (e) {
+            clearTimeout(_this.autoZoomTimeout);
+            console.log('map dragleave', e);
+        });
+        this.mapDiv.addEventListener('drop', function (e) {
+            clearTimeout(_this.autoZoomTimeout);
+            console.log('map drop', e);
+        });
+    }
+    InMapZoomManager.prototype.dragOverMouseMoved = function (clientX, clientY) {
+        var _this = this;
+        console.log('map dragover');
+        if (this.autoZoomTimeout) {
+            clearTimeout(this.autoZoomTimeout);
+        }
+        this.autoZoomTimeout = setTimeout(function () {
+            if (!_this.hoveredRoute) { // do not automatically change the zoom when player is dragging over a route!
+                _this.toggleZoom(clientX / _this.mapDiv.clientWidth, clientY / _this.mapDiv.clientHeight);
+            }
+            _this.autoZoomTimeout = null;
+        }, DRAG_AUTO_ZOOM_DELAY);
+    };
+    /**
+     * Handle click on zoom button. Toggle between full map and in-map zoom.
+     */
+    InMapZoomManager.prototype.toggleZoom = function (scrollRatioX, scrollRatioY) {
+        if (scrollRatioX === void 0) { scrollRatioX = null; }
+        if (scrollRatioY === void 0) { scrollRatioY = null; }
+        if (scrollRatioX && scrollRatioY) {
+            console.log('scroll ratio', scrollRatioX, scrollRatioY);
+        }
+        this.zoomed = !this.zoomed;
+        this.mapDiv.style.transform = this.zoomed ? "scale(1.8)" : '';
+        dojo.toggleClass('zoom-button', 'zoomed', this.zoomed);
+        dojo.toggleClass('map-zoom', 'scrollable', this.zoomed);
+        this.mapDiv.style.cursor = this.zoomed ? 'grab' : 'default';
+        if (this.zoomed) {
+            if (scrollRatioX && scrollRatioY) {
+                this.mapZoomDiv.scrollLeft = (this.mapZoomDiv.scrollWidth - this.mapZoomDiv.clientWidth) * scrollRatioX;
+                this.mapZoomDiv.scrollTop = (this.mapZoomDiv.scrollHeight - this.mapZoomDiv.clientHeight) * scrollRatioY;
+            }
+        }
+        else {
+            this.mapZoomDiv.scrollTop = 0;
+            this.mapZoomDiv.scrollLeft = 0;
+        }
+    };
+    /**
+     * Handle mouse down, to grap map and scroll in it (imitate mobile touch scroll).
+     */
+    InMapZoomManager.prototype.mouseDownHandler = function (e) {
+        if (!this.zoomed) {
+            return;
+        }
+        this.mapDiv.style.cursor = 'grabbing';
+        this.pos = {
+            dragging: true,
+            left: this.mapDiv.scrollLeft,
+            top: this.mapDiv.scrollTop,
+            // Get the current mouse position
+            x: e.clientX,
+            y: e.clientY,
+        };
+    };
+    /**
+     * Handle mouse move, to grap map and scroll in it (imitate mobile touch scroll).
+     */
+    InMapZoomManager.prototype.mouseMoveHandler = function (e) {
+        if (!this.zoomed || !this.pos.dragging) {
+            return;
+        }
+        // How far the mouse has been moved
+        var dx = e.clientX - this.pos.x;
+        var dy = e.clientY - this.pos.y;
+        var factor = 0.1;
+        // Scroll the element
+        this.mapZoomDiv.scrollTop -= dy * factor;
+        this.mapZoomDiv.scrollLeft -= dx * factor;
+    };
+    /**
+     * Handle mouse up, to grap map and scroll in it (imitate mobile touch scroll).
+     */
+    InMapZoomManager.prototype.mouseUpHandler = function () {
+        if (!this.zoomed || !this.pos.dragging) {
+            return;
+        }
+        this.mapDiv.style.cursor = 'grab';
+        this.pos.dragging = false;
+    };
+    InMapZoomManager.prototype.setHoveredRoute = function (route) {
+        this.hoveredRoute = route;
+    };
+    return InMapZoomManager;
+}());
 /**
  * Map creation and in-map zoom handler.
  */
@@ -869,18 +989,17 @@ var TtrMap = /** @class */ (function () {
         var _this = this;
         this.game = game;
         this.players = players;
-        this.pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 }; // for map drag (if zoomed)
-        this.zoomed = false; // indicates if in-map zoom is active
         // map border
-        dojo.place("<div class=\"illustration\"></div>", 'map-and-borders');
+        dojo.place("<div class=\"illustration\"></div>", 'map', 'first');
         SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map-and-borders'); });
         CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'map-and-borders'); });
         CITIES.forEach(function (city) {
             return dojo.place("<div id=\"city" + city.id + "\" class=\"city\" \n                style=\"transform: translate(" + city.x * FACTOR + "px, " + city.y * FACTOR + "px)\"\n                title=\"" + CITIES_NAMES[city.id] + "\"\n            ></div>", 'map');
-        });
+        } // TODO remove FACTOR
+        );
         ROUTES.forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + space.x * FACTOR + "px, " + space.y * FACTOR + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + dojo.string.substitute(_('${from} to ${to}'), { from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to] }) + ", " + route.spaces.length + " " + getColor(route.color) + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", 'map');
+                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + space.x * FACTOR + "px, " + space.y * FACTOR + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + dojo.string.substitute(_('${from} to ${to}'), { from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to] }) + ", " + route.spaces.length + " " + getColor(route.color) + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", 'map'); // TODO remove FACTOR
                 var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
                 _this.setSpaceEvents(spaceDiv, route);
             });
@@ -888,19 +1007,10 @@ var TtrMap = /** @class */ (function () {
         /*console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
 ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFixed(2)}, ${(space.y*0.986 + 10).toFixed(2)}, ${space.angle}),`).join('\n')}
     ], ${getColor(route.color)}),`).join('\n'));*/
-        //this.movePoints();
         this.setClaimedRoutes(claimedRoutes);
         this.resizedDiv = document.getElementById('resized');
-        this.mapZoomDiv = document.getElementById('map-zoom');
         this.mapDiv = document.getElementById('map');
-        // Attach the handler
-        this.mapDiv.addEventListener('mousedown', function (e) { return _this.mouseDownHandler(e); });
-        document.addEventListener('mousemove', function (e) { return _this.mouseMoveHandler(e); });
-        document.addEventListener('mouseup', function (e) { return _this.mouseUpHandler(); });
-        document.getElementById('zoom-button').addEventListener('click', function () { return _this.toggleZoom(); });
-        /*this.mapDiv.addEventListener('dragenter', e => this.mapDiv.classList.add('drag-over'));
-        this.mapDiv.addEventListener('dragleave', e => this.mapDiv.classList.remove('drag-over'));
-        this.mapDiv.addEventListener('drop', e => this.mapDiv.classList.remove('drag-over'));*/
+        this.inMapZoomManager = new InMapZoomManager();
     }
     /**
      * Handle dragging train car cards over a route.
@@ -1020,62 +1130,6 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         return this.scale;
     };
     /**
-     * Handle mouse down, to grap map and scroll in it (imitate mobile touch scroll).
-     */
-    TtrMap.prototype.mouseDownHandler = function (e) {
-        if (!this.zoomed) {
-            return;
-        }
-        this.mapDiv.style.cursor = 'grabbing';
-        this.pos = {
-            dragging: true,
-            left: this.mapDiv.scrollLeft,
-            top: this.mapDiv.scrollTop,
-            // Get the current mouse position
-            x: e.clientX,
-            y: e.clientY,
-        };
-    };
-    /**
-     * Handle mouse move, to grap map and scroll in it (imitate mobile touch scroll).
-     */
-    TtrMap.prototype.mouseMoveHandler = function (e) {
-        if (!this.zoomed || !this.pos.dragging) {
-            return;
-        }
-        // How far the mouse has been moved
-        var dx = e.clientX - this.pos.x;
-        var dy = e.clientY - this.pos.y;
-        var factor = 0.1;
-        // Scroll the element
-        this.mapZoomDiv.scrollTop -= dy * factor;
-        this.mapZoomDiv.scrollLeft -= dx * factor;
-    };
-    /**
-     * Handle mouse up, to grap map and scroll in it (imitate mobile touch scroll).
-     */
-    TtrMap.prototype.mouseUpHandler = function () {
-        if (!this.zoomed || !this.pos.dragging) {
-            return;
-        }
-        this.mapDiv.style.cursor = 'grab';
-        this.pos.dragging = false;
-    };
-    /**
-     * Handle click on zoom button. Toggle between full map and in-map zoom.
-     */
-    TtrMap.prototype.toggleZoom = function () {
-        this.zoomed = !this.zoomed;
-        this.mapDiv.style.transform = this.zoomed ? "scale(1.8)" : '';
-        dojo.toggleClass('zoom-button', 'zoomed', this.zoomed);
-        dojo.toggleClass('map-zoom', 'scrollable', this.zoomed);
-        this.mapDiv.style.cursor = this.zoomed ? 'grab' : 'default';
-        if (!this.zoomed) {
-            this.mapZoomDiv.scrollTop = 0;
-            this.mapZoomDiv.scrollLeft = 0;
-        }
-    };
-    /**
      * Highlight active destination.
      */
     TtrMap.prototype.setActiveDestination = function (destination, previousDestination) {
@@ -1099,6 +1153,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
      */
     TtrMap.prototype.setHoveredRoute = function (route, valid) {
         if (valid === void 0) { valid = null; }
+        this.inMapZoomManager.setHoveredRoute(route);
         if (route) {
             [route.from, route.to].forEach(function (city) {
                 var cityDiv = document.getElementById("city" + city);
@@ -1140,9 +1195,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.mapDiv.querySelectorAll(".city[data-to-connect]").forEach(function (city) { return city.dataset.toConnect = 'false'; });
         var cities = [];
         destinations.forEach(function (destination) { return cities.push(destination.from, destination.to); });
-        cities.forEach(function (city) {
-            document.getElementById("city" + city).dataset.toConnect = 'true';
-        });
+        cities.forEach(function (city) { return document.getElementById("city" + city).dataset.toConnect = 'true'; });
     };
     /**
      * Highlight destination (on destination mouse over).
@@ -1160,9 +1213,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         else {
             cities = [shadow.dataset.from, shadow.dataset.to];
         }
-        cities.forEach(function (city) {
-            document.getElementById("city" + city).dataset.highlight = visible;
-        });
+        cities.forEach(function (city) { return document.getElementById("city" + city).dataset.highlight = visible; });
     };
     return TtrMap;
 }());
@@ -1978,22 +2029,19 @@ var TicketToRide = /** @class */ (function () {
     //                 You can use this method to perform some user interface changes at this moment.
     //
     TicketToRide.prototype.onLeavingState = function (stateName) {
-        var _this = this;
-        var _a, _b;
+        var _a;
         log('Leaving state: ' + stateName);
         switch (stateName) {
             case 'chooseInitialDestinations':
             case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
-                var chooseDestinationsArgs = this.gamedatas.gamestate.args;
-                (_a = chooseDestinationsArgs._private) === null || _a === void 0 ? void 0 : _a.destinations.forEach(function (destination) {
-                    _this.map.setSelectedDestination(destination, false);
-                    _this.map.setSelectableDestination(destination, false);
-                });
+                var mapDiv = document.getElementById('map');
+                mapDiv.querySelectorAll(".city[data-selectable]").forEach(function (city) { return city.dataset.selectable = 'false'; });
+                mapDiv.querySelectorAll(".city[data-selected]").forEach(function (city) { return city.dataset.selected = 'false'; });
                 break;
             case 'chooseAction':
                 this.map.setSelectableRoutes(false, []);
-                (_b = this.playerTable) === null || _b === void 0 ? void 0 : _b.setDraggable(false);
+                (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(false);
                 break;
             case 'drawSecondCard':
                 this.trainCarSelection.removeSelectableVisibleCards();

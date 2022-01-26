@@ -44,6 +44,6 @@ For very small screens, i would love a second level zoom, especially for very lo
 
 https://stackoverflow.com/questions/9251590/prevent-page-scroll-on-drag-in-ios-and-android
 
-auto zoom when long drag with no moves
+fix drag on mobile
 
 hint to turn mobile on bad ratios

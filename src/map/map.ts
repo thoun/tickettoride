@@ -1,3 +1,5 @@
+const DRAG_AUTO_ZOOM_DELAY = 2000;
+
 const SIDES = ['left', 'right', 'top', 'bottom'];
 const CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 
@@ -11,15 +13,151 @@ const BOTTOM_RATIO = (MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT + PLAYER_HEIGHT);
 const LEFT_RATIO = (PLAYER_WIDTH + MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT);
 
 /** 
- * Map creation and in-map zoom handler.
+ * Manager for in-map zoom.
  */ 
-class TtrMap {
-    private scale: number;
-    private resizedDiv: HTMLDivElement;
+class InMapZoomManager {
     private mapZoomDiv: HTMLDivElement;
     private mapDiv: HTMLDivElement;
     private pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 }; // for map drag (if zoomed)
     private zoomed = false; // indicates if in-map zoom is active
+
+    private hoveredRoute: Route;
+    private autoZoomTimeout: number;
+    private dragClientX: number;
+    private dragClientY: number;
+
+    constructor(
+    ) {        
+        this.mapZoomDiv = document.getElementById('map-zoom') as HTMLDivElement;
+        this.mapDiv = document.getElementById('map') as HTMLDivElement;
+        // Attach the handler
+        this.mapDiv.addEventListener('mousedown', e => this.mouseDownHandler(e));
+        document.addEventListener('mousemove', e => this.mouseMoveHandler(e));
+        document.addEventListener('mouseup', e => this.mouseUpHandler());
+        document.getElementById('zoom-button').addEventListener('click', () => this.toggleZoom());
+        
+        this.mapDiv.addEventListener('dragenter', e => {
+            console.log('map dragenter', e);
+        });
+        this.mapDiv.addEventListener('dragover', e => {
+            if (e.offsetX !== this.dragClientX || e.offsetY !== this.dragClientY) {
+                this.dragClientX = e.offsetX;
+                this.dragClientY = e.offsetY;
+                this.dragOverMouseMoved(e.offsetX, e.offsetY);
+            }
+        });
+        this.mapDiv.addEventListener('dragleave', e => {
+            clearTimeout(this.autoZoomTimeout);
+            console.log('map dragleave', e);
+        });
+        this.mapDiv.addEventListener('drop', e => {
+            clearTimeout(this.autoZoomTimeout);
+            console.log('map drop', e);
+        });
+    }
+
+    private dragOverMouseMoved(clientX: number, clientY: number) {
+        console.log('map dragover');
+        if (this.autoZoomTimeout) {
+            clearTimeout(this.autoZoomTimeout);
+        }
+        this.autoZoomTimeout = setTimeout(() => {
+            if (!this.hoveredRoute) { // do not automatically change the zoom when player is dragging over a route!
+                this.toggleZoom(clientX / this.mapDiv.clientWidth, clientY / this.mapDiv.clientHeight);
+            }
+            this.autoZoomTimeout = null;
+        }, DRAG_AUTO_ZOOM_DELAY);
+    }
+
+    /** 
+     * Handle click on zoom button. Toggle between full map and in-map zoom.
+     */ 
+    private toggleZoom(scrollRatioX: number = null, scrollRatioY: number = null) {
+        if (scrollRatioX && scrollRatioY) {
+            console.log('scroll ratio', scrollRatioX, scrollRatioY);
+        }
+
+        this.zoomed = !this.zoomed;
+        this.mapDiv.style.transform = this.zoomed ? `scale(1.8)` : '';
+        dojo.toggleClass('zoom-button', 'zoomed', this.zoomed);
+        dojo.toggleClass('map-zoom', 'scrollable', this.zoomed);
+        
+        this.mapDiv.style.cursor = this.zoomed ? 'grab' : 'default';
+
+        if (this.zoomed) {
+            if (scrollRatioX && scrollRatioY) {
+                this.mapZoomDiv.scrollLeft = (this.mapZoomDiv.scrollWidth - this.mapZoomDiv.clientWidth) * scrollRatioX;
+                this.mapZoomDiv.scrollTop = (this.mapZoomDiv.scrollHeight - this.mapZoomDiv.clientHeight ) * scrollRatioY;
+            }
+        } else {
+            this.mapZoomDiv.scrollTop = 0;
+            this.mapZoomDiv.scrollLeft = 0;
+        }
+    }
+
+    /** 
+     * Handle mouse down, to grap map and scroll in it (imitate mobile touch scroll).
+     */ 
+    private mouseDownHandler(e: MouseEvent) {
+        if (!this.zoomed) {
+            return;
+        }
+        this.mapDiv.style.cursor = 'grabbing';
+
+        this.pos = {
+            dragging: true,
+            left: this.mapDiv.scrollLeft,
+            top: this.mapDiv.scrollTop,
+            // Get the current mouse position
+            x: e.clientX,
+            y: e.clientY,
+        };
+    }
+
+    /** 
+     * Handle mouse move, to grap map and scroll in it (imitate mobile touch scroll).
+     */ 
+    private mouseMoveHandler(e: MouseEvent) {
+        if (!this.zoomed || !this.pos.dragging) {
+            return;
+        }
+
+        // How far the mouse has been moved
+        const dx = e.clientX - this.pos.x;
+        const dy = e.clientY - this.pos.y;
+
+        const factor = 0.1;
+
+        // Scroll the element
+        this.mapZoomDiv.scrollTop -= dy*factor;
+        this.mapZoomDiv.scrollLeft -= dx*factor;
+    }
+
+    /** 
+     * Handle mouse up, to grap map and scroll in it (imitate mobile touch scroll).
+     */ 
+    private mouseUpHandler() {
+        if (!this.zoomed || !this.pos.dragging) {
+            return;
+        }
+        
+        this.mapDiv.style.cursor = 'grab';
+        this.pos.dragging = false;
+    }
+
+    setHoveredRoute(route: Route | null) {
+        this.hoveredRoute = route;
+    }
+}
+
+/** 
+ * Map creation and in-map zoom handler.
+ */ 
+class TtrMap {
+    private scale: number;
+    private inMapZoomManager: InMapZoomManager;
+    private resizedDiv: HTMLDivElement;
+    private mapDiv: HTMLDivElement;
 
     /** 
      * Place map corner illustration and borders, cities, routes, and bind events.
@@ -30,7 +168,7 @@ class TtrMap {
         claimedRoutes: ClaimedRoute[],
     ) {
         // map border
-        dojo.place(`<div class="illustration"></div>`, 'map-and-borders');
+        dojo.place(`<div class="illustration"></div>`, 'map', 'first');
         SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'map-and-borders'));
         CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map-and-borders'));        
 
@@ -38,7 +176,7 @@ class TtrMap {
             dojo.place(`<div id="city${city.id}" class="city" 
                 style="transform: translate(${city.x*FACTOR}px, ${city.y*FACTOR}px)"
                 title="${CITIES_NAMES[city.id]}"
-            ></div>`, 'map')
+            ></div>`, 'map') // TODO remove FACTOR
         );
 
         ROUTES.forEach(route => 
@@ -47,7 +185,7 @@ class TtrMap {
                     style="transform: translate(${space.x*FACTOR}px, ${space.y*FACTOR}px) rotate(${space.angle}deg)"
                     title="${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to]})}, ${(route.spaces as any).length} ${getColor(route.color)}"
                     data-route="${route.id}" data-color="${route.color}"
-                ></div>`, 'map');
+                ></div>`, 'map'); // TODO remove FACTOR
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
                 this.setSpaceEvents(spaceDiv, route);
             })
@@ -57,21 +195,12 @@ class TtrMap {
 ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFixed(2)}, ${(space.y*0.986 + 10).toFixed(2)}, ${space.angle}),`).join('\n')}
     ], ${getColor(route.color)}),`).join('\n'));*/
 
-        //this.movePoints();
         this.setClaimedRoutes(claimedRoutes);
 
         this.resizedDiv = document.getElementById('resized') as HTMLDivElement;
-        this.mapZoomDiv = document.getElementById('map-zoom') as HTMLDivElement;
         this.mapDiv = document.getElementById('map') as HTMLDivElement;
-        // Attach the handler
-        this.mapDiv.addEventListener('mousedown', e => this.mouseDownHandler(e));
-        document.addEventListener('mousemove', e => this.mouseMoveHandler(e));
-        document.addEventListener('mouseup', e => this.mouseUpHandler());
-        document.getElementById('zoom-button').addEventListener('click', () => this.toggleZoom());
-        
-        /*this.mapDiv.addEventListener('dragenter', e => this.mapDiv.classList.add('drag-over'));
-        this.mapDiv.addEventListener('dragleave', e => this.mapDiv.classList.remove('drag-over'));
-        this.mapDiv.addEventListener('drop', e => this.mapDiv.classList.remove('drag-over'));*/
+
+        this.inMapZoomManager = new InMapZoomManager();
     }
     
     /** 
@@ -203,73 +332,6 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     }
 
     /** 
-     * Handle mouse down, to grap map and scroll in it (imitate mobile touch scroll).
-     */ 
-    private mouseDownHandler(e: MouseEvent) {
-        if (!this.zoomed) {
-            return;
-        }
-        this.mapDiv.style.cursor = 'grabbing';
-
-        this.pos = {
-            dragging: true,
-            left: this.mapDiv.scrollLeft,
-            top: this.mapDiv.scrollTop,
-            // Get the current mouse position
-            x: e.clientX,
-            y: e.clientY,
-        };
-    }
-
-    /** 
-     * Handle mouse move, to grap map and scroll in it (imitate mobile touch scroll).
-     */ 
-    private mouseMoveHandler(e: MouseEvent) {
-        if (!this.zoomed || !this.pos.dragging) {
-            return;
-        }
-
-        // How far the mouse has been moved
-        const dx = e.clientX - this.pos.x;
-        const dy = e.clientY - this.pos.y;
-
-        const factor = 0.1;
-
-        // Scroll the element
-        this.mapZoomDiv.scrollTop -= dy*factor;
-        this.mapZoomDiv.scrollLeft -= dx*factor;
-    }
-
-    /** 
-     * Handle mouse up, to grap map and scroll in it (imitate mobile touch scroll).
-     */ 
-    private mouseUpHandler() {
-        if (!this.zoomed || !this.pos.dragging) {
-            return;
-        }
-        
-        this.mapDiv.style.cursor = 'grab';
-        this.pos.dragging = false;
-    }
-
-    /** 
-     * Handle click on zoom button. Toggle between full map and in-map zoom.
-     */ 
-    private toggleZoom() {      
-        this.zoomed = !this.zoomed;
-        this.mapDiv.style.transform = this.zoomed ? `scale(1.8)` : '';
-        dojo.toggleClass('zoom-button', 'zoomed', this.zoomed);
-        dojo.toggleClass('map-zoom', 'scrollable', this.zoomed);
-        
-        this.mapDiv.style.cursor = this.zoomed ? 'grab' : 'default';
-
-        if (!this.zoomed) {
-            this.mapZoomDiv.scrollTop = 0;
-            this.mapZoomDiv.scrollLeft = 0;
-        }
-    }
-
-    /** 
      * Highlight active destination.
      */ 
     public setActiveDestination(destination: Destination, previousDestination: Destination = null) {
@@ -294,6 +356,8 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
      * Highlight hovered route (when dragging train cars).
      */ 
     public setHoveredRoute(route: Route | null, valid: boolean | null = null) {
+        this.inMapZoomManager.setHoveredRoute(route);
+
         if (route) {
 
             [route.from, route.to].forEach(city => {
@@ -342,9 +406,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         this.mapDiv.querySelectorAll(`.city[data-to-connect]`).forEach((city: HTMLElement) => city.dataset.toConnect = 'false');
         const cities = [];
         destinations.forEach(destination => cities.push(destination.from, destination.to));
-        cities.forEach(city => {
-            document.getElementById(`city${city}`).dataset.toConnect = 'true';
-        });
+        cities.forEach(city => document.getElementById(`city${city}`).dataset.toConnect = 'true');
     }
 
     /** 
@@ -355,7 +417,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         const shadow = document.getElementById('map-destination-highlight-shadow');
         shadow.dataset.visible = visible;
 
-        let cities;
+        let cities: (string | number)[];
         if (destination) {
             shadow.dataset.from = ''+destination.from;
             shadow.dataset.to = ''+destination.to;
@@ -363,8 +425,6 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         } else {
             cities = [shadow.dataset.from, shadow.dataset.to];
         }
-        cities.forEach(city => {
-            document.getElementById(`city${city}`).dataset.highlight = visible;
-        });
+        cities.forEach(city => document.getElementById(`city${city}`).dataset.highlight = visible);
     }
 }

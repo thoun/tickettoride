@@ -148,11 +148,9 @@ class TicketToRide implements TicketToRideGame {
         switch (stateName) {
             case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
-                const chooseDestinationsArgs = this.gamedatas.gamestate.args as EnteringChooseDestinationsArgs;
-                chooseDestinationsArgs._private?.destinations.forEach(destination => {
-                    this.map.setSelectedDestination(destination, false);
-                    this.map.setSelectableDestination(destination, false);
-                });
+                const mapDiv = document.getElementById('map');
+                mapDiv.querySelectorAll(`.city[data-selectable]`).forEach((city: HTMLElement) => city.dataset.selectable = 'false');
+                mapDiv.querySelectorAll(`.city[data-selected]`).forEach((city: HTMLElement) => city.dataset.selected = 'false');
                 break;
             case 'chooseAction':
                 this.map.setSelectableRoutes(false, []);
