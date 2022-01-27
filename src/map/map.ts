@@ -174,26 +174,28 @@ class TtrMap {
 
         CITIES.forEach(city => 
             dojo.place(`<div id="city${city.id}" class="city" 
-                style="transform: translate(${city.x*FACTOR}px, ${city.y*FACTOR}px)"
+                style="transform: translate(${city.x}px, ${city.y}px)"
                 title="${CITIES_NAMES[city.id]}"
-            ></div>`, 'map') // TODO remove FACTOR
+            ></div>`, 'map')
         );
 
         ROUTES.forEach(route => 
             route.spaces.forEach((space, spaceIndex) => {
                 dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route-space" 
-                    style="transform: translate(${space.x*FACTOR}px, ${space.y*FACTOR}px) rotate(${space.angle}deg)"
+                    style="transform: translate(${space.x}px, ${space.y}px) rotate(${space.angle}deg)"
                     title="${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to]})}, ${(route.spaces as any).length} ${getColor(route.color)}"
                     data-route="${route.id}" data-color="${route.color}"
-                ></div>`, 'map'); // TODO remove FACTOR
+                ></div>`, 'map');
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
                 this.setSpaceEvents(spaceDiv, route);
             })
         );
 
-        /*console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
-${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFixed(2)}, ${(space.y*0.986 + 10).toFixed(2)}, ${space.angle}),`).join('\n')}
-    ], ${getColor(route.color)}),`).join('\n'));*/
+        /* TO RESCALE all route coordinates
+        
+        console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
+${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Math.round(space.y)}, ${space.angle}),`).join('\n')}
+    ], ${getColor(route.color).toUpperCase()}),`).join('\n'));*/
 
         this.setClaimedRoutes(claimedRoutes, null);
 
@@ -305,8 +307,8 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
         while (angle >= 180) {
             angle -= 180;
         }
-        const x = space.x * FACTOR;
-        const y = space.y * FACTOR;
+        const x = space.x;
+        const y = space.y;
         dojo.place(`<div id="${id}" class="wagon angle${Math.round(angle * 36 / 180)} ${phantom ? 'phantom' : ''}" data-player-color="${color}" style="transform: translate(${x}px, ${y}px)"></div>`, 'map');
         
         if (fromPlayerId) {
