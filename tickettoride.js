@@ -1548,6 +1548,10 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.getPossibleColors = function (route) {
         return this.playerTrainCars.getPossibleColors(route);
     };
+    PlayerTable.prototype.setSelectableTrainCarColors = function (routeId, possibleColors) {
+        if (possibleColors === void 0) { possibleColors = null; }
+        this.playerTrainCars.setSelectableTrainCarColors(routeId, possibleColors);
+    };
     return PlayerTable;
 }());
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
@@ -1714,6 +1718,7 @@ var PlayerDestinations = /** @class */ (function () {
 var PlayerTrainCars = /** @class */ (function () {
     function PlayerTrainCars(game, player, trainCars) {
         this.game = game;
+        this.routeId = null;
         this.playerId = Number(player.id);
         this.addTrainCars(trainCars);
         console.log('bind tempDiv !');
@@ -1816,16 +1821,26 @@ var PlayerTrainCars = /** @class */ (function () {
                 group.classList.remove('hide');
                 document.getElementById('map').dataset.dragColor = '';
             });
-            group.addEventListener('click', function () { return _this.game.showMessage(_("Drag the cards on the route you want to claim, or click on the route to claim"), 'info'); });
+            group.addEventListener('click', function () {
+                if (_this.routeId) {
+                    _this.game.claimRoute(_this.routeId, type);
+                }
+                else {
+                    _this.game.showMessage(_("Drag the cards on the route you want to claim, or click on the route to claim"), 'info');
+                }
+            });
         }
         return group;
+    };
+    PlayerTrainCars.prototype.getGroups = function () {
+        return Array.from(document.getElementsByClassName('train-car-group'));
     };
     /**
      * Update counters on color groups.
      */
     PlayerTrainCars.prototype.updateCounters = function () {
         var _this = this;
-        var groups = Array.from(document.getElementsByClassName('train-car-group'));
+        var groups = this.getGroups();
         var middleIndex = (groups.length - 1) / 2;
         groups.forEach(function (groupDiv, index) {
             var distanceFromIndex = index - middleIndex;
@@ -1867,7 +1882,7 @@ var PlayerTrainCars = /** @class */ (function () {
      * Get the colors a player can use to claim a given route.
      */
     PlayerTrainCars.prototype.getPossibleColors = function (route) {
-        var groups = Array.from(document.getElementsByClassName('train-car-group'));
+        var groups = this.getGroups();
         var locomotiveGroup = groups.find(function (groupDiv) { return groupDiv.dataset.type == '0'; });
         var locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
         var possibleColors = [];
@@ -1881,6 +1896,22 @@ var PlayerTrainCars = /** @class */ (function () {
             }
         });
         return possibleColors;
+    };
+    /**
+     * Get the colors a player can use to claim a given route.
+     */
+    PlayerTrainCars.prototype.setSelectableTrainCarColors = function (routeId, possibleColors) {
+        this.routeId = routeId;
+        var groups = this.getGroups();
+        groups.forEach(function (groupDiv) {
+            if (routeId) {
+                var color = Number(groupDiv.dataset.type);
+                groupDiv.classList.toggle('disabled', color != 0 && !possibleColors.includes(color));
+            }
+            else {
+                groupDiv.classList.remove('disabled');
+            }
+        });
     };
     return PlayerTrainCars;
 }());
@@ -2110,7 +2141,7 @@ var TicketToRide = /** @class */ (function () {
     //                 You can use this method to perform some user interface changes at this moment.
     //
     TicketToRide.prototype.onLeavingState = function (stateName) {
-        var _a;
+        var _a, _b;
         log('Leaving state: ' + stateName);
         switch (stateName) {
             case 'chooseInitialDestinations':
@@ -2123,6 +2154,7 @@ var TicketToRide = /** @class */ (function () {
             case 'chooseAction':
                 this.map.setSelectableRoutes(false, []);
                 (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(false);
+                (_b = this.playerTable) === null || _b === void 0 ? void 0 : _b.setSelectableTrainCarColors(null);
                 break;
             case 'drawSecondCard':
                 this.trainCarSelection.removeSelectableVisibleCards();
@@ -2332,6 +2364,7 @@ var TicketToRide = /** @class */ (function () {
                     });
                     _this.addActionButton("claimRouteWithColor_button" + color, label, function () { return _this.claimRoute(route.id, color); });
                 });
+                this.playerTable.setSelectableTrainCarColors(route.id, possibleColors);
             }
         }
     };

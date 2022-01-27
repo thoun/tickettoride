@@ -4,6 +4,7 @@
 class PlayerTrainCars {
     public playerId: number;
     private left: boolean;
+    private routeId: number | null = null;
 
     constructor(
         private game: TicketToRideGame, 
@@ -138,16 +139,26 @@ class PlayerTrainCars {
                 document.getElementById('map').dataset.dragColor = '';
             });
 
-            group.addEventListener('click', () => (this.game as any).showMessage(_("Drag the cards on the route you want to claim, or click on the route to claim"), 'info')); 
+            group.addEventListener('click', () => {
+                if (this.routeId) {
+                    this.game.claimRoute(this.routeId, type);
+                } else {
+                    (this.game as any).showMessage(_("Drag the cards on the route you want to claim, or click on the route to claim"), 'info');
+                }
+            }); 
         }
         return group;
+    }
+
+    private getGroups(): HTMLDivElement[] {
+        return Array.from(document.getElementsByClassName('train-car-group')) as HTMLDivElement[];
     }
 
     /** 
      * Update counters on color groups.
      */ 
     private updateCounters() {
-        const groups = Array.from(document.getElementsByClassName('train-car-group')) as HTMLDivElement[];
+        const groups = this.getGroups();
 
         const middleIndex = (groups.length - 1) / 2;
 
@@ -198,7 +209,7 @@ class PlayerTrainCars {
      * Get the colors a player can use to claim a given route.
      */ 
     public getPossibleColors(route: Route): number[] {
-        const groups = Array.from(document.getElementsByClassName('train-car-group')) as HTMLDivElement[];
+        const groups = this.getGroups();
 
         const locomotiveGroup = groups.find(groupDiv => groupDiv.dataset.type == '0');
         const locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
@@ -216,5 +227,22 @@ class PlayerTrainCars {
         });
 
         return possibleColors;
+    }
+    /** 
+     * Get the colors a player can use to claim a given route.
+     */ 
+     setSelectableTrainCarColors(routeId: number | null, possibleColors: number[] | null) {
+        this.routeId = routeId;
+
+        const groups = this.getGroups();
+
+        groups.forEach(groupDiv => {
+            if (routeId) {
+                const color = Number(groupDiv.dataset.type);
+                groupDiv.classList.toggle('disabled', color != 0 && !possibleColors.includes(color));
+            } else {
+                groupDiv.classList.remove('disabled');
+            }
+        });
     }
 }

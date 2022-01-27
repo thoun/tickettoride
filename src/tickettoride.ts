@@ -155,6 +155,7 @@ class TicketToRide implements TicketToRideGame {
             case 'chooseAction':
                 this.map.setSelectableRoutes(false, []);
                 this.playerTable?.setDraggable(false);
+                this.playerTable?.setSelectableTrainCarColors(null);
                 break;
             case 'drawSecondCard':
                 this.trainCarSelection.removeSelectableVisibleCards();  
@@ -405,6 +406,8 @@ class TicketToRide implements TicketToRideGame {
                     });
                     (this as any).addActionButton(`claimRouteWithColor_button${color}`, label, () => this.claimRoute(route.id, color));
                 });
+
+                this.playerTable.setSelectableTrainCarColors(route.id, possibleColors);
             }
         }
     }
