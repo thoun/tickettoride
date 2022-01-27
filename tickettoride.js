@@ -1007,7 +1007,7 @@ var TtrMap = /** @class */ (function () {
         /*console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
 ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFixed(2)}, ${(space.y*0.986 + 10).toFixed(2)}, ${space.angle}),`).join('\n')}
     ], ${getColor(route.color)}),`).join('\n'));*/
-        this.setClaimedRoutes(claimedRoutes);
+        this.setClaimedRoutes(claimedRoutes, null);
         this.resizedDiv = document.getElementById('resized');
         this.mapDiv = document.getElementById('map');
         this.inMapZoomManager = new InMapZoomManager();
@@ -1066,39 +1066,76 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
     };
     /**
      * Place train cars on claimed routes.
+     * fromPlayerId is for animation (null for no animation)
      */
-    TtrMap.prototype.setClaimedRoutes = function (claimedRoutes) {
+    TtrMap.prototype.setClaimedRoutes = function (claimedRoutes, fromPlayerId) {
         var _this = this;
         claimedRoutes.forEach(function (claimedRoute) {
             var route = ROUTES.find(function (r) { return r.id == claimedRoute.routeId; });
             var color = _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; }).color;
-            _this.setWagons(route, color);
+            _this.setWagons(route, color, fromPlayerId, false);
         });
+    };
+    TtrMap.prototype.animateWagonFromCounter = function (playerId, wagonId, toX, toY) {
+        var wagon = document.getElementById(wagonId);
+        var wagonBR = wagon.getBoundingClientRect();
+        var fromBR = document.getElementById("train-car-counter-" + playerId + "-wrapper").getBoundingClientRect();
+        var zoom = this.game.getZoom();
+        var fromX = (fromBR.x - wagonBR.x) / zoom;
+        var fromY = (fromBR.y - wagonBR.y) / zoom;
+        wagon.style.transform = "translate(" + (fromX + toX) + "px, " + (fromY + toY) + "px)";
+        setTimeout(function () {
+            wagon.style.transition = 'transform 0.5s';
+            wagon.style.transform = "translate(" + toX + "px, " + toY + "px";
+        }, 0);
+    };
+    /**
+     * Place train car on a route space.
+     * fromPlayerId is for animation (null for no animation)
+     * Phantom is for dragging over a route : wagons are showns translucent.
+     */
+    TtrMap.prototype.setWagon = function (route, space, spaceIndex, color, fromPlayerId, phantom) {
+        var id = "wagon-route" + route.id + "-space" + spaceIndex + (phantom ? '-phantom' : '');
+        if (document.getElementById(id)) {
+            return;
+        }
+        var angle = -space.angle;
+        while (angle < 0) {
+            angle += 180;
+        }
+        while (angle >= 180) {
+            angle -= 180;
+        }
+        var x = space.x * FACTOR;
+        var y = space.y * FACTOR;
+        dojo.place("<div id=\"" + id + "\" class=\"wagon angle" + Math.round(angle * 36 / 180) + " " + (phantom ? 'phantom' : '') + "\" data-player-color=\"" + color + "\" style=\"transform: translate(" + x + "px, " + y + "px)\"></div>", 'map');
+        if (fromPlayerId) {
+            this.animateWagonFromCounter(fromPlayerId, id, x, y);
+        }
     };
     /**
      * Place train cars on a route.
+     * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */
-    TtrMap.prototype.setWagons = function (route, color, phantom) {
-        if (phantom === void 0) { phantom = false; }
-        route.spaces.forEach(function (space, spaceIndex) {
-            var id = "wagon-route" + route.id + "-space" + spaceIndex + (phantom ? '-phantom' : '');
-            if (document.getElementById(id)) {
-                return;
-            }
-            if (!phantom) {
+    TtrMap.prototype.setWagons = function (route, color, fromPlayerId, phantom) {
+        var _this = this;
+        if (!phantom) {
+            route.spaces.forEach(function (space, spaceIndex) {
                 var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
                 spaceDiv.parentElement.removeChild(spaceDiv);
-            }
-            var angle = -space.angle;
-            while (angle < 0) {
-                angle += 180;
-            }
-            while (angle >= 180) {
-                angle -= 180;
-            }
-            dojo.place("<div id=\"" + id + "\" class=\"wagon angle" + Math.round(angle * 36 / 180) + " " + (phantom ? 'phantom' : '') + "\" data-player-color=\"" + color + "\" style=\"transform: translate(" + space.x * FACTOR + "px, " + space.y * FACTOR + "px)\"></div>", 'map');
-        });
+            });
+        }
+        if (fromPlayerId) {
+            route.spaces.forEach(function (space, spaceIndex) {
+                setTimeout(function () {
+                    _this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom);
+                }, 200 * spaceIndex);
+            });
+        }
+        else {
+            route.spaces.forEach(function (space, spaceIndex) { return _this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom); });
+        }
     };
     /**
      * Set map size, depending on available screen size.
@@ -1161,7 +1198,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
                 cityDiv.dataset.valid = valid.toString();
             });
             if (valid) {
-                this.setWagons(route, this.game.getPlayerColor(), true);
+                this.setWagons(route, this.game.getPlayerColor(), null, true);
             }
         }
         else {
@@ -1422,7 +1459,10 @@ var TrainCarSelection = /** @class */ (function () {
     TrainCarSelection.prototype.getStockElement = function (from) {
         return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : this.visibleCardsStocks[from].container_div;
     };
-    TrainCarSelection.prototype.animateElementToCounterAndDestroy = function (cardId, destinationId) {
+    /**
+     * Animation to move a card to a player's counter (the destroy animated card).
+     */
+    TrainCarSelection.prototype.animateCardToCounterAndDestroy = function (cardId, destinationId) {
         var card = document.getElementById(cardId);
         var cardBR = card.getBoundingClientRect();
         var toBR = document.getElementById(destinationId).getBoundingClientRect();
@@ -1442,7 +1482,7 @@ var TrainCarSelection = /** @class */ (function () {
         var _loop_4 = function (i) {
             setTimeout(function () {
                 dojo.place("\n                <div id=\"animated-train-car-card-" + from + "-" + i + "\" class=\"animated-train-car-card " + (from === 0 ? 'from-hidden-pile' : '') + "\" data-color=\"" + color + "\"></div>\n                ", _this.getStockElement(from));
-                _this.animateElementToCounterAndDestroy("animated-train-car-card-" + from + "-" + i, "train-car-card-counter-" + playerId + "-wrapper");
+                _this.animateCardToCounterAndDestroy("animated-train-car-card-" + from + "-" + i, "train-car-card-counter-" + playerId + "-wrapper");
             }, 200 * i);
         };
         for (var i = 0; i < number; i++) {
@@ -1457,7 +1497,7 @@ var TrainCarSelection = /** @class */ (function () {
         var _loop_5 = function (i) {
             setTimeout(function () {
                 dojo.place("\n                <div id=\"animated-destination-card-" + i + "\" class=\"animated-destination-card\"></div>\n                ", 'destination-deck-hidden-pile');
-                _this.animateElementToCounterAndDestroy("animated-destination-card-" + i, "destinations-counter-" + playerId + "-wrapper");
+                _this.animateCardToCounterAndDestroy("animated-destination-card-" + i, "destinations-counter-" + playerId + "-wrapper");
             }, 200 * i);
         };
         for (var i = 0; i < number; i++) {
@@ -2461,7 +2501,7 @@ var TicketToRide = /** @class */ (function () {
         this.map.setClaimedRoutes([{
                 playerId: playerId,
                 routeId: route.id
-            }]);
+            }], playerId);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
         }

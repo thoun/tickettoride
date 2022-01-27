@@ -48,6 +48,7 @@ https://stackoverflow.com/questions/9251590/prevent-page-scroll-on-drag-in-ios-a
 
 bug on double-click? use no-lock instead?
 
-add animation for train built
-
 allow to click on card to select color
+
+remove FACTOR
+

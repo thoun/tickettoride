@@ -596,7 +596,7 @@ class TicketToRide implements TicketToRideGame {
         this.map.setClaimedRoutes([{
             playerId,
             routeId: route.id
-        }]);
+        }], playerId);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
         }

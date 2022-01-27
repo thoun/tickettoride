@@ -195,7 +195,7 @@ class TtrMap {
 ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFixed(2)}, ${(space.y*0.986 + 10).toFixed(2)}, ${space.angle}),`).join('\n')}
     ], ${getColor(route.color)}),`).join('\n'));*/
 
-        this.setClaimedRoutes(claimedRoutes);
+        this.setClaimedRoutes(claimedRoutes, null);
 
         this.resizedDiv = document.getElementById('resized') as HTMLDivElement;
         this.mapDiv = document.getElementById('map') as HTMLDivElement;
@@ -260,40 +260,82 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
 
     /** 
      * Place train cars on claimed routes.
+     * fromPlayerId is for animation (null for no animation)
      */ 
-    public setClaimedRoutes(claimedRoutes: ClaimedRoute[]) {
+    public setClaimedRoutes(claimedRoutes: ClaimedRoute[], fromPlayerId: number) {
         claimedRoutes.forEach(claimedRoute => {
             const route = ROUTES.find(r => r.id == claimedRoute.routeId);
             const color = this.players.find(player => Number(player.id) == claimedRoute.playerId).color;
-            this.setWagons(route, color);
+            this.setWagons(route, color, fromPlayerId, false);
         });
+    }
+
+    private animateWagonFromCounter(playerId: number, wagonId: string, toX: number, toY: number) {
+        const wagon = document.getElementById(wagonId);
+        const wagonBR = wagon.getBoundingClientRect();
+
+        const fromBR = document.getElementById(`train-car-counter-${playerId}-wrapper`).getBoundingClientRect();
+            
+        const zoom = this.game.getZoom();
+        const fromX = (fromBR.x - wagonBR.x) / zoom;
+        const fromY = (fromBR.y - wagonBR.y) / zoom;
+
+        wagon.style.transform = `translate(${fromX + toX}px, ${fromY + toY}px)`;
+        setTimeout(() => {
+            wagon.style.transition = 'transform 0.5s';
+            wagon.style.transform = `translate(${toX}px, ${toY}px`;
+        }, 0);
+    }
+
+    /** 
+     * Place train car on a route space.
+     * fromPlayerId is for animation (null for no animation)
+     * Phantom is for dragging over a route : wagons are showns translucent.
+     */ 
+    private setWagon(route: Route, space: RouteSpace, spaceIndex: number, color: string, fromPlayerId: number, phantom: boolean) {
+        const id = `wagon-route${route.id}-space${spaceIndex}${phantom ? '-phantom' : ''}`;
+        if (document.getElementById(id)) {
+            return;
+        }
+
+        let angle = -space.angle;
+        while (angle < 0) {
+            angle += 180;
+        }
+        while (angle >= 180) {
+            angle -= 180;
+        }
+        const x = space.x * FACTOR;
+        const y = space.y * FACTOR;
+        dojo.place(`<div id="${id}" class="wagon angle${Math.round(angle * 36 / 180)} ${phantom ? 'phantom' : ''}" data-player-color="${color}" style="transform: translate(${x}px, ${y}px)"></div>`, 'map');
+        
+        if (fromPlayerId) {
+            this.animateWagonFromCounter(fromPlayerId, id, x, y);
+        }
     }
 
     /** 
      * Place train cars on a route.
+     * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */ 
-    private setWagons(route: Route, color: string, phantom: boolean = false) {
-        route.spaces.forEach((space, spaceIndex) => {
-            const id = `wagon-route${route.id}-space${spaceIndex}${phantom ? '-phantom' : ''}`;
-            if (document.getElementById(id)) {
-                return;
-            }
-
-            if (!phantom) {
+    private setWagons(route: Route, color: string, fromPlayerId: number, phantom: boolean) {
+        if (!phantom) {
+            route.spaces.forEach((space, spaceIndex) => {
                 const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
                 spaceDiv.parentElement.removeChild(spaceDiv);
-            }
+            });
+        }
 
-            let angle = -space.angle;
-            while (angle < 0) {
-                angle += 180;
-            }
-            while (angle >= 180) {
-                angle -= 180;
-            }
-            dojo.place(`<div id="${id}" class="wagon angle${Math.round(angle * 36 / 180)} ${phantom ? 'phantom' : ''}" data-player-color="${color}" style="transform: translate(${space.x * FACTOR}px, ${space.y * FACTOR}px)"></div>`, 'map');
-        });
+        if (fromPlayerId) {
+            route.spaces.forEach((space, spaceIndex) => {
+                setTimeout(() => {
+                this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom)
+            }, 200 * spaceIndex);
+            });
+        } else {
+            route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom));
+        }
     }
 
     /** 
@@ -367,7 +409,7 @@ ${route.spaces.map(space => `        new RouteSpace(${(space.x*0.986 + 10).toFix
             });
 
             if (valid) {
-                this.setWagons(route, this.game.getPlayerColor(), true);
+                this.setWagons(route, this.game.getPlayerColor(), null, true);
             }
 
         } else {

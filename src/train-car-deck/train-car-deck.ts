@@ -156,7 +156,10 @@ class TrainCarSelection {
         return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : this.visibleCardsStocks[from].container_div; 
     }
 
-    private animateElementToCounterAndDestroy(cardId: string, destinationId: string) {
+    /**
+     * Animation to move a card to a player's counter (the destroy animated card).
+     */ 
+    private animateCardToCounterAndDestroy(cardId: string, destinationId: string) {
         const card = document.getElementById(cardId);
         const cardBR = card.getBoundingClientRect();
 
@@ -180,7 +183,7 @@ class TrainCarSelection {
                 <div id="animated-train-car-card-${from}-${i}" class="animated-train-car-card ${from === 0 ? 'from-hidden-pile' : ''}" data-color="${color}"></div>
                 `, this.getStockElement(from));
 
-                this.animateElementToCounterAndDestroy(
+                this.animateCardToCounterAndDestroy(
                     `animated-train-car-card-${from}-${i}`, 
                     `train-car-card-counter-${playerId}-wrapper`
                 );
@@ -198,7 +201,7 @@ class TrainCarSelection {
                 <div id="animated-destination-card-${i}" class="animated-destination-card"></div>
                 `, 'destination-deck-hidden-pile');
 
-                this.animateElementToCounterAndDestroy(
+                this.animateCardToCounterAndDestroy(
                     `animated-destination-card-${i}`, 
                     `destinations-counter-${playerId}-wrapper`
                 );
