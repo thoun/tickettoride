@@ -155,25 +155,54 @@ class TrainCarSelection {
     public getStockElement(from: number): HTMLElement {
         return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : this.visibleCardsStocks[from].container_div; 
     }
-    
-    /**
-     * Animation when cards are picked by another player.
-     */ 
-    public moveCardToPlayerBoard(playerId: number, from: number, color: number = 0) {
-        dojo.place(`
-        <div id="animated-train-car-card-${from}" class="animated-train-car-card ${from === 0 ? 'from-hidden-pile' : ''}" data-color="${color}"></div>
-        `, this.getStockElement(from));        
 
-        const card = document.getElementById(`animated-train-car-card-${from}`);
+    private animateElementToCounterAndDestroy(cardId: string, destinationId: string) {
+        const card = document.getElementById(cardId);
         const cardBR = card.getBoundingClientRect();
 
-        const toBR = document.getElementById(`train-car-card-counter-${playerId}-wrapper`).getBoundingClientRect();
-             
+        const toBR = document.getElementById(destinationId).getBoundingClientRect();
+            
         const zoom = this.game.getZoom();
         const x = (toBR.x - cardBR.x) / zoom;
         const y = (toBR.y - cardBR.y) / zoom;
 
         card.style.transform = `translate(${x}px, ${y}px) scale(${0.15 / zoom})`;
         setTimeout(() => card.parentElement?.removeChild(card), 500);
+    }
+    
+    /**
+     * Animation when train car cards are picked by another player.
+     */ 
+    public moveTrainCarCardToPlayerBoard(playerId: number, from: number, color: number = 0, number: number = 1) {
+        for (let i=0; i<number; i++) {
+            setTimeout(() => {
+                dojo.place(`
+                <div id="animated-train-car-card-${from}-${i}" class="animated-train-car-card ${from === 0 ? 'from-hidden-pile' : ''}" data-color="${color}"></div>
+                `, this.getStockElement(from));
+
+                this.animateElementToCounterAndDestroy(
+                    `animated-train-car-card-${from}-${i}`, 
+                    `train-car-card-counter-${playerId}-wrapper`
+                );
+            }, 200 * i);
+        }
+    }
+    
+    /**
+     * Animation when destination cards are picked by another player.
+     */ 
+    public moveDestinationCardToPlayerBoard(playerId: number, number: number) {
+        for (let i=0; i<number; i++) {
+            setTimeout(() => {
+                dojo.place(`
+                <div id="animated-destination-card-${i}" class="animated-destination-card"></div>
+                `, 'destination-deck-hidden-pile');
+
+                this.animateElementToCounterAndDestroy(
+                    `animated-destination-card-${i}`, 
+                    `destinations-counter-${playerId}-wrapper`
+                );
+            }, 200 * i);
+        }
     }
 }

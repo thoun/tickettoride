@@ -257,7 +257,7 @@ class TicketToRide implements TicketToRideGame {
                     <div class="icon train-car-card"></div> 
                     <span id="train-car-card-counter-${player.id}"></span>
                 </div>
-                <div id="train-destinations-counter-${player.id}-wrapper" class="counter destinations-counter">
+                <div id="destinations-counter-${player.id}-wrapper" class="counter destinations-counter">
                     <div class="icon destination-card"></div> 
                     <span id="completed-destinations-counter-${player.id}">${this.getPlayerId() !== playerId ? '?' : ''}</span>/<span id="destination-card-counter-${player.id}"></span>
                 </div>
@@ -557,6 +557,8 @@ class TicketToRide implements TicketToRideGame {
         const destinations = notif.args._private?.[this.getPlayerId()]?.destinations;
         if (destinations) {
             this.playerTable.addDestinations(destinations, this.destinationSelection.destinations);
+        } else {
+            this.trainCarSelection.moveDestinationCardToPlayerBoard(notif.args.playerId, notif.args.number);
         }
         this.trainCarSelection.setDestinationCount(notif.args.remainingDestinationsInDeck);
     }
@@ -570,7 +572,7 @@ class TicketToRide implements TicketToRideGame {
             const cards = notif.args.cards || notif.args._private?.[this.getPlayerId()]?.cards;
             this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.from));
         } else {
-            this.trainCarSelection.moveCardToPlayerBoard(notif.args.playerId, notif.args.from, notif.args.cards?.[0].type);
+            this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.from, notif.args.cards?.[0].type, notif.args.number);
         }
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }

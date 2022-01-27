@@ -13,6 +13,21 @@ class PlayerTrainCars {
         this.playerId = Number(player.id);
 
         this.addTrainCars(trainCars);
+
+        console.log('bind tempDiv !')
+        const tempDiv = document.getElementById(`player-table-${player.id}-train-cars`);
+        tempDiv.addEventListener('dragenter', e => {
+            console.log('tempDiv dragenter', e);
+        });
+        tempDiv.addEventListener('dragover', e => {
+            console.log('tempDiv dragover', e);
+        });
+        tempDiv.addEventListener('dragleave', e => {
+            console.log('tempDiv dragleave', e);
+        });
+        tempDiv.addEventListener('drop', e => {
+            console.log('tempDiv drop', e);
+        });
     }
     
     /** 

@@ -1422,20 +1422,47 @@ var TrainCarSelection = /** @class */ (function () {
     TrainCarSelection.prototype.getStockElement = function (from) {
         return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : this.visibleCardsStocks[from].container_div;
     };
-    /**
-     * Animation when cards are picked by another player.
-     */
-    TrainCarSelection.prototype.moveCardToPlayerBoard = function (playerId, from, color) {
-        if (color === void 0) { color = 0; }
-        dojo.place("\n        <div id=\"animated-train-car-card-" + from + "\" class=\"animated-train-car-card " + (from === 0 ? 'from-hidden-pile' : '') + "\" data-color=\"" + color + "\"></div>\n        ", this.getStockElement(from));
-        var card = document.getElementById("animated-train-car-card-" + from);
+    TrainCarSelection.prototype.animateElementToCounterAndDestroy = function (cardId, destinationId) {
+        var card = document.getElementById(cardId);
         var cardBR = card.getBoundingClientRect();
-        var toBR = document.getElementById("train-car-card-counter-" + playerId + "-wrapper").getBoundingClientRect();
+        var toBR = document.getElementById(destinationId).getBoundingClientRect();
         var zoom = this.game.getZoom();
         var x = (toBR.x - cardBR.x) / zoom;
         var y = (toBR.y - cardBR.y) / zoom;
         card.style.transform = "translate(" + x + "px, " + y + "px) scale(" + 0.15 / zoom + ")";
         setTimeout(function () { var _a; return (_a = card.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(card); }, 500);
+    };
+    /**
+     * Animation when train car cards are picked by another player.
+     */
+    TrainCarSelection.prototype.moveTrainCarCardToPlayerBoard = function (playerId, from, color, number) {
+        var _this = this;
+        if (color === void 0) { color = 0; }
+        if (number === void 0) { number = 1; }
+        var _loop_4 = function (i) {
+            setTimeout(function () {
+                dojo.place("\n                <div id=\"animated-train-car-card-" + from + "-" + i + "\" class=\"animated-train-car-card " + (from === 0 ? 'from-hidden-pile' : '') + "\" data-color=\"" + color + "\"></div>\n                ", _this.getStockElement(from));
+                _this.animateElementToCounterAndDestroy("animated-train-car-card-" + from + "-" + i, "train-car-card-counter-" + playerId + "-wrapper");
+            }, 200 * i);
+        };
+        for (var i = 0; i < number; i++) {
+            _loop_4(i);
+        }
+    };
+    /**
+     * Animation when destination cards are picked by another player.
+     */
+    TrainCarSelection.prototype.moveDestinationCardToPlayerBoard = function (playerId, number) {
+        var _this = this;
+        var _loop_5 = function (i) {
+            setTimeout(function () {
+                dojo.place("\n                <div id=\"animated-destination-card-" + i + "\" class=\"animated-destination-card\"></div>\n                ", 'destination-deck-hidden-pile');
+                _this.animateElementToCounterAndDestroy("animated-destination-card-" + i, "destinations-counter-" + playerId + "-wrapper");
+            }, 200 * i);
+        };
+        for (var i = 0; i < number; i++) {
+            _loop_5(i);
+        }
     };
     return TrainCarSelection;
 }());
@@ -1649,6 +1676,20 @@ var PlayerTrainCars = /** @class */ (function () {
         this.game = game;
         this.playerId = Number(player.id);
         this.addTrainCars(trainCars);
+        console.log('bind tempDiv !');
+        var tempDiv = document.getElementById("player-table-" + player.id + "-train-cars");
+        tempDiv.addEventListener('dragenter', function (e) {
+            console.log('tempDiv dragenter', e);
+        });
+        tempDiv.addEventListener('dragover', function (e) {
+            console.log('tempDiv dragover', e);
+        });
+        tempDiv.addEventListener('dragleave', function (e) {
+            console.log('tempDiv dragleave', e);
+        });
+        tempDiv.addEventListener('drop', function (e) {
+            console.log('tempDiv drop', e);
+        });
     }
     /**
      * Add train cars to player's hand.
@@ -2121,7 +2162,7 @@ var TicketToRide = /** @class */ (function () {
             var playerId = Number(player.id);
             document.getElementById("overall_player_board_" + player.id).dataset.playerColor = player.color;
             // public counters
-            dojo.place("<div class=\"counters\">\n                <div id=\"train-car-counter-" + player.id + "-wrapper\" class=\"counter train-car-counter\">\n                    <div class=\"icon train\" data-player-color=\"" + player.color + "\"></div> \n                    <span id=\"train-car-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"train-car-card-counter-" + player.id + "-wrapper\" class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card\"></div> \n                    <span id=\"train-car-card-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"train-destinations-counter-" + player.id + "-wrapper\" class=\"counter destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-" + player.id + "\">" + (_this.getPlayerId() !== playerId ? '?' : '') + "</span>/<span id=\"destination-card-counter-" + player.id + "\"></span>\n                </div>\n            </div>", "player_board_" + player.id);
+            dojo.place("<div class=\"counters\">\n                <div id=\"train-car-counter-" + player.id + "-wrapper\" class=\"counter train-car-counter\">\n                    <div class=\"icon train\" data-player-color=\"" + player.color + "\"></div> \n                    <span id=\"train-car-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"train-car-card-counter-" + player.id + "-wrapper\" class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card\"></div> \n                    <span id=\"train-car-card-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"destinations-counter-" + player.id + "-wrapper\" class=\"counter destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-" + player.id + "\">" + (_this.getPlayerId() !== playerId ? '?' : '') + "</span>/<span id=\"destination-card-counter-" + player.id + "\"></span>\n                </div>\n            </div>", "player_board_" + player.id);
             var trainCarCounter = new ebg.counter();
             trainCarCounter.create("train-car-counter-" + player.id);
             trainCarCounter.setValue(player.remainingTrainCarsCount);
@@ -2383,6 +2424,9 @@ var TicketToRide = /** @class */ (function () {
         if (destinations) {
             this.playerTable.addDestinations(destinations, this.destinationSelection.destinations);
         }
+        else {
+            this.trainCarSelection.moveDestinationCardToPlayerBoard(notif.args.playerId, notif.args.number);
+        }
         this.trainCarSelection.setDestinationCount(notif.args.remainingDestinationsInDeck);
     };
     /**
@@ -2396,7 +2440,7 @@ var TicketToRide = /** @class */ (function () {
             this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.from));
         }
         else {
-            this.trainCarSelection.moveCardToPlayerBoard(notif.args.playerId, notif.args.from, (_c = notif.args.cards) === null || _c === void 0 ? void 0 : _c[0].type);
+            this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.from, (_c = notif.args.cards) === null || _c === void 0 ? void 0 : _c[0].type, notif.args.number);
         }
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     };
