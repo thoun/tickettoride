@@ -6,14 +6,14 @@ const DBL_CLICK_TIMEOUT = 300;
 class Gauge {
     private levelDiv: HTMLDivElement;
 
-    constructor(conainerId: string,
+    constructor(containerId: string,
         className: string,
         private max: number,
     ) {
         dojo.place(`
         <div id="gauge-${className}" class="gauge ${className}">
             <div class="inner" id="gauge-${className}-level"></div>
-        </div>`, conainerId);
+        </div>`, containerId);
 
         this.levelDiv = document.getElementById(`gauge-${className}-level`) as HTMLDivElement;
     }
@@ -131,7 +131,7 @@ class TrainCarSelection {
      */ 
     public setTrainCarCount(count: number) {
         this.trainCarGauge.setCount(count);
-        document.getElementById(`train-car-deck-level`).dataset.level = `${Math.min(10, Math.floor(count / 10))}`;
+        document.getElementById(`train-car-deck-level`).dataset.level = `${Math.min(10, Math.ceil(count / 10))}`;
     }
 
     /**
@@ -139,7 +139,7 @@ class TrainCarSelection {
      */ 
     public setDestinationCount(count: number) {
         this.destinationGauge.setCount(count);
-        document.getElementById(`destination-deck-level`).dataset.level = `${Math.min(10, Math.floor(count / 10))}`;
+        document.getElementById(`destination-deck-level`).dataset.level = `${Math.min(10, Math.ceil(count / 10))}`;
     }
 
     /**

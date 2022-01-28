@@ -109,7 +109,7 @@ trait TrainCarDeckTrait {
     public function getRemainingTrainCarCardsInDeck(bool $includeDiscard = false) {
         $remaining = intval($this->trainCars->countCardInLocation('deck'));
 
-        if ($includeDiscard) {
+        if ($includeDiscard || $remaining == 0) {
             $remaining += intval($this->trainCars->countCardInLocation('discard'));
         }
 

@@ -60,6 +60,11 @@ trait DestinationDeckTrait {
      */
     public function getRemainingDestinationCardsInDeck() {
         $remaining = intval($this->destinations->countCardInLocation('deck'));
+
+        if ($remaining == 0) {
+            $remaining = intval($this->destinations->countCardInLocation('discard'));
+        }
+
         return $remaining;
     }
 

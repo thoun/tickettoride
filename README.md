@@ -48,3 +48,6 @@ https://stackoverflow.com/questions/9251590/prevent-page-scroll-on-drag-in-ios-a
 
 bug on double-click? use no-lock instead?
 
+show tiny color cards on destination selection
+
+allow to click on a card then claim a route?

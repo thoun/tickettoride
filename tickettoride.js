@@ -1324,9 +1324,9 @@ var DBL_CLICK_TIMEOUT = 300;
  * Level of cards in deck indicator.
  */
 var Gauge = /** @class */ (function () {
-    function Gauge(conainerId, className, max) {
+    function Gauge(containerId, className, max) {
         this.max = max;
-        dojo.place("\n        <div id=\"gauge-" + className + "\" class=\"gauge " + className + "\">\n            <div class=\"inner\" id=\"gauge-" + className + "-level\"></div>\n        </div>", conainerId);
+        dojo.place("\n        <div id=\"gauge-" + className + "\" class=\"gauge " + className + "\">\n            <div class=\"inner\" id=\"gauge-" + className + "-level\"></div>\n        </div>", containerId);
         this.levelDiv = document.getElementById("gauge-" + className + "-level");
     }
     Gauge.prototype.setCount = function (count) {
@@ -1438,14 +1438,14 @@ var TrainCarSelection = /** @class */ (function () {
      */
     TrainCarSelection.prototype.setTrainCarCount = function (count) {
         this.trainCarGauge.setCount(count);
-        document.getElementById("train-car-deck-level").dataset.level = "" + Math.min(10, Math.floor(count / 10));
+        document.getElementById("train-car-deck-level").dataset.level = "" + Math.min(10, Math.ceil(count / 10));
     };
     /**
      * Update destination gauge.
      */
     TrainCarSelection.prototype.setDestinationCount = function (count) {
         this.destinationGauge.setCount(count);
-        document.getElementById("destination-deck-level").dataset.level = "" + Math.min(10, Math.floor(count / 10));
+        document.getElementById("destination-deck-level").dataset.level = "" + Math.min(10, Math.ceil(count / 10));
     };
     /**
      * Make hidden train car cads selection buttons visible (user preference).
@@ -2078,9 +2078,7 @@ var TicketToRide = /** @class */ (function () {
         }
         this.setupNotifications();
         this.setupPreferences();
-        this.onScreenWidthChange = function () {
-            _this.map.setAutoZoom();
-        };
+        this.onScreenWidthChange = function () { return _this.map.setAutoZoom(); };
         log("Ending game setup");
     };
     ///////////////////////////////////////////////////

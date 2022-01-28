@@ -14,7 +14,9 @@ trait DebugUtilTrait {
         //$this->debugSetDestinationInHand(7, 2343492);
 
         //$this->debugClaimAllRoutes(2343492, 0.3);
-        $this->debugSetLastTurn();
+        //$this->debugSetLastTurn();
+
+        $this->debugSetRemainingTrainCarDeck(1);
 
         //$this->gamestate->changeActivePlayer(2343492);
     }
@@ -35,6 +37,11 @@ trait DebugUtilTrait {
                 $this->debugClaimRoute($playerId, $id);
             }
         }
+    }
+
+    function debugSetRemainingTrainCarDeck(int $remaining) {
+        $moveNumber = $this->getRemainingTrainCarCardsInDeck() - $remaining;
+        $this->trainCars->pickCardsForLocation($moveNumber, 'deck', 'discard');
     }
 
     function debugSetLastTurn() {
