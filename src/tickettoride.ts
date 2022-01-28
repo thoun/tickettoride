@@ -171,7 +171,7 @@ class TicketToRide implements TicketToRideGame {
                     const chooseInitialDestinationsArgs = args as EnteringChooseDestinationsArgs;
                     (this as any).addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), () => this.chooseInitialDestinations());
                     dojo.addClass('chooseInitialDestinations_button', 'disabled');
-                    this.destinationSelection.setCards(chooseInitialDestinationsArgs._private.destinations, chooseInitialDestinationsArgs.minimum);
+                    this.destinationSelection.setCards(chooseInitialDestinationsArgs._private.destinations, chooseInitialDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
                     break;   
                 case 'chooseAction':
                     const chooseActionArgs = args as EnteringChooseActionArgs;
@@ -182,7 +182,7 @@ class TicketToRide implements TicketToRideGame {
                     const chooseAdditionalDestinationsArgs = args as EnteringChooseDestinationsArgs;
                     (this as any).addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), () => this.chooseAdditionalDestinations());
                     dojo.addClass('chooseAdditionalDestinations_button', 'disabled');
-                    this.destinationSelection.setCards(chooseAdditionalDestinationsArgs._private.destinations, chooseAdditionalDestinationsArgs.minimum);
+                    this.destinationSelection.setCards(chooseAdditionalDestinationsArgs._private.destinations, chooseAdditionalDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
                     break;  
             }
         }

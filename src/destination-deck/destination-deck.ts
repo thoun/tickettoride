@@ -29,7 +29,7 @@ class DestinationSelection {
     /**
      * Set visible destination cards.
      */ 
-    public setCards(destinations: Destination[], minimumDestinations: number) {
+    public setCards(destinations: Destination[], minimumDestinations: number, visibleColors: number[]) {
         dojo.removeClass('destination-deck', 'hidden');
 
         destinations.forEach(destination => {
@@ -44,6 +44,11 @@ class DestinationSelection {
         });
 
         this.minimumDestinations = minimumDestinations;
+
+        visibleColors.forEach((color: number, index: number) => {
+            console.log(document.getElementById(`visible-train-cards-mini${index}`));
+            document.getElementById(`visible-train-cards-mini${index}`).dataset.color = ''+color;
+        });
     }
 
     /**

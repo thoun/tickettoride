@@ -1279,7 +1279,7 @@ var DestinationSelection = /** @class */ (function () {
     /**
      * Set visible destination cards.
      */
-    DestinationSelection.prototype.setCards = function (destinations, minimumDestinations) {
+    DestinationSelection.prototype.setCards = function (destinations, minimumDestinations, visibleColors) {
         var _this = this;
         dojo.removeClass('destination-deck', 'hidden');
         destinations.forEach(function (destination) {
@@ -1292,6 +1292,10 @@ var DestinationSelection = /** @class */ (function () {
             cardDiv.addEventListener('click', function () { return _this.game.setSelectedDestination(destination, _this.destinations.getSelectedItems().some(function (item) { return Number(item.id) == destination.id; })); });
         });
         this.minimumDestinations = minimumDestinations;
+        visibleColors.forEach(function (color, index) {
+            console.log(document.getElementById("visible-train-cards-mini" + index));
+            document.getElementById("visible-train-cards-mini" + index).dataset.color = '' + color;
+        });
     };
     /**
      * Hide destination selector.
@@ -1503,6 +1507,9 @@ var TrainCarSelection = /** @class */ (function () {
         for (var i = 0; i < number; i++) {
             _loop_5(i);
         }
+    };
+    TrainCarSelection.prototype.getVisibleColors = function () {
+        return this.visibleCardsStocks.map(function (stock) { return stock.items[0].type; });
     };
     return TrainCarSelection;
 }());
@@ -2170,7 +2177,7 @@ var TicketToRide = /** @class */ (function () {
                     var chooseInitialDestinationsArgs = args;
                     this.addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), function () { return _this.chooseInitialDestinations(); });
                     dojo.addClass('chooseInitialDestinations_button', 'disabled');
-                    this.destinationSelection.setCards(chooseInitialDestinationsArgs._private.destinations, chooseInitialDestinationsArgs.minimum);
+                    this.destinationSelection.setCards(chooseInitialDestinationsArgs._private.destinations, chooseInitialDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
                     break;
                 case 'chooseAction':
                     var chooseActionArgs = args;
@@ -2181,7 +2188,7 @@ var TicketToRide = /** @class */ (function () {
                     var chooseAdditionalDestinationsArgs = args;
                     this.addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), function () { return _this.chooseAdditionalDestinations(); });
                     dojo.addClass('chooseAdditionalDestinations_button', 'disabled');
-                    this.destinationSelection.setCards(chooseAdditionalDestinationsArgs._private.destinations, chooseAdditionalDestinationsArgs.minimum);
+                    this.destinationSelection.setCards(chooseAdditionalDestinationsArgs._private.destinations, chooseAdditionalDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
                     break;
             }
         }

@@ -34,3 +34,22 @@
     }
   }
 }
+
+#visible-train-cards-mini {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: black;
+  border: 2px outset gold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .icon.train-car-color {
+    height: 32px;
+    width: 42px;
+    border-radius: 4px;
+    margin: 5px;
+  }
+}

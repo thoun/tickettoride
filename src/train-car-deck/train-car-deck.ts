@@ -208,4 +208,8 @@ class TrainCarSelection {
             }, 200 * i);
         }
     }
+
+    public getVisibleColors(): number[] {
+        return this.visibleCardsStocks.map(stock => stock.items[0].type);
+    }
 }

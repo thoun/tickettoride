@@ -39,6 +39,13 @@
 
                 <div id="destination-deck" class="hidden">
                     <div id="destination-stock"></div>
+                    <div id="visible-train-cards-mini">
+                        <div id="visible-train-cards-mini1" class="train-car-color icon"></div>
+                        <div id="visible-train-cards-mini2" class="train-car-color icon"></div>
+                        <div id="visible-train-cards-mini3" class="train-car-color icon"></div>
+                        <div id="visible-train-cards-mini4" class="train-car-color icon"></div>
+                        <div id="visible-train-cards-mini5" class="train-car-color icon"></div>
+                    </div>
                 </div>
             </div>
         </div>
