@@ -1361,6 +1361,7 @@ var TrainCarSelection = /** @class */ (function () {
             else if (!dojo.hasClass('train-car-deck-hidden-pile', 'buttonselection')) {
                 _this.dblClickTimeout = setTimeout(function () {
                     _this.game.onHiddenTrainCarDeckClick(1);
+                    _this.dblClickTimeout = null;
                 }, DBL_CLICK_TIMEOUT);
             }
         });

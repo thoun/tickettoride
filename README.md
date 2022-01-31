@@ -46,8 +46,6 @@ For very small screens, i would love a second level zoom, especially for very lo
 fix drag on mobile
 https://stackoverflow.com/questions/9251590/prevent-page-scroll-on-drag-in-ios-and-android
 
-bug on double-click? use no-lock instead?
-
 allow to click on a card then claim a route?
 
 fix new visible cards sliding under the others

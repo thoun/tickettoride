@@ -55,6 +55,7 @@ class TrainCarSelection {
             } else if (!dojo.hasClass('train-car-deck-hidden-pile', 'buttonselection')) {
                 this.dblClickTimeout = setTimeout(() => {
                     this.game.onHiddenTrainCarDeckClick(1);
+                    this.dblClickTimeout = null;
                 }, DBL_CLICK_TIMEOUT);
             }
         });
