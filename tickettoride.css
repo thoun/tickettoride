@@ -1005,6 +1005,14 @@
   transform: unset;
 }
 
+@keyframes selected-card-animation {
+  from {
+    box-shadow: 0 0 5px 5px white;
+  }
+  to {
+    box-shadow: 0 0 10px 10px white;
+  }
+}
 .train-car-group {
   position: relative;
   left: 0px;
@@ -1020,6 +1028,10 @@
 }
 .train-car-group.hide {
   display: none;
+}
+.train-car-group.selected .train-car-card {
+  animation: selected-card-animation 1.5s 1 alternate ease-in-out;
+  animation-iteration-count: infinite;
 }
 .train-car-group .train-car-group-counter {
   width: 100%;

@@ -59,6 +59,10 @@ class PlayerTable {
     public setDraggable(draggable: boolean) {
         this.playerTrainCars.setDraggable(draggable);
     }
+
+    public setSelectable(selectable: boolean) {
+        this.playerTrainCars.setSelectable(selectable);
+    }
     
     public getPossibleColors(route: Route): number[] {
         return this.playerTrainCars.getPossibleColors(route);
@@ -66,5 +70,9 @@ class PlayerTable {
 
     public setSelectableTrainCarColors(routeId: number | null, possibleColors: number[] | null = null) {
         this.playerTrainCars.setSelectableTrainCarColors(routeId, possibleColors);
+    }
+
+    public getSelectedColor(): number | null {
+        return this.playerTrainCars.getSelectedColor();
     }
 }

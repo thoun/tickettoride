@@ -108,11 +108,13 @@ class TicketToRide implements TicketToRideGame {
      * Show selectable routes, and make train car draggable.
      */ 
     private onEnteringChooseAction(args: EnteringChooseActionArgs) {
-        this.trainCarSelection.setSelectableTopDeck((this as any).isCurrentPlayerActive(), args.maxHiddenCardsPick);
+        const currentPlayerActive = (this as any).isCurrentPlayerActive();
+        this.trainCarSelection.setSelectableTopDeck(currentPlayerActive, args.maxHiddenCardsPick);
         
-        this.map.setSelectableRoutes((this as any).isCurrentPlayerActive(), args.possibleRoutes);
+        this.map.setSelectableRoutes(currentPlayerActive, args.possibleRoutes);
 
-        this.playerTable?.setDraggable((this as any).isCurrentPlayerActive());
+        this.playerTable?.setDraggable(currentPlayerActive);
+        this.playerTable?.setSelectable(currentPlayerActive);        
     }
 
     /**
@@ -153,6 +155,7 @@ class TicketToRide implements TicketToRideGame {
             case 'chooseAction':
                 this.map.setSelectableRoutes(false, []);
                 this.playerTable?.setDraggable(false);
+                this.playerTable?.setSelectable(false);   
                 this.playerTable?.setSelectableTrainCarColors(null);
                 break;
             case 'drawSecondCard':
@@ -393,19 +396,25 @@ class TicketToRide implements TicketToRideGame {
         if (route.color > 0) {
             this.claimRoute(route.id, route.color);
         } else {
-            const possibleColors: number[] = this.playerTable?.getPossibleColors(route) || [];
+            const selectedColor = this.playerTable.getSelectedColor();
 
-            if (possibleColors.length == 1) {
-                this.claimRoute(route.id, possibleColors[0]);
-            } else if (possibleColors.length > 1) {
-                possibleColors.forEach(color => {
-                    const label = dojo.string.substitute(_("Use ${color}"), {
-                        'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color)}`
+            if (selectedColor !== null) {
+                this.claimRoute(route.id, selectedColor);
+            } else {
+                const possibleColors: number[] = this.playerTable?.getPossibleColors(route) || [];
+
+                if (possibleColors.length == 1) {
+                    this.claimRoute(route.id, possibleColors[0]);
+                } else if (possibleColors.length > 1) {
+                    possibleColors.forEach(color => {
+                        const label = dojo.string.substitute(_("Use ${color}"), {
+                            'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color)}`
+                        });
+                        (this as any).addActionButton(`claimRouteWithColor_button${color}`, label, () => this.claimRoute(route.id, color));
                     });
-                    (this as any).addActionButton(`claimRouteWithColor_button${color}`, label, () => this.claimRoute(route.id, color));
-                });
 
-                this.playerTable.setSelectableTrainCarColors(route.id, possibleColors);
+                    this.playerTable.setSelectableTrainCarColors(route.id, possibleColors);
+                }
             }
         }
     }

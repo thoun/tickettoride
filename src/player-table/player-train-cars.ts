@@ -5,6 +5,8 @@ class PlayerTrainCars {
     public playerId: number;
     private left: boolean;
     private routeId: number | null = null;
+    private selectable: boolean = false;
+    private selectedColor: number | null = null;
 
     constructor(
         private game: TicketToRideGame, 
@@ -93,6 +95,16 @@ class PlayerTrainCars {
         const groups = Array.from(document.getElementsByClassName('train-car-group')) as HTMLDivElement[];
         groups.forEach(groupDiv => groupDiv.setAttribute('draggable', draggable.toString()));
     }
+
+    /** 
+     * Set if train car cards can be selected by a click.
+     */ 
+     public setSelectable(selectable: boolean) {
+        this.selectable = selectable;
+        if (!selectable && this.selectedColor) {
+            this.deselectColor(this.selectedColor);
+        }
+    }
     
     /** 
      * Return a group of cards (cards of the same color).
@@ -113,6 +125,7 @@ class PlayerTrainCars {
 
             group.addEventListener('dragstart', (e) => {
                 console.log('dragstart', e);
+                this.deselectColor(this.selectedColor);
                 const dt = e.dataTransfer;
                 dt.effectAllowed = 'move';
                 
@@ -142,12 +155,39 @@ class PlayerTrainCars {
             group.addEventListener('click', () => {
                 if (this.routeId) {
                     this.game.claimRoute(this.routeId, type);
-                } else {
-                    (this.game as any).showMessage(_("Drag the cards on the route you want to claim, or click on the route to claim"), 'info');
+                } else if (this.selectable) {
+                    if (this.selectedColor === type) {
+                        this.deselectColor(type);
+                    } else if (this.selectedColor !== null) {
+                        this.deselectColor(this.selectedColor);
+                        this.selectColor(type);
+                    } else {
+                        this.selectColor(type);
+                    }
                 }
             }); 
         }
         return group;
+    }
+
+    public getSelectedColor(): number | null {
+        return this.selectedColor;
+    }
+
+    private selectColor(color: number) {
+        const group = document.getElementById(`train-car-group-${color}`);
+        group?.classList.add('selected');
+        this.selectedColor = color;
+    }
+
+    private deselectColor(color: number) {
+        if (color === null) {
+            return;
+        }
+
+        const group = document.getElementById(`train-car-group-${color}`);
+        group?.classList.remove('selected');
+        this.selectedColor = null;
     }
 
     private getGroups(): HTMLDivElement[] {
