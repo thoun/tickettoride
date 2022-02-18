@@ -1,8 +1,9 @@
 /**
  * Animation to move a card to a player's counter (the destroy animated card).
  */
-function animateCardToCounterAndDestroy(game, cardId, destinationId) {
-    var card = document.getElementById(cardId);
+function animateCardToCounterAndDestroy(game, cardOrCardId, destinationId) {
+    var card = typeof (cardOrCardId) === 'string' ? document.getElementById(cardOrCardId) : cardOrCardId;
+    card.classList.add('animated', 'transform-origin-top-left');
     var cardBR = card.getBoundingClientRect();
     var toBR = document.getElementById(destinationId).getBoundingClientRect();
     var zoom = game.getZoom();
@@ -1344,62 +1345,94 @@ var VisibleCardSpot = /** @class */ (function () {
      * Init stocks and gauges.
      */
     function VisibleCardSpot(game, spotNumber) {
-        var _this = this;
         this.game = game;
         this.spotNumber = spotNumber;
-        this.visibleCardsStock = new ebg.stock();
-        this.visibleCardsStock.setSelectionAppearance('class');
-        this.visibleCardsStock.selectionClass = 'no-class-selection';
-        this.visibleCardsStock.setSelectionMode(1);
-        this.visibleCardsStock.create(game, $("visible-train-cards-stock" + spotNumber), CARD_WIDTH, CARD_HEIGHT);
-        this.visibleCardsStock.onItemCreate = function (cardDiv, cardTypeId) { return setupTrainCarCardDiv(cardDiv, cardTypeId); };
-        this.visibleCardsStock.centerItems = true;
-        dojo.connect(this.visibleCardsStock, 'onChangeSelection', this, function (_, itemId) { return _this.game.onVisibleTrainCarCardClick(Number(itemId), _this.visibleCardsStock); });
-        setupTrainCarCards(this.visibleCardsStock);
     }
     /**
      * Set selectable visible cards (locomotive can't be selected if 1 visible card has been picked).
      */
     VisibleCardSpot.prototype.setSelectableVisibleCards = function (availableVisibleCards) {
-        var stock = this.visibleCardsStock;
-        stock.items.forEach(function (item) {
-            var _a;
-            var itemId = Number(item.id);
-            if (!availableVisibleCards.some(function (card) { return card.id == itemId; })) {
-                (_a = document.getElementById(stock.container_div.id + "_item_" + itemId)) === null || _a === void 0 ? void 0 : _a.classList.add('disabled');
-            }
-        });
+        var _this = this;
+        this.getCardDiv().classList.toggle('disabled', !availableVisibleCards.some(function (card) { return card.id == _this.card.id; }));
     };
     /**
      * Reset visible cards state.
      */
     VisibleCardSpot.prototype.removeSelectableVisibleCards = function () {
-        var stock = this.visibleCardsStock;
-        stock.items.forEach(function (item) { var _a; return (_a = document.getElementById(stock.container_div.id + "_item_" + item.id)) === null || _a === void 0 ? void 0 : _a.classList.remove('disabled'); });
+        this.getCardDiv().classList.remove('disabled');
     };
     /**
      * Set new visible cards.
      */
-    VisibleCardSpot.prototype.setNewCardsOnTable = function (card) {
-        this.visibleCardsStock.removeAll();
-        this.visibleCardsStock.addToStockWithId(card.type, '' + card.id, 'train-car-deck-hidden-pile');
+    VisibleCardSpot.prototype.setNewCardOnTable = function (card, fromDeck) {
+        var _this = this;
+        if (this.card) {
+            var oldCardDiv = this.getCardDiv();
+            oldCardDiv === null || oldCardDiv === void 0 ? void 0 : oldCardDiv.parentElement.removeChild(oldCardDiv);
+        }
+        this.card = card;
+        this.createCard(card);
+        var cardDiv = this.getCardDiv();
+        setupTrainCarCardDiv(cardDiv, card.type);
+        cardDiv.classList.add('selectable');
+        cardDiv.addEventListener('click', function () {
+            if (!cardDiv.classList.contains('disabled')) {
+                _this.game.onVisibleTrainCarCardClick(_this.card.id);
+            }
+        });
+        if (fromDeck) {
+            this.addAnimationFrom(cardDiv);
+        }
     };
     /**
-     * Get HTML Element represented by "from" (0 means invisible, 1 to 5 are visible cards).
+     * Get card div in the spot.
      */
-    VisibleCardSpot.prototype.getStockElement = function () {
-        return this.visibleCardsStock.container_div;
+    VisibleCardSpot.prototype.getCardDiv = function () {
+        return document.getElementById("train-car-card-" + this.card.id);
+    };
+    /**
+     * Create the card in the spot.
+     */
+    VisibleCardSpot.prototype.createCard = function (card) {
+        dojo.place("<div id=\"train-car-card-" + card.id + "\" class=\"train-car-card\" data-color=\"" + this.card.type + "\"></div>", "visible-train-cards-stock" + this.spotNumber);
     };
     /**
      * Animation when train car cards are picked by another player.
      */
-    VisibleCardSpot.prototype.moveTrainCarCardToPlayerBoard = function (playerId, color) {
-        if (color === void 0) { color = 0; }
-        dojo.place("\n        <div id=\"animated-train-car-card-" + this.spotNumber + "\" class=\"animated-train-car-card\" data-color=\"" + color + "\"></div>\n        ", this.getStockElement());
-        animateCardToCounterAndDestroy(this.game, "animated-train-car-card-" + this.spotNumber, "train-car-card-counter-" + playerId + "-wrapper");
+    VisibleCardSpot.prototype.moveTrainCarCardToPlayerBoard = function (playerId) {
+        this.createCard(this.card);
+        animateCardToCounterAndDestroy(this.game, this.getCardDiv(), "train-car-card-counter-" + playerId + "-wrapper");
     };
+    /**
+     * Get visible card color.
+     */
     VisibleCardSpot.prototype.getVisibleColor = function () {
-        return this.visibleCardsStock.items[0].type;
+        return this.card.type;
+    };
+    /**
+     * Add an animation to the card (when it is created).
+     */
+    VisibleCardSpot.prototype.addAnimationFrom = function (card) {
+        if (document.visibilityState === 'hidden' || this.game.instantaneousMode) {
+            return;
+        }
+        var from = document.getElementById('train-car-deck-hidden-pile');
+        var destinationBR = card.getBoundingClientRect();
+        var originBR = from.getBoundingClientRect();
+        var deltaX = destinationBR.left - originBR.left;
+        var deltaY = destinationBR.top - originBR.top;
+        card.style.zIndex = '10';
+        var zoom = this.game.getZoom();
+        console.log("translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)");
+        card.style.transform = "translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
+        setTimeout(function () {
+            card.style.transition = "transform 0.5s linear";
+            card.style.transform = null;
+        });
+        setTimeout(function () {
+            card.style.zIndex = null;
+            card.style.transition = null;
+        }, 500);
     };
     return VisibleCardSpot;
 }());
@@ -1448,7 +1481,7 @@ var TrainCarSelection = /** @class */ (function () {
         for (var i = 1; i <= 5; i++) {
             this.visibleCardsSpots[i] = new VisibleCardSpot(game, i);
         }
-        this.setNewCardsOnTable(visibleCards);
+        this.setNewCardsOnTable(visibleCards, false);
         this.trainCarGauge = new Gauge('train-car-deck-hidden-pile', 'train-car', trainCarDeckMaxCount);
         this.destinationGauge = new Gauge('destination-deck-hidden-pile', 'destination', destinationDeckMaxCount);
         this.setTrainCarCount(trainCarDeckCount);
@@ -1482,9 +1515,9 @@ var TrainCarSelection = /** @class */ (function () {
     /**
      * Set new visible cards.
      */
-    TrainCarSelection.prototype.setNewCardsOnTable = function (cards) {
+    TrainCarSelection.prototype.setNewCardsOnTable = function (cards, fromDeck) {
         var _this = this;
-        cards.forEach(function (card) { return _this.visibleCardsSpots[card.location_arg].setNewCardsOnTable(card); });
+        cards.forEach(function (card) { return _this.visibleCardsSpots[card.location_arg].setNewCardOnTable(card, fromDeck); });
     };
     /**
      * Update train car gauge.
@@ -1510,22 +1543,21 @@ var TrainCarSelection = /** @class */ (function () {
      * Get HTML Element represented by "from" (0 means invisible, 1 to 5 are visible cards).
      */
     TrainCarSelection.prototype.getStockElement = function (from) {
-        return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : this.visibleCardsSpots[from].getStockElement();
+        return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : document.getElementById("visible-train-cards-stock" + from);
     };
     /**
      * Animation when train car cards are picked by another player.
      */
-    TrainCarSelection.prototype.moveTrainCarCardToPlayerBoard = function (playerId, from, color, number) {
+    TrainCarSelection.prototype.moveTrainCarCardToPlayerBoard = function (playerId, from, number) {
         var _this = this;
-        if (color === void 0) { color = 0; }
         if (number === void 0) { number = 1; }
         if (from > 0) {
-            this.visibleCardsSpots[from].moveTrainCarCardToPlayerBoard(playerId, color);
+            this.visibleCardsSpots[from].moveTrainCarCardToPlayerBoard(playerId);
         }
         else {
             var _loop_1 = function (i) {
                 setTimeout(function () {
-                    dojo.place("\n                    <div id=\"animated-train-car-card-0-" + i + "\" class=\"animated-train-car-card from-hidden-pile\" data-color=\"" + color + "\"></div>\n                    ", document.getElementById('train-car-deck-hidden-pile'));
+                    dojo.place("\n                    <div id=\"animated-train-car-card-0-" + i + "\" class=\"animated train-car-card from-hidden-pile\"></div>\n                    ", document.getElementById('train-car-deck-hidden-pile'));
                     animateCardToCounterAndDestroy(_this.game, "animated-train-car-card-0-" + i, "train-car-card-counter-" + playerId + "-wrapper");
                 }, 200 * i);
             };
@@ -1549,6 +1581,9 @@ var TrainCarSelection = /** @class */ (function () {
             _loop_2(i);
         }
     };
+    /**
+     * List visible cards colors.
+     */
     TrainCarSelection.prototype.getVisibleColors = function () {
         return this.visibleCardsSpots.map(function (stock) { return stock.getVisibleColor(); });
     };
@@ -1744,7 +1779,7 @@ var PlayerDestinations = /** @class */ (function () {
         return maxBottom;
     };
     /**
-     * Add an animation to to the card (when it is created).
+     * Add an animation to the card (when it is created).
      */
     PlayerDestinations.prototype.addAnimationFrom = function (card, from) {
         if (document.visibilityState === 'hidden' || this.game.instantaneousMode) {
@@ -1799,13 +1834,21 @@ var PlayerTrainCars = /** @class */ (function () {
         var _this = this;
         trainCars.forEach(function (trainCar) {
             var group = _this.getGroup(trainCar.type);
-            var xBackgroundPercent = trainCar.type * 100;
             var deg = Math.round(-4 + Math.random() * 8);
-            var html = "\n            <div id=\"train-car-card-" + trainCar.id + "\" class=\"train-car-card\" style=\"background-position: -" + xBackgroundPercent + "% 50%; transform: rotate(" + deg + "deg);\"></div>\n            ";
-            dojo.place(html, group.getElementsByClassName('train-car-cards')[0]);
+            var card = document.getElementById("train-car-card-" + trainCar.id);
+            var groupTrainCarCards = group.getElementsByClassName('train-car-cards')[0];
+            if (!card) {
+                var html = "\n                <div id=\"train-car-card-" + trainCar.id + "\" class=\"train-car-card\" data-color=\"" + trainCar.type + "\"></div>\n                ";
+                dojo.place(html, groupTrainCarCards);
+                card = document.getElementById("train-car-card-" + trainCar.id);
+            }
+            else {
+                groupTrainCarCards.appendChild(card);
+            }
+            card.style.transform = "rotate(" + deg + "deg)";
             if (from) {
-                var card = document.getElementById("train-car-card-" + trainCar.id);
-                _this.addAnimationFrom(card, group, from);
+                var card_1 = document.getElementById("train-car-card-" + trainCar.id);
+                _this.addAnimationFrom(card_1, group, from);
             }
         });
         this.updateCounters();
@@ -1945,7 +1988,7 @@ var PlayerTrainCars = /** @class */ (function () {
         });
     };
     /**
-     * Add an animation to to the card (when it is created).
+     * Add an animation to the card (when it is created).
      */
     PlayerTrainCars.prototype.addAnimationFrom = function (card, group, from) {
         if (document.visibilityState === 'hidden' || this.game.instantaneousMode) {
@@ -2326,7 +2369,7 @@ var TicketToRide = /** @class */ (function () {
             var playerId = Number(player.id);
             document.getElementById("overall_player_board_" + player.id).dataset.playerColor = player.color;
             // public counters
-            dojo.place("<div class=\"counters\">\n                <div id=\"train-car-counter-" + player.id + "-wrapper\" class=\"counter train-car-counter\">\n                    <div class=\"icon train\" data-player-color=\"" + player.color + "\"></div> \n                    <span id=\"train-car-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"train-car-card-counter-" + player.id + "-wrapper\" class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card\"></div> \n                    <span id=\"train-car-card-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"destinations-counter-" + player.id + "-wrapper\" class=\"counter destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-" + player.id + "\">" + (_this.getPlayerId() !== playerId ? '?' : '') + "</span>/<span id=\"destination-card-counter-" + player.id + "\"></span>\n                </div>\n            </div>", "player_board_" + player.id);
+            dojo.place("<div class=\"counters\">\n                <div id=\"train-car-counter-" + player.id + "-wrapper\" class=\"counter train-car-counter\">\n                    <div class=\"icon train\" data-player-color=\"" + player.color + "\"></div> \n                    <span id=\"train-car-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"train-car-card-counter-" + player.id + "-wrapper\" class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card-icon\"></div> \n                    <span id=\"train-car-card-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"destinations-counter-" + player.id + "-wrapper\" class=\"counter destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-" + player.id + "\">" + (_this.getPlayerId() !== playerId ? '?' : '') + "</span>/<span id=\"destination-card-counter-" + player.id + "\"></span>\n                </div>\n            </div>", "player_board_" + player.id);
             var trainCarCounter = new ebg.counter();
             trainCarCounter.create("train-car-counter-" + player.id);
             trainCarCounter.setValue(player.remainingTrainCarsCount);
@@ -2514,11 +2557,7 @@ var TicketToRide = /** @class */ (function () {
     /**
      * Pick visible train car.
      */
-    TicketToRide.prototype.onVisibleTrainCarCardClick = function (id, stock) {
-        if (dojo.hasClass(stock.container_div.id + "_item_" + id, 'disabled')) {
-            stock.unselectItem('' + id);
-            return;
-        }
+    TicketToRide.prototype.onVisibleTrainCarCardClick = function (id) {
         var action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'drawSecondTableCard' : 'drawTableCard';
         if (!this.checkAction(action)) {
             return;
@@ -2604,14 +2643,14 @@ var TicketToRide = /** @class */ (function () {
      * Update player train cars.
      */
     TicketToRide.prototype.notif_trainCarPicked = function (notif) {
-        var _a, _b, _c;
+        var _a, _b;
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
         if (notif.args.playerId == this.getPlayerId()) {
             var cards = notif.args.cards || ((_b = (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a[this.getPlayerId()]) === null || _b === void 0 ? void 0 : _b.cards);
             this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.from));
         }
         else {
-            this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.from, (_c = notif.args.cards) === null || _c === void 0 ? void 0 : _c[0].type, notif.args.number);
+            this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.from, notif.args.number);
         }
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     };
@@ -2619,7 +2658,7 @@ var TicketToRide = /** @class */ (function () {
      * Update visible cards.
      */
     TicketToRide.prototype.notif_newCardsOnTable = function (notif) {
-        this.trainCarSelection.setNewCardsOnTable(notif.args.cards);
+        this.trainCarSelection.setNewCardsOnTable(notif.args.cards, true);
     };
     /**
      * Update claimed routes.

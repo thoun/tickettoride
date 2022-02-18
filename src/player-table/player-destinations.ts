@@ -174,7 +174,7 @@ class PlayerDestinations {
     }
     
     /** 
-     * Add an animation to to the card (when it is created).
+     * Add an animation to the card (when it is created).
      */ 
     private addAnimationFrom(card: HTMLElement, from: HTMLElement) {
         if (document.visibilityState === 'hidden' || (this.game as any).instantaneousMode) {

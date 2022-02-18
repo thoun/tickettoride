@@ -256,7 +256,7 @@ class TicketToRide implements TicketToRideGame {
                     <span id="train-car-counter-${player.id}"></span>
                 </div>
                 <div id="train-car-card-counter-${player.id}-wrapper" class="counter train-car-card-counter">
-                    <div class="icon train-car-card"></div> 
+                    <div class="icon train-car-card-icon"></div> 
                     <span id="train-car-card-counter-${player.id}"></span>
                 </div>
                 <div id="destinations-counter-${player.id}-wrapper" class="counter destinations-counter">
@@ -478,12 +478,7 @@ class TicketToRide implements TicketToRideGame {
     /** 
      * Pick visible train car.
      */ 
-    public onVisibleTrainCarCardClick(id: number, stock: Stock) {
-        if (dojo.hasClass(`${stock.container_div.id}_item_${id}`, 'disabled')) {
-            stock.unselectItem(''+id);
-            return;
-        }
-
+    public onVisibleTrainCarCardClick(id: number) {
         const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'drawSecondTableCard' : 'drawTableCard';
 
         if(!(this as any).checkAction(action)) {
@@ -582,7 +577,7 @@ class TicketToRide implements TicketToRideGame {
             const cards = notif.args.cards || notif.args._private?.[this.getPlayerId()]?.cards;
             this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.from));
         } else {
-            this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.from, notif.args.cards?.[0].type, notif.args.number);
+            this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.from, notif.args.number);
         }
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }
@@ -591,7 +586,7 @@ class TicketToRide implements TicketToRideGame {
      * Update visible cards.
      */ 
     notif_newCardsOnTable(notif: Notif<NotifNewCardsOnTableArgs>) {
-        this.trainCarSelection.setNewCardsOnTable(notif.args.cards);
+        this.trainCarSelection.setNewCardsOnTable(notif.args.cards, true);
     }
 
     /** 

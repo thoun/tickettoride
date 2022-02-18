@@ -40,14 +40,20 @@ class PlayerTrainCars {
         trainCars.forEach(trainCar => {
             const group = this.getGroup(trainCar.type);
 
-            const xBackgroundPercent = trainCar.type * 100;
             const deg = Math.round(-4 + Math.random() * 8);
 
-            let html = `
-            <div id="train-car-card-${trainCar.id}" class="train-car-card" style="background-position: -${xBackgroundPercent}% 50%; transform: rotate(${deg}deg);"></div>
-            `;
-
-            dojo.place(html, group.getElementsByClassName('train-car-cards')[0] as HTMLElement);
+            let card = document.getElementById(`train-car-card-${trainCar.id}`);
+            const groupTrainCarCards = group.getElementsByClassName('train-car-cards')[0] as HTMLElement;
+            if (!card) {
+                let html = `
+                <div id="train-car-card-${trainCar.id}" class="train-car-card" data-color="${trainCar.type}"></div>
+                `;
+                dojo.place(html, groupTrainCarCards);
+                card = document.getElementById(`train-car-card-${trainCar.id}`);
+            } else {
+                groupTrainCarCards.appendChild(card);
+            }
+            card.style.transform = `rotate(${deg}deg)`;
 
             if (from) {
                 const card = document.getElementById(`train-car-card-${trainCar.id}`);
@@ -215,7 +221,7 @@ class PlayerTrainCars {
     }
     
     /** 
-     * Add an animation to to the card (when it is created).
+     * Add an animation to the card (when it is created).
      */ 
     private addAnimationFrom(card: HTMLElement, group: HTMLElement, from: HTMLElement) {
         if (document.visibilityState === 'hidden' || (this.game as any).instantaneousMode) {

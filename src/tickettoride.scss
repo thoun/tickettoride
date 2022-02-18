@@ -28,6 +28,46 @@ html {
     background-color: #900;
 }
 
+.train-car-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 250px; 
+    height: 161px; 
+    background-image: url("img/train-cards.jpg");
+    border-radius: 6px;
+    box-shadow: 0 0 8px 1px black;
+    transform-origin: center center;
+
+    &.selectable {
+        cursor: pointer;
+    }
+    
+    &.disabled {
+        filter: contrast(0.6);
+        cursor: not-allowed;
+    }
+
+    @for $i from 0 through 8 {
+        &[data-color="#{$i}"] {
+            background-position: #{$i * 12.5%} 50%;
+        }
+    }
+
+    &.animated {
+        pointer-events: none;
+        transition: transform 0.5s;
+
+        &.transform-origin-top-left {
+            transform-origin: top left;
+        }
+    
+        &.from-hidden-pile {
+            background-image: url("img/deck-cardLevel-10.png");
+        }
+    }
+}
+
 .stockitem {
     border-radius: 6px;
     

@@ -87,7 +87,7 @@ interface TicketToRideGame extends Game {
     getPlayerColor(): string;
     setDestinationsToConnect(destinations: Destination[]): void;
     getPlayerId(): number;
-    onVisibleTrainCarCardClick(itemId: number, stock: Stock): void;
+    onVisibleTrainCarCardClick(itemId: number): void;
     onHiddenTrainCarDeckClick(number: number): void;
     claimRoute(id: number, color: number): void;
     setActiveDestination(destination: Destination, previousDestination?: Destination): void;

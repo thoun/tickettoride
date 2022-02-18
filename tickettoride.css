@@ -115,7 +115,7 @@
   background-size: auto 100%;
   background-repeat: no-repeat;
 }
-.icon.train-car-card {
+.icon.train-car-card-icon {
   background-position: 0% 50%;
 }
 .icon.destination-card {
@@ -653,10 +653,12 @@
   width: 250px;
   display: flex;
   flex-direction: column;
+  margin-bottom: -100%;
 }
 #train-car-deck .stock {
+  position: relative;
   width: 272px;
-  height: 178px;
+  height: 166px;
 }
 #train-car-deck .hidden-pile {
   position: relative;
@@ -766,6 +768,8 @@
   transform-origin: 0 0;
   transform: scale(0.9);
   margin-bottom: -90px;
+  margin-left: 10px;
+  z-index: 1;
 }
 
 .gauge {
@@ -794,49 +798,6 @@
 }
 .gauge.destination .inner {
   background-image: url("img/gauge-destination-full.png");
-}
-
-.animated-train-car-card {
-  position: absolute;
-  left: 0px;
-  width: 250px;
-  height: 161px;
-  background-image: url("img/train-cards.jpg");
-  border-radius: 6px;
-  box-shadow: 0 0 8px 1px black;
-  pointer-events: none;
-  transform-origin: center center;
-  transition: transform 0.5s;
-}
-.animated-train-car-card.from-hidden-pile {
-  background-image: url("img/deck-cardLevel-10.png");
-}
-.animated-train-car-card[data-color="0"] {
-  background-position: 0% 50%;
-}
-.animated-train-car-card[data-color="1"] {
-  background-position: 12.5% 50%;
-}
-.animated-train-car-card[data-color="2"] {
-  background-position: 25% 50%;
-}
-.animated-train-car-card[data-color="3"] {
-  background-position: 37.5% 50%;
-}
-.animated-train-car-card[data-color="4"] {
-  background-position: 50% 50%;
-}
-.animated-train-car-card[data-color="5"] {
-  background-position: 62.5% 50%;
-}
-.animated-train-car-card[data-color="6"] {
-  background-position: 75% 50%;
-}
-.animated-train-car-card[data-color="7"] {
-  background-position: 87.5% 50%;
-}
-.animated-train-car-card[data-color="8"] {
-  background-position: 100% 50%;
 }
 
 .animated-destination-card {
@@ -1055,17 +1016,6 @@
   transform-origin: center center;
   transform: rotate(90deg) translate(48px, 41px);
 }
-.train-car-group .train-car-card {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 250px;
-  height: 161px;
-  background-image: url("img/train-cards.jpg");
-  border-radius: 6px;
-  box-shadow: 0 0 8px 1px black;
-  transform-origin: center center;
-}
 .train-car-group.drag {
   position: absolute;
   top: -1000px;
@@ -1244,6 +1194,62 @@ html {
   margin: 5px -5px -5px;
   text-align: center;
   background-color: #900;
+}
+
+.train-car-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 161px;
+  background-image: url("img/train-cards.jpg");
+  border-radius: 6px;
+  box-shadow: 0 0 8px 1px black;
+  transform-origin: center center;
+}
+.train-car-card.selectable {
+  cursor: pointer;
+}
+.train-car-card.disabled {
+  filter: contrast(0.6);
+  cursor: not-allowed;
+}
+.train-car-card[data-color="0"] {
+  background-position: 0% 50%;
+}
+.train-car-card[data-color="1"] {
+  background-position: 12.5% 50%;
+}
+.train-car-card[data-color="2"] {
+  background-position: 25% 50%;
+}
+.train-car-card[data-color="3"] {
+  background-position: 37.5% 50%;
+}
+.train-car-card[data-color="4"] {
+  background-position: 50% 50%;
+}
+.train-car-card[data-color="5"] {
+  background-position: 62.5% 50%;
+}
+.train-car-card[data-color="6"] {
+  background-position: 75% 50%;
+}
+.train-car-card[data-color="7"] {
+  background-position: 87.5% 50%;
+}
+.train-car-card[data-color="8"] {
+  background-position: 100% 50%;
+}
+.train-car-card.animated {
+  pointer-events: none;
+  transition: transform 0.5s;
+}
+.train-car-card.animated.transform-origin-top-left {
+  transform-origin: top left;
+}
+.train-car-card.animated.from-hidden-pile {
+  background-image: url("img/deck-cardLevel-10.png");
 }
 
 .stockitem {

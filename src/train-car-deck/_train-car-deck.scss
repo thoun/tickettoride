@@ -4,10 +4,12 @@
     width: 250px;
     display: flex;
     flex-direction: column;
+    margin-bottom: -100%; // to make sure column doesn't push map border
 
     .stock {
+        position: relative;
         width: 272px;
-        height: 178px;
+        height: 166px;
     }
 
     .hidden-pile {
@@ -83,6 +85,8 @@
         transform-origin: 0 0;
         transform: scale(0.9);
         margin-bottom: -90px;
+        margin-left: 10px;
+        z-index: 1;
     }
 }
 
@@ -115,31 +119,6 @@
 
         .inner {
             background-image: url('img/gauge-destination-full.png');
-        }
-    }
-}
-
-
-
-.animated-train-car-card {
-    position: absolute;
-    left: 0px; 
-    width: 250px; 
-    height: 161px; 
-    background-image: url("img/train-cards.jpg");
-    border-radius: 6px;
-    box-shadow: 0 0 8px 1px black;
-    pointer-events: none;
-    transform-origin: center center;
-    transition: transform 0.5s;
-
-    &.from-hidden-pile {
-        background-image: url("img/deck-cardLevel-10.png");
-    }
-
-    @for $i from 0 through 8 {
-        &[data-color="#{$i}"] {
-            background-position: #{$i * 12.5%} 50%;
         }
     }
 }

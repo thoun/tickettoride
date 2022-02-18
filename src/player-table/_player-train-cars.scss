@@ -86,18 +86,6 @@
         transform: rotate(90deg) translate(48px, 41px);
     }
 
-    .train-car-card {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 250px; 
-        height: 161px; 
-        background-image: url("img/train-cards.jpg");
-        border-radius: 6px;
-        box-shadow: 0 0 8px 1px black;
-        transform-origin: center center;
-    }
-
     &.drag {
         position: absolute;
         top: -1000px;

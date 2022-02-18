@@ -64,7 +64,7 @@ class TrainCarSelection {
             this.visibleCardsSpots[i] = new VisibleCardSpot(game, i);
         }
 
-        this.setNewCardsOnTable(visibleCards);
+        this.setNewCardsOnTable(visibleCards, false);
 
         
         this.trainCarGauge = new Gauge('train-car-deck-hidden-pile', 'train-car', trainCarDeckMaxCount);
@@ -103,8 +103,8 @@ class TrainCarSelection {
     /**
      * Set new visible cards.
      */ 
-    public setNewCardsOnTable(cards: TrainCar[]) {
-        cards.forEach(card => this.visibleCardsSpots[card.location_arg].setNewCardsOnTable(card));
+    public setNewCardsOnTable(cards: TrainCar[], fromDeck: boolean) {
+        cards.forEach(card => this.visibleCardsSpots[card.location_arg].setNewCardOnTable(card, fromDeck));
     }
 
     /**
@@ -134,20 +134,20 @@ class TrainCarSelection {
      * Get HTML Element represented by "from" (0 means invisible, 1 to 5 are visible cards).
      */ 
     public getStockElement(from: number): HTMLElement {
-        return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : this.visibleCardsSpots[from].getStockElement(); 
+        return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : document.getElementById(`visible-train-cards-stock${from}`); 
     }
     
     /**
      * Animation when train car cards are picked by another player.
      */ 
-    public moveTrainCarCardToPlayerBoard(playerId: number, from: number, color: number = 0, number: number = 1) {
+    public moveTrainCarCardToPlayerBoard(playerId: number, from: number, number: number = 1) {
         if (from > 0) {
-            this.visibleCardsSpots[from].moveTrainCarCardToPlayerBoard(playerId, color);
+            this.visibleCardsSpots[from].moveTrainCarCardToPlayerBoard(playerId);
         } else {
             for (let i=0; i<number; i++) {
                 setTimeout(() => {
                     dojo.place(`
-                    <div id="animated-train-car-card-0-${i}" class="animated-train-car-card from-hidden-pile" data-color="${color}"></div>
+                    <div id="animated-train-car-card-0-${i}" class="animated train-car-card from-hidden-pile"></div>
                     `, document.getElementById('train-car-deck-hidden-pile'));
 
                     animateCardToCounterAndDestroy(this.game,
@@ -177,6 +177,9 @@ class TrainCarSelection {
         }
     }
 
+    /**
+     * List visible cards colors.
+     */ 
     public getVisibleColors(): number[] {
         return this.visibleCardsSpots.map(stock => stock.getVisibleColor());
     }
