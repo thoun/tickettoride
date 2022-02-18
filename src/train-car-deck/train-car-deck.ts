@@ -27,7 +27,7 @@ class Gauge {
  * Selection of new train cars.
  */ 
 class TrainCarSelection {
-    public visibleCardsStocks: Stock[] = [];
+    public visibleCardsSpots: VisibleCardSpot[] = [];
     private trainCarGauge: Gauge;
     private destinationGauge: Gauge;
     private dblClickTimeout = null;
@@ -61,15 +61,7 @@ class TrainCarSelection {
         });
 
         for (let i=1; i<=5; i++) {
-            this.visibleCardsStocks[i] = new ebg.stock() as Stock;
-            this.visibleCardsStocks[i].setSelectionAppearance('class');
-            this.visibleCardsStocks[i].selectionClass = 'no-class-selection';
-            this.visibleCardsStocks[i].setSelectionMode(1);
-            this.visibleCardsStocks[i].create(game, $(`visible-train-cards-stock${i}`), CARD_WIDTH, CARD_HEIGHT);
-            this.visibleCardsStocks[i].onItemCreate = (cardDiv, cardTypeId) => setupTrainCarCardDiv(cardDiv, cardTypeId);
-            this.visibleCardsStocks[i].centerItems = true;
-            dojo.connect(this.visibleCardsStocks[i], 'onChangeSelection', this, (_, itemId: string) => this.game.onVisibleTrainCarCardClick(Number(itemId), this.visibleCardsStocks[i]));
-            setupTrainCarCards(this.visibleCardsStocks[i]);
+            this.visibleCardsSpots[i] = new VisibleCardSpot(game, i);
         }
 
         this.setNewCardsOnTable(visibleCards);
@@ -95,13 +87,7 @@ class TrainCarSelection {
      */ 
     public setSelectableVisibleCards(availableVisibleCards: TrainCar[]) {
         for (let i=1; i<=5; i++) {
-            const stock = this.visibleCardsStocks[i];
-            stock.items.forEach(item => {
-                const itemId = Number(item.id);
-                if (!availableVisibleCards.some(card => card.id == itemId)) {
-                    document.getElementById(`${stock.container_div.id}_item_${itemId}`)?.classList.add('disabled');
-                }
-            });
+            this.visibleCardsSpots[i].setSelectableVisibleCards(availableVisibleCards);
         }
     }
 
@@ -110,8 +96,7 @@ class TrainCarSelection {
      */ 
      public removeSelectableVisibleCards() {
         for (let i=1; i<=5; i++) {
-            const stock = this.visibleCardsStocks[i];
-            stock.items.forEach(item => document.getElementById(`${stock.container_div.id}_item_${item.id}`)?.classList.remove('disabled'));
+            this.visibleCardsSpots[i].removeSelectableVisibleCards();
         }
     }
 
@@ -119,12 +104,7 @@ class TrainCarSelection {
      * Set new visible cards.
      */ 
     public setNewCardsOnTable(cards: TrainCar[]) {
-        cards.forEach(card => {
-            const spot = card.location_arg;
-            this.visibleCardsStocks[spot].removeAll();
-
-            this.visibleCardsStocks[spot].addToStockWithId(card.type, ''+card.id, 'train-car-deck-hidden-pile');
-        });
+        cards.forEach(card => this.visibleCardsSpots[card.location_arg].setNewCardsOnTable(card));
     }
 
     /**
@@ -154,41 +134,28 @@ class TrainCarSelection {
      * Get HTML Element represented by "from" (0 means invisible, 1 to 5 are visible cards).
      */ 
     public getStockElement(from: number): HTMLElement {
-        return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : this.visibleCardsStocks[from].container_div; 
-    }
-
-    /**
-     * Animation to move a card to a player's counter (the destroy animated card).
-     */ 
-    private animateCardToCounterAndDestroy(cardId: string, destinationId: string) {
-        const card = document.getElementById(cardId);
-        const cardBR = card.getBoundingClientRect();
-
-        const toBR = document.getElementById(destinationId).getBoundingClientRect();
-            
-        const zoom = this.game.getZoom();
-        const x = (toBR.x - cardBR.x) / zoom;
-        const y = (toBR.y - cardBR.y) / zoom;
-
-        card.style.transform = `translate(${x}px, ${y}px) scale(${0.15 / zoom})`;
-        setTimeout(() => card.parentElement?.removeChild(card), 500);
+        return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : this.visibleCardsSpots[from].getStockElement(); 
     }
     
     /**
      * Animation when train car cards are picked by another player.
      */ 
     public moveTrainCarCardToPlayerBoard(playerId: number, from: number, color: number = 0, number: number = 1) {
-        for (let i=0; i<number; i++) {
-            setTimeout(() => {
-                dojo.place(`
-                <div id="animated-train-car-card-${from}-${i}" class="animated-train-car-card ${from === 0 ? 'from-hidden-pile' : ''}" data-color="${color}"></div>
-                `, this.getStockElement(from));
+        if (from > 0) {
+            this.visibleCardsSpots[from].moveTrainCarCardToPlayerBoard(playerId, color);
+        } else {
+            for (let i=0; i<number; i++) {
+                setTimeout(() => {
+                    dojo.place(`
+                    <div id="animated-train-car-card-0-${i}" class="animated-train-car-card from-hidden-pile" data-color="${color}"></div>
+                    `, document.getElementById('train-car-deck-hidden-pile'));
 
-                this.animateCardToCounterAndDestroy(
-                    `animated-train-car-card-${from}-${i}`, 
-                    `train-car-card-counter-${playerId}-wrapper`
-                );
-            }, 200 * i);
+                    animateCardToCounterAndDestroy(this.game,
+                        `animated-train-car-card-0-${i}`, 
+                        `train-car-card-counter-${playerId}-wrapper`
+                    );
+                }, 200 * i);
+            }
         }
     }
     
@@ -202,7 +169,7 @@ class TrainCarSelection {
                 <div id="animated-destination-card-${i}" class="animated-destination-card"></div>
                 `, 'destination-deck-hidden-pile');
 
-                this.animateCardToCounterAndDestroy(
+                animateCardToCounterAndDestroy(this.game,
                     `animated-destination-card-${i}`, 
                     `destinations-counter-${playerId}-wrapper`
                 );
@@ -211,6 +178,6 @@ class TrainCarSelection {
     }
 
     public getVisibleColors(): number[] {
-        return this.visibleCardsStocks.map(stock => stock.items[0].type);
+        return this.visibleCardsSpots.map(stock => stock.getVisibleColor());
     }
 }
