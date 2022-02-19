@@ -653,7 +653,6 @@
   width: 250px;
   display: flex;
   flex-direction: column;
-  margin-bottom: -100%;
 }
 #train-car-deck .stock {
   position: relative;

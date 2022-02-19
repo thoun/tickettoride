@@ -4,7 +4,6 @@
     width: 250px;
     display: flex;
     flex-direction: column;
-    margin-bottom: -100%; // to make sure column doesn't push map border
 
     .stock {
         position: relative;
