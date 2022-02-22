@@ -1,3 +1,5 @@
+const CROSSHAIR_SIZE = 20;
+
 /** 
  * Player's train car cards.
  */ 
@@ -16,21 +18,6 @@ class PlayerTrainCars {
         this.playerId = Number(player.id);
 
         this.addTrainCars(trainCars);
-
-        console.log('bind tempDiv !')
-        const tempDiv = document.getElementById(`player-table-${player.id}-train-cars`);
-        tempDiv.addEventListener('dragenter', e => {
-            console.log('tempDiv dragenter', e);
-        });
-        tempDiv.addEventListener('dragover', e => {
-            console.log('tempDiv dragover', e);
-        });
-        tempDiv.addEventListener('dragleave', e => {
-            console.log('tempDiv dragleave', e);
-        });
-        tempDiv.addEventListener('drop', e => {
-            console.log('tempDiv drop', e);
-        });
     }
     
     /** 
@@ -130,32 +117,36 @@ class PlayerTrainCars {
             group = document.getElementById(`train-car-group-${type}`);
 
             group.addEventListener('dragstart', (e) => {
-                console.log('dragstart', e);
                 this.deselectColor(this.selectedColor);
                 const dt = e.dataTransfer;
                 dt.effectAllowed = 'move';
+                dt.setData('Text', ''+type);
                 
-                document.getElementById('map').dataset.dragColor = ''+type;
+                const mapDiv = document.getElementById('map');
+                mapDiv.dataset.dragColor = ''+type;
                 
                 // we generate a clone of group (without positionning with transform on the group)
                 const groupClone = document.createElement('div');
                 groupClone.classList.add('train-car-group', 'drag');
-                groupClone.innerHTML = group.innerHTML;
+                const crosshairHalfSize = CROSSHAIR_SIZE / this.game.getZoom();
+                const crosshairSize = crosshairHalfSize * 2;
+                groupClone.innerHTML = group.innerHTML + `<div class="crosshair" style="width: ${crosshairSize}px; height: ${crosshairSize}px; left: -${crosshairHalfSize}px; top: -${crosshairHalfSize}px;"></div>`;
                 document.body.appendChild(groupClone);
                 groupClone.offsetHeight;
 
-                dt.setDragImage(groupClone, -10, -25);
+                dt.setDragImage(groupClone, CROSSHAIR_SIZE, CROSSHAIR_SIZE);
                 setTimeout(() => document.body.removeChild(groupClone));
                 
-                //train-car-group-0
                 setTimeout(() => {
                     group.classList.add('hide');
                 }, 0);
+
+                return true;
             });
             group.addEventListener('dragend', (e) => {
-                console.log('dragend', e);
                 group.classList.remove('hide');
-                document.getElementById('map').dataset.dragColor = '';
+                const mapDiv = document.getElementById('map');
+                mapDiv.dataset.dragColor = '';
             });
 
             group.addEventListener('click', () => {

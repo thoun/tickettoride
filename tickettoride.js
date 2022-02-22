@@ -887,9 +887,6 @@ var InMapZoomManager = /** @class */ (function () {
         document.addEventListener('mousemove', function (e) { return _this.mouseMoveHandler(e); });
         document.addEventListener('mouseup', function (e) { return _this.mouseUpHandler(); });
         document.getElementById('zoom-button').addEventListener('click', function () { return _this.toggleZoom(); });
-        this.mapDiv.addEventListener('dragenter', function (e) {
-            console.log('map dragenter', e);
-        });
         this.mapDiv.addEventListener('dragover', function (e) {
             if (e.offsetX !== _this.dragClientX || e.offsetY !== _this.dragClientY) {
                 _this.dragClientX = e.offsetX;
@@ -899,16 +896,13 @@ var InMapZoomManager = /** @class */ (function () {
         });
         this.mapDiv.addEventListener('dragleave', function (e) {
             clearTimeout(_this.autoZoomTimeout);
-            console.log('map dragleave', e);
         });
         this.mapDiv.addEventListener('drop', function (e) {
             clearTimeout(_this.autoZoomTimeout);
-            console.log('map drop', e);
         });
     }
     InMapZoomManager.prototype.dragOverMouseMoved = function (clientX, clientY) {
         var _this = this;
-        console.log('map dragover');
         if (this.autoZoomTimeout) {
             clearTimeout(this.autoZoomTimeout);
         }
@@ -925,9 +919,6 @@ var InMapZoomManager = /** @class */ (function () {
     InMapZoomManager.prototype.toggleZoom = function (scrollRatioX, scrollRatioY) {
         if (scrollRatioX === void 0) { scrollRatioX = null; }
         if (scrollRatioY === void 0) { scrollRatioY = null; }
-        if (scrollRatioX && scrollRatioY) {
-            console.log('scroll ratio', scrollRatioX, scrollRatioY);
-        }
         this.zoomed = !this.zoomed;
         this.mapDiv.style.transform = this.zoomed ? "scale(1.8)" : '';
         dojo.toggleClass('zoom-button', 'zoomed', this.zoomed);
@@ -1030,7 +1021,6 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
      * Handle dragging train car cards over a route.
      */
     TtrMap.prototype.routeDragOver = function (e, route) {
-        console.log('enterover', e);
         var cardsColor = Number(this.mapDiv.dataset.dragColor);
         var canClaimRoute = this.game.canClaimRoute(route, cardsColor);
         this.setHoveredRoute(route, canClaimRoute);
@@ -1043,13 +1033,13 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
      * Handle dropping train car cards over a route.
      */
     TtrMap.prototype.routeDragDrop = function (e, route) {
-        console.log('drop', e);
-        if (document.getElementById('map').dataset.dragColor == '') {
+        var mapDiv = document.getElementById('map');
+        if (mapDiv.dataset.dragColor == '') {
             return;
         }
         this.setHoveredRoute(null);
         var cardsColor = Number(this.mapDiv.dataset.dragColor);
-        document.getElementById('map').dataset.dragColor = '';
+        mapDiv.dataset.dragColor = '';
         this.game.claimRoute(route.id, cardsColor);
     };
     ;
@@ -1060,10 +1050,7 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
         var _this = this;
         spaceDiv.addEventListener('dragenter', function (e) { return _this.routeDragOver(e, route); });
         spaceDiv.addEventListener('dragover', function (e) { return _this.routeDragOver(e, route); });
-        spaceDiv.addEventListener('dragleave', function (e) {
-            console.log('dragleave', e);
-            _this.setHoveredRoute(null);
-        });
+        spaceDiv.addEventListener('dragleave', function (e) { return _this.setHoveredRoute(null); });
         spaceDiv.addEventListener('drop', function (e) { return _this.routeDragDrop(e, route); });
         spaceDiv.addEventListener('click', function () { return _this.game.clickedRoute(route); });
     };
@@ -1307,7 +1294,6 @@ var DestinationSelection = /** @class */ (function () {
         });
         this.minimumDestinations = minimumDestinations;
         visibleColors.forEach(function (color, index) {
-            console.log(document.getElementById("visible-train-cards-mini" + index));
             document.getElementById("visible-train-cards-mini" + index).dataset.color = '' + color;
         });
     };
@@ -1423,7 +1409,6 @@ var VisibleCardSpot = /** @class */ (function () {
         var deltaY = destinationBR.top - originBR.top;
         card.style.zIndex = '10';
         var zoom = this.game.getZoom();
-        console.log("translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)");
         card.style.transform = "translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
         setTimeout(function () {
             card.style.transition = "transform 0.5s linear";
@@ -1801,6 +1786,7 @@ var PlayerDestinations = /** @class */ (function () {
     };
     return PlayerDestinations;
 }());
+var CROSSHAIR_SIZE = 20;
 /**
  * Player's train car cards.
  */
@@ -1812,20 +1798,6 @@ var PlayerTrainCars = /** @class */ (function () {
         this.selectedColor = null;
         this.playerId = Number(player.id);
         this.addTrainCars(trainCars);
-        console.log('bind tempDiv !');
-        var tempDiv = document.getElementById("player-table-" + player.id + "-train-cars");
-        tempDiv.addEventListener('dragenter', function (e) {
-            console.log('tempDiv dragenter', e);
-        });
-        tempDiv.addEventListener('dragover', function (e) {
-            console.log('tempDiv dragover', e);
-        });
-        tempDiv.addEventListener('dragleave', function (e) {
-            console.log('tempDiv dragleave', e);
-        });
-        tempDiv.addEventListener('drop', function (e) {
-            console.log('tempDiv drop', e);
-        });
     }
     /**
      * Add train cars to player's hand.
@@ -1907,28 +1879,31 @@ var PlayerTrainCars = /** @class */ (function () {
             this.updateCounters();
             group = document.getElementById("train-car-group-" + type);
             group.addEventListener('dragstart', function (e) {
-                console.log('dragstart', e);
                 _this.deselectColor(_this.selectedColor);
                 var dt = e.dataTransfer;
                 dt.effectAllowed = 'move';
-                document.getElementById('map').dataset.dragColor = '' + type;
+                dt.setData('Text', '' + type);
+                var mapDiv = document.getElementById('map');
+                mapDiv.dataset.dragColor = '' + type;
                 // we generate a clone of group (without positionning with transform on the group)
                 var groupClone = document.createElement('div');
                 groupClone.classList.add('train-car-group', 'drag');
-                groupClone.innerHTML = group.innerHTML;
+                var crosshairHalfSize = CROSSHAIR_SIZE / _this.game.getZoom();
+                var crosshairSize = crosshairHalfSize * 2;
+                groupClone.innerHTML = group.innerHTML + ("<div class=\"crosshair\" style=\"width: " + crosshairSize + "px; height: " + crosshairSize + "px; left: -" + crosshairHalfSize + "px; top: -" + crosshairHalfSize + "px;\"></div>");
                 document.body.appendChild(groupClone);
                 groupClone.offsetHeight;
-                dt.setDragImage(groupClone, -10, -25);
+                dt.setDragImage(groupClone, CROSSHAIR_SIZE, CROSSHAIR_SIZE);
                 setTimeout(function () { return document.body.removeChild(groupClone); });
-                //train-car-group-0
                 setTimeout(function () {
                     group.classList.add('hide');
                 }, 0);
+                return true;
             });
             group.addEventListener('dragend', function (e) {
-                console.log('dragend', e);
                 group.classList.remove('hide');
-                document.getElementById('map').dataset.dragColor = '';
+                var mapDiv = document.getElementById('map');
+                mapDiv.dataset.dragColor = '';
             });
             group.addEventListener('click', function () {
                 if (_this.routeId) {

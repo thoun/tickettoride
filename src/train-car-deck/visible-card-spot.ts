@@ -101,7 +101,6 @@ class VisibleCardSpot {
 
         card.style.zIndex = '10';
         const zoom = this.game.getZoom();
-        console.log(`translate(${-deltaX/zoom}px, ${-deltaY/zoom}px)`);
         card.style.transform = `translate(${-deltaX/zoom}px, ${-deltaY/zoom}px)`;
         setTimeout(() => {
             card.style.transition = `transform 0.5s linear`;

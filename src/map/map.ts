@@ -36,9 +36,6 @@ class InMapZoomManager {
         document.addEventListener('mouseup', e => this.mouseUpHandler());
         document.getElementById('zoom-button').addEventListener('click', () => this.toggleZoom());
         
-        this.mapDiv.addEventListener('dragenter', e => {
-            console.log('map dragenter', e);
-        });
         this.mapDiv.addEventListener('dragover', e => {
             if (e.offsetX !== this.dragClientX || e.offsetY !== this.dragClientY) {
                 this.dragClientX = e.offsetX;
@@ -48,16 +45,13 @@ class InMapZoomManager {
         });
         this.mapDiv.addEventListener('dragleave', e => {
             clearTimeout(this.autoZoomTimeout);
-            console.log('map dragleave', e);
         });
         this.mapDiv.addEventListener('drop', e => {
             clearTimeout(this.autoZoomTimeout);
-            console.log('map drop', e);
         });
     }
 
     private dragOverMouseMoved(clientX: number, clientY: number) {
-        console.log('map dragover');
         if (this.autoZoomTimeout) {
             clearTimeout(this.autoZoomTimeout);
         }
@@ -73,10 +67,6 @@ class InMapZoomManager {
      * Handle click on zoom button. Toggle between full map and in-map zoom.
      */ 
     private toggleZoom(scrollRatioX: number = null, scrollRatioY: number = null) {
-        if (scrollRatioX && scrollRatioY) {
-            console.log('scroll ratio', scrollRatioX, scrollRatioY);
-        }
-
         this.zoomed = !this.zoomed;
         this.mapDiv.style.transform = this.zoomed ? `scale(1.8)` : '';
         dojo.toggleClass('zoom-button', 'zoomed', this.zoomed);
@@ -209,7 +199,6 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
      * Handle dragging train car cards over a route.
      */ 
     private routeDragOver(e: DragEvent, route: Route) {
-        console.log('enterover', e);
         const cardsColor = Number(this.mapDiv.dataset.dragColor);
         const canClaimRoute = this.game.canClaimRoute(route, cardsColor);
         this.setHoveredRoute(route, canClaimRoute);
@@ -222,15 +211,15 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
      * Handle dropping train car cards over a route.
      */ 
     private routeDragDrop(e: DragEvent, route: Route) {
-        console.log('drop', e);
-            if (document.getElementById('map').dataset.dragColor == '') {
-                return;
-            }
+        const mapDiv = document.getElementById('map');
+        if (mapDiv.dataset.dragColor == '') {
+            return;
+        }
 
-            this.setHoveredRoute(null);
-            const cardsColor = Number(this.mapDiv.dataset.dragColor);
-            document.getElementById('map').dataset.dragColor = '';
-            this.game.claimRoute(route.id, cardsColor);
+        this.setHoveredRoute(null);
+        const cardsColor = Number(this.mapDiv.dataset.dragColor);
+        mapDiv.dataset.dragColor = '';
+        this.game.claimRoute(route.id, cardsColor);
     };
 
     /** 
@@ -239,10 +228,7 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
     private setSpaceEvents(spaceDiv: HTMLElement, route: Route) {
         spaceDiv.addEventListener('dragenter', e => this.routeDragOver(e, route));
         spaceDiv.addEventListener('dragover', e => this.routeDragOver(e, route));
-        spaceDiv.addEventListener('dragleave', (e) => {
-            console.log('dragleave', e);
-            this.setHoveredRoute(null);
-        });
+        spaceDiv.addEventListener('dragleave', e => this.setHoveredRoute(null));
         spaceDiv.addEventListener('drop', e => this.routeDragDrop(e, route));
         spaceDiv.addEventListener('click', () => this.game.clickedRoute(route));
     }
