@@ -2,7 +2,6 @@
  * Selection of new train cars.
  */ 
 class VisibleCardSpot {
-    public visibleCardsStock: Stock;
     private card: TrainCar;
 
     /**
@@ -34,7 +33,10 @@ class VisibleCardSpot {
     public setNewCardOnTable(card: TrainCar, fromDeck: boolean) {
         if (this.card) {
             const oldCardDiv = this.getCardDiv();
-            oldCardDiv?.parentElement.removeChild(oldCardDiv);
+            if (oldCardDiv?.closest(`#visible-train-cards-stock${this.spotNumber}`)) {
+                oldCardDiv.parentElement.removeChild(oldCardDiv);
+                this.card = null;
+            }
         }
 
         this.card = card;

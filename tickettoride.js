@@ -1354,7 +1354,10 @@ var VisibleCardSpot = /** @class */ (function () {
         var _this = this;
         if (this.card) {
             var oldCardDiv = this.getCardDiv();
-            oldCardDiv === null || oldCardDiv === void 0 ? void 0 : oldCardDiv.parentElement.removeChild(oldCardDiv);
+            if (oldCardDiv === null || oldCardDiv === void 0 ? void 0 : oldCardDiv.closest("#visible-train-cards-stock" + this.spotNumber)) {
+                oldCardDiv.parentElement.removeChild(oldCardDiv);
+                this.card = null;
+            }
         }
         this.card = card;
         this.createCard(card);
