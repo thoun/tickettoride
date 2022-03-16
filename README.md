@@ -36,13 +36,6 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 go on tests dir and start execute file, for example `php ./tickettoride.game.test-longest-path.php` / `php ./tickettoride.game.test-destination-completed.php`
 
 # TODO
-hint to turn mobile when on portrait? => map is not really bigger, as playerboard will shift right, probably not necessery
-translate cities names? confirm with publisher
-confirm for route claim? see if publisher is OK
-Zoom option : i don't know why it's slow, or strrange, but the movement is not as direct as it should be and it's "exhausting" (for a boardgamer i guess) to drag it around. A good option would be to have it a bit more "out" of the MAP zone, as it won't and will never cover a single part of it. For this map, Vancouver is a bit covered, and i would prefer it won't. Also, having it a little bit shifted out of the map will help see everything better.
-Also, i would love to get a special frame displayed when zoomin in, so you never forget that you're displaying it magnified. (love the light hovering effect btw).
-For very small screens, i would love a second level zoom, especially for very long mobile screens like mine, where the zooming option is not giving better option than 2 finger/built-in zoom.
-
 fix drag on mobile
 https://stackoverflow.com/questions/9251590/prevent-page-scroll-on-drag-in-ios-and-android
 
@@ -54,7 +47,6 @@ https://stackoverflow.com/questions/9251590/prevent-page-scroll-on-drag-in-ios-a
 - add card icon in the log instead of the text
 - longest route - it is awarded to the shortest
 - sluggish performance (chrome on macbook air)
-- final ticket scoring (first show all fails and than sucess)
 - sounds (especially when showing accomplished and failed tickets)
 - Portland / San Francisco - trains on the right were on top of the trains on the left (blue on the right and red on the left)
 

@@ -70,19 +70,25 @@ trait StateTrait {
         $destinationsResults = [];
         $completedDestinationsCount = [];
         foreach ($players as $playerId => $playerDb) {
-            $destinationsResults[$playerId] = [];
             $completedDestinationsCount[$playerId] = 0;
+            $uncompletedDestinations = [];
+            $completedDestinations = [];
 
             $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
 
             foreach ($destinations as &$destination) {
                 $completed = boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
-                $destinationsResults[$playerId][] = $destination;
                 $totalScore[$playerId] += $completed ? $destination->points : -$destination->points;
                 if ($completed) {
                     $completedDestinationsCount[$playerId]++;
+                    $completedDestinations[] = $destination;
+                } else {                    
+                    $uncompletedDestinations[] = $destination;
                 }
             }
+
+            // first we will reveal uncomplete destinations, then complete destinations
+            $destinationsResults[$playerId] = array_merge($uncompletedDestinations, $completedDestinations);
         }
 
         // Longest continuous path 

@@ -11,12 +11,12 @@ trait DebugUtilTrait {
             return;
         }
 
-        //$this->debugSetDestinationInHand(7, 2343492);
+        $this->debugSetDestinationInHand(7, 2343492);
 
-        //$this->debugClaimAllRoutes(2343492, 0.3);
-        //$this->debugSetLastTurn();
+        $this->debugClaimAllRoutes(2343492, 0.3);
+        $this->debugSetLastTurn();
 
-        $this->debugSetRemainingTrainCarDeck(1);
+        //$this->debugSetRemainingTrainCarDeck(1);
 
         //$this->gamestate->changeActivePlayer(2343492);
     }
