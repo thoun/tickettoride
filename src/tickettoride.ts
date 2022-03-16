@@ -91,6 +91,10 @@ class TicketToRide implements TicketToRideGame {
             case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
                 const chooseDestinationsArgs = args.args as EnteringChooseDestinationsArgs;
                 chooseDestinationsArgs._private?.destinations.forEach(destination => this.map.setSelectableDestination(destination, true));
+                if ((this as any).isCurrentPlayerActive()) {
+                    this.destinationSelection.setCards(chooseDestinationsArgs._private.destinations, chooseDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
+                    this.destinationSelection.selectionChange();
+                }
                 break;
             case 'chooseAction':
                 this.onEnteringChooseAction(args.args as EnteringChooseActionArgs);
@@ -157,6 +161,7 @@ class TicketToRide implements TicketToRideGame {
                 this.playerTable?.setDraggable(false);
                 this.playerTable?.setSelectable(false);   
                 this.playerTable?.setSelectableTrainCarColors(null);
+                document.getElementById('destination-deck-hidden-pile').classList.remove('selectable');
                 break;
             case 'drawSecondCard':
                 this.trainCarSelection.removeSelectableVisibleCards();  
@@ -171,21 +176,19 @@ class TicketToRide implements TicketToRideGame {
         if((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'chooseInitialDestinations':
-                    const chooseInitialDestinationsArgs = args as EnteringChooseDestinationsArgs;
                     (this as any).addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), () => this.chooseInitialDestinations());
-                    dojo.addClass('chooseInitialDestinations_button', 'disabled');
-                    this.destinationSelection.setCards(chooseInitialDestinationsArgs._private.destinations, chooseInitialDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
                     break;   
                 case 'chooseAction':
                     const chooseActionArgs = args as EnteringChooseActionArgs;
                     (this as any).addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), () => this.drawDestinations(), null, null, 'red');
                     dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
+                    if (chooseActionArgs.maxDestinationsPick) {
+                        document.getElementById('destination-deck-hidden-pile').classList.add('selectable');
+                    }
                     break;
                 case 'chooseAdditionalDestinations':
-                    const chooseAdditionalDestinationsArgs = args as EnteringChooseDestinationsArgs;
                     (this as any).addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), () => this.chooseAdditionalDestinations());
                     dojo.addClass('chooseAdditionalDestinations_button', 'disabled');
-                    this.destinationSelection.setCards(chooseAdditionalDestinationsArgs._private.destinations, chooseAdditionalDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
                     break;  
             }
         }
@@ -442,7 +445,15 @@ class TicketToRide implements TicketToRideGame {
             return;
         }
 
-        this.takeAction('drawDestinations');
+        const confirmation = (this as any).prefs[202]?.value !== 2;
+
+        if (confirmation) {
+            (this as any).confirmationDialog( _('Are you sure you want to take new destinations?'), () => {
+                this.takeAction('drawDestinations');
+            }); 
+        } else {
+            this.takeAction('drawDestinations');
+        }
     }
 
     /** 

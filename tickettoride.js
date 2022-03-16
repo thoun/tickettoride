@@ -1314,12 +1314,9 @@ var DestinationSelection = /** @class */ (function () {
      * Toggle activation of confirm selection buttons, depending on minimumDestinations.
      */
     DestinationSelection.prototype.selectionChange = function () {
-        if (document.getElementById('chooseInitialDestinations_button')) {
-            dojo.toggleClass('chooseInitialDestinations_button', 'disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
-        }
-        if (document.getElementById('chooseAdditionalDestinations_button')) {
-            dojo.toggleClass('chooseAdditionalDestinations_button', 'disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
-        }
+        var _a, _b;
+        (_a = document.getElementById('chooseInitialDestinations_button')) === null || _a === void 0 ? void 0 : _a.classList.toggle('disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
+        (_b = document.getElementById('chooseAdditionalDestinations_button')) === null || _b === void 0 ? void 0 : _b.classList.toggle('disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
     };
     return DestinationSelection;
 }());
@@ -1451,6 +1448,7 @@ var TrainCarSelection = /** @class */ (function () {
         this.game = game;
         this.visibleCardsSpots = [];
         this.dblClickTimeout = null;
+        document.getElementById('destination-deck-hidden-pile').addEventListener('click', function () { return _this.game.drawDestinations(); });
         document.getElementById('train-car-deck-hidden-pile1').addEventListener('click', function () { return _this.game.onHiddenTrainCarDeckClick(1); });
         document.getElementById('train-car-deck-hidden-pile2').addEventListener('click', function () { return _this.game.onHiddenTrainCarDeckClick(2); });
         document.getElementById('train-car-deck-hidden-pile').addEventListener('click', function () {
@@ -2207,6 +2205,10 @@ var TicketToRide = /** @class */ (function () {
             case 'chooseAdditionalDestinations':
                 var chooseDestinationsArgs = args.args;
                 (_a = chooseDestinationsArgs._private) === null || _a === void 0 ? void 0 : _a.destinations.forEach(function (destination) { return _this.map.setSelectableDestination(destination, true); });
+                if (this.isCurrentPlayerActive()) {
+                    this.destinationSelection.setCards(chooseDestinationsArgs._private.destinations, chooseDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
+                    this.destinationSelection.selectionChange();
+                }
                 break;
             case 'chooseAction':
                 this.onEnteringChooseAction(args.args);
@@ -2268,6 +2270,7 @@ var TicketToRide = /** @class */ (function () {
                 (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(false);
                 (_b = this.playerTable) === null || _b === void 0 ? void 0 : _b.setSelectable(false);
                 (_c = this.playerTable) === null || _c === void 0 ? void 0 : _c.setSelectableTrainCarColors(null);
+                document.getElementById('destination-deck-hidden-pile').classList.remove('selectable');
                 break;
             case 'drawSecondCard':
                 this.trainCarSelection.removeSelectableVisibleCards();
@@ -2282,21 +2285,19 @@ var TicketToRide = /** @class */ (function () {
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'chooseInitialDestinations':
-                    var chooseInitialDestinationsArgs = args;
                     this.addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), function () { return _this.chooseInitialDestinations(); });
-                    dojo.addClass('chooseInitialDestinations_button', 'disabled');
-                    this.destinationSelection.setCards(chooseInitialDestinationsArgs._private.destinations, chooseInitialDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
                     break;
                 case 'chooseAction':
                     var chooseActionArgs = args;
                     this.addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick }), function () { return _this.drawDestinations(); }, null, null, 'red');
                     dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
+                    if (chooseActionArgs.maxDestinationsPick) {
+                        document.getElementById('destination-deck-hidden-pile').classList.add('selectable');
+                    }
                     break;
                 case 'chooseAdditionalDestinations':
-                    var chooseAdditionalDestinationsArgs = args;
                     this.addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), function () { return _this.chooseAdditionalDestinations(); });
                     dojo.addClass('chooseAdditionalDestinations_button', 'disabled');
-                    this.destinationSelection.setCards(chooseAdditionalDestinationsArgs._private.destinations, chooseAdditionalDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
                     break;
             }
         }
@@ -2503,10 +2504,20 @@ var TicketToRide = /** @class */ (function () {
      * Pick destinations.
      */
     TicketToRide.prototype.drawDestinations = function () {
+        var _this = this;
+        var _a;
         if (!this.checkAction('drawDestinations')) {
             return;
         }
-        this.takeAction('drawDestinations');
+        var confirmation = ((_a = this.prefs[202]) === null || _a === void 0 ? void 0 : _a.value) !== 2;
+        if (confirmation) {
+            this.confirmationDialog(_('Are you sure you want to take new destinations?'), function () {
+                _this.takeAction('drawDestinations');
+            });
+        }
+        else {
+            this.takeAction('drawDestinations');
+        }
     };
     /**
      * Apply destination selection (additional objectives).

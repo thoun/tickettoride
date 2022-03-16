@@ -65,9 +65,8 @@ $gameinfos = [
 // the formula used to compute "player_score_aux". This description will be used as a tooltip to explain
 // the tie breaker to the players.
 // Note: if you are NOT using any tie breaker, leave the empty string.
-//
-// Example: 'tie_breaker_description' => totranslate( "Number of remaining cards in hand" ),
 'tie_breaker_description' => totranslate("Most completed Destination Tickets, or Longest Continuous Path"),
+'tie_breaker_split' => [1000, 1],
 
 // If in the game, all losers are equal (no score to rank them or explicit in the rules that losers are not ranked between them), set this to true 
 // The game end result will display "Winner" for the 1st player and "Loser" for all other players

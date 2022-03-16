@@ -27,6 +27,16 @@
 $game_options = [];
 
 $game_preferences = [
+    202 => [
+        'name' => totranslate('Ask for confirmation when taking new destinations'),
+        'needReload' => false,
+        'values' => [
+            1 => [ 'name' => totranslate('Enabled')],
+            2 => [ 'name' => totranslate('Disabled')],
+        ],
+        'default' => 1
+    ],
+
     201 => [
         'name' => totranslate('Show buttons for hidden cards selection'),
         'needReload' => false,

@@ -69,12 +69,8 @@ class DestinationSelection {
     /**
      * Toggle activation of confirm selection buttons, depending on minimumDestinations.
      */ 
-    private selectionChange() {
-        if (document.getElementById('chooseInitialDestinations_button')) {
-            dojo.toggleClass('chooseInitialDestinations_button', 'disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
-        }
-        if (document.getElementById('chooseAdditionalDestinations_button')) {
-            dojo.toggleClass('chooseAdditionalDestinations_button', 'disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
-        }
+    public selectionChange() {
+        document.getElementById('chooseInitialDestinations_button')?.classList.toggle('disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
+        document.getElementById('chooseAdditionalDestinations_button')?.classList.toggle('disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
     }
 }

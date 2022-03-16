@@ -43,6 +43,7 @@ class TrainCarSelection {
         trainCarDeckMaxCount: number,
         destinationDeckMaxCount: number,
     ) {
+        document.getElementById('destination-deck-hidden-pile').addEventListener('click', () => this.game.drawDestinations());
 
         document.getElementById('train-car-deck-hidden-pile1').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(1));
         document.getElementById('train-car-deck-hidden-pile2').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(2));

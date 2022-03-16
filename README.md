@@ -46,4 +46,16 @@ For very small screens, i would love a second level zoom, especially for very lo
 fix drag on mobile
 https://stackoverflow.com/questions/9251590/prevent-page-scroll-on-drag-in-ios-and-android
 
-fix new visible cards sliding under the others
+- picking cards
+      - the card stays on the display when it is picked and another slide over it
+- train positioning
+- fix dragging the cards (Portland San Francisco is particularly off)
+- it happened that some cards from display are not clickable
+- add card icon in the log instead of the text
+- longest route - it is awarded to the shortest
+- sluggish performance (chrome on macbook air)
+- final ticket scoring (first show all fails and than sucess)
+- sounds (especially when showing accomplished and failed tickets)
+- Portland / San Francisco - trains on the right were on top of the trains on the left (blue on the right and red on the left)
+
+Add more players from the list from Adrien
