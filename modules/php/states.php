@@ -107,7 +107,7 @@ trait StateTrait {
                     array_merge($longestPathBySize[$longestPath->length], [$playerId]):
                     [$playerId];
             }
-            $bestLongestPath = array_key_last($longestPathBySize);
+            $bestLongestPath = max(array_keys($longestPathBySize));
             $longestPathWinners = $longestPathBySize[$bestLongestPath];  
             
             foreach ($longestPathWinners as $playerId) {
