@@ -44,8 +44,7 @@ https://stackoverflow.com/questions/9251590/prevent-page-scroll-on-drag-in-ios-a
 - train positioning
 - fix dragging the cards (Portland San Francisco is particularly off)
 - it happened that some cards from display are not clickable
-- add card icon in the log instead of the text
-- longest route - it is awarded to the shortest
+- 
 - sluggish performance (chrome on macbook air)
 - sounds (especially when showing accomplished and failed tickets)
 - Portland / San Francisco - trains on the right were on top of the trains on the left (blue on the right and red on the left)

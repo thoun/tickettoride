@@ -87,13 +87,14 @@ trait TrainCarDeckTrait {
 
         $this->trainCars->moveCard($id, 'hand', $playerId);
 
-        $this->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes a visible train car card'), [
+        $this->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes ${color}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'number' => 1,
             'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
-            'cards' => $this->getTrainCarsFromDb($this->trainCars->getCards([$id])),
+            'cards' => [$card],
             'from' => $spot,
+            'color' => $card->type,
         ]);
 
         $this->placeNewTrainCarCardOnTable($spot);

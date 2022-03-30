@@ -2731,6 +2731,9 @@ var TicketToRide = /** @class */ (function () {
                 if (typeof args.to == 'string' && args.to[0] != '<') {
                     args.to = "<strong>" + args.to + "</strong>";
                 }
+                if (typeof args.color == 'number') {
+                    args.color = "<div class=\"train-car-color icon\" data-color=\"" + args.color + "\"></div>";
+                }
             }
         }
         catch (e) {

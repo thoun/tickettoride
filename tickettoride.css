@@ -151,7 +151,7 @@
   background-size: 900%;
   height: 21px;
   border-radius: 2px;
-  margin: -5px 0px;
+  vertical-align: middle;
 }
 .icon.train-car-color[data-color="0"] {
   background-position: 0% 50%;
@@ -1256,4 +1256,8 @@ html {
 .stockitem.disabled {
   filter: contrast(0.6);
   cursor: not-allowed;
+}
+
+#page-title .icon.train-car-color {
+  margin: -5px 0px;
 }

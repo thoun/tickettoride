@@ -120,7 +120,7 @@
     background-size: 900%;
     height: 21px;
     border-radius: 2px;
-    margin: -5px 0px;
+    vertical-align: middle;
     
     @for $i from 0 through 8 {
       &[data-color="#{$i}"] {
