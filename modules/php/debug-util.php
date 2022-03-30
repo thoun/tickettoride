@@ -11,10 +11,10 @@ trait DebugUtilTrait {
             return;
         }
 
-        $this->debugSetDestinationInHand(7, 2343492);
+        //$this->debugSetDestinationInHand(7, 2343492);
 
-        $this->debugClaimAllRoutes(2343492, 1);
-        $this->debugSetLastTurn();
+        //$this->debugClaimAllRoutes(2343492, 1);
+        //$this->debugSetLastTurn();
 
         //$this->debugSetRemainingTrainCarDeck(1);
 
@@ -46,6 +46,18 @@ trait DebugUtilTrait {
 
     function debugSetLastTurn() {
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = ".TRAIN_CARS_NUMBER_TO_START_LAST_TURN);
+    }
+
+    // select all 3 destinations for each player
+    function debugStart() {
+        $playersIds = $this->getPlayersIds();
+        foreach ($playersIds as $playerId) {
+            $destinations = $this->getPickedDestinationCards($playerId);
+            $ids = array_map(fn($card) => $card->id, $destinations);
+            $this->keepInitialDestinationCards($playerId, $ids);
+        }
+
+        $this->gamestate->jumpToState(ST_PLAYER_CHOOSE_ACTION);
     }
 
     function debug($debugData) {

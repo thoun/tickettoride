@@ -295,7 +295,10 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
         }
         const x = space.x;
         const y = space.y;
-        dojo.place(`<div id="${id}" class="wagon angle${Math.round(angle * 36 / 180)} ${phantom ? 'phantom' : ''}" data-player-color="${color}" style="transform: translate(${x}px, ${y}px)"></div>`, 'map');
+        const EASE_WEIGHT = 0.75;
+        const angleOnOne = (Math.acos(-2 * angle / 180 + 1) / Math.PI) * EASE_WEIGHT + (angle / 180 * (1 - EASE_WEIGHT));
+        const angleClassNumber = Math.round(angleOnOne * 36);
+        dojo.place(`<div id="${id}" class="wagon angle${angleClassNumber} ${phantom ? 'phantom' : ''}" data-player-color="${color}" style="transform: translate(${x}px, ${y}px)"></div>`, 'map');
         
         if (fromPlayerId) {
             this.animateWagonFromCounter(fromPlayerId, id, x, y);
