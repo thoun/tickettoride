@@ -148,6 +148,11 @@ class TtrMap {
     private inMapZoomManager: InMapZoomManager;
     private resizedDiv: HTMLDivElement;
     private mapDiv: HTMLDivElement;
+    
+    private dragOverlay: HTMLDivElement = null;
+    private crosshairTarget: HTMLDivElement = null;
+    private crosshairHalfSize: number = 0;
+    private crosshairShift: number = 0;
 
     /** 
      * Place map corner illustration and borders, cities, routes, and bind events.
@@ -169,23 +174,7 @@ class TtrMap {
             ></div>`, 'map')
         );
 
-        ROUTES.forEach(route => 
-            route.spaces.forEach((space, spaceIndex) => {
-                dojo.place(`<div id="route${route.id}-space${spaceIndex}" class="route-space" 
-                    style="transform: translate(${space.x}px, ${space.y}px) rotate(${space.angle}deg)"
-                    title="${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to]})}, ${(route.spaces as any).length} ${getColor(route.color)}"
-                    data-route="${route.id}" data-color="${route.color}"
-                ></div>`, 'map');
-                const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
-                this.setSpaceEvents(spaceDiv, route);
-            })
-        );
-
-        /* TO RESCALE all route coordinates
-        
-        console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
-${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Math.round(space.y)}, ${space.angle}),`).join('\n')}
-    ], ${getColor(route.color).toUpperCase()}),`).join('\n'));*/
+        this.createRouteSpaces('map');
 
         this.setClaimedRoutes(claimedRoutes, null);
 
@@ -193,6 +182,24 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
         this.mapDiv = document.getElementById('map') as HTMLDivElement;
 
         this.inMapZoomManager = new InMapZoomManager();
+    }
+
+    private createRouteSpaces(destination: 'map' | 'map-drag-overlay', shiftX: number = 0, shiftY: number = 0) {
+        ROUTES.forEach(route => 
+            route.spaces.forEach((space, spaceIndex) => {
+                dojo.place(`<div id="${destination}-route${route.id}-space${spaceIndex}" class="route-space" 
+                    style="transform: translate(${space.x + shiftX}px, ${space.y + shiftY}px) rotate(${space.angle}deg)"
+                    title="${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to]})}, ${(route.spaces as any).length} ${getColor(route.color)}"
+                    data-route="${route.id}" data-color="${route.color}"
+                ></div>`, destination);
+                const spaceDiv = document.getElementById(`${destination}-route${route.id}-space${spaceIndex}`);
+                if (destination == 'map') {
+                    this.setSpaceClickEvents(spaceDiv, route);
+                } else {
+                    this.setSpaceDragEvents(spaceDiv, route);
+                }
+            })
+        );
     }
     
     /** 
@@ -223,14 +230,24 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
     };
 
     /** 
-     * Bind events to route space.
+     * Bind click events to route space.
      */ 
-    private setSpaceEvents(spaceDiv: HTMLElement, route: Route) {
+    private setSpaceClickEvents(spaceDiv: HTMLElement, route: Route) {
         spaceDiv.addEventListener('dragenter', e => this.routeDragOver(e, route));
         spaceDiv.addEventListener('dragover', e => this.routeDragOver(e, route));
         spaceDiv.addEventListener('dragleave', e => this.setHoveredRoute(null));
         spaceDiv.addEventListener('drop', e => this.routeDragDrop(e, route));
         spaceDiv.addEventListener('click', () => this.game.clickedRoute(route));
+    }
+
+    /** 
+     * Bind drag events to route space.
+     */ 
+    private setSpaceDragEvents(spaceDiv: HTMLElement, route: Route) {
+        spaceDiv.addEventListener('dragenter', e => this.routeDragOver(e, route));
+        spaceDiv.addEventListener('dragover', e => this.routeDragOver(e, route));
+        spaceDiv.addEventListener('dragleave', e => this.setHoveredRoute(null));
+        spaceDiv.addEventListener('drop', e => this.routeDragDrop(e, route));
     }
     
     /** 
@@ -239,7 +256,7 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
     public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
         if (selectable) {
             possibleRoutes.forEach(route => ROUTES.find(r => r.id == route.id).spaces.forEach((_, index) => 
-                document.getElementById(`route${route.id}-space${index}`)?.classList.add('selectable'))
+                document.getElementById(`map-route${route.id}-space${index}`)?.classList.add('selectable'))
             );
         } else {            
             dojo.query('.route-space').removeClass('selectable');
@@ -313,7 +330,7 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
     private setWagons(route: Route, color: string, fromPlayerId: number, phantom: boolean) {
         if (!phantom) {
             route.spaces.forEach((space, spaceIndex) => {
-                const spaceDiv = document.getElementById(`route${route.id}-space${spaceIndex}`);
+                const spaceDiv = document.getElementById(`map-route${route.id}-space${spaceIndex}`);
                 spaceDiv.parentElement.removeChild(spaceDiv);
             });
         }
@@ -459,5 +476,73 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
             cities = [shadow.dataset.from, shadow.dataset.to];
         }
         cities.forEach(city => document.getElementById(`city${city}`).dataset.highlight = visible);
+    }
+
+    /** 
+     * Create the crosshair target when drag starts over the drag overlay.
+     */ 
+    private overlayDragEnter(e: DragEvent | MouseEvent) {
+        if (!this.crosshairTarget) {
+            this.crosshairTarget = document.createElement('div');
+            this.crosshairTarget.id = 'map-drag-target';
+            this.crosshairTarget.style.left = e.offsetX + 'px';
+            this.crosshairTarget.style.top = e.offsetY + 'px';
+            this.crosshairTarget.style.width = this.crosshairHalfSize*2 + 'px';
+            this.crosshairTarget.style.height = this.crosshairHalfSize*2 + 'px';
+            this.crosshairTarget.style.marginLeft = -(this.crosshairHalfSize + this.crosshairShift) + 'px';
+            this.crosshairTarget.style.marginTop = -(this.crosshairHalfSize + this.crosshairShift) + 'px';
+            this.dragOverlay.appendChild(this.crosshairTarget);
+        }
+    }
+
+    /** 
+     * Move the crosshair target.
+     */ 
+    private overlayDragMove(e: DragEvent | MouseEvent) {
+        if (this.crosshairTarget && (e.target as any).id === this.dragOverlay.id) {
+            this.crosshairTarget.style.left = e.offsetX + 'px';
+            this.crosshairTarget.style.top = e.offsetY + 'px';
+        }
+    }
+
+    /** 
+     * Create a div overlay when dragging starts. 
+     * This allow to create a crosshair target on it, and to make it shifted from mouse position.
+     * In touch mode, crosshair must be shifted from finger to see the target. For this, the drag zones on the overlay are shifted in accordance.
+     * If there isn't touch support, the crosshair is centered on the mouse.
+     */ 
+    public addDragOverlay() {
+        const id = 'map-drag-overlay';
+        this.dragOverlay = document.createElement('div');
+        this.dragOverlay.id = id;
+        document.getElementById(`map`).appendChild(this.dragOverlay);
+        
+        this.crosshairHalfSize = CROSSHAIR_SIZE / this.game.getZoom();
+        const touchDevice = 'ontouchstart' in window;
+        this.crosshairShift = touchDevice ? this.crosshairHalfSize : 0;
+        this.createRouteSpaces(id, 100 + this.crosshairShift, 100 + this.crosshairShift);
+
+        this.dragOverlay.addEventListener('dragenter', e => this.overlayDragEnter(e));
+
+        let debounceTimer = null;
+        let lastEvent: DragEvent = null;
+        this.dragOverlay.addEventListener('dragover', e => {
+            lastEvent = e;
+            if (!debounceTimer) {
+                debounceTimer = setTimeout(() => {
+                    this.overlayDragMove(lastEvent);
+                    debounceTimer = null;
+                }, 50);
+            }
+        });
+    }
+
+    /** 
+     * Detroy the div overlay when dragging ends.
+     */ 
+    public removeDragOverlay() {
+        this.crosshairTarget = null;
+        document.getElementById(`map`).removeChild(this.dragOverlay);
+        this.dragOverlay = null;
     }
 }

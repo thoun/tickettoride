@@ -41,7 +41,6 @@ https://stackoverflow.com/questions/9251590/prevent-page-scroll-on-drag-in-ios-a
 
 - picking cards
       - the card stays on the display when it is picked and another slide over it
-- fix dragging the cards (Portland San Francisco is particularly off)
 - it happened that some cards from display are not clickable
 - 
 - sluggish performance (chrome on macbook air)

@@ -81,6 +81,8 @@ interface TicketToRideGamedatas {
 }
 
 interface TicketToRideGame extends Game {
+    map: TtrMap;
+
     clickedRoute(route: Route): void;
     setPlayerTablePosition(left: boolean);
     getZoom(): number;

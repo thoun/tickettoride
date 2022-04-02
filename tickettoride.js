@@ -990,9 +990,12 @@ var TtrMap = /** @class */ (function () {
      * Place map corner illustration and borders, cities, routes, and bind events.
      */
     function TtrMap(game, players, claimedRoutes) {
-        var _this = this;
         this.game = game;
         this.players = players;
+        this.dragOverlay = null;
+        this.crosshairTarget = null;
+        this.crosshairHalfSize = 0;
+        this.crosshairShift = 0;
         // map border
         dojo.place("<div class=\"illustration\"></div>", 'map', 'first');
         SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map-and-borders'); });
@@ -1000,23 +1003,29 @@ var TtrMap = /** @class */ (function () {
         CITIES.forEach(function (city) {
             return dojo.place("<div id=\"city" + city.id + "\" class=\"city\" \n                style=\"transform: translate(" + city.x + "px, " + city.y + "px)\"\n                title=\"" + CITIES_NAMES[city.id] + "\"\n            ></div>", 'map');
         });
-        ROUTES.forEach(function (route) {
-            return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + space.x + "px, " + space.y + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + dojo.string.substitute(_('${from} to ${to}'), { from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to] }) + ", " + route.spaces.length + " " + getColor(route.color) + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", 'map');
-                var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
-                _this.setSpaceEvents(spaceDiv, route);
-            });
-        });
-        /* TO RESCALE all route coordinates
-        
-        console.log(ROUTES.map(route => `    new Route(${route.id}, ${route.from}, ${route.to}, [
-${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Math.round(space.y)}, ${space.angle}),`).join('\n')}
-    ], ${getColor(route.color).toUpperCase()}),`).join('\n'));*/
+        this.createRouteSpaces('map');
         this.setClaimedRoutes(claimedRoutes, null);
         this.resizedDiv = document.getElementById('resized');
         this.mapDiv = document.getElementById('map');
         this.inMapZoomManager = new InMapZoomManager();
     }
+    TtrMap.prototype.createRouteSpaces = function (destination, shiftX, shiftY) {
+        var _this = this;
+        if (shiftX === void 0) { shiftX = 0; }
+        if (shiftY === void 0) { shiftY = 0; }
+        ROUTES.forEach(function (route) {
+            return route.spaces.forEach(function (space, spaceIndex) {
+                dojo.place("<div id=\"" + destination + "-route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + (space.x + shiftX) + "px, " + (space.y + shiftY) + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + dojo.string.substitute(_('${from} to ${to}'), { from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to] }) + ", " + route.spaces.length + " " + getColor(route.color) + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", destination);
+                var spaceDiv = document.getElementById(destination + "-route" + route.id + "-space" + spaceIndex);
+                if (destination == 'map') {
+                    _this.setSpaceClickEvents(spaceDiv, route);
+                }
+                else {
+                    _this.setSpaceDragEvents(spaceDiv, route);
+                }
+            });
+        });
+    };
     /**
      * Handle dragging train car cards over a route.
      */
@@ -1044,9 +1053,9 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
     };
     ;
     /**
-     * Bind events to route space.
+     * Bind click events to route space.
      */
-    TtrMap.prototype.setSpaceEvents = function (spaceDiv, route) {
+    TtrMap.prototype.setSpaceClickEvents = function (spaceDiv, route) {
         var _this = this;
         spaceDiv.addEventListener('dragenter', function (e) { return _this.routeDragOver(e, route); });
         spaceDiv.addEventListener('dragover', function (e) { return _this.routeDragOver(e, route); });
@@ -1055,11 +1064,21 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
         spaceDiv.addEventListener('click', function () { return _this.game.clickedRoute(route); });
     };
     /**
+     * Bind drag events to route space.
+     */
+    TtrMap.prototype.setSpaceDragEvents = function (spaceDiv, route) {
+        var _this = this;
+        spaceDiv.addEventListener('dragenter', function (e) { return _this.routeDragOver(e, route); });
+        spaceDiv.addEventListener('dragover', function (e) { return _this.routeDragOver(e, route); });
+        spaceDiv.addEventListener('dragleave', function (e) { return _this.setHoveredRoute(null); });
+        spaceDiv.addEventListener('drop', function (e) { return _this.routeDragDrop(e, route); });
+    };
+    /**
      * Highlight selectable route spaces.
      */
     TtrMap.prototype.setSelectableRoutes = function (selectable, possibleRoutes) {
         if (selectable) {
-            possibleRoutes.forEach(function (route) { return ROUTES.find(function (r) { return r.id == route.id; }).spaces.forEach(function (_, index) { var _a; return (_a = document.getElementById("route" + route.id + "-space" + index)) === null || _a === void 0 ? void 0 : _a.classList.add('selectable'); }); });
+            possibleRoutes.forEach(function (route) { return ROUTES.find(function (r) { return r.id == route.id; }).spaces.forEach(function (_, index) { var _a; return (_a = document.getElementById("map-route" + route.id + "-space" + index)) === null || _a === void 0 ? void 0 : _a.classList.add('selectable'); }); });
         }
         else {
             dojo.query('.route-space').removeClass('selectable');
@@ -1126,7 +1145,7 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
         var _this = this;
         if (!phantom) {
             route.spaces.forEach(function (space, spaceIndex) {
-                var spaceDiv = document.getElementById("route" + route.id + "-space" + spaceIndex);
+                var spaceDiv = document.getElementById("map-route" + route.id + "-space" + spaceIndex);
                 spaceDiv.parentElement.removeChild(spaceDiv);
             });
         }
@@ -1255,6 +1274,68 @@ ${route.spaces.map(space => `        new RouteSpace(${Math.round(space.x)}, ${Ma
             cities = [shadow.dataset.from, shadow.dataset.to];
         }
         cities.forEach(function (city) { return document.getElementById("city" + city).dataset.highlight = visible; });
+    };
+    /**
+     * Create the crosshair target when drag starts over the drag overlay.
+     */
+    TtrMap.prototype.overlayDragEnter = function (e) {
+        if (!this.crosshairTarget) {
+            this.crosshairTarget = document.createElement('div');
+            this.crosshairTarget.id = 'map-drag-target';
+            this.crosshairTarget.style.left = e.offsetX + 'px';
+            this.crosshairTarget.style.top = e.offsetY + 'px';
+            this.crosshairTarget.style.width = this.crosshairHalfSize * 2 + 'px';
+            this.crosshairTarget.style.height = this.crosshairHalfSize * 2 + 'px';
+            this.crosshairTarget.style.marginLeft = -(this.crosshairHalfSize + this.crosshairShift) + 'px';
+            this.crosshairTarget.style.marginTop = -(this.crosshairHalfSize + this.crosshairShift) + 'px';
+            this.dragOverlay.appendChild(this.crosshairTarget);
+        }
+    };
+    /**
+     * Move the crosshair target.
+     */
+    TtrMap.prototype.overlayDragMove = function (e) {
+        if (this.crosshairTarget && e.target.id === this.dragOverlay.id) {
+            this.crosshairTarget.style.left = e.offsetX + 'px';
+            this.crosshairTarget.style.top = e.offsetY + 'px';
+        }
+    };
+    /**
+     * Create a div overlay when dragging starts.
+     * This allow to create a crosshair target on it, and to make it shifted from mouse position.
+     * In touch mode, crosshair must be shifted from finger to see the target. For this, the drag zones on the overlay are shifted in accordance.
+     * If there isn't touch support, the crosshair is centered on the mouse.
+     */
+    TtrMap.prototype.addDragOverlay = function () {
+        var _this = this;
+        var id = 'map-drag-overlay';
+        this.dragOverlay = document.createElement('div');
+        this.dragOverlay.id = id;
+        document.getElementById("map").appendChild(this.dragOverlay);
+        this.crosshairHalfSize = CROSSHAIR_SIZE / this.game.getZoom();
+        var touchDevice = 'ontouchstart' in window;
+        this.crosshairShift = touchDevice ? this.crosshairHalfSize : 0;
+        this.createRouteSpaces(id, 100 + this.crosshairShift, 100 + this.crosshairShift);
+        this.dragOverlay.addEventListener('dragenter', function (e) { return _this.overlayDragEnter(e); });
+        var debounceTimer = null;
+        var lastEvent = null;
+        this.dragOverlay.addEventListener('dragover', function (e) {
+            lastEvent = e;
+            if (!debounceTimer) {
+                debounceTimer = setTimeout(function () {
+                    _this.overlayDragMove(lastEvent);
+                    debounceTimer = null;
+                }, 50);
+            }
+        });
+    };
+    /**
+     * Detroy the div overlay when dragging ends.
+     */
+    TtrMap.prototype.removeDragOverlay = function () {
+        this.crosshairTarget = null;
+        document.getElementById("map").removeChild(this.dragOverlay);
+        this.dragOverlay = null;
     };
     return TtrMap;
 }());
@@ -1892,22 +1973,22 @@ var PlayerTrainCars = /** @class */ (function () {
                 // we generate a clone of group (without positionning with transform on the group)
                 var groupClone = document.createElement('div');
                 groupClone.classList.add('train-car-group', 'drag');
-                var crosshairHalfSize = CROSSHAIR_SIZE / _this.game.getZoom();
-                var crosshairSize = crosshairHalfSize * 2;
-                groupClone.innerHTML = group.innerHTML + ("<div class=\"crosshair\" style=\"width: " + crosshairSize + "px; height: " + crosshairSize + "px; left: -" + crosshairHalfSize + "px; top: -" + crosshairHalfSize + "px;\"></div>");
+                groupClone.innerHTML = group.innerHTML;
                 document.body.appendChild(groupClone);
                 groupClone.offsetHeight;
-                dt.setDragImage(groupClone, CROSSHAIR_SIZE, CROSSHAIR_SIZE);
+                dt.setDragImage(groupClone, -CROSSHAIR_SIZE, -CROSSHAIR_SIZE);
                 setTimeout(function () { return document.body.removeChild(groupClone); });
                 setTimeout(function () {
                     group.classList.add('hide');
                 }, 0);
+                _this.game.map.addDragOverlay();
                 return true;
             });
             group.addEventListener('dragend', function (e) {
                 group.classList.remove('hide');
                 var mapDiv = document.getElementById('map');
                 mapDiv.dataset.dragColor = '';
+                _this.game.map.removeDragOverlay();
             });
             group.addEventListener('click', function () {
                 if (_this.routeId) {

@@ -7,7 +7,7 @@ const log = isDebug ? console.log.bind(window.console) : function () { };
 class TicketToRide implements TicketToRideGame {
     private gamedatas: TicketToRideGamedatas;
 
-    private map: TtrMap;
+    public map: TtrMap;
     private trainCarSelection: TrainCarSelection;
     private destinationSelection: DestinationSelection;
     private playerTable: PlayerTable = null;

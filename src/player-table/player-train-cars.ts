@@ -128,18 +128,18 @@ class PlayerTrainCars {
                 // we generate a clone of group (without positionning with transform on the group)
                 const groupClone = document.createElement('div');
                 groupClone.classList.add('train-car-group', 'drag');
-                const crosshairHalfSize = CROSSHAIR_SIZE / this.game.getZoom();
-                const crosshairSize = crosshairHalfSize * 2;
-                groupClone.innerHTML = group.innerHTML + `<div class="crosshair" style="width: ${crosshairSize}px; height: ${crosshairSize}px; left: -${crosshairHalfSize}px; top: -${crosshairHalfSize}px;"></div>`;
+                groupClone.innerHTML = group.innerHTML;
                 document.body.appendChild(groupClone);
                 groupClone.offsetHeight;
 
-                dt.setDragImage(groupClone, CROSSHAIR_SIZE, CROSSHAIR_SIZE);
+                dt.setDragImage(groupClone, -CROSSHAIR_SIZE, -CROSSHAIR_SIZE);
                 setTimeout(() => document.body.removeChild(groupClone));
                 
                 setTimeout(() => {
                     group.classList.add('hide');
                 }, 0);
+
+                this.game.map.addDragOverlay();
 
                 return true;
             });
@@ -147,6 +147,8 @@ class PlayerTrainCars {
                 group.classList.remove('hide');
                 const mapDiv = document.getElementById('map');
                 mapDiv.dataset.dragColor = '';
+
+                this.game.map.removeDragOverlay();
             });
 
             group.addEventListener('click', () => {
