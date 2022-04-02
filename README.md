@@ -36,15 +36,11 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 go on tests dir and start execute file, for example `php ./tickettoride.game.test-longest-path.php` / `php ./tickettoride.game.test-destination-completed.php`
 
 # TODO
-fix drag on mobile
-https://stackoverflow.com/questions/9251590/prevent-page-scroll-on-drag-in-ios-and-android
-
 - picking cards
       - the card stays on the display when it is picked and another slide over it
 - it happened that some cards from display are not clickable
 - 
 - sluggish performance (chrome on macbook air)
 - sounds (especially when showing accomplished and failed tickets)
-- Portland / San Francisco - trains on the right were on top of the trains on the left (blue on the right and red on the left)
 
 Add more players from the list from Adrien

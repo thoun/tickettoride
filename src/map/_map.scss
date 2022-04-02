@@ -348,6 +348,14 @@
     opacity: 0.5;
   }
 
+  &.top {
+    z-index: 1;
+
+    &.highlight {
+      z-index: 11;
+    }
+  }
+
   &.highlight {
     z-index: 11;
   }

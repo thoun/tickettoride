@@ -627,6 +627,12 @@
 .wagon.phantom {
   opacity: 0.5;
 }
+.wagon.top {
+  z-index: 1;
+}
+.wagon.top.highlight {
+  z-index: 11;
+}
 .wagon.highlight {
   z-index: 11;
 }

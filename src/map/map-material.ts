@@ -11,6 +11,7 @@ class RouteSpace {
         public x: number,
         public y: number,
         public angle: number,
+        public top: boolean = false,
     ) {}
 }
 
@@ -73,7 +74,7 @@ const ROUTES = [
         new RouteSpace(1427, 814, 51),
         new RouteSpace(1468, 865, 51),
         new RouteSpace(1508, 915, 51),
-        new RouteSpace(1549, 965, 51),
+        new RouteSpace(1549, 965, 51, true),
     ], BLUE),
     new Route(3, 1, 18, [
         new RouteSpace(1306, 673, 35),
@@ -155,7 +156,7 @@ const ROUTES = [
         new RouteSpace(1117, 390, 14),
     ], RED),
     new Route(18, 5, 22, [
-        new RouteSpace(945, 461, -34),
+        new RouteSpace(945, 461, -34, true),
         new RouteSpace(998, 425, -34),
         new RouteSpace(1062, 410, 8),
         new RouteSpace(1124, 419, 8),
@@ -182,7 +183,7 @@ const ROUTES = [
         new RouteSpace(1186, 371, -48),
         new RouteSpace(1236, 328, -35),
         new RouteSpace(1296, 299, -17),
-        new RouteSpace(1354, 269, -39),
+        new RouteSpace(1354, 269, -39, true),
     ], WHITE),
     new Route(24, 6, 9, [
         new RouteSpace(691, 933, 351),
@@ -191,7 +192,7 @@ const ROUTES = [
         new RouteSpace(884, 904, 351),
     ], RED),
     new Route(25, 6, 11, [
-        new RouteSpace(964, 930, 49),
+        new RouteSpace(964, 930, 49, true),
     ], GRAY),
     new Route(26, 6, 11, [
         new RouteSpace(982, 915, 49),
@@ -308,7 +309,7 @@ const ROUTES = [
         new RouteSpace(340, 941, 15),
         new RouteSpace(405, 954, 9),
         new RouteSpace(470, 956, -4),
-        new RouteSpace(534, 946, -14),
+        new RouteSpace(534, 946, -14, true),
     ], BLACK),
     new Route(46, 9, 21, [
         new RouteSpace(656, 913, 342),
@@ -365,7 +366,7 @@ const ROUTES = [
         new RouteSpace(928, 686, -74),
     ], GRAY),
     new Route(56, 12, 22, [
-        new RouteSpace(913, 531, -115),
+        new RouteSpace(913, 531, -115, true),
     ], GRAY),
     new Route(57, 12, 22, [
         new RouteSpace(933, 521, -115),
@@ -411,9 +412,9 @@ const ROUTES = [
         new RouteSpace(350, 841, 13),
     ], GRAY),
     new Route(67, 15, 30, [
-        new RouteSpace(47, 717, -113),
-        new RouteSpace(78, 776, -125),
-        new RouteSpace(120, 826, -134),
+        new RouteSpace(47, 717, -113, true),
+        new RouteSpace(78, 776, -125, true),
+        new RouteSpace(120, 826, -134, true),
     ], YELLOW),
     new Route(68, 15, 30, [
         new RouteSpace(66, 705, -113),
@@ -516,9 +517,9 @@ const ROUTES = [
     new Route(87, 25, 30, [
         new RouteSpace(28, 351, 111),
         new RouteSpace(8, 414, 102),
-        new RouteSpace(1, 479, 93),
-        new RouteSpace(2, 544, 86),
-        new RouteSpace(14, 610, 73),
+        new RouteSpace(1, 479, 93, true),
+        new RouteSpace(2, 544, 86, true),
+        new RouteSpace(14, 610, 73, true),
     ], GREEN),
     new Route(88, 25, 30, [
         new RouteSpace(51, 354, 111),

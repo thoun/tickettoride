@@ -315,7 +315,7 @@ class TtrMap {
         const EASE_WEIGHT = 0.75;
         const angleOnOne = (Math.acos(-2 * angle / 180 + 1) / Math.PI) * EASE_WEIGHT + (angle / 180 * (1 - EASE_WEIGHT));
         const angleClassNumber = Math.round(angleOnOne * 36);
-        dojo.place(`<div id="${id}" class="wagon angle${angleClassNumber} ${phantom ? 'phantom' : ''}" data-player-color="${color}" style="transform: translate(${x}px, ${y}px)"></div>`, 'map');
+        dojo.place(`<div id="${id}" class="wagon angle${angleClassNumber} ${phantom ? 'phantom' : ''} ${space.top ? 'top' : ''}" data-player-color="${color}" style="transform: translate(${x}px, ${y}px)"></div>`, 'map');
         
         if (fromPlayerId) {
             this.animateWagonFromCounter(fromPlayerId, id, x, y);
