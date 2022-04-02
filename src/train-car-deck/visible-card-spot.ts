@@ -3,6 +3,7 @@
  */ 
 class VisibleCardSpot {
     private card: TrainCar;
+    private spotDiv: HTMLDivElement;
 
     /**
      * Init stocks and gauges.
@@ -11,6 +12,7 @@ class VisibleCardSpot {
         private game: TicketToRideGame,
         private spotNumber: number,
     ) {
+        this.spotDiv = document.getElementById(`visible-train-cards-stock${this.spotNumber}`) as HTMLDivElement;
     }
     
     /**
@@ -37,6 +39,11 @@ class VisibleCardSpot {
                 oldCardDiv.parentElement.removeChild(oldCardDiv);
                 this.card = null;
             }
+        }
+
+        // make sure there is no card remaining on the spot
+        while (this.spotDiv.childElementCount > 0) {
+            this.spotDiv.removeChild(this.spotDiv.firstElementChild);
         }
 
         this.card = card;
@@ -67,7 +74,7 @@ class VisibleCardSpot {
      * Create the card in the spot.
      */ 
     private createCard(card: Card) {
-        dojo.place(`<div id="train-car-card-${card.id}" class="train-car-card" data-color="${this.card.type}"></div>`, `visible-train-cards-stock${this.spotNumber}`);
+        dojo.place(`<div id="train-car-card-${card.id}" class="train-car-card" data-color="${this.card.type}"></div>`, this.spotDiv);
     }
     
     /**

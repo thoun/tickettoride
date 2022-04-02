@@ -1416,6 +1416,7 @@ var VisibleCardSpot = /** @class */ (function () {
     function VisibleCardSpot(game, spotNumber) {
         this.game = game;
         this.spotNumber = spotNumber;
+        this.spotDiv = document.getElementById("visible-train-cards-stock" + this.spotNumber);
     }
     /**
      * Set selectable visible cards (locomotive can't be selected if 1 visible card has been picked).
@@ -1442,6 +1443,10 @@ var VisibleCardSpot = /** @class */ (function () {
                 this.card = null;
             }
         }
+        // make sure there is no card remaining on the spot
+        while (this.spotDiv.childElementCount > 0) {
+            this.spotDiv.removeChild(this.spotDiv.firstElementChild);
+        }
         this.card = card;
         this.createCard(card);
         var cardDiv = this.getCardDiv();
@@ -1466,7 +1471,7 @@ var VisibleCardSpot = /** @class */ (function () {
      * Create the card in the spot.
      */
     VisibleCardSpot.prototype.createCard = function (card) {
-        dojo.place("<div id=\"train-car-card-" + card.id + "\" class=\"train-car-card\" data-color=\"" + this.card.type + "\"></div>", "visible-train-cards-stock" + this.spotNumber);
+        dojo.place("<div id=\"train-car-card-" + card.id + "\" class=\"train-car-card\" data-color=\"" + this.card.type + "\"></div>", this.spotDiv);
     };
     /**
      * Animation when train car cards are picked by another player.

@@ -36,9 +36,7 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 go on tests dir and start execute file, for example `php ./tickettoride.game.test-longest-path.php` / `php ./tickettoride.game.test-destination-completed.php`
 
 # TODO
-- picking cards
-      - the card stays on the display when it is picked and another slide over it
-- it happened that some cards from display are not clickable
+- picking cards : it happened that some cards from display are not clickable
 - 
 - sluggish performance (chrome on macbook air)
 - sounds (especially when showing accomplished and failed tickets)
