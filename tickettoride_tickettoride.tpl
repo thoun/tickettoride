@@ -52,4 +52,9 @@
     </div>
 </div>
 
+<audio id="audiosrc_ttr-goal-no" src="{GAMETHEMEURL}img/goal-no.mp3" preload="none" autobuffer></audio>
+<audio id="audiosrc_o_ttr-goal-no" src="{GAMETHEMEURL}img/goal-no.ogg" preload="none" autobuffer></audio>
+<audio id="audiosrc_ttr-goal-yes" src="{GAMETHEMEURL}img/goal-yes.mp3" preload="none" autobuffer></audio>
+<audio id="audiosrc_o_ttr-goal-yes" src="{GAMETHEMEURL}img/goal-yes.ogg" preload="none" autobuffer></audio>
+
 {OVERALL_GAME_FOOTER}

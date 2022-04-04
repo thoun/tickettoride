@@ -1,3 +1,5 @@
+declare const playSound;
+
 /**
  * End score board.
  * It will start empty, and notifications will update it and start animations one by one.
@@ -119,6 +121,11 @@ class EndScore {
             `destination-counter-${playerId}`,
             `${destinationRoutes ? 'completed' : 'uncompleted'}-destination-counter-${playerId}`,
             {
+                change: () => {
+                    console.log('playSound', `ttr-goal-${destinationRoutes ? 'yes' : 'no'}`);
+                    playSound(`ttr-goal-${destinationRoutes ? 'yes' : 'no'}`);
+                },
+
                 end: () => {
                     (destinationRoutes ? this.completedDestinationCounters : this.uncompletedDestinationCounters)[playerId].incValue(1);
                     this.destinationCounters[playerId].incValue(-1);

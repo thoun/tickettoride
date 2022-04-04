@@ -36,9 +36,4 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 go on tests dir and start execute file, for example `php ./tickettoride.game.test-longest-path.php` / `php ./tickettoride.game.test-destination-completed.php`
 
 # TODO
-- picking cards : it happened that some cards from display are not clickable
-- 
-- sluggish performance (chrome on macbook air)
-- sounds (especially when showing accomplished and failed tickets)
-
-Add more players from the list from Adrien
+- check performance issues (chrome on old macbook air)

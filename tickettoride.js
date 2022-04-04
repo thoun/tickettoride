@@ -2206,6 +2206,10 @@ var EndScore = /** @class */ (function () {
     EndScore.prototype.scoreDestination = function (playerId, destination, destinationRoutes) {
         var _this = this;
         var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, "destination-counter-" + playerId, (destinationRoutes ? 'completed' : 'uncompleted') + "-destination-counter-" + playerId, {
+            change: function () {
+                console.log('playSound', "ttr-goal-" + (destinationRoutes ? 'yes' : 'no'));
+                playSound("ttr-goal-" + (destinationRoutes ? 'yes' : 'no'));
+            },
             end: function () {
                 (destinationRoutes ? _this.completedDestinationCounters : _this.uncompletedDestinationCounters)[playerId].incValue(1);
                 _this.destinationCounters[playerId].incValue(-1);
