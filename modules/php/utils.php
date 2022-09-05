@@ -108,6 +108,12 @@ trait UtilTrait {
         return array_map(fn($dbResult) => intval($dbResult['card_id']), array_values($dbResults));
     }
 
+    function getUnompletedDestinationsIds(int $playerId) {
+        $sql = "SELECT `card_id` FROM `destination` WHERE `card_location` = 'hand' AND `card_location_arg` = $playerId AND  `completed` = 0";
+        $dbResults = self::getCollectionFromDB($sql);
+        return array_map(fn($dbResult) => intval($dbResult['card_id']), array_values($dbResults));
+    }
+
     function checkCompletedDestinations(int $playerId) {
         $handDestinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
         $alreadyCompleted = $this->getCompletedDestinationsIds($playerId);

@@ -52,7 +52,7 @@ class EndScore {
             
             const uncompletedDestinationCounter: Counter = new ebg.counter();
             uncompletedDestinationCounter.create(`uncompleted-destination-counter-${player.id}`);
-            uncompletedDestinationCounter.setValue(fromReload ? destinationCounter.getValue() - completedDestinationCounter.getValue() : 0);
+            uncompletedDestinationCounter.setValue(fromReload ?  player.uncompletedDestinations.length : 0);
             this.uncompletedDestinationCounters[Number(player.id)] = uncompletedDestinationCounter;
 
             const scoreCounter: Counter = new ebg.counter();
@@ -73,6 +73,7 @@ class EndScore {
                 if (player.longestPathLength == longestPath) {
                     this.setLongestPathWinner(player.id, longestPath);
                 }
+                this.updateDestinationsTooltip(player);
             });
         }
     }
@@ -139,6 +140,25 @@ class EndScore {
         );
 
         this.game.addAnimation(newDac);
+    }
+    
+    public updateDestinationsTooltip(player: TicketToRidePlayer) {
+        let html = `<div class="destinations-flex">
+            <div>
+                ${player.completedDestinations?.map(destination =>
+                    `<div class="destination-card completed" style="${getBackgroundInlineStyleForDestination(destination)}"></div>`
+                )}
+            </div>
+            <div>
+                ${player.uncompletedDestinations?.map(destination =>
+                    `<div class="destination-card uncompleted" style="${getBackgroundInlineStyleForDestination(destination)}"></div>`
+                )}
+            </div>
+        </div>`;
+
+        if (document.getElementById(`destinations-score-${player.id}`)) {
+            (this as any).game.addTooltipHtml(`destinations-score-${player.id}`, html);
+        }
     }
     
     /** 

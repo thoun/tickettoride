@@ -2150,7 +2150,7 @@ var EndScore = /** @class */ (function () {
             _this.completedDestinationCounters[Number(player.id)] = completedDestinationCounter;
             var uncompletedDestinationCounter = new ebg.counter();
             uncompletedDestinationCounter.create("uncompleted-destination-counter-" + player.id);
-            uncompletedDestinationCounter.setValue(fromReload ? destinationCounter.getValue() - completedDestinationCounter.getValue() : 0);
+            uncompletedDestinationCounter.setValue(fromReload ? player.uncompletedDestinations.length : 0);
             _this.uncompletedDestinationCounters[Number(player.id)] = uncompletedDestinationCounter;
             var scoreCounter = new ebg.counter();
             scoreCounter.create("end-score-" + player.id);
@@ -2168,6 +2168,7 @@ var EndScore = /** @class */ (function () {
                 if (player.longestPathLength == longestPath_1) {
                     _this.setLongestPathWinner(player.id, longestPath_1);
                 }
+                _this.updateDestinationsTooltip(player);
             });
         }
     }
@@ -2219,6 +2220,17 @@ var EndScore = /** @class */ (function () {
             },
         }, destinationRoutes ? 'completed' : 'uncompleted', 0.15 / this.game.getZoom());
         this.game.addAnimation(newDac);
+    };
+    EndScore.prototype.updateDestinationsTooltip = function (player) {
+        var _a, _b;
+        var html = "<div class=\"destinations-flex\">\n            <div>\n                " + ((_a = player.completedDestinations) === null || _a === void 0 ? void 0 : _a.map(function (destination) {
+            return "<div class=\"destination-card completed\" style=\"" + getBackgroundInlineStyleForDestination(destination) + "\"></div>";
+        })) + "\n            </div>\n            <div>\n                " + ((_b = player.uncompletedDestinations) === null || _b === void 0 ? void 0 : _b.map(function (destination) {
+            return "<div class=\"destination-card uncompleted\" style=\"" + getBackgroundInlineStyleForDestination(destination) + "\"></div>";
+        })) + "\n            </div>\n        </div>";
+        if (document.getElementById("destinations-score-" + player.id)) {
+            this.game.addTooltipHtml("destinations-score-" + player.id, html);
+        }
     };
     /**
      * Show longest path animation for a player.
@@ -2787,11 +2799,18 @@ var TicketToRide = /** @class */ (function () {
      * Animate a destination for end score.
      */
     TicketToRide.prototype.notif_scoreDestination = function (notif) {
-        var _a, _b;
-        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.scoreDestination(notif.args.playerId, notif.args.destination, notif.args.destinationRoutes);
-        if (!notif.args.destinationRoutes) {
+        var _a, _b, _c;
+        var playerId = notif.args.playerId;
+        var player = this.gamedatas.players[playerId];
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.scoreDestination(playerId, notif.args.destination, notif.args.destinationRoutes);
+        if (notif.args.destinationRoutes) {
+            player.completedDestinations.push(notif.args.destination);
+        }
+        else {
+            player.uncompletedDestinations.push(notif.args.destination);
             (_b = document.getElementById("destination-card-" + notif.args.destination.id)) === null || _b === void 0 ? void 0 : _b.classList.add('uncompleted');
         }
+        (_c = this.endScore) === null || _c === void 0 ? void 0 : _c.updateDestinationsTooltip(player);
     };
     /**
      * Animate longest path for end score.
@@ -2819,16 +2838,15 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.format_string_recursive = function (log, args) {
         try {
             if (log && args && !args.processed) {
-                // make cities names in bold 
-                if (typeof args.from == 'string' && args.from[0] != '<') {
-                    args.from = "<strong>" + args.from + "</strong>";
-                }
-                if (typeof args.to == 'string' && args.to[0] != '<') {
-                    args.to = "<strong>" + args.to + "</strong>";
-                }
                 if (typeof args.color == 'number') {
                     args.color = "<div class=\"train-car-color icon\" data-color=\"" + args.color + "\"></div>";
                 }
+                // make cities names in bold 
+                ['from', 'to', 'count'].forEach(function (field) {
+                    if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
+                        args[field] = "<strong>" + _(args[field]) + "</strong>";
+                    }
+                });
             }
         }
         catch (e) {

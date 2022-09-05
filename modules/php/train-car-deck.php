@@ -55,10 +55,11 @@ trait TrainCarDeckTrait {
 
         $cards = $this->getTrainCarsFromDb($this->trainCars->pickCards($number, 'deck', $playerId));
 
-        $this->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes ${number} hidden train car card(s)'), [
+        $this->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes ${count} hidden train car card(s)'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'number' => $number,
+            'count' => $number,
             'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
             '_private' => [
                 $playerId => [

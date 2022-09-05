@@ -649,10 +649,16 @@ class TicketToRide implements TicketToRideGame {
      * Animate a destination for end score.
      */ 
     notif_scoreDestination(notif: Notif<NotifDestinationCompletedArgs>) {
-        this.endScore?.scoreDestination(notif.args.playerId, notif.args.destination, notif.args.destinationRoutes);
-        if (!notif.args.destinationRoutes) {
+        const playerId = notif.args.playerId;
+        const player = this.gamedatas.players[playerId];
+        this.endScore?.scoreDestination(playerId, notif.args.destination, notif.args.destinationRoutes);
+        if (notif.args.destinationRoutes) {
+            player.completedDestinations.push(notif.args.destination);
+        } else {
+            player.uncompletedDestinations.push(notif.args.destination);
             document.getElementById(`destination-card-${notif.args.destination.id}`)?.classList.add('uncompleted');
         }
+        this.endScore?.updateDestinationsTooltip(player);
     }
 
     /** 
@@ -681,16 +687,16 @@ class TicketToRide implements TicketToRideGame {
     public format_string_recursive(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
-                // make cities names in bold 
-                if (typeof args.from == 'string' && args.from[0] != '<') {
-                    args.from = `<strong>${args.from}</strong>`;
-                }
-                if (typeof args.to == 'string' && args.to[0] != '<') {
-                    args.to = `<strong>${args.to}</strong>`;
-                }
                 if (typeof args.color == 'number') {
                     args.color = `<div class="train-car-color icon" data-color="${args.color}"></div>`;
                 }
+
+                // make cities names in bold 
+                ['from', 'to', 'count'].forEach(field => {
+                    if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
+                        args[field] = `<strong>${_(args[field])}</strong>`;
+                    }
+                });
             }
         } catch (e) {
             console.error(log,args,"Exception thrown", e.stack);

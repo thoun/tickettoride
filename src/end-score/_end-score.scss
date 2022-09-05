@@ -15,6 +15,7 @@
                 height: 27px;
 
                 td {
+                    position: relative;
                     border: 2px solid #FFFFFF80;
                     text-align: center;
 
@@ -29,6 +30,7 @@
                         width: 100px;
 
                         .icons-grid {
+                            pointer-events: none;
                             display: grid;
                             grid-template-columns: repeat(3, auto);
                             grid-template-rows: 25px;
@@ -100,6 +102,10 @@
                         color: black;
                         position: relative;
                         z-index: 2;  
+                        
+                        &.player-name {
+                            z-index: 3;
+                        }
 
                         &::before {
                             position: absolute;

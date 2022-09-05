@@ -15,6 +15,7 @@
         position: relative;   
         display: flex;
         height: 192px;
+        margin-bottom: -20px;
         
         .deck-level {
             position: absolute;
@@ -86,6 +87,10 @@
         margin-bottom: -90px;
         margin-left: 10px;
         z-index: 1;
+    }
+
+    #destination-deck-hidden-pile {
+        margin-top: 40px;
     }
 }
 

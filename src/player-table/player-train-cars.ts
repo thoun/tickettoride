@@ -239,7 +239,7 @@ class PlayerTrainCars {
 
         setTimeout(() => {
             card.style.zIndex = null;
-            card.style.transition = null;   
+            card.style.transition = null; 
             trainCars.classList.remove('new-card-animation');         
         }, 500);
     }

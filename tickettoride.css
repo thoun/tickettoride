@@ -684,6 +684,7 @@
   position: relative;
   display: flex;
   height: 192px;
+  margin-bottom: -20px;
 }
 #train-car-deck .hidden-pile .deck-level {
   position: absolute;
@@ -790,6 +791,9 @@
   margin-bottom: -90px;
   margin-left: 10px;
   z-index: 1;
+}
+#train-car-deck #destination-deck-hidden-pile {
+  margin-top: 40px;
 }
 
 .gauge {
@@ -1079,6 +1083,7 @@
   height: 27px;
 }
 #score #table-wrapper table tr td {
+  position: relative;
   border: 2px solid #FFFFFF80;
   text-align: center;
 }
@@ -1092,6 +1097,7 @@
   width: 100px;
 }
 #score #table-wrapper table tr td.destinations .icons-grid {
+  pointer-events: none;
   display: grid;
   grid-template-columns: repeat(3, auto);
   grid-template-rows: 25px;
@@ -1148,6 +1154,9 @@
   color: black;
   position: relative;
   z-index: 2;
+}
+#score #table-wrapper table tr.highlight td.player-name {
+  z-index: 3;
 }
 #score #table-wrapper table tr.highlight td::before {
   position: absolute;
@@ -1279,4 +1288,12 @@ html {
 
 #page-title .icon.train-car-color {
   margin: -5px 0px;
+}
+
+.dijitTooltipContents .destinations-flex {
+  display: flex;
+  gap: 5px;
+}
+.dijitTooltipContents .destinations-flex .destination-card {
+  position: relative;
 }

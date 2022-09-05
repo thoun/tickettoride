@@ -83,3 +83,14 @@ html {
         margin: -5px 0px;
     }
 }
+
+.dijitTooltipContents {
+    .destinations-flex {
+        display: flex;
+        gap: 5px;
+
+        .destination-card {
+            position: relative;
+        }
+    }
+}

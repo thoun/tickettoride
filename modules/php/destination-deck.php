@@ -103,9 +103,10 @@ trait DestinationDeckTrait {
             }
         }
 
-        $this->notifyAllPlayers('destinationsPicked', clienttranslate('${player_name} keeps ${number} destinations'), [
+        $this->notifyAllPlayers('destinationsPicked', clienttranslate('${player_name} keeps ${count} destinations'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
+            'count' => count($ids),
             'number' => count($ids),
             'remainingDestinationsInDeck' => $this->getRemainingDestinationCardsInDeck(),
             '_private' => [

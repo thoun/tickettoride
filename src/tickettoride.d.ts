@@ -43,6 +43,7 @@ interface TicketToRidePlayer extends Player {
 
     // for end score
     completedDestinations?: Destination[];
+    uncompletedDestinations?: Destination[];
     longestPathLength: number;
 }
 
@@ -127,6 +128,7 @@ interface NotifPointsArgs {
 interface NotifDestinationsPickedArgs {
     playerId: number;
     number: number;
+    count: number;
     remainingDestinationsInDeck: number;
     _private: {
         [playerId: number]: {
@@ -137,6 +139,7 @@ interface NotifDestinationsPickedArgs {
 
 interface NotifTrainCarsPickedArgs {
     playerId: number;
+    count: number;
     number: number;
     remainingTrainCarsInDeck: number;
     _private?: {

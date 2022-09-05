@@ -186,7 +186,11 @@ class TicketToRide extends Table {
 
             if ($isEnd) {
                 $player['completedDestinations'] = $this->getDestinationsFromDb($this->destinations->getCards($this->getCompletedDestinationsIds($playerId)));
+                $player['uncompletedDestinations'] = $this->getDestinationsFromDb($this->destinations->getCards($this->getUnompletedDestinationsIds($playerId)));
                 $player['longestPathLength'] = $this->getLongestPath($playerId)->length;
+            } else {
+                $player['completedDestinations'] = [];
+                $player['uncompletedDestinations'] = [];
             }
         }
 
