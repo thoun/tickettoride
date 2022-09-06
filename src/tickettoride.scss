@@ -9,17 +9,12 @@ $player-colors: ("red": "e3001a", "green": "41a62a", "blue": "0056aa", "yellow":
 @import 'player-table/player-table';
 @import 'end-score/end-score';
 
-//$background: url('img/bg-wood.jpg');
-$background: url('img/bg-pattern.jpg');
+$background: url('img/background.jpg');
 
-html {
-    background: $background;
-    background-repeat: repeat;
-}
-
-.mode_3d #game_play_area_background {
-    background: $background;
-    background-repeat: repeat;
+html, .mode_3d #game_play_area_background {
+    background: $background #b59958;
+    background-repeat: no-repeat;
+    background-size: 100%;
 }
 
 #last-round {

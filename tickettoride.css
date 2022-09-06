@@ -1205,14 +1205,10 @@
     transform: scale(0.15);
   }
 }
-html {
-  background: url("img/bg-pattern.jpg");
-  background-repeat: repeat;
-}
-
-.mode_3d #game_play_area_background {
-  background: url("img/bg-pattern.jpg");
-  background-repeat: repeat;
+html, .mode_3d #game_play_area_background {
+  background: url("img/background.jpg") #b59958;
+  background-repeat: no-repeat;
+  background-size: 100%;
 }
 
 #last-round {
