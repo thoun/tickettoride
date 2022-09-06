@@ -8,6 +8,9 @@ class LongestPathAnimation extends WagonsAnimation {
         private routes: Route[],
         private length: number,
         private playerColor: string,
+        private actions: {
+            end?: () => void,
+        },
     ) {
         super(game, routes);
     }
@@ -32,6 +35,7 @@ class LongestPathAnimation extends WagonsAnimation {
         resolve(this);
 
         this.game.endAnimation(this);
+        this.actions.end?.();
     }
     
     private getCardPosition() {

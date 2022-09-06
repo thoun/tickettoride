@@ -597,6 +597,11 @@ class TicketToRide implements TicketToRideGame {
      * Update visible cards.
      */ 
     notif_newCardsOnTable(notif: Notif<NotifNewCardsOnTableArgs>) {
+        if (notif.args.cards.length > 1) {
+            playSound(`ttr-clear-train-car-cards`);
+            (this as any).disableNextMoveSound();
+        }
+
         this.trainCarSelection.setNewCardsOnTable(notif.args.cards, true);
     }
 
@@ -626,6 +631,9 @@ class TicketToRide implements TicketToRideGame {
         this.completedDestinationsCounter.incValue(1);
         this.gamedatas.completedDestinations.push(destination);
         this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
+
+        playSound(`ttr-completed-in-game`);
+        (this as any).disableNextMoveSound();
     }
     
     /** 
@@ -680,6 +688,9 @@ class TicketToRide implements TicketToRideGame {
      */ 
     notif_highlightWinnerScore(notif: Notif<NotifLongestPathArgs>) {
         this.endScore?.highlightWinnerScore(notif.args.playerId);
+
+        playSound(`ttr-scoring-end`);
+        (this as any).disableNextMoveSound();
     }
 
     /* This enable to inject translatable styled things to logs or action bar */

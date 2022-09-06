@@ -338,9 +338,11 @@ class TtrMap {
         if (fromPlayerId) {
             route.spaces.forEach((space, spaceIndex) => {
                 setTimeout(() => {
-                this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom)
-            }, 200 * spaceIndex);
+                    this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom);
+                    playSound(`ttr-placed-train-car`);
+                }, 200 * spaceIndex);
             });
+            (this.game as any).disableNextMoveSound();
         } else {
             route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom));
         }

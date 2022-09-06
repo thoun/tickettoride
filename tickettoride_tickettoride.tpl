@@ -52,9 +52,25 @@
     </div>
 </div>
 
-<audio id="audiosrc_ttr-goal-no" src="{GAMETHEMEURL}img/goal-no.mp3" preload="none" autobuffer></audio>
-<audio id="audiosrc_o_ttr-goal-no" src="{GAMETHEMEURL}img/goal-no.ogg" preload="none" autobuffer></audio>
-<audio id="audiosrc_ttr-goal-yes" src="{GAMETHEMEURL}img/goal-yes.mp3" preload="none" autobuffer></audio>
-<audio id="audiosrc_o_ttr-goal-yes" src="{GAMETHEMEURL}img/goal-yes.ogg" preload="none" autobuffer></audio>
+<audio id="audiosrc_ttr-placed-train-car" src="{GAMETHEMEURL}img/placed-train-car.mp3" preload="none" autobuffer></audio>
+<audio id="audiosrc_o_ttr-placed-train-car" src="{GAMETHEMEURL}img/placed-train-car.ogg" preload="none" autobuffer></audio>
+
+<audio id="audiosrc_ttr-clear-train-car-cards" src="{GAMETHEMEURL}img/clear-train-car-cards.mp3" preload="none" autobuffer></audio>
+<audio id="audiosrc_o_ttr-clear-train-car-cards" src="{GAMETHEMEURL}img/clear-train-car-cards.ogg" preload="none" autobuffer></audio>
+
+<audio id="audiosrc_ttr-completed-in-game" src="{GAMETHEMEURL}img/completed-in-game.mp3" preload="none" autobuffer></audio>
+<audio id="audiosrc_o_ttr-completed-in-game" src="{GAMETHEMEURL}img/completed-in-game.ogg" preload="none" autobuffer></audio>
+
+<audio id="audiosrc_ttr-completed-end" src="{GAMETHEMEURL}img/completed-end.mp3" preload="none" autobuffer></audio>
+<audio id="audiosrc_o_ttr-completed-end" src="{GAMETHEMEURL}img/completed-end.ogg" preload="none" autobuffer></audio>
+
+<audio id="audiosrc_ttr-uncompleted-end" src="{GAMETHEMEURL}img/completed-end.mp3" preload="none" autobuffer></audio>
+<audio id="audiosrc_o_ttr-uncompleted-end" src="{GAMETHEMEURL}img/completed-end.ogg" preload="none" autobuffer></audio>
+
+<audio id="audiosrc_ttr-longest-line-scoring" src="{GAMETHEMEURL}img/longest-line-scoring.mp3" preload="none" autobuffer></audio>
+<audio id="audiosrc_o_ttr-longest-line-scoring" src="{GAMETHEMEURL}img/longest-line-scoring.ogg" preload="none" autobuffer></audio>
+
+<audio id="audiosrc_ttr-scoring-end" src="{GAMETHEMEURL}img/scoring-end.mp3" preload="none" autobuffer></audio>
+<audio id="audiosrc_o_ttr-scoring-end" src="{GAMETHEMEURL}img/scoring-end.ogg" preload="none" autobuffer></audio>
 
 {OVERALL_GAME_FOOTER}

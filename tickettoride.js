@@ -253,11 +253,12 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
  */
 var LongestPathAnimation = /** @class */ (function (_super) {
     __extends(LongestPathAnimation, _super);
-    function LongestPathAnimation(game, routes, length, playerColor) {
+    function LongestPathAnimation(game, routes, length, playerColor, actions) {
         var _this = _super.call(this, game, routes) || this;
         _this.routes = routes;
         _this.length = length;
         _this.playerColor = playerColor;
+        _this.actions = actions;
         return _this;
     }
     LongestPathAnimation.prototype.animate = function () {
@@ -269,11 +270,13 @@ var LongestPathAnimation = /** @class */ (function (_super) {
         });
     };
     LongestPathAnimation.prototype.endAnimation = function (resolve) {
+        var _a, _b;
         this.setWagonsVisibility(false);
         var number = document.getElementById('longest-path-animation');
         number.parentElement.removeChild(number);
         resolve(this);
         this.game.endAnimation(this);
+        (_b = (_a = this.actions).end) === null || _b === void 0 ? void 0 : _b.call(_a);
     };
     LongestPathAnimation.prototype.getCardPosition = function () {
         var x = 100;
@@ -1155,8 +1158,10 @@ var TtrMap = /** @class */ (function () {
             route.spaces.forEach(function (space, spaceIndex) {
                 setTimeout(function () {
                     _this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom);
+                    playSound("ttr-placed-train-car");
                 }, 200 * spaceIndex);
             });
+            this.game.disableNextMoveSound();
         }
         else {
             route.spaces.forEach(function (space, spaceIndex) { return _this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom); });
@@ -2208,8 +2213,8 @@ var EndScore = /** @class */ (function () {
         var _this = this;
         var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, "destination-counter-" + playerId, (destinationRoutes ? 'completed' : 'uncompleted') + "-destination-counter-" + playerId, {
             change: function () {
-                console.log('playSound', "ttr-goal-" + (destinationRoutes ? 'yes' : 'no'));
-                playSound("ttr-goal-" + (destinationRoutes ? 'yes' : 'no'));
+                playSound("ttr-" + (destinationRoutes ? 'completed' : 'uncompleted') + "-end");
+                _this.game.disableNextMoveSound();
             },
             end: function () {
                 (destinationRoutes ? _this.completedDestinationCounters : _this.uncompletedDestinationCounters)[playerId].incValue(1);
@@ -2236,7 +2241,13 @@ var EndScore = /** @class */ (function () {
      * Show longest path animation for a player.
      */
     EndScore.prototype.showLongestPath = function (playerColor, routes, length) {
-        var newDac = new LongestPathAnimation(this.game, routes, length, playerColor);
+        var _this = this;
+        var newDac = new LongestPathAnimation(this.game, routes, length, playerColor, {
+            end: function () {
+                playSound("ttr-longest-line-scoring");
+                _this.game.disableNextMoveSound();
+            }
+        });
         this.game.addAnimation(newDac);
     };
     /**
@@ -2754,6 +2765,10 @@ var TicketToRide = /** @class */ (function () {
      * Update visible cards.
      */
     TicketToRide.prototype.notif_newCardsOnTable = function (notif) {
+        if (notif.args.cards.length > 1) {
+            playSound("ttr-clear-train-car-cards");
+            this.disableNextMoveSound();
+        }
         this.trainCarSelection.setNewCardsOnTable(notif.args.cards, true);
     };
     /**
@@ -2780,6 +2795,8 @@ var TicketToRide = /** @class */ (function () {
         this.completedDestinationsCounter.incValue(1);
         this.gamedatas.completedDestinations.push(destination);
         this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
+        playSound("ttr-completed-in-game");
+        this.disableNextMoveSound();
     };
     /**
      * Show last turn banner.
@@ -2832,6 +2849,8 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.notif_highlightWinnerScore = function (notif) {
         var _a;
         (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.highlightWinnerScore(notif.args.playerId);
+        playSound("ttr-scoring-end");
+        this.disableNextMoveSound();
     };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

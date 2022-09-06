@@ -123,8 +123,8 @@ class EndScore {
             `${destinationRoutes ? 'completed' : 'uncompleted'}-destination-counter-${playerId}`,
             {
                 change: () => {
-                    console.log('playSound', `ttr-goal-${destinationRoutes ? 'yes' : 'no'}`);
-                    playSound(`ttr-goal-${destinationRoutes ? 'yes' : 'no'}`);
+                    playSound(`ttr-${destinationRoutes ? 'completed' : 'uncompleted'}-end`);
+                    (this.game as any).disableNextMoveSound();
                 },
 
                 end: () => {
@@ -169,8 +169,15 @@ class EndScore {
             this.game,
             routes, 
             length,
-            playerColor
+            playerColor,
+            {
+                end: () => {
+                    playSound(`ttr-longest-line-scoring`);
+                    (this.game as any).disableNextMoveSound();
+                }
+            }
         );
+        
 
         this.game.addAnimation(newDac);
     }
