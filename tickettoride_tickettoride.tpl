@@ -64,8 +64,8 @@
 <audio id="audiosrc_ttr-completed-end" src="{GAMETHEMEURL}img/completed-end.mp3" preload="none" autobuffer></audio>
 <audio id="audiosrc_o_ttr-completed-end" src="{GAMETHEMEURL}img/completed-end.ogg" preload="none" autobuffer></audio>
 
-<audio id="audiosrc_ttr-uncompleted-end" src="{GAMETHEMEURL}img/completed-end.mp3" preload="none" autobuffer></audio>
-<audio id="audiosrc_o_ttr-uncompleted-end" src="{GAMETHEMEURL}img/completed-end.ogg" preload="none" autobuffer></audio>
+<audio id="audiosrc_ttr-uncompleted-end" src="{GAMETHEMEURL}img/uncompleted-end.mp3" preload="none" autobuffer></audio>
+<audio id="audiosrc_o_ttr-uncompleted-end" src="{GAMETHEMEURL}img/uncompleted-end.ogg" preload="none" autobuffer></audio>
 
 <audio id="audiosrc_ttr-longest-line-scoring" src="{GAMETHEMEURL}img/longest-line-scoring.mp3" preload="none" autobuffer></audio>
 <audio id="audiosrc_o_ttr-longest-line-scoring" src="{GAMETHEMEURL}img/longest-line-scoring.ogg" preload="none" autobuffer></audio>
