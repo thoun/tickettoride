@@ -135,12 +135,12 @@ trait MapTrait {
      * If player cannot pay, returns null.
      * If player can pay return cards to pay for the route.
      */
-    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, int $color = 0) {
+    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, /*int|null*/ $color = null) {
         if ($remainingTrainCars < $route->number) {
             return null; // not enough remaining meeples
         }
 
-        if ($color > 0 && $route->color > 0 && $color != $route->color) {
+        if ($color != null && $color > 0 && $route->color > 0 && $color != $route->color) {
             return null;
         }
 
@@ -151,15 +151,25 @@ trait MapTrait {
             $colorsToTest = [$route->color];
         }
         $locomotiveCards = array_filter($trainCarsHand, fn($card) => $card->type == 0);
+
         
-        // route is gray, check for each possible color
-        foreach ($colorsToTest as $color) {
-            $colorCards = array_filter($trainCarsHand, fn($card) => $card->type == $color);
-            if (count($colorCards) + count($locomotiveCards) >= $route->number) {
+        if ($color === 0 && $route->color === 0) {
+            // the user wants to pay with locomotives on a gray track
+            if (count($locomotiveCards) >= $route->number) {
                 // enough color card (including locomotives)
-                return array_slice(array_merge($colorCards, $locomotiveCards), 0, $route->number); 
+                return array_slice($locomotiveCards, 0, $route->number); 
+            }
+        } else {        
+            // route is gray, check for each possible color
+            foreach ($colorsToTest as $color) {
+                $colorCards = array_filter($trainCarsHand, fn($card) => $card->type == $color);
+                if (count($colorCards) + count($locomotiveCards) >= $route->number) {
+                    // enough color card (including locomotives)
+                    return array_slice(array_merge($colorCards, $locomotiveCards), 0, $route->number); 
+                }
             }
         }
+
         return null;
     }
 

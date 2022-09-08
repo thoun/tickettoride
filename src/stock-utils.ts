@@ -26,9 +26,9 @@ const BLACK = 6;
 const RED = 7;
 const GREEN = 8;
 
-function getColor(color: number) {
+function getColor(color: number, type: 'route' | 'train-car') {
     switch (color) {
-        case 0: return _('Gray');
+        case 0: return type == 'route' ? _('Gray') : _('Locomotive');
         case 1: return _('Pink');
         case 2: return _('White');
         case 3: return _('Blue');
@@ -41,7 +41,7 @@ function getColor(color: number) {
 }
 
 function setupTrainCarCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
-    cardDiv.title = Number(cardTypeId) == 0 ? _('Locomotive') : getColor(Number(cardTypeId));
+    cardDiv.title = getColor(Number(cardTypeId), 'train-car');
 }
 
 class DestinationCard {

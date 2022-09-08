@@ -411,7 +411,7 @@ class TicketToRide implements TicketToRideGame {
                 } else if (possibleColors.length > 1) {
                     possibleColors.forEach(color => {
                         const label = dojo.string.substitute(_("Use ${color}"), {
-                            'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color)}`
+                            'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
                         });
                         (this as any).addActionButton(`claimRouteWithColor_button${color}`, label, () => this.claimRoute(route.id, color));
                     });

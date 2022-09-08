@@ -36,9 +36,9 @@ var ORANGE = 5;
 var BLACK = 6;
 var RED = 7;
 var GREEN = 8;
-function getColor(color) {
+function getColor(color, type) {
     switch (color) {
-        case 0: return _('Gray');
+        case 0: return type == 'route' ? _('Gray') : _('Locomotive');
         case 1: return _('Pink');
         case 2: return _('White');
         case 3: return _('Blue');
@@ -50,7 +50,7 @@ function getColor(color) {
     }
 }
 function setupTrainCarCardDiv(cardDiv, cardTypeId) {
-    cardDiv.title = Number(cardTypeId) == 0 ? _('Locomotive') : getColor(Number(cardTypeId));
+    cardDiv.title = getColor(Number(cardTypeId), 'train-car');
 }
 var DestinationCard = /** @class */ (function () {
     function DestinationCard(id, from, to, points) {
@@ -1020,7 +1020,7 @@ var TtrMap = /** @class */ (function () {
         if (shiftY === void 0) { shiftY = 0; }
         ROUTES.forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"" + destination + "-route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + (space.x + shiftX) + "px, " + (space.y + shiftY) + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + dojo.string.substitute(_('${from} to ${to}'), { from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to] }) + ", " + route.spaces.length + " " + getColor(route.color) + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", destination);
+                dojo.place("<div id=\"" + destination + "-route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + (space.x + shiftX) + "px, " + (space.y + shiftY) + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + dojo.string.substitute(_('${from} to ${to}'), { from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to] }) + ", " + route.spaces.length + " " + getColor(route.color, 'route') + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", destination);
                 var spaceDiv = document.getElementById(destination + "-route" + route.id + "-space" + spaceIndex);
                 if (destination == 'map') {
                     _this.setSpaceClickEvents(spaceDiv, route);
@@ -2101,6 +2101,9 @@ var PlayerTrainCars = /** @class */ (function () {
                 }
             }
         });
+        if (locomotives >= route.spaces.length) {
+            possibleColors.push(0);
+        }
         return possibleColors;
     };
     /**
@@ -2597,7 +2600,7 @@ var TicketToRide = /** @class */ (function () {
                 else if (possibleColors.length > 1) {
                     possibleColors.forEach(function (color) {
                         var label = dojo.string.substitute(_("Use ${color}"), {
-                            'color': "<div class=\"train-car-color icon\" data-color=\"" + color + "\"></div> " + getColor(color)
+                            'color': "<div class=\"train-car-color icon\" data-color=\"" + color + "\"></div> " + getColor(color, 'train-car')
                         });
                         _this.addActionButton("claimRouteWithColor_button" + color, label, function () { return _this.claimRoute(route.id, color); });
                     });

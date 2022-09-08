@@ -265,6 +265,10 @@ class PlayerTrainCars {
             } 
         });
 
+        if (locomotives >= route.spaces.length) {
+            possibleColors.push(0);
+        }
+
         return possibleColors;
     }
     /** 

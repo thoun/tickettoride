@@ -189,7 +189,7 @@ class TtrMap {
             route.spaces.forEach((space, spaceIndex) => {
                 dojo.place(`<div id="${destination}-route${route.id}-space${spaceIndex}" class="route-space" 
                     style="transform: translate(${space.x + shiftX}px, ${space.y + shiftY}px) rotate(${space.angle}deg)"
-                    title="${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to]})}, ${(route.spaces as any).length} ${getColor(route.color)}"
+                    title="${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to]})}, ${(route.spaces as any).length} ${getColor(route.color, 'route')}"
                     data-route="${route.id}" data-color="${route.color}"
                 ></div>`, destination);
                 const spaceDiv = document.getElementById(`${destination}-route${route.id}-space${spaceIndex}`);
