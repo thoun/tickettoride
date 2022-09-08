@@ -590,9 +590,9 @@ class TicketToRide implements TicketToRideGame {
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
         if (notif.args.playerId == this.getPlayerId()) {
             const cards = notif.args.cards;
-            this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.from));
+            this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.origin));
         } else {
-            this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.from, notif.args.number);
+            this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.origin, notif.args.number);
         }
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }

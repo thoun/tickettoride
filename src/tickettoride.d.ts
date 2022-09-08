@@ -143,7 +143,7 @@ interface NotifTrainCarsPickedArgs {
     number: number;
     remainingTrainCarsInDeck: number;
     cards?: TrainCar[];
-    from: number; // 0 for hidden, else spot number
+    origin: number; // 0 for hidden, else spot number
 }
 
 interface NotifNewCardsOnTableArgs {

@@ -1622,10 +1622,10 @@ var TrainCarSelection = /** @class */ (function () {
         dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', visible);
     };
     /**
-     * Get HTML Element represented by "from" (0 means invisible, 1 to 5 are visible cards).
+     * Get HTML Element represented by "origin" (0 means invisible, 1 to 5 are visible cards).
      */
-    TrainCarSelection.prototype.getStockElement = function (from) {
-        return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : document.getElementById("visible-train-cards-stock" + from);
+    TrainCarSelection.prototype.getStockElement = function (origin) {
+        return origin === 0 ? document.getElementById('train-car-deck-hidden-pile') : document.getElementById("visible-train-cards-stock" + origin);
     };
     /**
      * Animation when train car cards are picked by another player.
@@ -2759,10 +2759,10 @@ var TicketToRide = /** @class */ (function () {
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
         if (notif.args.playerId == this.getPlayerId()) {
             var cards = notif.args.cards;
-            this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.from));
+            this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.origin));
         }
         else {
-            this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.from, notif.args.number);
+            this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.origin, notif.args.number);
         }
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     };

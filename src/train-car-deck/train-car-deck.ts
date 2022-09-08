@@ -132,10 +132,10 @@ class TrainCarSelection {
     }
     
     /**
-     * Get HTML Element represented by "from" (0 means invisible, 1 to 5 are visible cards).
+     * Get HTML Element represented by "origin" (0 means invisible, 1 to 5 are visible cards).
      */ 
-    public getStockElement(from: number): HTMLElement {
-        return from === 0 ? document.getElementById('train-car-deck-hidden-pile') : document.getElementById(`visible-train-cards-stock${from}`); 
+    public getStockElement(origin: number): HTMLElement {
+        return origin === 0 ? document.getElementById('train-car-deck-hidden-pile') : document.getElementById(`visible-train-cards-stock${origin}`); 
     }
     
     /**
