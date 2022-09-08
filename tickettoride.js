@@ -2725,6 +2725,9 @@ var TicketToRide = /** @class */ (function () {
             dojo.subscribe(notif[0], _this, "notif_" + notif[0]);
             _this.notifqueue.setSynchronous(notif[0], notif[1]);
         });
+        this.notifqueue.setIgnoreNotificationCheck('trainCarPicked', function (notif) {
+            return notif.args.playerId == _this.getPlayerId() && !notif.args.cards;
+        });
     };
     /**
      * Update player score.
@@ -2753,10 +2756,9 @@ var TicketToRide = /** @class */ (function () {
      * Update player train cars.
      */
     TicketToRide.prototype.notif_trainCarPicked = function (notif) {
-        var _a, _b;
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
         if (notif.args.playerId == this.getPlayerId()) {
-            var cards = notif.args.cards || ((_b = (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a[this.getPlayerId()]) === null || _b === void 0 ? void 0 : _b.cards);
+            var cards = notif.args.cards;
             this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.from));
         }
         else {
@@ -2862,6 +2864,9 @@ var TicketToRide = /** @class */ (function () {
             if (log && args && !args.processed) {
                 if (typeof args.color == 'number') {
                     args.color = "<div class=\"train-car-color icon\" data-color=\"" + args.color + "\"></div>";
+                }
+                if (typeof args.colors == 'object') {
+                    args.colors = args.colors.map(function (color) { return "<div class=\"train-car-color icon\" data-color=\"" + color + "\"></div>"; }).join('');
                 }
                 // make cities names in bold 
                 ['from', 'to', 'count'].forEach(function (field) {

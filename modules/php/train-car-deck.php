@@ -61,11 +61,17 @@ trait TrainCarDeckTrait {
             'number' => $number,
             'count' => $number,
             'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
-            '_private' => [
-                $playerId => [
-                    'cards' => $cards,
-                ],
-            ],
+            'from' => 0, // 0 means hidden
+        ]);
+
+        $this->notifyPlayer($playerId, 'trainCarPicked', clienttranslate('You take hidden train car card(s) ${colors}'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'number' => $number,
+            'count' => $number,
+            'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+            'cards' => $cards,
+            'colors' => array_map(fn($card) => $card->type, $cards),
             'from' => 0, // 0 means hidden
         ]);
     }

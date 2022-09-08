@@ -555,6 +555,10 @@ class TicketToRide implements TicketToRideGame {
             dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
             (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
+
+        (this as any).notifqueue.setIgnoreNotificationCheck('trainCarPicked', (notif: Notif<NotifTrainCarsPickedArgs>) => 
+            notif.args.playerId == this.getPlayerId() && !notif.args.cards
+        );
     }
 
     /** 
@@ -585,7 +589,7 @@ class TicketToRide implements TicketToRideGame {
     notif_trainCarPicked(notif: Notif<NotifTrainCarsPickedArgs>) {
         this.trainCarCardCounters[notif.args.playerId].incValue(notif.args.number);
         if (notif.args.playerId == this.getPlayerId()) {
-            const cards = notif.args.cards || notif.args._private?.[this.getPlayerId()]?.cards;
+            const cards = notif.args.cards;
             this.playerTable.addTrainCars(cards, this.trainCarSelection.getStockElement(notif.args.from));
         } else {
             this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.from, notif.args.number);
@@ -700,6 +704,9 @@ class TicketToRide implements TicketToRideGame {
             if (log && args && !args.processed) {
                 if (typeof args.color == 'number') {
                     args.color = `<div class="train-car-color icon" data-color="${args.color}"></div>`;
+                }
+                if (typeof args.colors == 'object') {
+                    args.colors = args.colors.map(color => `<div class="train-car-color icon" data-color="${color}"></div>`).join('');
                 }
 
                 // make cities names in bold 

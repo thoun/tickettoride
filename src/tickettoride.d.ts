@@ -142,11 +142,6 @@ interface NotifTrainCarsPickedArgs {
     count: number;
     number: number;
     remainingTrainCarsInDeck: number;
-    _private?: {
-        [playerId: number]: {
-            cards: TrainCar[];
-        };        
-    };
     cards?: TrainCar[];
     from: number; // 0 for hidden, else spot number
 }
