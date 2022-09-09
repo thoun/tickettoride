@@ -1183,7 +1183,7 @@ var TtrMap = /** @class */ (function () {
         var left = leftDistance < bottomDistance;
         this.game.setPlayerTablePosition(left);
         var gameWidth = (left ? PLAYER_WIDTH : 0) + MAP_WIDTH + DECK_WIDTH;
-        var gameHeight = MAP_HEIGHT + (left ? 0 : PLAYER_HEIGHT);
+        var gameHeight = MAP_HEIGHT + (left ? 0 : PLAYER_HEIGHT * 0.75);
         var horizontalScale = document.getElementById('game_play_area').clientWidth / gameWidth;
         var verticalScale = (window.innerHeight - 80) / gameHeight;
         this.scale = Math.min(1, horizontalScale, verticalScale);

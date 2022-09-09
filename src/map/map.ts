@@ -366,7 +366,7 @@ class TtrMap {
         this.game.setPlayerTablePosition(left);
 
         const gameWidth = (left ? PLAYER_WIDTH : 0) + MAP_WIDTH + DECK_WIDTH;
-        const gameHeight = MAP_HEIGHT + (left ? 0 : PLAYER_HEIGHT);
+        const gameHeight = MAP_HEIGHT + (left ? 0 : PLAYER_HEIGHT * 0.75);
 
         const horizontalScale = document.getElementById('game_play_area').clientWidth / gameWidth;
         const verticalScale = (window.innerHeight - 80) / gameHeight;
