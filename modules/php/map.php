@@ -228,7 +228,13 @@ trait MapTrait {
         $pathFrom = $this->getLongestPathFromCity($fromRoute->from, [$fromRoute->id], $claimedRoutesIds);
         $pathTo = $this->getLongestPathFromCity($fromRoute->to, [$fromRoute->id], $claimedRoutesIds);
 
-        return $pathFrom->length > $pathTo->length ? $pathFrom : $pathTo;
+        $longestPath = $pathFrom->length > $pathTo->length ? $pathFrom : $pathTo;
+
+        // we add fromRoute
+        return new LongestPath($longestPath->length + $fromRoute->number, array_merge(
+            $longestPath->routes,
+            [$fromRoute->id]
+        ));
     }
 
     private function getLongestPathFromCity(int $from, array $visitedRoutesIds, array $playerClaimedRoutesIds) {
