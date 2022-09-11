@@ -1300,3 +1300,15 @@ html, .mode_3d #game_play_area_background {
 .dijitTooltipContents .destinations-flex .destination-card {
   position: relative;
 }
+
+.preference_choice .row-data.row-data-large {
+  display: flex;
+  align-items: center;
+}
+.preference_choice .row-data.row-data-large .row-label {
+  white-space: normal;
+}
+.preference_choice .row-data.row-data-large .row-value {
+  flex: 1;
+  margin-left: unset;
+}

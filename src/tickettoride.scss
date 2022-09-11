@@ -97,3 +97,18 @@ html, .mode_3d #game_play_area_background {
         }
     }
 }
+
+// hack to move to the framework
+.preference_choice .row-data.row-data-large {
+    display: flex;
+    align-items: center;
+
+    .row-label {
+        white-space: normal;
+    }
+    
+    .row-value {
+        flex: 1;
+        margin-left: unset;
+    }
+}
