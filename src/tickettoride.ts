@@ -212,7 +212,7 @@ class TicketToRide implements TicketToRideGame {
     private setupPreferences() {
         // Extract the ID and value from the UI control
         const onchange = (e) => {
-          var match = e.target.id.match(/^preference_control_(\d+)$/);
+          var match = e.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
           if (!match) {
             return;
           }
