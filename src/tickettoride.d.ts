@@ -85,7 +85,7 @@ interface TicketToRideGame extends Game {
     map: TtrMap;
 
     clickedRoute(route: Route): void;
-    setPlayerTablePosition(left: boolean);
+    setPlayerTablePosition(left: boolean): void;
     getZoom(): number;
     getPlayerColor(): string;
     setDestinationsToConnect(destinations: Destination[]): void;
@@ -93,7 +93,7 @@ interface TicketToRideGame extends Game {
     drawDestinations(): void;
     onVisibleTrainCarCardClick(itemId: number): void;
     onHiddenTrainCarDeckClick(number: number): void;
-    claimRoute(id: number, color: number): void;
+    askRouteClaimConfirmation(route: Route, color: number): void;
     setActiveDestination(destination: Destination, previousDestination?: Destination): void;
     canClaimRoute(route: Route, cardsColor: number): boolean;
     setHighligthedDestination(destination: Destination | null): void;

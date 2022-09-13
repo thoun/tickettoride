@@ -226,7 +226,7 @@ class TtrMap {
         this.setHoveredRoute(null);
         const cardsColor = Number(this.mapDiv.dataset.dragColor);
         mapDiv.dataset.dragColor = '';
-        this.game.claimRoute(route.id, cardsColor);
+        this.game.askRouteClaimConfirmation(route, cardsColor);
     };
 
     /** 

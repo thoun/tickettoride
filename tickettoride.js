@@ -1054,7 +1054,7 @@ var TtrMap = /** @class */ (function () {
         this.setHoveredRoute(null);
         var cardsColor = Number(this.mapDiv.dataset.dragColor);
         mapDiv.dataset.dragColor = '';
-        this.game.claimRoute(route.id, cardsColor);
+        this.game.askRouteClaimConfirmation(route, cardsColor);
     };
     ;
     /**
@@ -1716,9 +1716,9 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.getPossibleColors = function (route) {
         return this.playerTrainCars.getPossibleColors(route);
     };
-    PlayerTable.prototype.setSelectableTrainCarColors = function (routeId, possibleColors) {
+    PlayerTable.prototype.setSelectableTrainCarColors = function (route, possibleColors) {
         if (possibleColors === void 0) { possibleColors = null; }
-        this.playerTrainCars.setSelectableTrainCarColors(routeId, possibleColors);
+        this.playerTrainCars.setSelectableTrainCarColors(route, possibleColors);
     };
     PlayerTable.prototype.getSelectedColor = function () {
         return this.playerTrainCars.getSelectedColor();
@@ -1890,7 +1890,7 @@ var CROSSHAIR_SIZE = 20;
 var PlayerTrainCars = /** @class */ (function () {
     function PlayerTrainCars(game, player, trainCars) {
         this.game = game;
-        this.routeId = null;
+        this.route = null;
         this.selectable = false;
         this.selectedColor = null;
         this.playerId = Number(player.id);
@@ -2003,8 +2003,8 @@ var PlayerTrainCars = /** @class */ (function () {
                 _this.game.map.removeDragOverlay();
             });
             group.addEventListener('click', function () {
-                if (_this.routeId) {
-                    _this.game.claimRoute(_this.routeId, type);
+                if (_this.route) {
+                    _this.game.askRouteClaimConfirmation(_this.route, type);
                 }
                 else if (_this.selectable) {
                     if (_this.selectedColor === type) {
@@ -2109,11 +2109,11 @@ var PlayerTrainCars = /** @class */ (function () {
     /**
      * Get the colors a player can use to claim a given route.
      */
-    PlayerTrainCars.prototype.setSelectableTrainCarColors = function (routeId, possibleColors) {
-        this.routeId = routeId;
+    PlayerTrainCars.prototype.setSelectableTrainCarColors = function (route, possibleColors) {
+        this.route = route;
         var groups = this.getGroups();
         groups.forEach(function (groupDiv) {
-            if (routeId) {
+            if (route) {
                 var color = Number(groupDiv.dataset.type);
                 groupDiv.classList.toggle('disabled', color != 0 && !possibleColors.includes(color));
             }
@@ -2266,6 +2266,7 @@ var ANIMATION_MS = 500;
 var SCORE_MS = 1500;
 var isDebug = window.location.host == 'studio.boardgamearena.com';
 var log = isDebug ? console.log.bind(window.console) : function () { };
+var ACTION_TIMER_DURATION = 6;
 var TicketToRide = /** @class */ (function () {
     function TicketToRide() {
         this.playerTable = null;
@@ -2273,6 +2274,8 @@ var TicketToRide = /** @class */ (function () {
         this.trainCarCardCounters = [];
         this.destinationCardCounters = [];
         this.animations = [];
+        this.isTouch = window.matchMedia('(hover: none)').matches;
+        this.routeToConfirm = null;
     }
     /*
         setup:
@@ -2410,11 +2413,10 @@ var TicketToRide = /** @class */ (function () {
                     break;
                 case 'chooseAction':
                     var chooseActionArgs = args;
-                    this.addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick }), function () { return _this.drawDestinations(); }, null, null, 'red');
-                    dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
                     if (chooseActionArgs.maxDestinationsPick) {
                         document.getElementById('destination-deck-hidden-pile').classList.add('selectable');
                     }
+                    this.setActionBarChooseAction(false);
                     break;
                 case 'chooseAdditionalDestinations':
                     this.addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), function () { return _this.chooseAdditionalDestinations(); });
@@ -2585,29 +2587,122 @@ var TicketToRide = /** @class */ (function () {
         }
         document.querySelectorAll("[id^=\"claimRouteWithColor_button\"]").forEach(function (button) { return button.parentElement.removeChild(button); });
         if (route.color > 0) {
-            this.claimRoute(route.id, route.color);
+            this.askRouteClaimConfirmation(route, route.color);
         }
         else {
             var selectedColor = this.playerTable.getSelectedColor();
             if (selectedColor !== null) {
-                this.claimRoute(route.id, selectedColor);
+                this.askRouteClaimConfirmation(route, selectedColor);
             }
             else {
                 var possibleColors = ((_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.getPossibleColors(route)) || [];
                 if (possibleColors.length == 1) {
-                    this.claimRoute(route.id, possibleColors[0]);
+                    this.askRouteClaimConfirmation(route, possibleColors[0]);
                 }
                 else if (possibleColors.length > 1) {
                     possibleColors.forEach(function (color) {
                         var label = dojo.string.substitute(_("Use ${color}"), {
                             'color': "<div class=\"train-car-color icon\" data-color=\"" + color + "\"></div> " + getColor(color, 'train-car')
                         });
-                        _this.addActionButton("claimRouteWithColor_button" + color, label, function () { return _this.claimRoute(route.id, color); });
+                        _this.addActionButton("claimRouteWithColor_button" + color, label, function () { return _this.askRouteClaimConfirmation(route, color); });
                     });
-                    this.playerTable.setSelectableTrainCarColors(route.id, possibleColors);
+                    this.playerTable.setSelectableTrainCarColors(route, possibleColors);
                 }
             }
         }
+    };
+    /**
+     * Timer for Confirm button
+     */
+    TicketToRide.prototype.startActionTimer = function (buttonId, time) {
+        var button = document.getElementById(buttonId);
+        var actionTimerId = null;
+        var _actionTimerLabel = button.innerHTML;
+        var _actionTimerSeconds = time;
+        var actionTimerFunction = function () {
+            var button = document.getElementById(buttonId);
+            if (button == null) {
+                window.clearInterval(actionTimerId);
+            }
+            else if (_actionTimerSeconds-- > 1) {
+                button.innerHTML = _actionTimerLabel + ' (' + _actionTimerSeconds + ')';
+            }
+            else {
+                window.clearInterval(actionTimerId);
+                button.click();
+            }
+        };
+        actionTimerFunction();
+        actionTimerId = window.setInterval(function () { return actionTimerFunction(); }, 1000);
+    };
+    TicketToRide.prototype.setChooseActionGamestateDescription = function (newText) {
+        if (!this.originalTextChooseAction) {
+            this.originalTextChooseAction = document.getElementById('pagemaintitletext').innerHTML;
+        }
+        document.getElementById('pagemaintitletext').innerHTML = newText !== null && newText !== void 0 ? newText : this.originalTextChooseAction;
+    };
+    /**
+     * Sets the action bar (title and buttons) for Choose action.
+     */
+    TicketToRide.prototype.setActionBarChooseAction = function (fromCancel) {
+        var _this = this;
+        document.getElementById("generalactions").innerHTML = '';
+        if (fromCancel) {
+            this.setChooseActionGamestateDescription();
+        }
+        var chooseActionArgs = this.gamedatas.gamestate.args;
+        this.addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick }), function () { return _this.drawDestinations(); }, null, null, 'red');
+        dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
+    };
+    /**
+     * Sets the action bar (title and buttons) for Confirm route claim.
+     */
+    TicketToRide.prototype.setActionBarConfirmRouteClaim = function (route) {
+        var _this = this;
+        var confirmationQuestion = _("Confirm route from ${from} to ${to} ?").replace('${from}', CITIES_NAMES[route.from]).replace('${to}', CITIES_NAMES[route.to]);
+        this.setChooseActionGamestateDescription(confirmationQuestion);
+        document.getElementById("generalactions").innerHTML = '';
+        this.addActionButton("confirmRouteClaim-button", _("Confirm"), function () { return _this.confirmRouteClaim(); });
+        this.addActionButton("cancelRouteClaim-button", _("Cancel"), function () { return _this.cancelRouteClaim(); }, null, null, 'gray');
+        this.startActionTimer("confirmRouteClaim-button", ACTION_TIMER_DURATION);
+    };
+    /**
+     * Check if player should be asked for a route claim confirmation.
+     */
+    TicketToRide.prototype.confirmRouteClaimActive = function () {
+        var _a;
+        var preferenceValue = Number((_a = this.prefs[202]) === null || _a === void 0 ? void 0 : _a.value);
+        return preferenceValue === 1 || (preferenceValue === 2 && this.isTouch);
+    };
+    /**
+     * Ask confirmation for claimed route.
+     */
+    TicketToRide.prototype.askRouteClaimConfirmation = function (route, color) {
+        if (this.confirmRouteClaimActive()) {
+            this.routeToConfirm = { route: route, color: color };
+            this.map.setHoveredRoute(route, true);
+            this.setActionBarConfirmRouteClaim(route);
+        }
+        else {
+            this.claimRoute(route.id, color);
+        }
+    };
+    /**
+     * Player cancels claimed route.
+     */
+    TicketToRide.prototype.cancelRouteClaim = function () {
+        var _a;
+        this.setActionBarChooseAction(true);
+        this.map.setHoveredRoute(null);
+        (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setSelectableTrainCarColors(null);
+        this.routeToConfirm = null;
+    };
+    /**
+     * Player confirms claimed route.
+     */
+    TicketToRide.prototype.confirmRouteClaim = function () {
+        this.map.setHoveredRoute(null);
+        this.claimRoute(this.routeToConfirm.route.id, this.routeToConfirm.color);
     };
     /**
      * Apply destination selection (initial objectives).

@@ -4,6 +4,8 @@ const SCORE_MS = 1500;
 const isDebug = window.location.host == 'studio.boardgamearena.com';
 const log = isDebug ? console.log.bind(window.console) : function () { };
 
+const ACTION_TIMER_DURATION = 6;
+
 class TicketToRide implements TicketToRideGame {
     private gamedatas: TicketToRideGamedatas;
 
@@ -19,6 +21,10 @@ class TicketToRide implements TicketToRideGame {
     private completedDestinationsCounter: Counter;
 
     private animations: WagonsAnimation[] = [];
+
+    private isTouch = window.matchMedia('(hover: none)').matches;
+    private routeToConfirm: { route: Route, color: number } | null = null;
+    private originalTextChooseAction: string;
 
     constructor() {
     }
@@ -180,11 +186,10 @@ class TicketToRide implements TicketToRideGame {
                     break;   
                 case 'chooseAction':
                     const chooseActionArgs = args as EnteringChooseActionArgs;
-                    (this as any).addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), () => this.drawDestinations(), null, null, 'red');
-                    dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
                     if (chooseActionArgs.maxDestinationsPick) {
                         document.getElementById('destination-deck-hidden-pile').classList.add('selectable');
                     }
+                    this.setActionBarChooseAction(false);
                     break;
                 case 'chooseAdditionalDestinations':
                     (this as any).addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), () => this.chooseAdditionalDestinations());
@@ -397,29 +402,127 @@ class TicketToRide implements TicketToRideGame {
 
         document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
         if (route.color > 0) {
-            this.claimRoute(route.id, route.color);
+            this.askRouteClaimConfirmation(route, route.color);
         } else {
             const selectedColor = this.playerTable.getSelectedColor();
 
             if (selectedColor !== null) {
-                this.claimRoute(route.id, selectedColor);
+                this.askRouteClaimConfirmation(route, selectedColor);
             } else {
                 const possibleColors: number[] = this.playerTable?.getPossibleColors(route) || [];
 
                 if (possibleColors.length == 1) {
-                    this.claimRoute(route.id, possibleColors[0]);
+                    this.askRouteClaimConfirmation(route, possibleColors[0]);
                 } else if (possibleColors.length > 1) {
                     possibleColors.forEach(color => {
                         const label = dojo.string.substitute(_("Use ${color}"), {
                             'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
                         });
-                        (this as any).addActionButton(`claimRouteWithColor_button${color}`, label, () => this.claimRoute(route.id, color));
+                        (this as any).addActionButton(`claimRouteWithColor_button${color}`, label, () => this.askRouteClaimConfirmation(route, color));
                     });
 
-                    this.playerTable.setSelectableTrainCarColors(route.id, possibleColors);
+                    this.playerTable.setSelectableTrainCarColors(route, possibleColors);
                 }
             }
         }
+    }
+
+    /**
+     * Timer for Confirm button
+     */
+    private startActionTimer(buttonId: string, time: number) {
+        const button = document.getElementById(buttonId);
+ 
+        let actionTimerId = null;
+        const _actionTimerLabel = button.innerHTML;
+        let _actionTimerSeconds = time;
+        const actionTimerFunction = () => {
+          const button = document.getElementById(buttonId);
+          if (button == null) {
+            window.clearInterval(actionTimerId);
+          } else if (_actionTimerSeconds-- > 1) {
+            button.innerHTML = _actionTimerLabel + ' (' + _actionTimerSeconds + ')';
+          } else {
+            window.clearInterval(actionTimerId);
+            button.click();
+          }
+        };
+        actionTimerFunction();
+        actionTimerId = window.setInterval(() => actionTimerFunction(), 1000);
+    }
+    
+    private setChooseActionGamestateDescription(newText?: string) {
+        if (!this.originalTextChooseAction) {
+            this.originalTextChooseAction = document.getElementById('pagemaintitletext').innerHTML;
+        }
+
+        document.getElementById('pagemaintitletext').innerHTML = newText ?? this.originalTextChooseAction;
+    }
+    
+    /**
+     * Sets the action bar (title and buttons) for Choose action.
+     */
+    private setActionBarChooseAction(fromCancel: boolean) {
+        document.getElementById(`generalactions`).innerHTML = '';
+        if (fromCancel) {
+            this.setChooseActionGamestateDescription();
+        }
+
+        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
+        (this as any).addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), () => this.drawDestinations(), null, null, 'red');
+        dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
+    }
+    
+    /**
+     * Sets the action bar (title and buttons) for Confirm route claim.
+     */
+    private setActionBarConfirmRouteClaim(route: Route) {
+        const confirmationQuestion = _("Confirm route from ${from} to ${to} ?").replace('${from}', CITIES_NAMES[route.from]).replace('${to}', CITIES_NAMES[route.to]);
+        this.setChooseActionGamestateDescription(confirmationQuestion);
+
+        document.getElementById(`generalactions`).innerHTML = '';
+        (this as any).addActionButton(`confirmRouteClaim-button`, _("Confirm"), () => this.confirmRouteClaim());
+        (this as any).addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
+        this.startActionTimer(`confirmRouteClaim-button`, ACTION_TIMER_DURATION);
+    }
+
+    /**
+     * Check if player should be asked for a route claim confirmation.
+     */
+    private confirmRouteClaimActive() {
+        const preferenceValue = Number((this as any).prefs[202]?.value);
+        return preferenceValue === 1 || (preferenceValue === 2 && this.isTouch);
+    }
+
+    /**
+     * Ask confirmation for claimed route.
+     */
+    public askRouteClaimConfirmation(route: Route, color: number) {
+        if (this.confirmRouteClaimActive()) {
+            this.routeToConfirm = { route, color };
+            this.map.setHoveredRoute(route, true);
+            this.setActionBarConfirmRouteClaim(route)
+        } else {
+            this.claimRoute(route.id, color);
+        }
+    }
+
+    /**
+     * Player cancels claimed route.
+     */
+    public cancelRouteClaim() {
+        this.setActionBarChooseAction(true);
+        this.map.setHoveredRoute(null);
+        this.playerTable?.setSelectableTrainCarColors(null);
+        this.routeToConfirm = null;
+    }
+
+    /**
+     * Player confirms claimed route.
+     */
+    public confirmRouteClaim() {
+        this.map.setHoveredRoute(null);
+        this.claimRoute(this.routeToConfirm.route.id, this.routeToConfirm.color);
     }
 
     /** 

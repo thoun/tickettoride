@@ -68,8 +68,8 @@ class PlayerTable {
         return this.playerTrainCars.getPossibleColors(route);
     }
 
-    public setSelectableTrainCarColors(routeId: number | null, possibleColors: number[] | null = null) {
-        this.playerTrainCars.setSelectableTrainCarColors(routeId, possibleColors);
+    public setSelectableTrainCarColors(route: Route | null, possibleColors: number[] | null = null) {
+        this.playerTrainCars.setSelectableTrainCarColors(route, possibleColors);
     }
 
     public getSelectedColor(): number | null {

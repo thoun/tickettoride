@@ -46,4 +46,15 @@ $game_preferences = [
         ],
         'default' => 2
     ],
+
+    202 => [
+        'name' => totranslate('Confirm route claim'),
+        'needReload' => false,
+        'values' => [
+            1 => [ 'name' => totranslate('Enabled')],
+            2 => [ 'name' => totranslate('Enabled for touch device only')],
+            3 => [ 'name' => totranslate('Disabled')],
+        ],
+        'default' => 2
+    ],
 ];

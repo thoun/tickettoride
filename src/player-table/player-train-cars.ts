@@ -6,7 +6,7 @@ const CROSSHAIR_SIZE = 20;
 class PlayerTrainCars {
     public playerId: number;
     private left: boolean;
-    private routeId: number | null = null;
+    private route: Route | null = null;
     private selectable: boolean = false;
     private selectedColor: number | null = null;
 
@@ -152,8 +152,8 @@ class PlayerTrainCars {
             });
 
             group.addEventListener('click', () => {
-                if (this.routeId) {
-                    this.game.claimRoute(this.routeId, type);
+                if (this.route) {
+                    this.game.askRouteClaimConfirmation(this.route, type);
                 } else if (this.selectable) {
                     if (this.selectedColor === type) {
                         this.deselectColor(type);
@@ -274,13 +274,13 @@ class PlayerTrainCars {
     /** 
      * Get the colors a player can use to claim a given route.
      */ 
-     setSelectableTrainCarColors(routeId: number | null, possibleColors: number[] | null) {
-        this.routeId = routeId;
+     setSelectableTrainCarColors(route: Route | null, possibleColors: number[] | null) {
+        this.route = route;
 
         const groups = this.getGroups();
 
         groups.forEach(groupDiv => {
-            if (routeId) {
+            if (route) {
                 const color = Number(groupDiv.dataset.type);
                 groupDiv.classList.toggle('disabled', color != 0 && !possibleColors.includes(color));
             } else {
