@@ -476,8 +476,14 @@ class TicketToRide implements TicketToRideGame {
     /**
      * Sets the action bar (title and buttons) for Confirm route claim.
      */
-    private setActionBarConfirmRouteClaim(route: Route) {
-        const confirmationQuestion = _("Confirm route from ${from} to ${to} ?").replace('${from}', CITIES_NAMES[route.from]).replace('${to}', CITIES_NAMES[route.to]);
+    private setActionBarConfirmRouteClaim(route: Route, color: number) {
+        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
+        const colors = chooseActionArgs.costForRoute[route.id][color].map(cardColor => `<div class="train-car-color icon" data-color="${cardColor}"></div>`);
+        const confirmationQuestion = _("Confirm ${color} route from ${from} to ${to} with ${colors} ?")
+            .replace('${color}', getColor(route.color, 'route'))
+            .replace('${from}', CITIES_NAMES[route.from])
+            .replace('${to}', CITIES_NAMES[route.to])
+            .replace('${colors}', `<div class="color-cards">${colors.join('')}</div>`);
         this.setChooseActionGamestateDescription(confirmationQuestion);
 
         document.getElementById(`generalactions`).innerHTML = '';
@@ -501,7 +507,7 @@ class TicketToRide implements TicketToRideGame {
         if (this.confirmRouteClaimActive()) {
             this.routeToConfirm = { route, color };
             this.map.setHoveredRoute(route, true);
-            this.setActionBarConfirmRouteClaim(route)
+            this.setActionBarConfirmRouteClaim(route, color);
         } else {
             this.claimRoute(route.id, color);
         }

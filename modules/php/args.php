@@ -55,8 +55,19 @@ trait ArgsTrait {
         $maxHiddenCardsPick = min(2, $this->getRemainingTrainCarCardsInDeck(true));
         $maxDestinationsPick = min(ADDITIONAL_DESTINATION_CARD_PICK, $this->getRemainingDestinationCardsInDeck());
 
+        $costForRoute = [];
+        foreach($possibleRoutes as $possibleRoute) {
+            $colorsToTest = $possibleRoute->color > 0 ? [0, $possibleRoute->color] : [0,1,2,3,4,5,6,7,8];
+            $costByColor = [];
+            foreach($colorsToTest as $colorToTest) {
+                $costByColor[$colorToTest] = $this->canPayForRoute($possibleRoute, $trainCarsHand, $remainingTrainCars, $colorToTest);
+            }
+            $costForRoute[$possibleRoute->id] = array_map(fn($cardCost) => $cardCost == null ? null : array_map(fn($card) => $card->type, $cardCost), $costByColor);
+        }
+
         return [
             'possibleRoutes' => $possibleRoutes,
+            'costForRoute' => $costForRoute,
             'maxHiddenCardsPick' => $maxHiddenCardsPick,
             'maxDestinationsPick' => $maxDestinationsPick,
         ];

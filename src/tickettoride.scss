@@ -82,6 +82,14 @@ html, .mode_3d #game_play_area_background {
 }
 
 #page-title {
+    .color-cards {
+        display: inline-block;
+
+        .icon.train-car-color:not(:first-child) {
+            margin-left: -20px;
+        }
+    }
+
     .icon.train-car-color {
         margin: -5px 0px;
     }

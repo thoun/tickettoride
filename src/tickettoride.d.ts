@@ -111,6 +111,7 @@ interface EnteringChooseDestinationsArgs {
 
 interface EnteringChooseActionArgs {
     possibleRoutes: Route[];
+    costForRoute: { [routeId: number]: { [color: number]: number[] } };
     maxHiddenCardsPick: number;
     maxDestinationsPick: number;
 }
