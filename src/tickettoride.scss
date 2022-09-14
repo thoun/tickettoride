@@ -110,6 +110,7 @@ html, .mode_3d #game_play_area_background {
 .preference_choice .row-data.row-data-large {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 
     .row-label {
         white-space: normal;
@@ -118,5 +119,6 @@ html, .mode_3d #game_play_area_background {
     .row-value {
         flex: 1;
         margin-left: unset;
+        min-width: 200px;
     }
 }
