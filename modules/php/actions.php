@@ -173,6 +173,8 @@ trait ActionTrait {
         self::incStat(1, 'claimedRoutes', $playerId);
         self::incStat($route->number, 'playedTrainCars');
         self::incStat($route->number, 'playedTrainCars', $playerId);
+        self::incStat($points, 'pointsWithClaimedRoutes');
+        self::incStat($points, 'pointsWithClaimedRoutes', $playerId);
 
         $this->checkCompletedDestinations($playerId);
 

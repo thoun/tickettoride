@@ -156,9 +156,18 @@ trait StateTrait {
                     'gainsloses' => $completed ? clienttranslate('gains') : clienttranslate('loses'),
                 ]);
 
-                if (!$completed) {
+                self::incStat($points, 'pointsWithDestinations');
+                self::incStat($points, 'pointsWithDestinations', $playerId);
+                if ($completed) {      
+                    // stats for completed destinations are set as soon as they are completed              
+                    self::incStat($destination->points, 'pointsWithCompletedDestinations');
+                    self::incStat($destination->points, 'pointsWithCompletedDestinations', $playerId);
+                } else {
+                    // stats for uncompleted destinations can only be set at the end
                     self::incStat(1, 'uncompletedDestinations');
                     self::incStat(1, 'uncompletedDestinations', $playerId);
+                    self::incStat($destination->points, 'pointsLostWithUncompletedDestinations');
+                    self::incStat($destination->points, 'pointsLostWithUncompletedDestinations', $playerId);
                 }
             }
         }

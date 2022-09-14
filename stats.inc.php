@@ -54,6 +54,26 @@ $commonStats = [
         "name" => totranslate("Number of turns"),
         "type" => "int"
     ], 
+    "pointsWithClaimedRoutes" => [
+        "id" => 11,
+        "name" => totranslate("Points with claimed routes"),
+        "type" => "int"
+    ], 
+    "pointsWithDestinations" => [
+        "id" => 12,
+        "name" => totranslate("Points with destinations"),
+        "type" => "int"
+    ], 
+    "pointsWithCompletedDestinations" => [
+        "id" => 13,
+        "name" => totranslate("Points with completed destinations"),
+        "type" => "int"
+    ], 
+    "pointsLostWithUncompletedDestinations" => [
+        "id" => 14,
+        "name" => totranslate("Points lost with uncompleted destinations"),
+        "type" => "int"
+    ], 
 
     // 20+ : train car cards
     "collectedTrainCarCards" => [

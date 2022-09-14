@@ -99,6 +99,14 @@ class TicketToRide extends Table {
         // 10+ : other
         $this->initStat('table', 'turnsNumber', 0);
         $this->initStat('player', 'turnsNumber', 0);
+        $this->initStat('table', 'pointsWithClaimedRoutes', 0);
+        $this->initStat('player', 'pointsWithClaimedRoutes', 0);
+        $this->initStat('table', 'pointsWithDestinations', 0);
+        $this->initStat('player', 'pointsWithDestinations', 0);
+        $this->initStat('table', 'pointsWithCompletedDestinations', 0);
+        $this->initStat('player', 'pointsWithCompletedDestinations', 0);
+        $this->initStat('table', 'pointsLostWithUncompletedDestinations', 0);
+        $this->initStat('player', 'pointsLostWithUncompletedDestinations', 0);
         // 20+ : train car cards
         $this->initStat('table', 'collectedTrainCarCards', 0);
         $this->initStat('player', 'collectedTrainCarCards', 0);
