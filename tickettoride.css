@@ -637,6 +637,22 @@
   z-index: 11;
 }
 
+#map[data-big-shadows=true] .wagon[data-player-color=e3001a] {
+  background-image: url("img/wagons-red.png"), url("img/wagons-shadow-big.png");
+}
+#map[data-big-shadows=true] .wagon[data-player-color="41a62a"] {
+  background-image: url("img/wagons-green.png"), url("img/wagons-shadow-big.png");
+}
+#map[data-big-shadows=true] .wagon[data-player-color="0056aa"] {
+  background-image: url("img/wagons-blue.png"), url("img/wagons-shadow-big.png");
+}
+#map[data-big-shadows=true] .wagon[data-player-color=ffed00] {
+  background-image: url("img/wagons-yellow.png"), url("img/wagons-shadow-big.png");
+}
+#map[data-big-shadows=true] .wagon[data-player-color=af0ac2] {
+  background-image: url("img/wagons-purple.png"), url("img/wagons-shadow-big.png");
+}
+
 #longest-path-animation {
   position: absolute;
   width: 120px;

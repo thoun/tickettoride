@@ -374,6 +374,8 @@ class TtrMap {
 
         this.resizedDiv.style.transform = this.scale === 1 ? '' : `scale(${this.scale})`;
         this.resizedDiv.style.marginBottom = `-${(1 - this.scale) * gameHeight}px`;
+
+        this.mapDiv.dataset.bigShadows = (this.scale < 0.5).toString();
     }
     
     /** 

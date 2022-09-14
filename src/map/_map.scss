@@ -361,6 +361,16 @@
   }
 }
 
+#map[data-big-shadows="true"] {
+  .wagon {
+    @each $name, $color in $player-colors {
+      &[data-player-color="#{$color}"] {
+        background-image: url('img/wagons-#{$name}.png'), url('img/wagons-shadow-big.png');
+      }
+    }
+  }
+}
+
 #longest-path-animation {
   position: absolute;
   width: 120px;
