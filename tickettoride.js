@@ -1189,7 +1189,7 @@ var TtrMap = /** @class */ (function () {
         this.scale = Math.min(1, horizontalScale, verticalScale);
         this.resizedDiv.style.transform = this.scale === 1 ? '' : "scale(" + this.scale + ")";
         this.resizedDiv.style.marginBottom = "-" + (1 - this.scale) * gameHeight + "px";
-        this.mapDiv.dataset.bigShadows = (this.scale < 0.5).toString();
+        this.setOutline();
     };
     /**
      * Get current zoom.
@@ -1344,6 +1344,15 @@ var TtrMap = /** @class */ (function () {
         this.crosshairTarget = null;
         document.getElementById("map").removeChild(this.dragOverlay);
         this.dragOverlay = null;
+    };
+    /**
+     * Set outline for train cars on the map, according to preferences.
+     */
+    TtrMap.prototype.setOutline = function () {
+        var _a, _b;
+        var preference = Number((_a = this.game.prefs[203]) === null || _a === void 0 ? void 0 : _a.value);
+        var outline = preference === 1 || (preference === 2 && ((_b = this.mapDiv) === null || _b === void 0 ? void 0 : _b.getBoundingClientRect().width) < 1000);
+        this.mapDiv.dataset.bigShadows = outline.toString();
     };
     return TtrMap;
 }());
@@ -2457,6 +2466,9 @@ var TicketToRide = /** @class */ (function () {
         switch (prefId) {
             case 201: // 1 = buttons, 2 = double click to pick 2 cards
                 dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', prefValue == 1);
+                break;
+            case 203:
+                this.map.setOutline();
                 break;
         }
     };

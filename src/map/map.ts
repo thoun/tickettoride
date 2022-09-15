@@ -375,7 +375,7 @@ class TtrMap {
         this.resizedDiv.style.transform = this.scale === 1 ? '' : `scale(${this.scale})`;
         this.resizedDiv.style.marginBottom = `-${(1 - this.scale) * gameHeight}px`;
 
-        this.mapDiv.dataset.bigShadows = (this.scale < 0.5).toString();
+        this.setOutline();
     }
     
     /** 
@@ -548,5 +548,14 @@ class TtrMap {
         this.crosshairTarget = null;
         document.getElementById(`map`).removeChild(this.dragOverlay);
         this.dragOverlay = null;
+    }
+
+    /** 
+     * Set outline for train cars on the map, according to preferences.
+     */ 
+    public setOutline() {
+        const preference = Number((this.game as any).prefs[203]?.value);
+        const outline = preference === 1 || (preference === 2 && this.mapDiv?.getBoundingClientRect().width < 1000);
+        this.mapDiv.dataset.bigShadows = outline.toString();
     }
 }

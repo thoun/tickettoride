@@ -57,4 +57,15 @@ $game_preferences = [
         ],
         'default' => 2
     ],
+
+    203 => [
+        'name' => totranslate('Train car outline'),
+        'needReload' => false,
+        'values' => [
+            1 => [ 'name' => totranslate('Enabled')],
+            2 => [ 'name' => totranslate('Automatic')],
+            3 => [ 'name' => totranslate('Disabled')],
+        ],
+        'default' => 2
+    ],
 ];
