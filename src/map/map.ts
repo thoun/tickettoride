@@ -270,8 +270,8 @@ class TtrMap {
     public setClaimedRoutes(claimedRoutes: ClaimedRoute[], fromPlayerId: number) {
         claimedRoutes.forEach(claimedRoute => {
             const route = ROUTES.find(r => r.id == claimedRoute.routeId);
-            const color = this.players.find(player => Number(player.id) == claimedRoute.playerId).color;
-            this.setWagons(route, color, fromPlayerId, false);
+            const player = this.players.find(player => Number(player.id) == claimedRoute.playerId);
+            this.setWagons(route, player, fromPlayerId, false);
         });
     }
 
@@ -297,7 +297,7 @@ class TtrMap {
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */ 
-    private setWagon(route: Route, space: RouteSpace, spaceIndex: number, color: string, fromPlayerId: number, phantom: boolean) {
+    private setWagon(route: Route, space: RouteSpace, spaceIndex: number, player: TicketToRidePlayer, fromPlayerId: number, phantom: boolean) {
         const id = `wagon-route${route.id}-space${spaceIndex}${phantom ? '-phantom' : ''}`;
         if (document.getElementById(id)) {
             return;
@@ -315,7 +315,7 @@ class TtrMap {
         const EASE_WEIGHT = 0.75;
         const angleOnOne = (Math.acos(-2 * angle / 180 + 1) / Math.PI) * EASE_WEIGHT + (angle / 180 * (1 - EASE_WEIGHT));
         const angleClassNumber = Math.round(angleOnOne * 36);
-        dojo.place(`<div id="${id}" class="wagon angle${angleClassNumber} ${phantom ? 'phantom' : ''} ${space.top ? 'top' : ''}" data-player-color="${color}" style="transform: translate(${x}px, ${y}px)"></div>`, 'map');
+        dojo.place(`<div id="${id}" class="wagon angle${angleClassNumber} ${phantom ? 'phantom' : ''} ${space.top ? 'top' : ''}" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}" style="transform: translate(${x}px, ${y}px)"></div>`, 'map');
         
         if (fromPlayerId) {
             this.animateWagonFromCounter(fromPlayerId, id, x, y);
@@ -327,7 +327,7 @@ class TtrMap {
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */ 
-    private setWagons(route: Route, color: string, fromPlayerId: number, phantom: boolean) {
+    private setWagons(route: Route, player: TicketToRidePlayer, fromPlayerId: number, phantom: boolean) {
         if (!phantom) {
             route.spaces.forEach((space, spaceIndex) => {
                 const spaceDiv = document.getElementById(`map-route${route.id}-space${spaceIndex}`);
@@ -338,13 +338,13 @@ class TtrMap {
         if (fromPlayerId) {
             route.spaces.forEach((space, spaceIndex) => {
                 setTimeout(() => {
-                    this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom);
+                    this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom);
                     playSound(`ttr-placed-train-car`);
                 }, 200 * spaceIndex);
             });
             (this.game as any).disableNextMoveSound();
         } else {
-            route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom));
+            route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom));
         }
     }
 
@@ -421,7 +421,7 @@ class TtrMap {
             });
 
             if (valid) {
-                this.setWagons(route, this.game.getPlayerColor(), null, true);
+                this.setWagons(route, this.game.getCurrentPlayer(), null, true);
             }
 
         } else {

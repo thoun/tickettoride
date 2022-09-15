@@ -1336,3 +1336,35 @@ html, .mode_3d #game_play_area_background {
   margin-left: unset;
   min-width: 200px;
 }
+
+html[data-color-blind=true] [data-color-blind-player-no]::after {
+  font-size: 120%;
+  display: flex;
+  justify-content: center;
+  color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  align-items: center;
+  text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;
+}
+html[data-color-blind=true] .wagon::after {
+  font-size: 200%;
+}
+html[data-color-blind=true] [data-color-blind-player-no="1"]::after {
+  content: "●";
+}
+html[data-color-blind=true] [data-color-blind-player-no="2"]::after {
+  content: "▲";
+}
+html[data-color-blind=true] [data-color-blind-player-no="3"]::after {
+  content: "■";
+}
+html[data-color-blind=true] [data-color-blind-player-no="4"]::after {
+  content: "◆";
+}
+html[data-color-blind=true] [data-color-blind-player-no="5"]::after {
+  content: "⬟";
+}

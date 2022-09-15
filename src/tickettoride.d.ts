@@ -87,7 +87,7 @@ interface TicketToRideGame extends Game {
     clickedRoute(route: Route): void;
     setPlayerTablePosition(left: boolean): void;
     getZoom(): number;
-    getPlayerColor(): string;
+    getCurrentPlayer(): TicketToRidePlayer;
     setDestinationsToConnect(destinations: Destination[]): void;
     getPlayerId(): number;
     drawDestinations(): void;

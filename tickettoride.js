@@ -1097,8 +1097,8 @@ var TtrMap = /** @class */ (function () {
         var _this = this;
         claimedRoutes.forEach(function (claimedRoute) {
             var route = ROUTES.find(function (r) { return r.id == claimedRoute.routeId; });
-            var color = _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; }).color;
-            _this.setWagons(route, color, fromPlayerId, false);
+            var player = _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; });
+            _this.setWagons(route, player, fromPlayerId, false);
         });
     };
     TtrMap.prototype.animateWagonFromCounter = function (playerId, wagonId, toX, toY) {
@@ -1119,7 +1119,7 @@ var TtrMap = /** @class */ (function () {
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */
-    TtrMap.prototype.setWagon = function (route, space, spaceIndex, color, fromPlayerId, phantom) {
+    TtrMap.prototype.setWagon = function (route, space, spaceIndex, player, fromPlayerId, phantom) {
         var id = "wagon-route" + route.id + "-space" + spaceIndex + (phantom ? '-phantom' : '');
         if (document.getElementById(id)) {
             return;
@@ -1136,7 +1136,7 @@ var TtrMap = /** @class */ (function () {
         var EASE_WEIGHT = 0.75;
         var angleOnOne = (Math.acos(-2 * angle / 180 + 1) / Math.PI) * EASE_WEIGHT + (angle / 180 * (1 - EASE_WEIGHT));
         var angleClassNumber = Math.round(angleOnOne * 36);
-        dojo.place("<div id=\"" + id + "\" class=\"wagon angle" + angleClassNumber + " " + (phantom ? 'phantom' : '') + " " + (space.top ? 'top' : '') + "\" data-player-color=\"" + color + "\" style=\"transform: translate(" + x + "px, " + y + "px)\"></div>", 'map');
+        dojo.place("<div id=\"" + id + "\" class=\"wagon angle" + angleClassNumber + " " + (phantom ? 'phantom' : '') + " " + (space.top ? 'top' : '') + "\" data-player-color=\"" + player.color + "\" data-color-blind-player-no=\"" + player.playerNo + "\" style=\"transform: translate(" + x + "px, " + y + "px)\"></div>", 'map');
         if (fromPlayerId) {
             this.animateWagonFromCounter(fromPlayerId, id, x, y);
         }
@@ -1146,7 +1146,7 @@ var TtrMap = /** @class */ (function () {
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */
-    TtrMap.prototype.setWagons = function (route, color, fromPlayerId, phantom) {
+    TtrMap.prototype.setWagons = function (route, player, fromPlayerId, phantom) {
         var _this = this;
         if (!phantom) {
             route.spaces.forEach(function (space, spaceIndex) {
@@ -1157,14 +1157,14 @@ var TtrMap = /** @class */ (function () {
         if (fromPlayerId) {
             route.spaces.forEach(function (space, spaceIndex) {
                 setTimeout(function () {
-                    _this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom);
+                    _this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom);
                     playSound("ttr-placed-train-car");
                 }, 200 * spaceIndex);
             });
             this.game.disableNextMoveSound();
         }
         else {
-            route.spaces.forEach(function (space, spaceIndex) { return _this.setWagon(route, space, spaceIndex, color, fromPlayerId, phantom); });
+            route.spaces.forEach(function (space, spaceIndex) { return _this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom); });
         }
     };
     /**
@@ -1229,7 +1229,7 @@ var TtrMap = /** @class */ (function () {
                 cityDiv.dataset.valid = valid.toString();
             });
             if (valid) {
-                this.setWagons(route, this.game.getPlayerColor(), null, true);
+                this.setWagons(route, this.game.getCurrentPlayer(), null, true);
             }
         }
         else {
@@ -2470,6 +2470,9 @@ var TicketToRide = /** @class */ (function () {
             case 203:
                 this.map.setOutline();
                 break;
+            case 204:
+                document.getElementsByTagName('html')[0].dataset.colorBlind = (prefValue == 1).toString();
+                break;
         }
     };
     TicketToRide.prototype.getPlayerId = function () {
@@ -2484,7 +2487,7 @@ var TicketToRide = /** @class */ (function () {
             var playerId = Number(player.id);
             document.getElementById("overall_player_board_" + player.id).dataset.playerColor = player.color;
             // public counters
-            dojo.place("<div class=\"counters\">\n                <div id=\"train-car-counter-" + player.id + "-wrapper\" class=\"counter train-car-counter\">\n                    <div class=\"icon train\" data-player-color=\"" + player.color + "\"></div> \n                    <span id=\"train-car-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"train-car-card-counter-" + player.id + "-wrapper\" class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card-icon\"></div> \n                    <span id=\"train-car-card-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"destinations-counter-" + player.id + "-wrapper\" class=\"counter destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-" + player.id + "\">" + (_this.getPlayerId() !== playerId ? '?' : '') + "</span>/<span id=\"destination-card-counter-" + player.id + "\"></span>\n                </div>\n            </div>", "player_board_" + player.id);
+            dojo.place("<div class=\"counters\">\n                <div id=\"train-car-counter-" + player.id + "-wrapper\" class=\"counter train-car-counter\">\n                    <div class=\"icon train\" data-player-color=\"" + player.color + "\" data-color-blind-player-no=\"" + player.playerNo + "\"></div> \n                    <span id=\"train-car-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"train-car-card-counter-" + player.id + "-wrapper\" class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card-icon\"></div> \n                    <span id=\"train-car-card-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"destinations-counter-" + player.id + "-wrapper\" class=\"counter destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-" + player.id + "\">" + (_this.getPlayerId() !== playerId ? '?' : '') + "</span>/<span id=\"destination-card-counter-" + player.id + "\"></span>\n                </div>\n            </div>", "player_board_" + player.id);
             var trainCarCounter = new ebg.counter();
             trainCarCounter.create("train-car-counter-" + player.id);
             trainCarCounter.setValue(player.remainingTrainCarsCount);
@@ -2560,11 +2563,10 @@ var TicketToRide = /** @class */ (function () {
         return this.map.getZoom();
     };
     /**
-     * Get player color (hex without #).
+     * Get current player.
      */
-    TicketToRide.prototype.getPlayerColor = function () {
-        var _a;
-        return (_a = this.gamedatas.players[this.getPlayerId()]) === null || _a === void 0 ? void 0 : _a.color;
+    TicketToRide.prototype.getCurrentPlayer = function () {
+        return this.gamedatas.players[this.getPlayerId()];
     };
     /**
      * Add an animation to the animation queue, and start it if there is no current animations.

@@ -243,6 +243,9 @@ class TicketToRide implements TicketToRideGame {
             case 203:
                 this.map.setOutline();
                 break;
+            case 204:
+                document.getElementsByTagName('html')[0].dataset.colorBlind = (prefValue == 1).toString();
+                break;
         }
     }
 
@@ -263,7 +266,7 @@ class TicketToRide implements TicketToRideGame {
             // public counters
             dojo.place(`<div class="counters">
                 <div id="train-car-counter-${player.id}-wrapper" class="counter train-car-counter">
-                    <div class="icon train" data-player-color="${player.color}"></div> 
+                    <div class="icon train" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> 
                     <span id="train-car-counter-${player.id}"></span>
                 </div>
                 <div id="train-car-card-counter-${player.id}-wrapper" class="counter train-car-card-counter">
@@ -365,10 +368,10 @@ class TicketToRide implements TicketToRideGame {
     }
     
     /** 
-     * Get player color (hex without #).
+     * Get current player.
      */ 
-    public getPlayerColor(): string {
-        return this.gamedatas.players[this.getPlayerId()]?.color;
+    public getCurrentPlayer(): TicketToRidePlayer {
+        return this.gamedatas.players[this.getPlayerId()];
     }
 
     /** 
