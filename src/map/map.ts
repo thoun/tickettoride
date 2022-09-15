@@ -26,8 +26,7 @@ class InMapZoomManager {
     private dragClientX: number;
     private dragClientY: number;
 
-    constructor(
-    ) {        
+    constructor() {        
         this.mapZoomDiv = document.getElementById('map-zoom') as HTMLDivElement;
         this.mapDiv = document.getElementById('map') as HTMLDivElement;
         // Attach the handler
@@ -182,6 +181,12 @@ class TtrMap {
         this.mapDiv = document.getElementById('map') as HTMLDivElement;
 
         this.inMapZoomManager = new InMapZoomManager();
+
+        (this.game as any).addTooltipHtmlToClass(`train-car-deck-hidden-pile-tooltip`, `<strong>${_('Train cars deck')}</strong><br><br>
+        ${_('Click here to pick one or two hidden train car cards')}`);
+
+        (this.game as any).addTooltipHtml(`destination-deck-hidden-pile`, `<strong>${_('Destinations deck')}</strong><br><br>
+        ${_('Click here to take three new destination cards (keep at least one)')}`);
     }
 
     private createRouteSpaces(destination: 'map' | 'map-drag-overlay', shiftX: number = 0, shiftY: number = 0) {

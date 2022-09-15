@@ -1013,6 +1013,8 @@ var TtrMap = /** @class */ (function () {
         this.resizedDiv = document.getElementById('resized');
         this.mapDiv = document.getElementById('map');
         this.inMapZoomManager = new InMapZoomManager();
+        this.game.addTooltipHtmlToClass("train-car-deck-hidden-pile-tooltip", "<strong>" + _('Train cars deck') + "</strong><br><br>\n        " + _('Click here to pick one or two hidden train car cards'));
+        this.game.addTooltipHtml("destination-deck-hidden-pile", "<strong>" + _('Destinations deck') + "</strong><br><br>\n        " + _('Click here to take three new destination cards (keep at least one)'));
     }
     TtrMap.prototype.createRouteSpaces = function (destination, shiftX, shiftY) {
         var _this = this;
