@@ -901,9 +901,11 @@ var InMapZoomManager = /** @class */ (function () {
         });
         this.mapDiv.addEventListener('dragleave', function (e) {
             clearTimeout(_this.autoZoomTimeout);
+            _this.autoZoomTimeout = null;
         });
         this.mapDiv.addEventListener('drop', function (e) {
             clearTimeout(_this.autoZoomTimeout);
+            _this.autoZoomTimeout = null;
         });
     }
     InMapZoomManager.prototype.dragOverMouseMoved = function (clientX, clientY) {
@@ -1049,6 +1051,7 @@ var TtrMap = /** @class */ (function () {
      * Handle dropping train car cards over a route.
      */
     TtrMap.prototype.routeDragDrop = function (e, route) {
+        e.preventDefault();
         var mapDiv = document.getElementById('map');
         if (mapDiv.dataset.dragColor == '') {
             return;
@@ -1991,7 +1994,7 @@ var PlayerTrainCars = /** @class */ (function () {
                 _this.deselectColor(_this.selectedColor);
                 var dt = e.dataTransfer;
                 dt.effectAllowed = 'move';
-                dt.setData('Text', '' + type);
+                dt.setData('text/plain', '' + type);
                 var mapDiv = document.getElementById('map');
                 mapDiv.dataset.dragColor = '' + type;
                 // we generate a clone of group (without positionning with transform on the group)

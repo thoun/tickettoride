@@ -44,9 +44,11 @@ class InMapZoomManager {
         });
         this.mapDiv.addEventListener('dragleave', e => {
             clearTimeout(this.autoZoomTimeout);
+            this.autoZoomTimeout = null;
         });
         this.mapDiv.addEventListener('drop', e => {
             clearTimeout(this.autoZoomTimeout);
+            this.autoZoomTimeout = null;
         });
     }
 
@@ -223,6 +225,8 @@ class TtrMap {
      * Handle dropping train car cards over a route.
      */ 
     private routeDragDrop(e: DragEvent, route: Route) {
+        e.preventDefault();
+
         const mapDiv = document.getElementById('map');
         if (mapDiv.dataset.dragColor == '') {
             return;

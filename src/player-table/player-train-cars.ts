@@ -120,7 +120,7 @@ class PlayerTrainCars {
                 this.deselectColor(this.selectedColor);
                 const dt = e.dataTransfer;
                 dt.effectAllowed = 'move';
-                dt.setData('Text', ''+type);
+                dt.setData('text/plain', ''+type);
                 
                 const mapDiv = document.getElementById('map');
                 mapDiv.dataset.dragColor = ''+type;
