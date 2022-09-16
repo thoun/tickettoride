@@ -78,4 +78,15 @@ $game_preferences = [
         ],
         'default' => 2
     ],
+    
+    205 => [
+        'name' => totranslate('Deck placement'),
+        'needReload' => false,
+        'values' => [
+            1 => [ 'name' => totranslate('Train cards top, Destination tickets bottom')],
+            2 => [ 'name' => totranslate('Destination tickets top, Train cards bottom')],
+        ],
+        'default' => 1
+    ],
+
 ];

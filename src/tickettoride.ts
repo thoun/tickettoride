@@ -246,6 +246,11 @@ class TicketToRide implements TicketToRideGame {
             case 204:
                 document.getElementsByTagName('html')[0].dataset.colorBlind = (prefValue == 1).toString();
                 break;
+            case 205:
+                document.getElementById('train-car-deck').prepend(document.getElementById(prefValue == 1 ? 'train-car-deck-hidden-pile' : 'destination-deck-hidden-pile'));
+                document.getElementById('train-car-deck').append(document.getElementById(prefValue == 1 ? 'destination-deck-hidden-pile': 'train-car-deck-hidden-pile'));
+                document.getElementById('destination-deck-hidden-pile').classList.toggle('top', prefValue == 2);
+                break;
         }
     }
 

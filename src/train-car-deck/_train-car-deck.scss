@@ -91,6 +91,11 @@
 
     #destination-deck-hidden-pile {
         margin-top: 40px;
+
+        &.top {
+            margin-bottom: 40px;
+            margin-top: -20px;
+        }
     }
 }
 

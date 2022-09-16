@@ -811,6 +811,10 @@
 #train-car-deck #destination-deck-hidden-pile {
   margin-top: 40px;
 }
+#train-car-deck #destination-deck-hidden-pile.top {
+  margin-bottom: 40px;
+  margin-top: -20px;
+}
 
 .gauge {
   width: 50px;
