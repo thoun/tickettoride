@@ -111,7 +111,7 @@ class PlayerTrainCars {
                 <div id="train-car-group-${type}-counter" class="train-car-group-counter">0</div>
                 <div id="train-car-group-${type}-cards" class="train-car-cards"></div>
             </div>
-            `, `player-table-${this.playerId}-train-cars`);
+            `, `player-table-${this.playerId}-train-cars`, type == 0 ? 'first' : 'last');
             this.updateCounters();
 
             group = document.getElementById(`train-car-group-${type}`);

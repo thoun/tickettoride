@@ -1984,7 +1984,7 @@ var PlayerTrainCars = /** @class */ (function () {
         var _this = this;
         var group = document.getElementById("train-car-group-" + type);
         if (!group) {
-            dojo.place("\n            <div id=\"train-car-group-" + type + "\" class=\"train-car-group\" data-type=\"" + type + "\">\n                <div id=\"train-car-group-" + type + "-counter\" class=\"train-car-group-counter\">0</div>\n                <div id=\"train-car-group-" + type + "-cards\" class=\"train-car-cards\"></div>\n            </div>\n            ", "player-table-" + this.playerId + "-train-cars");
+            dojo.place("\n            <div id=\"train-car-group-" + type + "\" class=\"train-car-group\" data-type=\"" + type + "\">\n                <div id=\"train-car-group-" + type + "-counter\" class=\"train-car-group-counter\">0</div>\n                <div id=\"train-car-group-" + type + "-cards\" class=\"train-car-cards\"></div>\n            </div>\n            ", "player-table-" + this.playerId + "-train-cars", type == 0 ? 'first' : 'last');
             this.updateCounters();
             group = document.getElementById("train-car-group-" + type);
             group.addEventListener('dragstart', function (e) {
