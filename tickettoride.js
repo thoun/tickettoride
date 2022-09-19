@@ -1738,6 +1738,9 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.getSelectedColor = function () {
         return this.playerTrainCars.getSelectedColor();
     };
+    PlayerTable.prototype.updateColorBlindRotation = function () {
+        return this.playerTrainCars.updateColorBlindRotation();
+    };
     return PlayerTable;
 }());
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
@@ -1905,6 +1908,7 @@ var CROSSHAIR_SIZE = 20;
 var PlayerTrainCars = /** @class */ (function () {
     function PlayerTrainCars(game, player, trainCars) {
         this.game = game;
+        this.left = true;
         this.route = null;
         this.selectable = false;
         this.selectedColor = null;
@@ -1929,10 +1933,12 @@ var PlayerTrainCars = /** @class */ (function () {
             else {
                 groupTrainCarCards.appendChild(card);
             }
-            card.style.transform = "rotate(" + deg + "deg)";
+            card.dataset.handRotation = "" + deg;
+            var degWithColorBlind = _this.left && _this.game.isColorBlindMode() ? 180 + deg : deg;
+            card.style.transform = "rotate(" + degWithColorBlind + "deg)";
             if (from) {
                 var card_1 = document.getElementById("train-car-card-" + trainCar.id);
-                _this.addAnimationFrom(card_1, group, from);
+                _this.addAnimationFrom(card_1, group, from, deg, degWithColorBlind);
             }
         });
         this.updateCounters();
@@ -1945,6 +1951,19 @@ var PlayerTrainCars = /** @class */ (function () {
         var div = document.getElementById("player-table-" + this.playerId + "-train-cars");
         div.classList.toggle('left', left);
         this.updateCounters(); // to realign
+        this.updateColorBlindRotation();
+    };
+    /**
+     * Rotate 180° on train car cards, if they are on the left, and if color-blind option is on.
+     */
+    PlayerTrainCars.prototype.updateColorBlindRotation = function () {
+        var _this = this;
+        var cards = Array.from(document.getElementById("player-table-" + this.playerId + "-train-cars").getElementsByClassName('train-car-card'));
+        cards.forEach(function (card) {
+            var deg = Number(card.dataset.handRotation);
+            var degWithColorBlind = _this.left && _this.game.isColorBlindMode() ? 180 + deg : deg;
+            card.style.transform = "rotate(" + degWithColorBlind + "deg)";
+        });
     };
     /**
      * Remove train cars from player's hand.
@@ -2077,7 +2096,7 @@ var PlayerTrainCars = /** @class */ (function () {
     /**
      * Add an animation to the card (when it is created).
      */
-    PlayerTrainCars.prototype.addAnimationFrom = function (card, group, from) {
+    PlayerTrainCars.prototype.addAnimationFrom = function (card, group, from, deg, degWithColorBlind) {
         if (document.visibilityState === 'hidden' || this.game.instantaneousMode) {
             return;
         }
@@ -2092,7 +2111,12 @@ var PlayerTrainCars = /** @class */ (function () {
         var zoom = this.game.getZoom();
         var angle = -Number(group.dataset.angle);
         card.style.transform = "rotate(" + (this.left ? angle : angle - 90) + "deg) translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
-        setTimeout(function () { return card.style.transform = null; }, 0);
+        setTimeout(function () {
+            card.style.transform = "rotate(" + deg + "deg)";
+            if (degWithColorBlind != deg) {
+                setTimeout(function () { return card.style.transform = "rotate(" + degWithColorBlind + "deg)"; }, 500);
+            }
+        }, 0);
         setTimeout(function () {
             card.style.zIndex = null;
             card.style.transition = null;
@@ -2468,6 +2492,7 @@ var TicketToRide = /** @class */ (function () {
      * Handle user preferences changes.
      */
     TicketToRide.prototype.onPreferenceChange = function (prefId, prefValue) {
+        var _a;
         switch (prefId) {
             case 201: // 1 = buttons, 2 = double click to pick 2 cards
                 dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', prefValue == 1);
@@ -2477,6 +2502,7 @@ var TicketToRide = /** @class */ (function () {
                 break;
             case 204:
                 document.getElementsByTagName('html')[0].dataset.colorBlind = (prefValue == 1).toString();
+                (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.updateColorBlindRotation();
                 break;
             case 205:
                 document.getElementById('train-car-deck').prepend(document.getElementById(prefValue == 1 ? 'train-car-deck-hidden-pile' : 'destination-deck-hidden-pile'));
@@ -2484,6 +2510,10 @@ var TicketToRide = /** @class */ (function () {
                 document.getElementById('destination-deck-hidden-pile').classList.toggle('top', prefValue == 2);
                 break;
         }
+    };
+    TicketToRide.prototype.isColorBlindMode = function () {
+        var _a;
+        return Number((_a = this.prefs[204]) === null || _a === void 0 ? void 0 : _a.value) === 1;
     };
     TicketToRide.prototype.getPlayerId = function () {
         return Number(this.player_id);

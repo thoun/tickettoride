@@ -5,7 +5,7 @@ const CROSSHAIR_SIZE = 20;
  */ 
 class PlayerTrainCars {
     public playerId: number;
-    private left: boolean;
+    private left: boolean = true;
     private route: Route | null = null;
     private selectable: boolean = false;
     private selectedColor: number | null = null;
@@ -40,11 +40,13 @@ class PlayerTrainCars {
             } else {
                 groupTrainCarCards.appendChild(card);
             }
-            card.style.transform = `rotate(${deg}deg)`;
+            card.dataset.handRotation = `${deg}`;
+            const degWithColorBlind = this.left && this.game.isColorBlindMode() ? 180 + deg : deg;
+            card.style.transform = `rotate(${degWithColorBlind}deg)`;
 
             if (from) {
                 const card = document.getElementById(`train-car-card-${trainCar.id}`);
-                this.addAnimationFrom(card, group, from);
+                this.addAnimationFrom(card, group, from, deg, degWithColorBlind);
             }
         });
 
@@ -60,6 +62,19 @@ class PlayerTrainCars {
         div.classList.toggle('left', left);
 
         this.updateCounters(); // to realign
+        this.updateColorBlindRotation();
+    }
+    
+    /** 
+     * Rotate 180° on train car cards, if they are on the left, and if color-blind option is on.
+     */ 
+     public updateColorBlindRotation(): void {
+        const cards = Array.from(document.getElementById(`player-table-${this.playerId}-train-cars`).getElementsByClassName('train-car-card')) as HTMLDivElement[];
+        cards.forEach(card => {
+            const deg = Number(card.dataset.handRotation);
+            const degWithColorBlind = this.left && this.game.isColorBlindMode() ? 180 + deg : deg;
+            card.style.transform = `rotate(${degWithColorBlind}deg)`;
+        });
     }
     
     /** 
@@ -216,7 +231,7 @@ class PlayerTrainCars {
     /** 
      * Add an animation to the card (when it is created).
      */ 
-    private addAnimationFrom(card: HTMLElement, group: HTMLElement, from: HTMLElement) {
+    private addAnimationFrom(card: HTMLElement, group: HTMLElement, from: HTMLElement, deg: number, degWithColorBlind: number) {
         if (document.visibilityState === 'hidden' || (this.game as any).instantaneousMode) {
             return;
         }
@@ -235,7 +250,12 @@ class PlayerTrainCars {
         const zoom = this.game.getZoom();
         const angle = -Number(group.dataset.angle);
         card.style.transform = `rotate(${this.left ? angle : angle-90}deg) translate(${-deltaX/zoom}px, ${-deltaY/zoom}px)`;
-        setTimeout(() => card.style.transform = null, 0);
+        setTimeout(() => {
+            card.style.transform = `rotate(${deg}deg)`;
+            if (degWithColorBlind != deg) {
+                setTimeout(() => card.style.transform = `rotate(${degWithColorBlind}deg)`, 500);
+            }
+        }, 0);
 
         setTimeout(() => {
             card.style.zIndex = null;

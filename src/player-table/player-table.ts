@@ -75,4 +75,8 @@ class PlayerTable {
     public getSelectedColor(): number | null {
         return this.playerTrainCars.getSelectedColor();
     }
+
+    public updateColorBlindRotation(): void {
+        return this.playerTrainCars.updateColorBlindRotation();
+    }
 }

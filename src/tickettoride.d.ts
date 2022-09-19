@@ -100,6 +100,7 @@ interface TicketToRideGame extends Game {
     setSelectedDestination(destination: Destination, visible: boolean): void;
     addAnimation(animation: WagonsAnimation): void;
     endAnimation(ended: WagonsAnimation): void;
+    isColorBlindMode(): boolean;
 }
 
 interface EnteringChooseDestinationsArgs {

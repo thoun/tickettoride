@@ -245,6 +245,7 @@ class TicketToRide implements TicketToRideGame {
                 break;
             case 204:
                 document.getElementsByTagName('html')[0].dataset.colorBlind = (prefValue == 1).toString();
+                this.playerTable?.updateColorBlindRotation();
                 break;
             case 205:
                 document.getElementById('train-car-deck').prepend(document.getElementById(prefValue == 1 ? 'train-car-deck-hidden-pile' : 'destination-deck-hidden-pile'));
@@ -252,6 +253,10 @@ class TicketToRide implements TicketToRideGame {
                 document.getElementById('destination-deck-hidden-pile').classList.toggle('top', prefValue == 2);
                 break;
         }
+    }
+
+    public isColorBlindMode(): boolean {
+        return Number((this as any).prefs[204]?.value) === 1;
     }
 
     public getPlayerId(): number {
