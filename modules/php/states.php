@@ -199,6 +199,8 @@ trait StateTrait {
                     'playerId' => $playerId,
                     'length' => $bestLongestPath,
                 ]);
+
+                $this->setStat(1, 'longestPathBonus', $playerId);
             }
         }
 

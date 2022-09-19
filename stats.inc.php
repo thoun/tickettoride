@@ -162,6 +162,13 @@ $stats_type = [
             "name" => totranslate("Kept additional destination cards"),
             "type" => "int"
         ],
+
+        // 40+ : train cars (meeples)
+        "longestPathBonus" => [
+            "id" => 44,
+            "name" => totranslate("Longest Continuous Path bonus"),
+            "type" => "bool"
+        ],
     ],
 
 ];
