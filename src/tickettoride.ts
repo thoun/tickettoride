@@ -263,6 +263,10 @@ class TicketToRide implements TicketToRideGame {
         return Number((this as any).player_id);
     }
 
+    public isDoubleRouteForbidden(): boolean {
+        return Object.values(this.gamedatas.players).length <= 3;
+    }
+
     /**
      * Place counters on player panels.
      */ 

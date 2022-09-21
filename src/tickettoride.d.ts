@@ -101,6 +101,7 @@ interface TicketToRideGame extends Game {
     addAnimation(animation: WagonsAnimation): void;
     endAnimation(ended: WagonsAnimation): void;
     isColorBlindMode(): boolean;
+    isDoubleRouteForbidden(): boolean;
 }
 
 interface EnteringChooseDestinationsArgs {

@@ -1104,6 +1104,13 @@ var TtrMap = /** @class */ (function () {
             var route = ROUTES.find(function (r) { return r.id == claimedRoute.routeId; });
             var player = _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; });
             _this.setWagons(route, player, fromPlayerId, false);
+            if (_this.game.isDoubleRouteForbidden()) {
+                var otherRoute_1 = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+                otherRoute_1 === null || otherRoute_1 === void 0 ? void 0 : otherRoute_1.spaces.forEach(function (space, spaceIndex) {
+                    var spaceDiv = document.getElementById("map-route" + otherRoute_1.id + "-space" + spaceIndex);
+                    spaceDiv.classList.add('forbidden');
+                });
+            }
         });
     };
     TtrMap.prototype.animateWagonFromCounter = function (playerId, wagonId, toX, toY) {
@@ -2517,6 +2524,9 @@ var TicketToRide = /** @class */ (function () {
     };
     TicketToRide.prototype.getPlayerId = function () {
         return Number(this.player_id);
+    };
+    TicketToRide.prototype.isDoubleRouteForbidden = function () {
+        return Object.values(this.gamedatas.players).length <= 3;
     };
     /**
      * Place counters on player panels.

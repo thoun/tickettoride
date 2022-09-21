@@ -281,6 +281,14 @@ class TtrMap {
             const route = ROUTES.find(r => r.id == claimedRoute.routeId);
             const player = this.players.find(player => Number(player.id) == claimedRoute.playerId);
             this.setWagons(route, player, fromPlayerId, false);
+
+            if (this.game.isDoubleRouteForbidden()) {
+                const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+                otherRoute?.spaces.forEach((space, spaceIndex) => {
+                    const spaceDiv = document.getElementById(`map-route${otherRoute.id}-space${spaceIndex}`);
+                    spaceDiv.classList.add('forbidden');
+                });
+            }
         });
     }
 

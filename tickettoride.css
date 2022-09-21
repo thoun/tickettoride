@@ -481,6 +481,16 @@
 .route-space.selectable[data-color="8"]::before {
   background-position: 100% 50%;
 }
+.route-space.forbidden::before {
+  content: "";
+  position: absolute;
+  top: -13px;
+  bottom: -13px;
+  left: 0;
+  right: 0;
+  background: url("img/forbidden.png") no-repeat;
+  background-position: center center;
+}
 
 @keyframes selectable-road-animation {
   from {
