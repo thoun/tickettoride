@@ -2441,6 +2441,7 @@ var TicketToRide = /** @class */ (function () {
                 (_b = this.playerTable) === null || _b === void 0 ? void 0 : _b.setSelectable(false);
                 (_c = this.playerTable) === null || _c === void 0 ? void 0 : _c.setSelectableTrainCarColors(null);
                 document.getElementById('destination-deck-hidden-pile').classList.remove('selectable');
+                Array.from(document.getElementsByClassName('train-car-group hide')).forEach(function (group) { return group.classList.remove('hide'); });
                 break;
             case 'drawSecondCard':
                 this.trainCarSelection.removeSelectableVisibleCards();

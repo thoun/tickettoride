@@ -168,6 +168,7 @@ class TicketToRide implements TicketToRideGame {
                 this.playerTable?.setSelectable(false);   
                 this.playerTable?.setSelectableTrainCarColors(null);
                 document.getElementById('destination-deck-hidden-pile').classList.remove('selectable');
+                (Array.from(document.getElementsByClassName('train-car-group hide')) as HTMLDivElement[]).forEach(group => group.classList.remove('hide'));
                 break;
             case 'drawSecondCard':
                 this.trainCarSelection.removeSelectableVisibleCards();  
