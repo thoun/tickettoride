@@ -155,11 +155,10 @@ class PlayerTrainCars {
                 }, 0);
 
                 this.game.map.addDragOverlay();
-
                 return true;
             });
             group.addEventListener('dragend', (e) => {
-                group.classList.remove('hide');
+                setTimeout(() => group.classList.remove('hide'), 50);
                 const mapDiv = document.getElementById('map');
                 mapDiv.dataset.dragColor = '';
 

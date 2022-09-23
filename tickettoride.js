@@ -2038,7 +2038,7 @@ var PlayerTrainCars = /** @class */ (function () {
                 return true;
             });
             group.addEventListener('dragend', function (e) {
-                group.classList.remove('hide');
+                setTimeout(function () { return group.classList.remove('hide'); }, 50);
                 var mapDiv = document.getElementById('map');
                 mapDiv.dataset.dragColor = '';
                 _this.game.map.removeDragOverlay();
