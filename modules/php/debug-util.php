@@ -13,7 +13,8 @@ trait DebugUtilTrait {
 
         //$this->debugSetDestinationInHand(7, 2343492);
 
-        //$this->debugClaimAllRoutes(2343492, 0.4);
+        //$this->debugClaimAllRoutes(2343492, 0.2);
+        //$this->debugClaimAllRoutes(2343493, 0.2);
         //$this->debugSetLastTurn();
 
         //$this->debugSetRemainingTrainCarDeck(1);

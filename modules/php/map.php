@@ -233,7 +233,7 @@ trait MapTrait {
         // we add fromRoute
         return new LongestPath($longestPath->length + $fromRoute->number, array_merge(
             $longestPath->routes,
-            [$fromRoute->id]
+            [$fromRoute]
         ));
     }
 

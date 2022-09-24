@@ -1108,7 +1108,7 @@ var TtrMap = /** @class */ (function () {
                 var otherRoute_1 = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
                 otherRoute_1 === null || otherRoute_1 === void 0 ? void 0 : otherRoute_1.spaces.forEach(function (space, spaceIndex) {
                     var spaceDiv = document.getElementById("map-route" + otherRoute_1.id + "-space" + spaceIndex);
-                    spaceDiv.classList.add('forbidden');
+                    spaceDiv === null || spaceDiv === void 0 ? void 0 : spaceDiv.classList.add('forbidden');
                 });
             }
         });
@@ -2193,23 +2193,25 @@ var EndScore = /** @class */ (function () {
         /** Uncomplete destinations counters (key is player id) */
         this.uncompletedDestinationCounters = [];
         players.forEach(function (player) {
+            var playerId = Number(player.id);
             dojo.place("<tr id=\"score" + player.id + "\">\n                <td id=\"score-name-" + player.id + "\" class=\"player-name\" style=\"color: #" + player.color + "\">" + player.name + "</td>\n                <td id=\"destinations-score-" + player.id + "\" class=\"destinations\">\n                    <div class=\"icons-grid\">\n                        <div id=\"destination-counter-" + player.id + "\" class=\"icon destination-card\"></div>\n                        <div id=\"completed-destination-counter-" + player.id + "\" class=\"icon completed-destination\"></div>\n                        <div id=\"uncompleted-destination-counter-" + player.id + "\" class=\"icon uncompleted-destination\"></div>\n                    </div>\n                </td>\n                <td id=\"train-score-" + player.id + "\" class=\"train\">\n                    <div id=\"train-image-" + player.id + "\" class=\"train-image\" data-player-color=\"" + player.color + "\"></div>\n                </td>\n                <td id=\"end-score-" + player.id + "\" class=\"total\"></td>\n            </tr>", 'score-table-body');
             var destinationCounter = new ebg.counter();
             destinationCounter.create("destination-counter-" + player.id);
             destinationCounter.setValue(fromReload ? 0 : _this.game.destinationCardCounters[player.id].getValue());
-            _this.destinationCounters[Number(player.id)] = destinationCounter;
+            _this.destinationCounters[playerId] = destinationCounter;
             var completedDestinationCounter = new ebg.counter();
             completedDestinationCounter.create("completed-destination-counter-" + player.id);
             completedDestinationCounter.setValue(fromReload ? player.completedDestinations.length : 0);
-            _this.completedDestinationCounters[Number(player.id)] = completedDestinationCounter;
+            _this.completedDestinationCounters[playerId] = completedDestinationCounter;
             var uncompletedDestinationCounter = new ebg.counter();
             uncompletedDestinationCounter.create("uncompleted-destination-counter-" + player.id);
             uncompletedDestinationCounter.setValue(fromReload ? player.uncompletedDestinations.length : 0);
-            _this.uncompletedDestinationCounters[Number(player.id)] = uncompletedDestinationCounter;
+            _this.uncompletedDestinationCounters[playerId] = uncompletedDestinationCounter;
             var scoreCounter = new ebg.counter();
             scoreCounter.create("end-score-" + player.id);
             scoreCounter.setValue(Number(player.score));
-            _this.scoreCounters[Number(player.id)] = scoreCounter;
+            _this.scoreCounters[playerId] = scoreCounter;
+            _this.moveTrain(playerId);
         });
         // if we are at reload of end state, we display values, else we wait for notifications
         if (fromReload) {

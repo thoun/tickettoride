@@ -286,7 +286,7 @@ class TtrMap {
                 const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
                 otherRoute?.spaces.forEach((space, spaceIndex) => {
                     const spaceDiv = document.getElementById(`map-route${otherRoute.id}-space${spaceIndex}`);
-                    spaceDiv.classList.add('forbidden');
+                    spaceDiv?.classList.add('forbidden');
                 });
             }
         });

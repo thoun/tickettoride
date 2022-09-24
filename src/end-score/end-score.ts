@@ -24,6 +24,7 @@ class EndScore {
     ) {        
 
         players.forEach(player => {
+            const playerId = Number(player.id);
 
             dojo.place(`<tr id="score${player.id}">
                 <td id="score-name-${player.id}" class="player-name" style="color: #${player.color}">${player.name}</td>
@@ -43,23 +44,24 @@ class EndScore {
             const destinationCounter: Counter = new ebg.counter();
             destinationCounter.create(`destination-counter-${player.id}`);
             destinationCounter.setValue(fromReload ? 0 : (this.game as any).destinationCardCounters[player.id].getValue());
-            this.destinationCounters[Number(player.id)] = destinationCounter;
+            this.destinationCounters[playerId] = destinationCounter;
             
             const completedDestinationCounter: Counter = new ebg.counter();
             completedDestinationCounter.create(`completed-destination-counter-${player.id}`);
             completedDestinationCounter.setValue(fromReload ? player.completedDestinations.length : 0);
-            this.completedDestinationCounters[Number(player.id)] = completedDestinationCounter;
+            this.completedDestinationCounters[playerId] = completedDestinationCounter;
             
             const uncompletedDestinationCounter: Counter = new ebg.counter();
             uncompletedDestinationCounter.create(`uncompleted-destination-counter-${player.id}`);
             uncompletedDestinationCounter.setValue(fromReload ?  player.uncompletedDestinations.length : 0);
-            this.uncompletedDestinationCounters[Number(player.id)] = uncompletedDestinationCounter;
+            this.uncompletedDestinationCounters[playerId] = uncompletedDestinationCounter;
 
             const scoreCounter: Counter = new ebg.counter();
             scoreCounter.create(`end-score-${player.id}`);
             scoreCounter.setValue(Number(player.score));
-            this.scoreCounters[Number(player.id)] = scoreCounter;
+            this.scoreCounters[playerId] = scoreCounter;
 
+            this.moveTrain(playerId);
         });
 
         // if we are at reload of end state, we display values, else we wait for notifications
