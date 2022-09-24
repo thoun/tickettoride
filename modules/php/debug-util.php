@@ -15,7 +15,7 @@ trait DebugUtilTrait {
 
         //$this->debugClaimAllRoutes(2343492, 0.2);
         //$this->debugClaimAllRoutes(2343493, 0.2);
-        //$this->debugSetLastTurn();
+        $this->debugSetLastTurn();
 
         //$this->debugSetRemainingTrainCarDeck(1);
 
@@ -30,9 +30,24 @@ trait DebugUtilTrait {
 
     function debugClaimRoute($playerId, $routeId) {
         self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
+
+        $route = $this->ROUTES[$routeId];
+        $points = $this->ROUTE_POINTS[$route->number];
+
+        self::notifyAllPlayers('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'points' => $points,
+            'route' => $route,
+            'from' => $this->CITIES[$route->from],
+            'to' => $this->CITIES[$route->to],
+            'number' => $route->number,
+            'removeCards' => [],
+            'colors' => [],
+        ]);
     }
 
-    function debugClaimAllRoutes($playerId, $ratio = 1) {
+    function debugClaimAllRoutes($playerId, $ratio = 0.1) {
         foreach($this->ROUTES as $id => $route) {
             if ((bga_rand(0, count($this->ROUTES)-1) / (float)count($this->ROUTES)) < $ratio) {
                 $this->debugClaimRoute($playerId, $id);

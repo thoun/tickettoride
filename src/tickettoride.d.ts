@@ -90,6 +90,7 @@ interface TicketToRideGame extends Game {
     getCurrentPlayer(): TicketToRidePlayer;
     setDestinationsToConnect(destinations: Destination[]): void;
     getPlayerId(): number;
+    getPlayerScore(playerId: number): number;
     drawDestinations(): void;
     onVisibleTrainCarCardClick(itemId: number): void;
     onHiddenTrainCarDeckClick(number: number): void;

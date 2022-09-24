@@ -2209,7 +2209,7 @@ var EndScore = /** @class */ (function () {
             _this.uncompletedDestinationCounters[playerId] = uncompletedDestinationCounter;
             var scoreCounter = new ebg.counter();
             scoreCounter.create("end-score-" + player.id);
-            scoreCounter.setValue(Number(player.score));
+            scoreCounter.setValue(_this.game.getPlayerScore(playerId));
             _this.scoreCounters[playerId] = scoreCounter;
             _this.moveTrain(playerId);
         });
@@ -2533,6 +2533,10 @@ var TicketToRide = /** @class */ (function () {
     };
     TicketToRide.prototype.getPlayerId = function () {
         return Number(this.player_id);
+    };
+    TicketToRide.prototype.getPlayerScore = function (playerId) {
+        var _a, _b;
+        return (_b = (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.getValue()) !== null && _b !== void 0 ? _b : Number(this.gamedatas.players[playerId].score);
     };
     TicketToRide.prototype.isDoubleRouteForbidden = function () {
         return Object.values(this.gamedatas.players).length <= 3;

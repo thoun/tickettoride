@@ -58,7 +58,7 @@ class EndScore {
 
             const scoreCounter: Counter = new ebg.counter();
             scoreCounter.create(`end-score-${player.id}`);
-            scoreCounter.setValue(Number(player.score));
+            scoreCounter.setValue(this.game.getPlayerScore(playerId));
             this.scoreCounters[playerId] = scoreCounter;
 
             this.moveTrain(playerId);

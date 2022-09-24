@@ -268,6 +268,10 @@ class TicketToRide implements TicketToRideGame {
         return Number((this as any).player_id);
     }
 
+    public getPlayerScore(playerId: number): number {
+        return (this as any).scoreCtrl[playerId]?.getValue() ?? Number(this.gamedatas.players[playerId].score);
+    }
+
     public isDoubleRouteForbidden(): boolean {
         return Object.values(this.gamedatas.players).length <= 3;
     }
