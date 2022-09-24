@@ -27,7 +27,7 @@
 $game_options = [];
 
 $game_preferences = [
-    202 => [
+    206 => [
         'name' => totranslate('Ask for confirmation when taking new destinations'),
         'needReload' => false,
         'values' => [

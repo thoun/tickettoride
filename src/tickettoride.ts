@@ -579,7 +579,7 @@ class TicketToRide implements TicketToRideGame {
             return;
         }
 
-        const confirmation = (this as any).prefs[202]?.value !== 2;
+        const confirmation = (this as any).prefs[206]?.value !== 2;
 
         if (confirmation) {
             (this as any).confirmationDialog( _('Are you sure you want to take new destinations?'), () => {
