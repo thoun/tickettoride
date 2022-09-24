@@ -21,8 +21,13 @@ trait StateTrait {
         $this->gamestate->nextState('');
     }
 
+    function stChooseInitialDestinationsOld() { 
+        $this->gamestate->setAllPlayersMultiactive();
+    }
+
     function stChooseInitialDestinations() { 
         $this->gamestate->setAllPlayersMultiactive();
+        $this->gamestate->initializePrivateStateForAllActivePlayers(); 
     }
 
     function stNextPlayer() {

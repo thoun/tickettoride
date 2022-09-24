@@ -12,7 +12,7 @@ trait ArgsTrait {
         game state.
     */
 
-    function argChooseInitialDestinations() {
+    function argChooseInitialDestinationsOld() {
         $playersIds = $this->getPlayersIds();
         
         $private = [];
@@ -28,6 +28,13 @@ trait ArgsTrait {
             '_private' => $private,
         ];
         
+    }
+
+    function argPrivateChooseInitialDestinations(int $playerId) {
+        return [
+            'minimum' => 2,
+            'destinations' => $this->getPickedDestinationCards($playerId),
+        ];
     }
 
     function argChooseAdditionalDestinations() {

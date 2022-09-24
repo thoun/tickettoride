@@ -2371,13 +2371,17 @@ var TicketToRide = /** @class */ (function () {
         var _a;
         log('Entering state: ' + stateName, args.args);
         switch (stateName) {
+            case 'privateChooseInitialDestinations':
             case 'chooseInitialDestinations':
             case 'chooseAdditionalDestinations':
-                var chooseDestinationsArgs = args.args;
-                (_a = chooseDestinationsArgs._private) === null || _a === void 0 ? void 0 : _a.destinations.forEach(function (destination) { return _this.map.setSelectableDestination(destination, true); });
-                if (this.isCurrentPlayerActive()) {
-                    this.destinationSelection.setCards(chooseDestinationsArgs._private.destinations, chooseDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
-                    this.destinationSelection.selectionChange();
+                if (args === null || args === void 0 ? void 0 : args.args) {
+                    var chooseDestinationsArgs = args.args;
+                    var destinations = chooseDestinationsArgs.destinations || ((_a = chooseDestinationsArgs._private) === null || _a === void 0 ? void 0 : _a.destinations);
+                    if (destinations && this.isCurrentPlayerActive()) {
+                        destinations.forEach(function (destination) { return _this.map.setSelectableDestination(destination, true); });
+                        this.destinationSelection.setCards(destinations, chooseDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
+                        this.destinationSelection.selectionChange();
+                    }
                 }
                 break;
             case 'chooseAction':
@@ -2428,6 +2432,7 @@ var TicketToRide = /** @class */ (function () {
         var _a, _b, _c;
         log('Leaving state: ' + stateName);
         switch (stateName) {
+            case 'privateChooseInitialDestinations':
             case 'chooseInitialDestinations':
             case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
@@ -2456,6 +2461,7 @@ var TicketToRide = /** @class */ (function () {
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'chooseInitialDestinations':
+                case 'privateChooseInitialDestinations':
                     this.addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), function () { return _this.chooseInitialDestinations(); });
                     break;
                 case 'chooseAction':

@@ -94,12 +94,15 @@ class TicketToRide implements TicketToRideGame {
         log('Entering state: '+stateName, args.args);
 
         switch (stateName) {
-            case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
-                const chooseDestinationsArgs = args.args as EnteringChooseDestinationsArgs;
-                chooseDestinationsArgs._private?.destinations.forEach(destination => this.map.setSelectableDestination(destination, true));
-                if ((this as any).isCurrentPlayerActive()) {
-                    this.destinationSelection.setCards(chooseDestinationsArgs._private.destinations, chooseDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
-                    this.destinationSelection.selectionChange();
+            case 'privateChooseInitialDestinations': case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
+                if (args?.args) {
+                    const chooseDestinationsArgs = args.args as EnteringChooseDestinationsArgs;
+                    const destinations = chooseDestinationsArgs.destinations || chooseDestinationsArgs._private?.destinations;
+                    if (destinations && (this as any).isCurrentPlayerActive()) {
+                        destinations.forEach(destination => this.map.setSelectableDestination(destination, true));
+                        this.destinationSelection.setCards(destinations, chooseDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
+                        this.destinationSelection.selectionChange();
+                    }
                 }
                 break;
             case 'chooseAction':
@@ -156,7 +159,7 @@ class TicketToRide implements TicketToRideGame {
         log('Leaving state: '+stateName);
 
         switch (stateName) {
-            case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
+            case 'privateChooseInitialDestinations': case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
                 const mapDiv = document.getElementById('map');
                 mapDiv.querySelectorAll(`.city[data-selectable]`).forEach((city: HTMLElement) => city.dataset.selectable = 'false');
@@ -183,6 +186,7 @@ class TicketToRide implements TicketToRideGame {
         if((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'chooseInitialDestinations':
+                case 'privateChooseInitialDestinations':
                     (this as any).addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), () => this.chooseInitialDestinations());
                     break;   
                 case 'chooseAction':

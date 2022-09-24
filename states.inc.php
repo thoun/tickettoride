@@ -75,18 +75,39 @@ $basicGameStates = [
 
 $playerActionsGameStates = [
 
-    ST_MULTIPLAYER_CHOOSE_INITIAL_DESTINATIONS => [
+    ST_MULTIPLAYER_CHOOSE_INITIAL_DESTINATIONS_OLD => [
         "name" => "chooseInitialDestinations",
         "description" => clienttranslate('Other players must choose destination tickets'),
         "descriptionmyturn" => clienttranslate('${you} must choose destination tickets (minimum ${minimum})'),
         "type" => "multipleactiveplayer",
-        "action" => "stChooseInitialDestinations",
-        "args" => "argChooseInitialDestinations",
+        "action" => "stChooseInitialDestinationsOld",
+        "args" => "argChooseInitialDestinationsOld",
         "possibleactions" => [ "chooseInitialDestinations" ],
         "transitions" => [
             "start" => ST_PLAYER_CHOOSE_ACTION,
         ],
+    ],
 
+    ST_MULTIPLAYER_CHOOSE_INITIAL_DESTINATIONS => [
+        "name" => "multiChooseInitialDestinations",
+        "description" => clienttranslate('Other players must choose destination tickets'),
+        "descriptionmyturn" => '',
+        "type" => "multipleactiveplayer",
+        "initialprivate" => ST_PRIVATE_CHOOSE_INITIAL_DESTINATIONS,
+        "action" => "stChooseInitialDestinations",
+        "possibleactions" => [],
+        "transitions" => [
+            "start" => ST_PLAYER_CHOOSE_ACTION,
+        ],
+    ],
+
+    ST_PRIVATE_CHOOSE_INITIAL_DESTINATIONS => [
+        "name" => "privateChooseInitialDestinations",
+        "descriptionmyturn" => clienttranslate('${you} must choose destination tickets (minimum ${minimum})'),
+        "type" => "private",
+        "args" => "argPrivateChooseInitialDestinations",
+        "possibleactions" => [ "chooseInitialDestinations" ],
+        "transitions" => [],
     ],
 
     ST_PLAYER_CHOOSE_ACTION => [
