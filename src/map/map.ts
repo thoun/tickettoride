@@ -164,7 +164,12 @@ class TtrMap {
         claimedRoutes: ClaimedRoute[],
     ) {
         // map border
-        dojo.place(`<div class="illustration"></div>`, 'map', 'first');
+        dojo.place(`
+            <div class="illustration"></div>
+            <div id="cities"></div>
+            <div id="route-spaces"></div>
+            <div id="train-cars"></div>
+        `, 'map', 'first');
         SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'map-and-borders'));
         CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map-and-borders'));        
 
@@ -172,10 +177,10 @@ class TtrMap {
             dojo.place(`<div id="city${city.id}" class="city" 
                 style="transform: translate(${city.x}px, ${city.y}px)"
                 title="${CITIES_NAMES[city.id]}"
-            ></div>`, 'map')
+            ></div>`, 'cities')
         );
 
-        this.createRouteSpaces('map');
+        this.createRouteSpaces('route-spaces');
 
         this.setClaimedRoutes(claimedRoutes, null);
 
@@ -191,7 +196,7 @@ class TtrMap {
         ${_('Click here to take three new destination cards (keep at least one)')}`);
     }
 
-    private createRouteSpaces(destination: 'map' | 'map-drag-overlay', shiftX: number = 0, shiftY: number = 0) {
+    private createRouteSpaces(destination: 'route-spaces' | 'map-drag-overlay', shiftX: number = 0, shiftY: number = 0) {
         ROUTES.forEach(route => 
             route.spaces.forEach((space, spaceIndex) => {
                 dojo.place(`<div id="${destination}-route${route.id}-space${spaceIndex}" class="route-space" 
@@ -200,7 +205,7 @@ class TtrMap {
                     data-route="${route.id}" data-color="${route.color}"
                 ></div>`, destination);
                 const spaceDiv = document.getElementById(`${destination}-route${route.id}-space${spaceIndex}`);
-                if (destination == 'map') {
+                if (destination == 'route-spaces') {
                     this.setSpaceClickEvents(spaceDiv, route);
                 } else {
                     this.setSpaceDragEvents(spaceDiv, route);
@@ -265,7 +270,7 @@ class TtrMap {
     public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
         if (selectable) {
             possibleRoutes.forEach(route => ROUTES.find(r => r.id == route.id).spaces.forEach((_, index) => 
-                document.getElementById(`map-route${route.id}-space${index}`)?.classList.add('selectable'))
+                document.getElementById(`route-spaces-route${route.id}-space${index}`)?.classList.add('selectable'))
             );
         } else {            
             dojo.query('.route-space').removeClass('selectable');
@@ -285,7 +290,7 @@ class TtrMap {
             if (this.game.isDoubleRouteForbidden()) {
                 const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
                 otherRoute?.spaces.forEach((space, spaceIndex) => {
-                    const spaceDiv = document.getElementById(`map-route${otherRoute.id}-space${spaceIndex}`);
+                    const spaceDiv = document.getElementById(`route-spaces-route${otherRoute.id}-space${spaceIndex}`);
                     spaceDiv?.classList.add('forbidden');
                 });
             }
@@ -332,7 +337,28 @@ class TtrMap {
         const EASE_WEIGHT = 0.75;
         const angleOnOne = (Math.acos(-2 * angle / 180 + 1) / Math.PI) * EASE_WEIGHT + (angle / 180 * (1 - EASE_WEIGHT));
         const angleClassNumber = Math.round(angleOnOne * 36);
-        dojo.place(`<div id="${id}" class="wagon angle${angleClassNumber} ${phantom ? 'phantom' : ''} ${space.top ? 'top' : ''}" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}" style="transform: translate(${x}px, ${y}px)"></div>`, 'map');
+
+        const alreadyPlacedWagons = Array.from(document.querySelectorAll('.wagon')) as HTMLDivElement[];
+        const xy = x + y;
+
+        const wagonHtml = `<div id="${id}" class="wagon angle${angleClassNumber} ${phantom ? 'phantom' : ''} ${space.top ? 'top' : ''}" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}" data-xy="${xy}" style="transform: translate(${x}px, ${y}px)"></div>`;
+        // we consider a wagon must be more visible than another if its X + Y is > as the other
+        if (!alreadyPlacedWagons.length) {
+            dojo.place(wagonHtml, 'train-cars');
+        } else {
+            let placed = false;
+            for (let i = 0; i < alreadyPlacedWagons.length; i++) {
+                if (Number(alreadyPlacedWagons[i].dataset.xy) > xy) {
+                    dojo.place(wagonHtml, alreadyPlacedWagons[i].id, 'before');
+                    placed = true;
+                    break;
+                }
+            }
+
+            if (!placed) {
+                dojo.place(wagonHtml, 'train-cars');
+            }
+        }
         
         if (fromPlayerId) {
             this.animateWagonFromCounter(fromPlayerId, id, x, y);
@@ -347,8 +373,8 @@ class TtrMap {
     private setWagons(route: Route, player: TicketToRidePlayer, fromPlayerId: number, phantom: boolean) {
         if (!phantom) {
             route.spaces.forEach((space, spaceIndex) => {
-                const spaceDiv = document.getElementById(`map-route${route.id}-space${spaceIndex}`);
-                spaceDiv.parentElement.removeChild(spaceDiv);
+                const spaceDiv = document.getElementById(`route-spaces-route${route.id}-space${spaceIndex}`);
+                spaceDiv?.parentElement.removeChild(spaceDiv);
             });
         }
 

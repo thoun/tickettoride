@@ -1004,13 +1004,13 @@ var TtrMap = /** @class */ (function () {
         this.crosshairHalfSize = 0;
         this.crosshairShift = 0;
         // map border
-        dojo.place("<div class=\"illustration\"></div>", 'map', 'first');
+        dojo.place("\n            <div class=\"illustration\"></div>\n            <div id=\"cities\"></div>\n            <div id=\"route-spaces\"></div>\n            <div id=\"train-cars\"></div>\n        ", 'map', 'first');
         SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map-and-borders'); });
         CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'map-and-borders'); });
         CITIES.forEach(function (city) {
-            return dojo.place("<div id=\"city" + city.id + "\" class=\"city\" \n                style=\"transform: translate(" + city.x + "px, " + city.y + "px)\"\n                title=\"" + CITIES_NAMES[city.id] + "\"\n            ></div>", 'map');
+            return dojo.place("<div id=\"city" + city.id + "\" class=\"city\" \n                style=\"transform: translate(" + city.x + "px, " + city.y + "px)\"\n                title=\"" + CITIES_NAMES[city.id] + "\"\n            ></div>", 'cities');
         });
-        this.createRouteSpaces('map');
+        this.createRouteSpaces('route-spaces');
         this.setClaimedRoutes(claimedRoutes, null);
         this.resizedDiv = document.getElementById('resized');
         this.mapDiv = document.getElementById('map');
@@ -1026,7 +1026,7 @@ var TtrMap = /** @class */ (function () {
             return route.spaces.forEach(function (space, spaceIndex) {
                 dojo.place("<div id=\"" + destination + "-route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + (space.x + shiftX) + "px, " + (space.y + shiftY) + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + dojo.string.substitute(_('${from} to ${to}'), { from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to] }) + ", " + route.spaces.length + " " + getColor(route.color, 'route') + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", destination);
                 var spaceDiv = document.getElementById(destination + "-route" + route.id + "-space" + spaceIndex);
-                if (destination == 'map') {
+                if (destination == 'route-spaces') {
                     _this.setSpaceClickEvents(spaceDiv, route);
                 }
                 else {
@@ -1088,7 +1088,7 @@ var TtrMap = /** @class */ (function () {
      */
     TtrMap.prototype.setSelectableRoutes = function (selectable, possibleRoutes) {
         if (selectable) {
-            possibleRoutes.forEach(function (route) { return ROUTES.find(function (r) { return r.id == route.id; }).spaces.forEach(function (_, index) { var _a; return (_a = document.getElementById("map-route" + route.id + "-space" + index)) === null || _a === void 0 ? void 0 : _a.classList.add('selectable'); }); });
+            possibleRoutes.forEach(function (route) { return ROUTES.find(function (r) { return r.id == route.id; }).spaces.forEach(function (_, index) { var _a; return (_a = document.getElementById("route-spaces-route" + route.id + "-space" + index)) === null || _a === void 0 ? void 0 : _a.classList.add('selectable'); }); });
         }
         else {
             dojo.query('.route-space').removeClass('selectable');
@@ -1107,7 +1107,7 @@ var TtrMap = /** @class */ (function () {
             if (_this.game.isDoubleRouteForbidden()) {
                 var otherRoute_1 = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
                 otherRoute_1 === null || otherRoute_1 === void 0 ? void 0 : otherRoute_1.spaces.forEach(function (space, spaceIndex) {
-                    var spaceDiv = document.getElementById("map-route" + otherRoute_1.id + "-space" + spaceIndex);
+                    var spaceDiv = document.getElementById("route-spaces-route" + otherRoute_1.id + "-space" + spaceIndex);
                     spaceDiv === null || spaceDiv === void 0 ? void 0 : spaceDiv.classList.add('forbidden');
                 });
             }
@@ -1148,7 +1148,26 @@ var TtrMap = /** @class */ (function () {
         var EASE_WEIGHT = 0.75;
         var angleOnOne = (Math.acos(-2 * angle / 180 + 1) / Math.PI) * EASE_WEIGHT + (angle / 180 * (1 - EASE_WEIGHT));
         var angleClassNumber = Math.round(angleOnOne * 36);
-        dojo.place("<div id=\"" + id + "\" class=\"wagon angle" + angleClassNumber + " " + (phantom ? 'phantom' : '') + " " + (space.top ? 'top' : '') + "\" data-player-color=\"" + player.color + "\" data-color-blind-player-no=\"" + player.playerNo + "\" style=\"transform: translate(" + x + "px, " + y + "px)\"></div>", 'map');
+        var alreadyPlacedWagons = Array.from(document.querySelectorAll('.wagon'));
+        var xy = x + y;
+        var wagonHtml = "<div id=\"" + id + "\" class=\"wagon angle" + angleClassNumber + " " + (phantom ? 'phantom' : '') + " " + (space.top ? 'top' : '') + "\" data-player-color=\"" + player.color + "\" data-color-blind-player-no=\"" + player.playerNo + "\" data-xy=\"" + xy + "\" style=\"transform: translate(" + x + "px, " + y + "px)\"></div>";
+        // we consider a wagon must be more visible than another if its X + Y is > as the other
+        if (!alreadyPlacedWagons.length) {
+            dojo.place(wagonHtml, 'train-cars');
+        }
+        else {
+            var placed = false;
+            for (var i = 0; i < alreadyPlacedWagons.length; i++) {
+                if (Number(alreadyPlacedWagons[i].dataset.xy) > xy) {
+                    dojo.place(wagonHtml, alreadyPlacedWagons[i].id, 'before');
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) {
+                dojo.place(wagonHtml, 'train-cars');
+            }
+        }
         if (fromPlayerId) {
             this.animateWagonFromCounter(fromPlayerId, id, x, y);
         }
@@ -1162,8 +1181,8 @@ var TtrMap = /** @class */ (function () {
         var _this = this;
         if (!phantom) {
             route.spaces.forEach(function (space, spaceIndex) {
-                var spaceDiv = document.getElementById("map-route" + route.id + "-space" + spaceIndex);
-                spaceDiv.parentElement.removeChild(spaceDiv);
+                var spaceDiv = document.getElementById("route-spaces-route" + route.id + "-space" + spaceIndex);
+                spaceDiv === null || spaceDiv === void 0 ? void 0 : spaceDiv.parentElement.removeChild(spaceDiv);
             });
         }
         if (fromPlayerId) {
