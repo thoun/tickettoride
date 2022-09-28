@@ -133,7 +133,7 @@ trait ActionTrait {
 
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
         if ($remainingTrainCars < $route->number) {
-            throw new BgaUserException("Not enough train cars to claim the route.");
+            throw new BgaUserException(self::_("Not enough train cars left to claim the route."));
         }
         
         $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));

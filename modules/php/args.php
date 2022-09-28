@@ -56,7 +56,9 @@ trait ArgsTrait {
         $playerId = intval(self::getActivePlayerId());
 
         $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
-        $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
+        // we don't limit claimable routes to the number of remaining train cars, because the players don't understand why they can't claim the route
+        // so instead they'll get an error when they try to claim the route, saying they don't have enough train cars left
+        $remainingTrainCars = 99; //$this->getRemainingTrainCarsCount($playerId);
 
         $possibleRoutes = $this->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
         $maxHiddenCardsPick = min(2, $this->getRemainingTrainCarCardsInDeck(true));
