@@ -1211,7 +1211,7 @@ var TtrMap = /** @class */ (function () {
         var screenRatio = document.getElementById('game_play_area').clientWidth / (window.innerHeight - 80);
         var leftDistance = Math.abs(LEFT_RATIO - screenRatio);
         var bottomDistance = Math.abs(BOTTOM_RATIO - screenRatio);
-        var left = leftDistance < bottomDistance;
+        var left = leftDistance < bottomDistance || this.game.isSpectator;
         this.game.setPlayerTablePosition(left);
         var gameWidth = (left ? PLAYER_WIDTH : 0) + MAP_WIDTH + DECK_WIDTH;
         var gameHeight = MAP_HEIGHT + (left ? 0 : PLAYER_HEIGHT * 0.75);

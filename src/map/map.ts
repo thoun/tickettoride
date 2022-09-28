@@ -405,7 +405,7 @@ class TtrMap {
         const screenRatio = document.getElementById('game_play_area').clientWidth / (window.innerHeight - 80);
         const leftDistance = Math.abs(LEFT_RATIO - screenRatio);
         const bottomDistance = Math.abs(BOTTOM_RATIO - screenRatio);
-        const left = leftDistance < bottomDistance;
+        const left = leftDistance < bottomDistance || (this.game as any).isSpectator;
         this.game.setPlayerTablePosition(left);
 
         const gameWidth = (left ? PLAYER_WIDTH : 0) + MAP_WIDTH + DECK_WIDTH;
