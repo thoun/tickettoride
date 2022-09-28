@@ -28,6 +28,15 @@ trait DebugUtilTrait {
         return $card;
     }
 
+    function debugEmptyDeck() {
+        $this->trainCars->moveAllCardsInLocation('deck', 'void');
+    }
+    
+    function debugAlmostEmptyDeck() {
+        $moveNumber = $this->getRemainingTrainCarCardsInDeck(true) - 1;
+        $this->trainCars->pickCardsForLocation($moveNumber, 'deck', 'void');
+    }
+
     function debugClaimRoute($playerId, $routeId) {
         self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
 

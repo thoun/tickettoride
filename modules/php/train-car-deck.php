@@ -53,6 +53,16 @@ trait TrainCarDeckTrait {
             throw new BgaUserException("You must take one card.");
         }
 
+        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
+
+        if ($number == 2 && $remainingTrainCarCardsInDeck == 1) {
+            $number = 1;
+        }
+
+        if ($number > $remainingTrainCarCardsInDeck) {
+            throw new BgaUserException(self::_("You can't take train car cards because the deck is empty"));
+        }
+
         $cards = $this->getTrainCarsFromDb($this->trainCars->pickCards($number, 'deck', $playerId));
 
         $this->notifyAllPlayers('trainCarPicked', clienttranslate('${player_name} takes ${count} hidden train car card(s)'), [
@@ -74,6 +84,8 @@ trait TrainCarDeckTrait {
             'colors' => array_map(fn($card) => $card->type, $cards),
             'origin' => 0, // 0 means hidden
         ]);
+
+        return $number;
     }
 
     /**
@@ -88,6 +100,11 @@ trait TrainCarDeckTrait {
 
         if ($isSecondCard && $card->type == 0 && VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS) {
             throw new BgaUserException("You can't take a locomotive as a second card.");
+        }
+
+        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
+        if ($remainingTrainCarCardsInDeck == 0) {
+            throw new BgaUserException(self::_("You can't take train car cards because the deck is empty"));
         }
 
         $spot = $card->location_arg;
@@ -153,7 +170,8 @@ trait TrainCarDeckTrait {
         }
 
         $this->notifyAllPlayers('newCardsOnTable', clienttranslate('Three locomotives have been revealed, visible train cards are replaced'), [
-            'cards' => $cards
+            'cards' => $cards,            
+            'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
         ]);
 
         $this->incStat(1, 'visibleCardsReplaced');
@@ -168,7 +186,8 @@ trait TrainCarDeckTrait {
         $card = $this->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $spot));
 
         $this->notifyAllPlayers('newCardsOnTable', '', [
-            'cards' => [$card]
+            'cards' => [$card],
+            'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
         ]);
 
         return [$card];

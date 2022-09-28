@@ -2422,6 +2422,7 @@ var TicketToRide = /** @class */ (function () {
      */
     TicketToRide.prototype.onEnteringChooseAction = function (args) {
         var _a, _b;
+        this.setGamestateDescription(args.maxHiddenCardsPick == 0 ? 'NoTrainCarsCards' : '');
         var currentPlayerActive = this.isCurrentPlayerActive();
         this.trainCarSelection.setSelectableTopDeck(currentPlayerActive, args.maxHiddenCardsPick);
         this.map.setSelectableRoutes(currentPlayerActive, args.possibleRoutes);
@@ -2503,6 +2504,13 @@ var TicketToRide = /** @class */ (function () {
     ///////////////////////////////////////////////////
     //// Utility methods
     ///////////////////////////////////////////////////
+    TicketToRide.prototype.setGamestateDescription = function (property) {
+        if (property === void 0) { property = ''; }
+        var originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
+        this.gamedatas.gamestate.description = originalState['description' + property];
+        this.gamedatas.gamestate.descriptionmyturn = originalState['descriptionmyturn' + property];
+        this.updatePageTitle();
+    };
     /**
      * Handle user preferences changes.
      */
@@ -2977,6 +2985,7 @@ var TicketToRide = /** @class */ (function () {
             this.disableNextMoveSound();
         }
         this.trainCarSelection.setNewCardsOnTable(notif.args.cards, true);
+        this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     };
     /**
      * Update claimed routes.

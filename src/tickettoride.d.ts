@@ -153,10 +153,7 @@ interface NotifTrainCarsPickedArgs {
 
 interface NotifNewCardsOnTableArgs {
     cards: TrainCar[];
-}
-
-interface NotifNewCardsOnTableArgs {
-    cards: TrainCar[];
+    remainingTrainCarsInDeck: number;
 }
 
 interface NotifClaimedRouteArgs {

@@ -44,14 +44,15 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
-        $this->drawTrainCarCardsFromDeck($playerId, $number);
+        $drawNumber = $this->drawTrainCarCardsFromDeck($playerId, $number);
 
-        self::incStat($number, 'collectedTrainCarCards');
-        self::incStat($number, 'collectedTrainCarCards', $playerId);
-        self::incStat($number, 'collectedHiddenTrainCarCards');
-        self::incStat($number, 'collectedHiddenTrainCarCards', $playerId);
+        self::incStat($drawNumber, 'collectedTrainCarCards');
+        self::incStat($drawNumber, 'collectedTrainCarCards', $playerId);
+        self::incStat($drawNumber, 'collectedHiddenTrainCarCards');
+        self::incStat($drawNumber, 'collectedHiddenTrainCarCards', $playerId);
 
-        $this->gamestate->nextState($number == 2 ? 'nextPlayer' : 'drawSecondCard'); 
+        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
+        $this->gamestate->nextState($drawNumber == 2 || $remainingTrainCarCardsInDeck == 0 ? 'nextPlayer' : 'drawSecondCard'); 
     }
   	
     public function drawTableCard(int $id) {
@@ -70,7 +71,8 @@ trait ActionTrait {
             self::incStat(1, 'collectedVisibleLocomotives', $playerId);
         }
 
-        $this->gamestate->nextState($card->type == 0 ? 'nextPlayer' : 'drawSecondCard'); 
+        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
+        $this->gamestate->nextState($card->type == 0 || $remainingTrainCarCardsInDeck == 0 ? 'nextPlayer' : 'drawSecondCard'); 
     }
   	
     public function drawSecondDeckCard() {

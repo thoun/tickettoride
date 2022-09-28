@@ -122,6 +122,8 @@ class TicketToRide implements TicketToRideGame {
      * Show selectable routes, and make train car draggable.
      */ 
     private onEnteringChooseAction(args: EnteringChooseActionArgs) {
+        this.setGamestateDescription(args.maxHiddenCardsPick == 0 ? 'NoTrainCarsCards' : '');
+
         const currentPlayerActive = (this as any).isCurrentPlayerActive();
         this.trainCarSelection.setSelectableTopDeck(currentPlayerActive, args.maxHiddenCardsPick);
         
@@ -211,6 +213,13 @@ class TicketToRide implements TicketToRideGame {
 
 
     ///////////////////////////////////////////////////
+    
+    private setGamestateDescription(property: string = '') {
+        const originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
+        this.gamedatas.gamestate.description = originalState['description' + property]; 
+        this.gamedatas.gamestate.descriptionmyturn = originalState['descriptionmyturn' + property]; 
+        (this as any).updatePageTitle();
+    }
 
     /**
      * Handle user preferences changes.
@@ -749,6 +758,7 @@ class TicketToRide implements TicketToRideGame {
         }
 
         this.trainCarSelection.setNewCardsOnTable(notif.args.cards, true);
+        this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }
 
     /** 
