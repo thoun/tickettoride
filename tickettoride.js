@@ -2333,7 +2333,7 @@ var ANIMATION_MS = 500;
 var SCORE_MS = 1500;
 var isDebug = window.location.host == 'studio.boardgamearena.com';
 var log = isDebug ? console.log.bind(window.console) : function () { };
-var ACTION_TIMER_DURATION = 6;
+var ACTION_TIMER_DURATION = 8;
 var TicketToRide = /** @class */ (function () {
     function TicketToRide() {
         this.playerTable = null;
@@ -2343,6 +2343,7 @@ var TicketToRide = /** @class */ (function () {
         this.animations = [];
         this.isTouch = window.matchMedia('(hover: none)').matches;
         this.routeToConfirm = null;
+        this.actionTimerId = null;
     }
     /*
         setup:
@@ -2712,25 +2713,28 @@ var TicketToRide = /** @class */ (function () {
      * Timer for Confirm button
      */
     TicketToRide.prototype.startActionTimer = function (buttonId, time) {
+        var _this = this;
+        if (this.actionTimerId) {
+            window.clearInterval(this.actionTimerId);
+        }
         var button = document.getElementById(buttonId);
-        var actionTimerId = null;
         var _actionTimerLabel = button.innerHTML;
         var _actionTimerSeconds = time;
         var actionTimerFunction = function () {
             var button = document.getElementById(buttonId);
             if (button == null) {
-                window.clearInterval(actionTimerId);
+                window.clearInterval(_this.actionTimerId);
             }
             else if (_actionTimerSeconds-- > 1) {
                 button.innerHTML = _actionTimerLabel + ' (' + _actionTimerSeconds + ')';
             }
             else {
-                window.clearInterval(actionTimerId);
+                window.clearInterval(_this.actionTimerId);
                 button.click();
             }
         };
         actionTimerFunction();
-        actionTimerId = window.setInterval(function () { return actionTimerFunction(); }, 1000);
+        this.actionTimerId = window.setInterval(function () { return actionTimerFunction(); }, 1000);
     };
     TicketToRide.prototype.setChooseActionGamestateDescription = function (newText) {
         if (!this.originalTextChooseAction) {

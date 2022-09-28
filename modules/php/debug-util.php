@@ -15,7 +15,7 @@ trait DebugUtilTrait {
 
         //$this->debugClaimAllRoutes(2343492, 0.2);
         //$this->debugClaimAllRoutes(2343493, 0.2);
-        $this->debugSetLastTurn();
+        //$this->debugSetLastTurn();
 
         //$this->debugSetRemainingTrainCarDeck(1);
 

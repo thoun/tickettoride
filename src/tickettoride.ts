@@ -4,7 +4,7 @@ const SCORE_MS = 1500;
 const isDebug = window.location.host == 'studio.boardgamearena.com';
 const log = isDebug ? console.log.bind(window.console) : function () { };
 
-const ACTION_TIMER_DURATION = 6;
+const ACTION_TIMER_DURATION = 8;
 
 class TicketToRide implements TicketToRideGame {
     private gamedatas: TicketToRideGamedatas;
@@ -25,6 +25,7 @@ class TicketToRide implements TicketToRideGame {
     private isTouch = window.matchMedia('(hover: none)').matches;
     private routeToConfirm: { route: Route, color: number } | null = null;
     private originalTextChooseAction: string;
+    private actionTimerId = null;
 
     constructor() {
     }
@@ -460,24 +461,27 @@ class TicketToRide implements TicketToRideGame {
      * Timer for Confirm button
      */
     private startActionTimer(buttonId: string, time: number) {
+        if (this.actionTimerId) {
+            window.clearInterval(this.actionTimerId);
+        }
+
         const button = document.getElementById(buttonId);
  
-        let actionTimerId = null;
         const _actionTimerLabel = button.innerHTML;
         let _actionTimerSeconds = time;
         const actionTimerFunction = () => {
           const button = document.getElementById(buttonId);
           if (button == null) {
-            window.clearInterval(actionTimerId);
+            window.clearInterval(this.actionTimerId);
           } else if (_actionTimerSeconds-- > 1) {
             button.innerHTML = _actionTimerLabel + ' (' + _actionTimerSeconds + ')';
           } else {
-            window.clearInterval(actionTimerId);
+            window.clearInterval(this.actionTimerId);
             button.click();
           }
         };
         actionTimerFunction();
-        actionTimerId = window.setInterval(() => actionTimerFunction(), 1000);
+        this.actionTimerId = window.setInterval(() => actionTimerFunction(), 1000);
     }
     
     private setChooseActionGamestateDescription(newText?: string) {
