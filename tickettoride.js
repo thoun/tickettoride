@@ -1710,6 +1710,16 @@ var TrainCarSelection = /** @class */ (function () {
     TrainCarSelection.prototype.getVisibleColors = function () {
         return this.visibleCardsSpots.map(function (stock) { return stock.getVisibleColor(); });
     };
+    /**
+     * Animate the 3 visible locomotives (bump) before they are replaced.
+     */
+    TrainCarSelection.prototype.highlightVisibleLocomotives = function () {
+        this.visibleCardsSpots.filter(function (stock) { return stock.getVisibleColor() == 0; }).forEach(function (stock) {
+            var cardDiv = stock.getCardDiv();
+            cardDiv.classList.remove('highlight-locomotive');
+            cardDiv.classList.add('highlight-locomotive');
+        });
+    };
     return TrainCarSelection;
 }());
 /**
@@ -2924,6 +2934,7 @@ var TicketToRide = /** @class */ (function () {
             ['points', 1],
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
+            ['highlightVisibleLocomotives', 1000],
             ['lastTurn', 1],
             ['bestScore', 1],
             ['scoreDestination', 2000],
@@ -2986,6 +2997,12 @@ var TicketToRide = /** @class */ (function () {
         }
         this.trainCarSelection.setNewCardsOnTable(notif.args.cards, true);
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
+    };
+    /**
+     * Animate the 3 visible locomotives (bump) before they are replaced.
+     */
+    TicketToRide.prototype.notif_highlightVisibleLocomotives = function () {
+        this.trainCarSelection.highlightVisibleLocomotives();
     };
     /**
      * Update claimed routes.

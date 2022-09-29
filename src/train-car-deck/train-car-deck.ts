@@ -184,4 +184,15 @@ class TrainCarSelection {
     public getVisibleColors(): number[] {
         return this.visibleCardsSpots.map(stock => stock.getVisibleColor());
     }
+    
+    /**
+     * Animate the 3 visible locomotives (bump) before they are replaced.
+     */ 
+    public highlightVisibleLocomotives() {
+        this.visibleCardsSpots.filter(stock => stock.getVisibleColor() == 0).forEach(stock => {
+            const cardDiv = stock.getCardDiv();
+            cardDiv.classList.remove('highlight-locomotive');
+            cardDiv.classList.add('highlight-locomotive');
+        });
+    }
 }

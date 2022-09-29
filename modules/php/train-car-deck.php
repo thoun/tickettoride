@@ -169,7 +169,9 @@ trait TrainCarDeckTrait {
             $cards[] = $this->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $i));
         }
 
-        $this->notifyAllPlayers('newCardsOnTable', clienttranslate('Three locomotives have been revealed, visible train cards are replaced'), [
+        $this->notifyAllPlayers('highlightVisibleLocomotives', clienttranslate('Three locomotives have been revealed, visible train cards are replaced'), []);
+
+        $this->notifyAllPlayers('newCardsOnTable', '', [
             'cards' => $cards,            
             'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
         ]);

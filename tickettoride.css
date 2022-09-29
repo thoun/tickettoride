@@ -700,6 +700,7 @@
   width: 250px;
   display: flex;
   flex-direction: column;
+  z-index: 7;
 }
 #train-car-deck .stock {
   position: relative;
@@ -867,6 +868,22 @@
   transition: transform 0.5s;
 }
 
+.highlight-locomotive {
+  filter: unset !important;
+  animation: locomotives-animation 1s 1 forwards ease-in-out;
+}
+
+@keyframes locomotives-animation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 #destination-deck {
   position: absolute;
   top: 0;

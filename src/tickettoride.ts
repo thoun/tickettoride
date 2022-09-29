@@ -694,6 +694,7 @@ class TicketToRide implements TicketToRideGame {
             ['points', 1],
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
+            ['highlightVisibleLocomotives', 1000],
             ['lastTurn', 1],
             ['bestScore', 1],
             ['scoreDestination', 2000],
@@ -759,6 +760,13 @@ class TicketToRide implements TicketToRideGame {
 
         this.trainCarSelection.setNewCardsOnTable(notif.args.cards, true);
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
+    }
+
+    /**
+     * Animate the 3 visible locomotives (bump) before they are replaced.
+     */ 
+    notif_highlightVisibleLocomotives() {
+        this.trainCarSelection.highlightVisibleLocomotives();
     }
 
     /** 
