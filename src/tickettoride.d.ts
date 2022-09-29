@@ -79,6 +79,8 @@ interface TicketToRideGamedatas {
     destinationDeckMaxCount: number;
     lastTurn: boolean;
     bestScore: number;
+
+    showTurnOrder: boolean;
 }
 
 interface TicketToRideGame extends Game {

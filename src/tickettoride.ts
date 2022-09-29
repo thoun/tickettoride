@@ -168,6 +168,9 @@ class TicketToRide implements TicketToRideGame {
                 mapDiv.querySelectorAll(`.city[data-selectable]`).forEach((city: HTMLElement) => city.dataset.selectable = 'false');
                 mapDiv.querySelectorAll(`.city[data-selected]`).forEach((city: HTMLElement) => city.dataset.selected = 'false');
                 break;
+            case 'multiChooseInitialDestinations':
+                (Array.from(document.getElementsByClassName('player-turn-order')) as HTMLDivElement[]).forEach(elem => elem.remove());
+                break;
             case 'chooseAction':
                 this.map.setSelectableRoutes(false, []);
                 this.playerTable?.setDraggable(false);
@@ -332,6 +335,10 @@ class TicketToRide implements TicketToRideGame {
                 this.completedDestinationsCounter = new ebg.counter();
                 this.completedDestinationsCounter.create(`completed-destinations-counter-${player.id}`);
                 this.completedDestinationsCounter.setValue(gamedatas.completedDestinations.length);
+            }
+
+            if (gamedatas.showTurnOrder && gamedatas.gamestate.id < 30) { // don't show turn order if game is already started (refresh or TB game)
+                dojo.place(`<div class="player-turn-order">${_('Player ${number}').replace('${number}', `<strong>${player.playerNo}</strong>`)}</div>`, `player_board_${player.id}`);
             }
         });
 

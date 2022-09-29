@@ -24,7 +24,23 @@
  *
  */
 
-$game_options = [];
+$game_options = [
+    110 => [
+        'name' => totranslate('Turn order'),
+        'values' => [
+            1 => [
+                'name' => totranslate('Turn order determined after selecting tickets'),
+                'description' => totranslate('Turn order is not known when selecting tickets'),
+            ],
+            2 => [
+                'name' => totranslate('Turn order determined before selecting tickets'),
+                'description' => totranslate('Turn order is visible when selecting tickets'),
+                'tmdisplay' => totranslate('Turn order determined before selecting tickets'),
+            ],
+        ],
+        'default' => 1,
+    ],
+];
 
 $game_preferences = [
     206 => [

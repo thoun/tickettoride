@@ -2473,6 +2473,9 @@ var TicketToRide = /** @class */ (function () {
                 mapDiv.querySelectorAll(".city[data-selectable]").forEach(function (city) { return city.dataset.selectable = 'false'; });
                 mapDiv.querySelectorAll(".city[data-selected]").forEach(function (city) { return city.dataset.selected = 'false'; });
                 break;
+            case 'multiChooseInitialDestinations':
+                Array.from(document.getElementsByClassName('player-turn-order')).forEach(function (elem) { return elem.remove(); });
+                break;
             case 'chooseAction':
                 this.map.setSelectableRoutes(false, []);
                 (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(false);
@@ -2606,6 +2609,9 @@ var TicketToRide = /** @class */ (function () {
                 _this.completedDestinationsCounter = new ebg.counter();
                 _this.completedDestinationsCounter.create("completed-destinations-counter-" + player.id);
                 _this.completedDestinationsCounter.setValue(gamedatas.completedDestinations.length);
+            }
+            if (gamedatas.showTurnOrder && gamedatas.gamestate.id < 30) { // don't show turn order if game is already started (refresh or TB game)
+                dojo.place("<div class=\"player-turn-order\">" + _('Player ${number}').replace('${number}', "<strong>" + player.playerNo + "</strong>") + "</div>", "player_board_" + player.id);
             }
         });
         this.addTooltipHtmlToClass('train-car-counter', _("Remaining train cars"));

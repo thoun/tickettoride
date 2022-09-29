@@ -57,7 +57,7 @@ define('END_SCORE', 100);
  * Options
  */
 
-//define('UNDO', 'Undo');
+define('SHOW_TURN_ORDER', 'SHOW_TURN_ORDER');
 
 /*
  * Variables

@@ -48,6 +48,9 @@ class TicketToRide extends Table {
         
         $this->initGameStateLabels([
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
+
+            // options
+            SHOW_TURN_ORDER => 110, // last turn is the id of the player starting last turn, 0 if it's not last turn
         ]);
         
         $this->destinations = $this->getNew("module.common.deck");
@@ -208,6 +211,8 @@ class TicketToRide extends Table {
         $result['destinationDeckCount'] = $this->getRemainingDestinationCardsInDeck();
         $result['trainCarDeckMaxCount'] = 110;
         $result['destinationDeckMaxCount'] = 30;
+
+        $result['showTurnOrder'] = intval($this->getGameStateValue(SHOW_TURN_ORDER)) == 2;
         
         if ($isEnd) {
             $result['bestScore'] = max(array_map(fn($player) => intval($player['score']), $result['players']));
