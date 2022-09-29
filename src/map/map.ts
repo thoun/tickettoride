@@ -219,8 +219,17 @@ class TtrMap {
      */ 
     private routeDragOver(e: DragEvent, route: Route) {
         const cardsColor = Number(this.mapDiv.dataset.dragColor);
-        const canClaimRoute = this.game.canClaimRoute(route, cardsColor);
-        this.setHoveredRoute(route, canClaimRoute);
+
+        let overRoute = route;
+        if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
+            const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            if (otherRoute && otherRoute.color == cardsColor) {
+                overRoute = otherRoute;
+            }
+        }
+        let canClaimRoute = this.game.canClaimRoute(overRoute, cardsColor);
+
+        this.setHoveredRoute(overRoute, canClaimRoute);
         if (canClaimRoute) {
             e.preventDefault();
         }
@@ -240,7 +249,16 @@ class TtrMap {
         this.setHoveredRoute(null);
         const cardsColor = Number(this.mapDiv.dataset.dragColor);
         mapDiv.dataset.dragColor = '';
-        this.game.askRouteClaimConfirmation(route, cardsColor);
+        
+        let overRoute = route;
+        if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
+            const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            if (otherRoute && otherRoute.color == cardsColor) {
+                overRoute = otherRoute;
+            }
+        }
+        
+        this.game.askRouteClaimConfirmation(overRoute, cardsColor);
     };
 
     /** 
@@ -268,12 +286,12 @@ class TtrMap {
      * Highlight selectable route spaces.
      */ 
     public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
+        dojo.query('.route-space').removeClass('selectable');
+
         if (selectable) {
             possibleRoutes.forEach(route => ROUTES.find(r => r.id == route.id).spaces.forEach((_, index) => 
                 document.getElementById(`route-spaces-route${route.id}-space${index}`)?.classList.add('selectable'))
             );
-        } else {            
-            dojo.query('.route-space').removeClass('selectable');
         }
     }
 

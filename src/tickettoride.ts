@@ -438,6 +438,19 @@ class TicketToRide implements TicketToRideGame {
         };
     }
     
+    public selectedColorChanged(selectedColor: number | null) {
+        if(!(this as any).isCurrentPlayerActive() || this.gamedatas.gamestate.name !== 'chooseAction') {
+            return;
+        }
+
+        const args = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
+        if (selectedColor === null || selectedColor === 0) {
+            this.map.setSelectableRoutes(true, args.possibleRoutes);
+        } else {
+            this.map.setSelectableRoutes(true, args.possibleRoutes.filter(route => route.color === selectedColor || route.color === 0));
+        }
+    }
+    
     /** 
      * Handle route click.
      */ 
@@ -553,6 +566,15 @@ class TicketToRide implements TicketToRideGame {
      * Ask confirmation for claimed route.
      */
     public askRouteClaimConfirmation(route: Route, color: number) {
+        const selectedColor = this.playerTable.getSelectedColor();
+        if (route.color !== 0 && selectedColor !== null && selectedColor !== 0 && route.color !== selectedColor) {
+            const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            if (otherRoute.color === selectedColor) {
+                this.askRouteClaimConfirmation(otherRoute, selectedColor);
+            }
+            return;
+        }
+
         if (this.confirmRouteClaimActive()) {
             this.routeToConfirm = { route, color };
             this.map.setHoveredRoute(route, true);

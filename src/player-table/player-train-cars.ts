@@ -191,6 +191,8 @@ class PlayerTrainCars {
         const group = document.getElementById(`train-car-group-${color}`);
         group?.classList.add('selected');
         this.selectedColor = color;
+
+        this.game.selectedColorChanged(this.selectedColor);
     }
 
     private deselectColor(color: number) {
@@ -201,6 +203,8 @@ class PlayerTrainCars {
         const group = document.getElementById(`train-car-group-${color}`);
         group?.classList.remove('selected');
         this.selectedColor = null;
+
+        this.game.selectedColorChanged(this.selectedColor);
     }
 
     private getGroups(): HTMLDivElement[] {

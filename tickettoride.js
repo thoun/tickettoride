@@ -1040,8 +1040,15 @@ var TtrMap = /** @class */ (function () {
      */
     TtrMap.prototype.routeDragOver = function (e, route) {
         var cardsColor = Number(this.mapDiv.dataset.dragColor);
-        var canClaimRoute = this.game.canClaimRoute(route, cardsColor);
-        this.setHoveredRoute(route, canClaimRoute);
+        var overRoute = route;
+        if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
+            var otherRoute = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+            if (otherRoute && otherRoute.color == cardsColor) {
+                overRoute = otherRoute;
+            }
+        }
+        var canClaimRoute = this.game.canClaimRoute(overRoute, cardsColor);
+        this.setHoveredRoute(overRoute, canClaimRoute);
         if (canClaimRoute) {
             e.preventDefault();
         }
@@ -1059,7 +1066,14 @@ var TtrMap = /** @class */ (function () {
         this.setHoveredRoute(null);
         var cardsColor = Number(this.mapDiv.dataset.dragColor);
         mapDiv.dataset.dragColor = '';
-        this.game.askRouteClaimConfirmation(route, cardsColor);
+        var overRoute = route;
+        if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
+            var otherRoute = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+            if (otherRoute && otherRoute.color == cardsColor) {
+                overRoute = otherRoute;
+            }
+        }
+        this.game.askRouteClaimConfirmation(overRoute, cardsColor);
     };
     ;
     /**
@@ -1087,11 +1101,9 @@ var TtrMap = /** @class */ (function () {
      * Highlight selectable route spaces.
      */
     TtrMap.prototype.setSelectableRoutes = function (selectable, possibleRoutes) {
+        dojo.query('.route-space').removeClass('selectable');
         if (selectable) {
             possibleRoutes.forEach(function (route) { return ROUTES.find(function (r) { return r.id == route.id; }).spaces.forEach(function (_, index) { var _a; return (_a = document.getElementById("route-spaces-route" + route.id + "-space" + index)) === null || _a === void 0 ? void 0 : _a.classList.add('selectable'); }); });
-        }
-        else {
-            dojo.query('.route-space').removeClass('selectable');
         }
     };
     /**
@@ -2099,6 +2111,7 @@ var PlayerTrainCars = /** @class */ (function () {
         var group = document.getElementById("train-car-group-" + color);
         group === null || group === void 0 ? void 0 : group.classList.add('selected');
         this.selectedColor = color;
+        this.game.selectedColorChanged(this.selectedColor);
     };
     PlayerTrainCars.prototype.deselectColor = function (color) {
         if (color === null) {
@@ -2107,6 +2120,7 @@ var PlayerTrainCars = /** @class */ (function () {
         var group = document.getElementById("train-car-group-" + color);
         group === null || group === void 0 ? void 0 : group.classList.remove('selected');
         this.selectedColor = null;
+        this.game.selectedColorChanged(this.selectedColor);
     };
     PlayerTrainCars.prototype.getGroups = function () {
         return Array.from(document.getElementsByClassName('train-car-group'));
@@ -2698,6 +2712,18 @@ var TicketToRide = /** @class */ (function () {
         }
         ;
     };
+    TicketToRide.prototype.selectedColorChanged = function (selectedColor) {
+        if (!this.isCurrentPlayerActive() || this.gamedatas.gamestate.name !== 'chooseAction') {
+            return;
+        }
+        var args = this.gamedatas.gamestate.args;
+        if (selectedColor === null || selectedColor === 0) {
+            this.map.setSelectableRoutes(true, args.possibleRoutes);
+        }
+        else {
+            this.map.setSelectableRoutes(true, args.possibleRoutes.filter(function (route) { return route.color === selectedColor || route.color === 0; }));
+        }
+    };
     /**
      * Handle route click.
      */
@@ -2809,6 +2835,14 @@ var TicketToRide = /** @class */ (function () {
      * Ask confirmation for claimed route.
      */
     TicketToRide.prototype.askRouteClaimConfirmation = function (route, color) {
+        var selectedColor = this.playerTable.getSelectedColor();
+        if (route.color !== 0 && selectedColor !== null && selectedColor !== 0 && route.color !== selectedColor) {
+            var otherRoute = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+            if (otherRoute.color === selectedColor) {
+                this.askRouteClaimConfirmation(otherRoute, selectedColor);
+            }
+            return;
+        }
         if (this.confirmRouteClaimActive()) {
             this.routeToConfirm = { route: route, color: color };
             this.map.setHoveredRoute(route, true);
