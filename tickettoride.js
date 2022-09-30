@@ -2891,7 +2891,7 @@ var TicketToRide = /** @class */ (function () {
             return;
         }
         var confirmation = ((_a = this.prefs[206]) === null || _a === void 0 ? void 0 : _a.value) !== 2;
-        if (confirmation) {
+        if (confirmation && this.gamedatas.gamestate.args.maxDestinationsPick) {
             this.confirmationDialog(_('Are you sure you want to take new destinations?'), function () {
                 _this.takeAction('drawDestinations');
             });

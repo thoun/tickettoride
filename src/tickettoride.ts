@@ -627,7 +627,7 @@ class TicketToRide implements TicketToRideGame {
 
         const confirmation = (this as any).prefs[206]?.value !== 2;
 
-        if (confirmation) {
+        if (confirmation && this.gamedatas.gamestate.args.maxDestinationsPick) {
             (this as any).confirmationDialog( _('Are you sure you want to take new destinations?'), () => {
                 this.takeAction('drawDestinations');
             }); 

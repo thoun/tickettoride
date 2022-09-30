@@ -114,6 +114,11 @@ trait ActionTrait {
         
         $playerId = intval(self::getActivePlayerId());
 
+        $remainingDestinationsCardsInDeck = $this->getRemainingDestinationCardsInDeck();
+        if ($remainingDestinationsCardsInDeck == 0) {
+            throw new BgaUserException(self::_("You can't take new Destination cards because the deck is empty"));
+        }
+
         $this->pickAdditionalDestinationCards($playerId);
 
         self::incStat(1, 'drawDestinationsAction');
