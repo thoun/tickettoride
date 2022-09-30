@@ -904,6 +904,12 @@ class TicketToRide implements TicketToRideGame {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }
                 });
+
+                ['you', 'actplayer', 'player_name'].forEach(field => {
+                    if (typeof args[field] === 'string' && args[field].indexOf('#ffed00;') !== -1 && args[field].indexOf('text-shadow') === -1) {
+                        args[field] = args[field].replace('#ffed00;', '#ffed00; text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;');
+                    }
+                });
             }
         } catch (e) {
             console.error(log,args,"Exception thrown", e.stack);
