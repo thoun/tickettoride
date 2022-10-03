@@ -144,7 +144,7 @@ trait TrainCarDeckTrait {
     /**
      * reset visible cards if there is 3 or more locomotives
      */
-    private function checkTooMuchLocomotives() {
+    private function checkTooMuchLocomotives(int $attempts = 0) {
         if (RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES === null) {
             return;
         }
@@ -152,10 +152,14 @@ trait TrainCarDeckTrait {
         $cards = $this->getVisibleTrainCarCards();
         $locomotives = count(array_filter($cards, fn($card) => $card->type == 0));
         if ($locomotives >= RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES) {
-            $this->trainCars->moveAllCardsInLocation('table', 'discard');
-            $this->placeNewTrainCarCardsOnTable();
+            if ($attempts >= 3) {
+                $this->notifyAllPlayers('log', clienttranslate('Three locomotives have been revealed multiples times in a row, they will stay visible'), []);
+            } else {
+                $this->trainCars->moveAllCardsInLocation('table', 'discard');
+                $this->placeNewTrainCarCardsOnTable();
 
-            $this->checkTooMuchLocomotives();
+                $this->checkTooMuchLocomotives($attempts + 1);
+            }
         }
     }
 
