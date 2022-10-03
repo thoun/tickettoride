@@ -1481,13 +1481,15 @@ var VisibleCardSpot = /** @class */ (function () {
      */
     VisibleCardSpot.prototype.setSelectableVisibleCards = function (availableVisibleCards) {
         var _this = this;
-        this.getCardDiv().classList.toggle('disabled', !availableVisibleCards.some(function (card) { return card.id == _this.card.id; }));
+        var _a;
+        (_a = this.getCardDiv()) === null || _a === void 0 ? void 0 : _a.classList.toggle('disabled', !availableVisibleCards.some(function (card) { return card.id == _this.card.id; }));
     };
     /**
      * Reset visible cards state.
      */
     VisibleCardSpot.prototype.removeSelectableVisibleCards = function () {
-        this.getCardDiv().classList.remove('disabled');
+        var _a;
+        (_a = this.getCardDiv()) === null || _a === void 0 ? void 0 : _a.classList.remove('disabled');
     };
     /**
      * Set new visible cards.
@@ -1523,6 +1525,9 @@ var VisibleCardSpot = /** @class */ (function () {
      * Get card div in the spot.
      */
     VisibleCardSpot.prototype.getCardDiv = function () {
+        if (!this.card) {
+            return null;
+        }
         return document.getElementById("train-car-card-" + this.card.id);
     };
     /**
@@ -1536,7 +1541,10 @@ var VisibleCardSpot = /** @class */ (function () {
      */
     VisibleCardSpot.prototype.moveTrainCarCardToPlayerBoard = function (playerId) {
         this.createCard(this.card);
-        animateCardToCounterAndDestroy(this.game, this.getCardDiv(), "train-car-card-counter-" + playerId + "-wrapper");
+        var cardDiv = this.getCardDiv();
+        if (cardDiv) {
+            animateCardToCounterAndDestroy(this.game, cardDiv, "train-car-card-counter-" + playerId + "-wrapper");
+        }
     };
     /**
      * Get visible card color.
@@ -1728,8 +1736,10 @@ var TrainCarSelection = /** @class */ (function () {
     TrainCarSelection.prototype.highlightVisibleLocomotives = function () {
         this.visibleCardsSpots.filter(function (stock) { return stock.getVisibleColor() == 0; }).forEach(function (stock) {
             var cardDiv = stock.getCardDiv();
-            cardDiv.classList.remove('highlight-locomotive');
-            cardDiv.classList.add('highlight-locomotive');
+            if (cardDiv) {
+                cardDiv.classList.remove('highlight-locomotive');
+                cardDiv.classList.add('highlight-locomotive');
+            }
         });
     };
     return TrainCarSelection;
@@ -2968,6 +2978,7 @@ var TicketToRide = /** @class */ (function () {
         //log( 'notifications subscriptions setup' );
         var _this = this;
         var notifs = [
+            ['newCardOnTable', ANIMATION_MS],
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
@@ -3025,6 +3036,13 @@ var TicketToRide = /** @class */ (function () {
         else {
             this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.origin, notif.args.number);
         }
+        this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
+    };
+    /**
+     * Update a visible card.
+     */
+    TicketToRide.prototype.notif_newCardOnTable = function (notif) {
+        this.trainCarSelection.setNewCardsOnTable([notif.args.card], true);
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     };
     /**

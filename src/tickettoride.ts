@@ -717,6 +717,7 @@ class TicketToRide implements TicketToRideGame {
         //log( 'notifications subscriptions setup' );
 
         const notifs = [
+            ['newCardOnTable', ANIMATION_MS],
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
@@ -775,6 +776,14 @@ class TicketToRide implements TicketToRideGame {
         } else {
             this.trainCarSelection.moveTrainCarCardToPlayerBoard(notif.args.playerId, notif.args.origin, notif.args.number);
         }
+        this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
+    }
+
+    /** 
+     * Update a visible card.
+     */ 
+    notif_newCardOnTable(notif: Notif<NotifNewCardOnTableArgs>) {
+        this.trainCarSelection.setNewCardsOnTable([notif.args.card], true);
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }
 

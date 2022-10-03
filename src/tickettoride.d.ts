@@ -154,8 +154,15 @@ interface NotifTrainCarsPickedArgs {
     origin: number; // 0 for hidden, else spot number
 }
 
+interface NotifNewCardOnTableArgs {
+    card: TrainCar | null;
+    spot: number;
+    remainingTrainCarsInDeck: number;
+}
+
 interface NotifNewCardsOnTableArgs {
     cards: TrainCar[];
+    spotsCards: { [spot: number]: TrainCar | null; };
     remainingTrainCarsInDeck: number;
 }
 

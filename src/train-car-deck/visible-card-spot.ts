@@ -19,14 +19,14 @@ class VisibleCardSpot {
      * Set selectable visible cards (locomotive can't be selected if 1 visible card has been picked).
      */ 
     public setSelectableVisibleCards(availableVisibleCards: TrainCar[]) {
-        this.getCardDiv().classList.toggle('disabled', !availableVisibleCards.some(card => card.id == this.card.id));
+        this.getCardDiv()?.classList.toggle('disabled', !availableVisibleCards.some(card => card.id == this.card.id));
     }
 
     /**
      * Reset visible cards state.
      */ 
     public removeSelectableVisibleCards() {
-        this.getCardDiv().classList.remove('disabled');
+        this.getCardDiv()?.classList.remove('disabled');
     }
 
     /**
@@ -66,7 +66,11 @@ class VisibleCardSpot {
     /**
      * Get card div in the spot.
      */ 
-    public getCardDiv(): HTMLDivElement {
+    public getCardDiv(): HTMLDivElement | null {
+        if (!this.card) {
+            return null;
+        }
+
         return document.getElementById(`train-car-card-${this.card.id}`) as HTMLDivElement;
     }
 
@@ -83,7 +87,10 @@ class VisibleCardSpot {
     public moveTrainCarCardToPlayerBoard(playerId: number) {
         this.createCard(this.card);
 
-        animateCardToCounterAndDestroy(this.game, this.getCardDiv(), `train-car-card-counter-${playerId}-wrapper`);
+        const cardDiv = this.getCardDiv();
+        if (cardDiv) {
+            animateCardToCounterAndDestroy(this.game, cardDiv, `train-car-card-counter-${playerId}-wrapper`);
+        }
     }
 
     /**

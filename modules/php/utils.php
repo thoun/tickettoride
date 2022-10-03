@@ -14,6 +14,9 @@ trait UtilTrait {
      * Transforms a TrainCar Db object to TrainCar class.
      */
     function getTrainCarFromDb($dbObject) {
+        if ($dbObject === null) {
+            return null;
+        }
         if (!$dbObject || !array_key_exists('id', $dbObject)) {
             throw new BgaSystemException("Train car doesn't exists ".json_encode($dbObject));
         }

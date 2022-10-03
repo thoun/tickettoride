@@ -191,8 +191,10 @@ class TrainCarSelection {
     public highlightVisibleLocomotives() {
         this.visibleCardsSpots.filter(stock => stock.getVisibleColor() == 0).forEach(stock => {
             const cardDiv = stock.getCardDiv();
-            cardDiv.classList.remove('highlight-locomotive');
-            cardDiv.classList.add('highlight-locomotive');
+            if (cardDiv) {
+                cardDiv.classList.remove('highlight-locomotive');
+                cardDiv.classList.add('highlight-locomotive');
+            }
         });
     }
 }

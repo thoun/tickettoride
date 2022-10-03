@@ -51,7 +51,7 @@ trait ActionTrait {
         self::incStat($drawNumber, 'collectedHiddenTrainCarCards');
         self::incStat($drawNumber, 'collectedHiddenTrainCarCards', $playerId);
 
-        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
+    $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true/* TODO , true*/);
         $this->gamestate->nextState($drawNumber == 2 || $remainingTrainCarCardsInDeck == 0 ? 'nextPlayer' : 'drawSecondCard'); 
     }
   	
@@ -71,7 +71,7 @@ trait ActionTrait {
             self::incStat(1, 'collectedVisibleLocomotives', $playerId);
         }
 
-        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
+        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true/* TODO , true*/);
         $this->gamestate->nextState($card->type == 0 || $remainingTrainCarCardsInDeck == 0 ? 'nextPlayer' : 'drawSecondCard'); 
     }
   	
