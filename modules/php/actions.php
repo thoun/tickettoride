@@ -51,7 +51,7 @@ trait ActionTrait {
         self::incStat($drawNumber, 'collectedHiddenTrainCarCards');
         self::incStat($drawNumber, 'collectedHiddenTrainCarCards', $playerId);
 
-    $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true/* TODO , true*/);
+    $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true, true);
         $this->gamestate->nextState($drawNumber == 2 || $remainingTrainCarCardsInDeck == 0 ? 'nextPlayer' : 'drawSecondCard'); 
     }
   	
@@ -71,8 +71,17 @@ trait ActionTrait {
             self::incStat(1, 'collectedVisibleLocomotives', $playerId);
         }
 
-        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true/* TODO , true*/);
-        $this->gamestate->nextState($card->type == 0 || $remainingTrainCarCardsInDeck == 0 ? 'nextPlayer' : 'drawSecondCard'); 
+        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true, true);
+        if ($card->type == 0 || $remainingTrainCarCardsInDeck == 0) {
+            // if the player chose a locomotive, or if it was the last card available
+            $this->gamestate->nextState('nextPlayer'); 
+        } else if ($remainingTrainCarCardsInDeck == 1) {
+            // check if the last card available is a locomotive, if yes the player can't take it so we end his turn
+            $tableCards = $this->getVisibleTrainCarCards();
+            $this->gamestate->nextState(count($tableCards) < 1 || $tableCards[0]->type == 0 ? 'nextPlayer' : 'drawSecondCard'); 
+        } else {
+            $this->gamestate->nextState('drawSecondCard'); 
+        }
     }
   	
     public function drawSecondDeckCard() {
@@ -185,7 +194,8 @@ trait ActionTrait {
 
         $this->checkCompletedDestinations($playerId);
 
-        // TODO check if table is full of cards, fill as possible otherwise
+        // in case there is less than 5 visible cards on the table, we refill with newly discarded cards
+        $this->checkVisibleTrainCarCards();
 
         $this->gamestate->nextState('nextPlayer'); 
     }

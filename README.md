@@ -34,6 +34,3 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 
 # How to start PHP unit test
 go on tests dir and start execute file, for example `php ./tickettoride.game.test-longest-path.php` / `php ./tickettoride.game.test-destination-completed.php`
-
-# TODO
-- check performance issues (chrome on old macbook air)

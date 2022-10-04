@@ -121,6 +121,7 @@ interface EnteringChooseActionArgs {
     costForRoute: { [routeId: number]: { [color: number]: number[] } };
     maxHiddenCardsPick: number;
     maxDestinationsPick: number;
+    canTakeTrainCarCards: boolean;
 }
 
 interface EnteringDrawSecondCardArgs {

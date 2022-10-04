@@ -2462,7 +2462,7 @@ var TicketToRide = /** @class */ (function () {
      */
     TicketToRide.prototype.onEnteringChooseAction = function (args) {
         var _a, _b;
-        this.setGamestateDescription(args.maxHiddenCardsPick == 0 ? 'NoTrainCarsCards' : '');
+        this.setGamestateDescription(args.canTakeTrainCarCards ? '' : 'NoTrainCarsCards');
         var currentPlayerActive = this.isCurrentPlayerActive();
         this.trainCarSelection.setSelectableTopDeck(currentPlayerActive, args.maxHiddenCardsPick);
         this.map.setSelectableRoutes(currentPlayerActive, args.possibleRoutes);

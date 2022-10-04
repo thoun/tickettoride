@@ -79,6 +79,7 @@ trait ArgsTrait {
             'costForRoute' => $costForRoute,
             'maxHiddenCardsPick' => $maxHiddenCardsPick,
             'maxDestinationsPick' => $maxDestinationsPick,
+            'canTakeTrainCarCards' => $this->getRemainingTrainCarCardsInDeck(true, true),
         ];
     }
 

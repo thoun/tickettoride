@@ -102,12 +102,6 @@ trait TrainCarDeckTrait {
             throw new BgaUserException("You can't take a locomotive as a second card.");
         }
 
-        // TODO REMOVE
-        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
-        if ($remainingTrainCarCardsInDeck == 0) {
-            throw new BgaUserException(self::_("You can't take train car cards because the deck is empty"));
-        }
-
         $spot = $card->location_arg;
 
         $this->trainCars->moveCard($id, 'hand', $playerId);
@@ -204,13 +198,37 @@ trait TrainCarDeckTrait {
     private function placeNewTrainCarCardOnTable(int $spot) {
         $card = $this->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $spot));
 
-        if ($card !== null) {
-            $this->notifyAllPlayers('newCardsOnTable', '', [
-                'cards' => [$card],
-                'spotsCards' => [$spot => $card],
-                'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
-                'locomotiveRefill' => false,
-            ]);
+        $this->notifyAllPlayers('newCardsOnTable', '', [
+            'cards' => [$card],
+            'spotsCards' => [$spot => $card],
+            'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+            'locomotiveRefill' => false,
+        ]);
+    }
+
+    private function checkVisibleTrainCarCards() {
+        if (intval($this->trainCars->countCardInLocation('table')) < 5 && $this->getRemainingTrainCarCardsInDeck(true) > 0) {
+            $spots = [];
+            
+            for ($i=1; $i<=5; $i++) {
+                $cards = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('table', $i));
+                if (count($cards) == 0) {
+                    $newCard = $this->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $i));
+                    if ($newCard !== null) {
+                        $cards[] = $newCard;
+                    }
+                    $spots[$i] = $newCard;
+                }
+            }
+            if (count($spots) > 0) {
+                $this->notifyAllPlayers('newCardsOnTable', '', [
+                    'spotsCards' => $spots,
+                    'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+                    'locomotiveRefill' => false,
+                ]);
+
+                $this->checkTooMuchLocomotives();
+            }
         }
     }
 }

@@ -122,7 +122,7 @@ class TicketToRide implements TicketToRideGame {
      * Show selectable routes, and make train car draggable.
      */ 
     private onEnteringChooseAction(args: EnteringChooseActionArgs) {
-        this.setGamestateDescription(args.maxHiddenCardsPick == 0 ? 'NoTrainCarsCards' : '');
+        this.setGamestateDescription(args.canTakeTrainCarCards ? '' : 'NoTrainCarsCards');
 
         const currentPlayerActive = (this as any).isCurrentPlayerActive();
         this.trainCarSelection.setSelectableTopDeck(currentPlayerActive, args.maxHiddenCardsPick);
