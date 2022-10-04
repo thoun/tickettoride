@@ -65,7 +65,7 @@ interface TicketToRideGamedatas {
 
     // Add here variables you set up in getAllDatas   
     claimedRoutes: ClaimedRoute[];
-    visibleTrainCards: TrainCar[];
+    visibleTrainCards: { [spot: number]: TrainCar | null };
 
     // private informations for current player only
     handTrainCars: TrainCar[];
@@ -155,8 +155,7 @@ interface NotifTrainCarsPickedArgs {
 }
 
 interface NotifNewCardsOnTableArgs {
-    cards: TrainCar[];
-    spotsCards: { [spot: number]: TrainCar | null; };
+    spotsCards: { [spot: number]: TrainCar | null };
     remainingTrainCarsInDeck: number;
     locomotiveRefill: boolean;
 }

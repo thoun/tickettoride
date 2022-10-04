@@ -37,7 +37,7 @@ class TrainCarSelection {
      */ 
     constructor(
         private game: TicketToRideGame,
-        visibleCards: TrainCar[],
+        visibleCards: { [spot: number]: TrainCar | null },
         trainCarDeckCount: number,
         destinationDeckCount: number,
         trainCarDeckMaxCount: number,
@@ -104,8 +104,11 @@ class TrainCarSelection {
     /**
      * Set new visible cards.
      */ 
-    public setNewCardsOnTable(cards: TrainCar[], fromDeck: boolean) {
-        cards.forEach(card => this.visibleCardsSpots[card.location_arg].setNewCardOnTable(card, fromDeck));
+    public setNewCardsOnTable(spotsCards: { [spot: number]: TrainCar | null }, fromDeck: boolean) {
+        Object.keys(spotsCards).forEach(spot => {
+            const card = spotsCards[spot];
+            this.visibleCardsSpots[spot].setNewCardOnTable(card, fromDeck);
+        });
     }
 
     /**
@@ -189,7 +192,7 @@ class TrainCarSelection {
      * Animate the 3 visible locomotives (bump) before they are replaced.
      */ 
     public highlightVisibleLocomotives() {
-        this.visibleCardsSpots.filter(stock => stock.getVisibleColor() == 0).forEach(stock => {
+        this.visibleCardsSpots.filter(stock => stock.getVisibleColor() === 0).forEach(stock => {
             const cardDiv = stock.getCardDiv();
             if (cardDiv) {
                 cardDiv.classList.remove('highlight-locomotive');

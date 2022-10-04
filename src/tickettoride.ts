@@ -787,7 +787,7 @@ class TicketToRide implements TicketToRideGame {
             (this as any).disableNextMoveSound();
         }
 
-        this.trainCarSelection.setNewCardsOnTable(notif.args.cards, true);
+        this.trainCarSelection.setNewCardsOnTable(notif.args.spotsCards, true);
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }
 

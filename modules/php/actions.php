@@ -185,6 +185,8 @@ trait ActionTrait {
 
         $this->checkCompletedDestinations($playerId);
 
+        // TODO check if table is full of cards, fill as possible otherwise
+
         $this->gamestate->nextState('nextPlayer'); 
     }
 }

@@ -2,7 +2,7 @@
  * Selection of new train cars.
  */ 
 class VisibleCardSpot {
-    private card: TrainCar;
+    private card: TrainCar | null;
     private spotDiv: HTMLDivElement;
 
     /**
@@ -19,7 +19,7 @@ class VisibleCardSpot {
      * Set selectable visible cards (locomotive can't be selected if 1 visible card has been picked).
      */ 
     public setSelectableVisibleCards(availableVisibleCards: TrainCar[]) {
-        this.getCardDiv()?.classList.toggle('disabled', !availableVisibleCards.some(card => card.id == this.card.id));
+        this.getCardDiv()?.classList.toggle('disabled', !availableVisibleCards.some(card => card.id == this.card?.id));
     }
 
     /**
@@ -32,7 +32,7 @@ class VisibleCardSpot {
     /**
      * Set new visible cards.
      */ 
-    public setNewCardOnTable(card: TrainCar, fromDeck: boolean) {
+    public setNewCardOnTable(card: TrainCar | null, fromDeck: boolean) {
         if (this.card) {
             const oldCardDiv = this.getCardDiv();
             if (oldCardDiv?.closest(`#visible-train-cards-stock${this.spotNumber}`)) {
@@ -47,19 +47,21 @@ class VisibleCardSpot {
         }
 
         this.card = card;
-        this.createCard(card);
+        if (card) { // the card 
+            this.createCard(card);
 
-        const cardDiv = this.getCardDiv();
-        setupTrainCarCardDiv(cardDiv, card.type);
-        cardDiv.classList.add('selectable');
-        cardDiv.addEventListener('click', () => {
-            if (!cardDiv.classList.contains('disabled')) {
-                this.game.onVisibleTrainCarCardClick(this.card.id);
+            const cardDiv = this.getCardDiv();
+            setupTrainCarCardDiv(cardDiv, card.type);
+            cardDiv.classList.add('selectable');
+            cardDiv.addEventListener('click', () => {
+                if (!cardDiv.classList.contains('disabled')) {
+                    this.game.onVisibleTrainCarCardClick(this.card.id);
+                }
+            });
+
+            if (fromDeck) {
+                this.addAnimationFrom(cardDiv);
             }
-        });
-
-        if (fromDeck) {
-            this.addAnimationFrom(cardDiv);
         }
     }
 
@@ -97,7 +99,7 @@ class VisibleCardSpot {
      * Get visible card color.
      */ 
     public getVisibleColor(): number {
-        return this.card.type;
+        return this.card?.type;
     }
     
     /** 

@@ -1482,7 +1482,7 @@ var VisibleCardSpot = /** @class */ (function () {
     VisibleCardSpot.prototype.setSelectableVisibleCards = function (availableVisibleCards) {
         var _this = this;
         var _a;
-        (_a = this.getCardDiv()) === null || _a === void 0 ? void 0 : _a.classList.toggle('disabled', !availableVisibleCards.some(function (card) { return card.id == _this.card.id; }));
+        (_a = this.getCardDiv()) === null || _a === void 0 ? void 0 : _a.classList.toggle('disabled', !availableVisibleCards.some(function (card) { var _a; return card.id == ((_a = _this.card) === null || _a === void 0 ? void 0 : _a.id); }));
     };
     /**
      * Reset visible cards state.
@@ -1508,17 +1508,19 @@ var VisibleCardSpot = /** @class */ (function () {
             this.spotDiv.removeChild(this.spotDiv.firstElementChild);
         }
         this.card = card;
-        this.createCard(card);
-        var cardDiv = this.getCardDiv();
-        setupTrainCarCardDiv(cardDiv, card.type);
-        cardDiv.classList.add('selectable');
-        cardDiv.addEventListener('click', function () {
-            if (!cardDiv.classList.contains('disabled')) {
-                _this.game.onVisibleTrainCarCardClick(_this.card.id);
+        if (card) { // the card 
+            this.createCard(card);
+            var cardDiv_1 = this.getCardDiv();
+            setupTrainCarCardDiv(cardDiv_1, card.type);
+            cardDiv_1.classList.add('selectable');
+            cardDiv_1.addEventListener('click', function () {
+                if (!cardDiv_1.classList.contains('disabled')) {
+                    _this.game.onVisibleTrainCarCardClick(_this.card.id);
+                }
+            });
+            if (fromDeck) {
+                this.addAnimationFrom(cardDiv_1);
             }
-        });
-        if (fromDeck) {
-            this.addAnimationFrom(cardDiv);
         }
     };
     /**
@@ -1550,7 +1552,8 @@ var VisibleCardSpot = /** @class */ (function () {
      * Get visible card color.
      */
     VisibleCardSpot.prototype.getVisibleColor = function () {
-        return this.card.type;
+        var _a;
+        return (_a = this.card) === null || _a === void 0 ? void 0 : _a.type;
     };
     /**
      * Add an animation to the card (when it is created).
@@ -1658,9 +1661,12 @@ var TrainCarSelection = /** @class */ (function () {
     /**
      * Set new visible cards.
      */
-    TrainCarSelection.prototype.setNewCardsOnTable = function (cards, fromDeck) {
+    TrainCarSelection.prototype.setNewCardsOnTable = function (spotsCards, fromDeck) {
         var _this = this;
-        cards.forEach(function (card) { return _this.visibleCardsSpots[card.location_arg].setNewCardOnTable(card, fromDeck); });
+        Object.keys(spotsCards).forEach(function (spot) {
+            var card = spotsCards[spot];
+            _this.visibleCardsSpots[spot].setNewCardOnTable(card, fromDeck);
+        });
     };
     /**
      * Update train car gauge.
@@ -1734,7 +1740,7 @@ var TrainCarSelection = /** @class */ (function () {
      * Animate the 3 visible locomotives (bump) before they are replaced.
      */
     TrainCarSelection.prototype.highlightVisibleLocomotives = function () {
-        this.visibleCardsSpots.filter(function (stock) { return stock.getVisibleColor() == 0; }).forEach(function (stock) {
+        this.visibleCardsSpots.filter(function (stock) { return stock.getVisibleColor() === 0; }).forEach(function (stock) {
             var cardDiv = stock.getCardDiv();
             if (cardDiv) {
                 cardDiv.classList.remove('highlight-locomotive');
@@ -3045,7 +3051,7 @@ var TicketToRide = /** @class */ (function () {
             playSound("ttr-clear-train-car-cards");
             this.disableNextMoveSound();
         }
-        this.trainCarSelection.setNewCardsOnTable(notif.args.cards, true);
+        this.trainCarSelection.setNewCardsOnTable(notif.args.spotsCards, true);
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     };
     /**
