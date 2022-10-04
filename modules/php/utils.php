@@ -10,6 +10,42 @@ trait UtilTrait {
 //////////// Utility functions
 ////////////
 
+    function array_find(array $array, callable $fn) {
+        foreach ($array as $value) {
+            if($fn($value)) {
+                return $value;
+            }
+        }
+        return null;
+    }
+
+    function array_find_index(array $array, callable $fn) {
+        foreach ($array as $index => $value) {
+            if($fn($value)) {
+                return $index;
+            }
+        }
+        return null;
+    }
+
+    function array_some(array $array, callable $fn) {
+        foreach ($array as $value) {
+            if($fn($value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+        
+    function array_every(array $array, callable $fn) {
+        foreach ($array as $value) {
+            if(!$fn($value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Transforms a TrainCar Db object to TrainCar class.
      */

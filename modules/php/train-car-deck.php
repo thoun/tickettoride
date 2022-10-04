@@ -149,7 +149,7 @@ trait TrainCarDeckTrait {
 
         $cards = $this->getVisibleTrainCarCards();
         $locomotives = count(array_filter($cards, fn($card) => $card->type == 0));
-        if ($locomotives >= RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES) {
+        if ($locomotives >= RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES && $this->getRemainingTrainCarCardsInDeck(true) > 0) {
             if ($attempts >= 3) {
                 $this->notifyAllPlayers('log', clienttranslate('Three locomotives have been revealed multiples times in a row, they will stay visible'), []);
             } else {
@@ -230,5 +230,21 @@ trait TrainCarDeckTrait {
                 $this->checkTooMuchLocomotives();
             }
         }
+    }
+
+    private function canTakeASecondCard(/*int | null*/ $firstCardType) { // null if unknown/hidden
+        if ($firstCardType === 0) {
+            // if the player chose a locomotive
+            return false;
+        }
+
+        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
+        if ($remainingTrainCarCardsInDeck == 0) {
+            // if there is no hidden card and all remaining visible cards are locomotives, it's impossible to take a second card
+            $tableCards = $this->getVisibleTrainCarCards();
+            return !$this->array_every($tableCards, fn($tableCard) => $tableCard->type == 0); 
+        }
+
+        return true;
     }
 }
