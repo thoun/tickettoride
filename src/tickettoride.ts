@@ -717,7 +717,6 @@ class TicketToRide implements TicketToRideGame {
         //log( 'notifications subscriptions setup' );
 
         const notifs = [
-            ['newCardOnTable', ANIMATION_MS],
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
@@ -780,18 +779,10 @@ class TicketToRide implements TicketToRideGame {
     }
 
     /** 
-     * Update a visible card.
-     */ 
-    notif_newCardOnTable(notif: Notif<NotifNewCardOnTableArgs>) {
-        this.trainCarSelection.setNewCardsOnTable([notif.args.card], true);
-        this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
-    }
-
-    /** 
      * Update visible cards.
      */ 
     notif_newCardsOnTable(notif: Notif<NotifNewCardsOnTableArgs>) {
-        if (notif.args.cards.length > 1) {
+        if (notif.args.locomotiveRefill) {
             playSound(`ttr-clear-train-car-cards`);
             (this as any).disableNextMoveSound();
         }

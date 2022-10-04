@@ -189,6 +189,7 @@ trait TrainCarDeckTrait {
                 'cards' => $cards,
                 'spotsCards' => $spots,
                 'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+                'locomotiveRefill' => true,
             ]);
         }
 
@@ -206,8 +207,9 @@ trait TrainCarDeckTrait {
         if ($card !== null) {
             $this->notifyAllPlayers('newCardsOnTable', '', [
                 'cards' => [$card],
-                'spot' => $spot,
+                'spotsCards' => [$spot => $card],
                 'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+                'locomotiveRefill' => false,
             ]);
         }
     }

@@ -2978,7 +2978,6 @@ var TicketToRide = /** @class */ (function () {
         //log( 'notifications subscriptions setup' );
         var _this = this;
         var notifs = [
-            ['newCardOnTable', ANIMATION_MS],
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
@@ -3039,17 +3038,10 @@ var TicketToRide = /** @class */ (function () {
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     };
     /**
-     * Update a visible card.
-     */
-    TicketToRide.prototype.notif_newCardOnTable = function (notif) {
-        this.trainCarSelection.setNewCardsOnTable([notif.args.card], true);
-        this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
-    };
-    /**
      * Update visible cards.
      */
     TicketToRide.prototype.notif_newCardsOnTable = function (notif) {
-        if (notif.args.cards.length > 1) {
+        if (notif.args.locomotiveRefill) {
             playSound("ttr-clear-train-car-cards");
             this.disableNextMoveSound();
         }

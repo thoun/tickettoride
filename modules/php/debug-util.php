@@ -101,7 +101,7 @@ trait DebugUtilTrait {
 
 		// These are the id's from the BGAtable I need to debug.
         // SELECT JSON_ARRAYAGG(`player_id`) FROM `player`
-		$ids = [1471946, 84515220, 85151767, 86517094];
+		$ids = [90574255, 93146640];
 
 		// Id of the first player in BGA Studio
 		$sid = 2343492;
