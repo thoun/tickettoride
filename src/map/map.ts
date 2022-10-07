@@ -337,7 +337,7 @@ class TtrMap {
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */ 
-    private setWagon(route: Route, space: RouteSpace, spaceIndex: number, player: TicketToRidePlayer, fromPlayerId: number, phantom: boolean) {
+    private setWagon(route: Route, space: RouteSpace, spaceIndex: number, player: TicketToRidePlayer, fromPlayerId: number, phantom: boolean, isLowestFromDoubleHorizontalRoute: boolean) {
         const id = `wagon-route${route.id}-space${spaceIndex}${phantom ? '-phantom' : ''}`;
         if (document.getElementById(id)) {
             return;
@@ -350,14 +350,19 @@ class TtrMap {
         while (angle >= 180) {
             angle -= 180;
         }
-        const x = space.x;
-        const y = space.y;
+        let x = space.x;
+        let y = space.y;
         const EASE_WEIGHT = 0.75;
         const angleOnOne = (Math.acos(-2 * angle / 180 + 1) / Math.PI) * EASE_WEIGHT + (angle / 180 * (1 - EASE_WEIGHT));
         const angleClassNumber = Math.round(angleOnOne * 36);
 
         const alreadyPlacedWagons = Array.from(document.querySelectorAll('.wagon')) as HTMLDivElement[];
         const xy = x + y;
+
+        if (isLowestFromDoubleHorizontalRoute) { // we shift a little the train car to let the other route visible
+            x += 10 * Math.abs(Math.sin(angle * Math.PI / 180));
+            y += 10 * Math.abs(Math.cos(angle * Math.PI / 180));
+        }
 
         const wagonHtml = `<div id="${id}" class="wagon angle${angleClassNumber} ${phantom ? 'phantom' : ''} ${space.top ? 'top' : ''}" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}" data-xy="${xy}" style="transform: translate(${x}px, ${y}px)"></div>`;
         // we consider a wagon must be more visible than another if its X + Y is > as the other
@@ -396,17 +401,44 @@ class TtrMap {
             });
         }
 
+        const isLowestFromDoubleHorizontalRoute = this.isLowestFromDoubleHorizontalRoute(route);
+
         if (fromPlayerId) {
             route.spaces.forEach((space, spaceIndex) => {
                 setTimeout(() => {
-                    this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom);
+                    this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute);
                     playSound(`ttr-placed-train-car`);
                 }, 200 * spaceIndex);
             });
             (this.game as any).disableNextMoveSound();
         } else {
-            route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom));
+            route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute));
         }
+    }
+
+    /** 
+     * Check if the route is mostly horizontal, and the lowest from a double route
+     */ 
+    private isLowestFromDoubleHorizontalRoute(route: Route) {
+        const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+        if (!otherRoute) { // not a double route
+            return false;
+        }
+
+        const routeAvgX = route.spaces.map(space => space.x).reduce((a, b) => a + b, 0);
+        const routeAvgY = route.spaces.map(space => space.y).reduce((a, b) => a + b, 0);
+        const otherRouteAvgX = otherRoute.spaces.map(space => space.x).reduce((a, b) => a + b, 0);
+        const otherRouteAvgY = otherRoute.spaces.map(space => space.y).reduce((a, b) => a + b, 0);
+
+        if (Math.abs(routeAvgX - otherRouteAvgX) > Math.abs(routeAvgY - otherRouteAvgY)) { // not mostly horizontal
+            return false;
+        }
+
+        if (routeAvgY <= otherRouteAvgY) { // not the lowest one
+            return false;
+        }
+
+        return true;
     }
 
     /** 

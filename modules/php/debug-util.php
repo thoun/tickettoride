@@ -13,9 +13,11 @@ trait DebugUtilTrait {
 
         //$this->debugSetDestinationInHand(7, 2343492);
 
+        //$this->debugClaimAllRoutes(2343492, 1);
         //$this->debugClaimAllRoutes(2343492, 0.2);
         //$this->debugClaimAllRoutes(2343493, 0.2);
         //$this->debugSetLastTurn();
+        $this->debugClaimRoutes(2343492, [94, 37, 32, 59, 22, 20, 77, 11, 79, 68, 55]);
 
         //$this->debugSetRemainingTrainCarDeck(1);
 
@@ -70,6 +72,12 @@ trait DebugUtilTrait {
             if ((bga_rand(0, count($this->ROUTES)-1) / (float)count($this->ROUTES)) < $ratio) {
                 $this->debugClaimRoute($playerId, $id);
             }
+        }
+    }
+
+    function debugClaimRoutes($playerId, $routesIds) {
+        foreach($routesIds as $routeId) {
+            $this->debugClaimRoute($playerId, $routeId);
         }
     }
 

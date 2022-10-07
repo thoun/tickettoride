@@ -1143,7 +1143,7 @@ var TtrMap = /** @class */ (function () {
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */
-    TtrMap.prototype.setWagon = function (route, space, spaceIndex, player, fromPlayerId, phantom) {
+    TtrMap.prototype.setWagon = function (route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute) {
         var id = "wagon-route" + route.id + "-space" + spaceIndex + (phantom ? '-phantom' : '');
         if (document.getElementById(id)) {
             return;
@@ -1162,6 +1162,10 @@ var TtrMap = /** @class */ (function () {
         var angleClassNumber = Math.round(angleOnOne * 36);
         var alreadyPlacedWagons = Array.from(document.querySelectorAll('.wagon'));
         var xy = x + y;
+        if (isLowestFromDoubleHorizontalRoute) { // we shift a little the train car to let the other route visible
+            x += 10 * Math.abs(Math.sin(angle * Math.PI / 180));
+            y += 10 * Math.abs(Math.cos(angle * Math.PI / 180));
+        }
         var wagonHtml = "<div id=\"" + id + "\" class=\"wagon angle" + angleClassNumber + " " + (phantom ? 'phantom' : '') + " " + (space.top ? 'top' : '') + "\" data-player-color=\"" + player.color + "\" data-color-blind-player-no=\"" + player.playerNo + "\" data-xy=\"" + xy + "\" style=\"transform: translate(" + x + "px, " + y + "px)\"></div>";
         // we consider a wagon must be more visible than another if its X + Y is > as the other
         if (!alreadyPlacedWagons.length) {
@@ -1197,18 +1201,39 @@ var TtrMap = /** @class */ (function () {
                 spaceDiv === null || spaceDiv === void 0 ? void 0 : spaceDiv.parentElement.removeChild(spaceDiv);
             });
         }
+        var isLowestFromDoubleHorizontalRoute = this.isLowestFromDoubleHorizontalRoute(route);
         if (fromPlayerId) {
             route.spaces.forEach(function (space, spaceIndex) {
                 setTimeout(function () {
-                    _this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom);
+                    _this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute);
                     playSound("ttr-placed-train-car");
                 }, 200 * spaceIndex);
             });
             this.game.disableNextMoveSound();
         }
         else {
-            route.spaces.forEach(function (space, spaceIndex) { return _this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom); });
+            route.spaces.forEach(function (space, spaceIndex) { return _this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute); });
         }
+    };
+    /**
+     * Check if the route is mostly horizontal, and the lowest from a double route
+     */
+    TtrMap.prototype.isLowestFromDoubleHorizontalRoute = function (route) {
+        var otherRoute = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+        if (!otherRoute) { // not a double route
+            return false;
+        }
+        var routeAvgX = route.spaces.map(function (space) { return space.x; }).reduce(function (a, b) { return a + b; }, 0);
+        var routeAvgY = route.spaces.map(function (space) { return space.y; }).reduce(function (a, b) { return a + b; }, 0);
+        var otherRouteAvgX = otherRoute.spaces.map(function (space) { return space.x; }).reduce(function (a, b) { return a + b; }, 0);
+        var otherRouteAvgY = otherRoute.spaces.map(function (space) { return space.y; }).reduce(function (a, b) { return a + b; }, 0);
+        if (Math.abs(routeAvgX - otherRouteAvgX) > Math.abs(routeAvgY - otherRouteAvgY)) { // not mostly horizontal
+            return false;
+        }
+        if (routeAvgY <= otherRouteAvgY) { // not the lowest one
+            return false;
+        }
+        return true;
     };
     /**
      * Set map size, depending on available screen size.
