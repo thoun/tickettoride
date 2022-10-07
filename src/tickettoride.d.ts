@@ -106,6 +106,8 @@ interface TicketToRideGame extends Game {
     isColorBlindMode(): boolean;
     isDoubleRouteForbidden(): boolean;
     selectedColorChanged(selectedColor: number | null): void;
+    setTooltip(id: string, html: string): void;
+    setTooltipToClass(className: string, html: string): void;
 }
 
 interface EnteringChooseDestinationsArgs {

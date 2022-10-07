@@ -74,6 +74,16 @@ $game_preferences = [
         'default' => 2
     ],
 
+    207 => [
+        'name' => totranslate('Countdown timer for Confirm button'),
+        'needReload' => false,
+        'values' => [
+            1 => ['name' => totranslate('Enabled')],
+            2 => ['name' => totranslate('Disabled')],
+        ],
+        'default' => 1
+    ],
+
     203 => [
         'name' => totranslate('Train car outline'),
         'needReload' => false,
@@ -105,4 +115,5 @@ $game_preferences = [
         'default' => 1
     ],
 
+    // 206 and 207 already used
 ];

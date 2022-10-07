@@ -27,6 +27,8 @@ class TicketToRide implements TicketToRideGame {
     private originalTextChooseAction: string;
     private actionTimerId = null;
 
+    private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
+
     constructor() {
     }
     
@@ -216,6 +218,13 @@ class TicketToRide implements TicketToRideGame {
 
 
     ///////////////////////////////////////////////////
+
+    public setTooltip(id: string, html: string) {
+        (this as any).addTooltipHtml(id, html, this.TOOLTIP_DELAY);
+    }
+    public setTooltipToClass(className: string, html: string) {
+        (this as any).addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
+    }
     
     private setGamestateDescription(property: string = '') {
         const originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
@@ -342,9 +351,9 @@ class TicketToRide implements TicketToRideGame {
             }
         });
 
-        (this as any).addTooltipHtmlToClass('train-car-counter', _("Remaining train cars"));
-        (this as any).addTooltipHtmlToClass('train-car-card-counter', _("Train cars cards"));
-        (this as any).addTooltipHtmlToClass('destinations-counter', _("Completed / Total destination cards"));
+        this.setTooltipToClass('train-car-counter', _("Remaining train cars"));
+        this.setTooltipToClass('train-car-card-counter', _("Train cars cards"));
+        this.setTooltipToClass('destinations-counter', _("Completed / Total destination cards"));
     }
     
     /**
@@ -492,6 +501,10 @@ class TicketToRide implements TicketToRideGame {
     private startActionTimer(buttonId: string, time: number) {
         if (this.actionTimerId) {
             window.clearInterval(this.actionTimerId);
+        }
+        
+        if (Number((this as any).prefs[207]?.value) == 2) {
+            return false;
         }
 
         const button = document.getElementById(buttonId);

@@ -1015,8 +1015,8 @@ var TtrMap = /** @class */ (function () {
         this.resizedDiv = document.getElementById('resized');
         this.mapDiv = document.getElementById('map');
         this.inMapZoomManager = new InMapZoomManager();
-        this.game.addTooltipHtmlToClass("train-car-deck-hidden-pile-tooltip", "<strong>" + _('Train cars deck') + "</strong><br><br>\n        " + _('Click here to pick one or two hidden train car cards'));
-        this.game.addTooltipHtml("destination-deck-hidden-pile", "<strong>" + _('Destinations deck') + "</strong><br><br>\n        " + _('Click here to take three new destination cards (keep at least one)'));
+        this.game.setTooltipToClass("train-car-deck-hidden-pile-tooltip", "<strong>" + _('Train cars deck') + "</strong><br><br>\n        " + _('Click here to pick one or two hidden train car cards'));
+        this.game.setTooltip("destination-deck-hidden-pile", "<strong>" + _('Destinations deck') + "</strong><br><br>\n        " + _('Click here to take three new destination cards (keep at least one)'));
     }
     TtrMap.prototype.createRouteSpaces = function (destination, shiftX, shiftY) {
         var _this = this;
@@ -1851,6 +1851,13 @@ var PlayerDestinations = /** @class */ (function () {
             dojo.place(html, "player-table-" + _this.playerId + "-destinations-todo");
             var card = document.getElementById("destination-card-" + destination.id);
             setupDestinationCardDiv(card, destination.type_arg);
+            /*
+            Can't add a tooltip, because showing a tooltip will mess with the hover effect.
+            const destinationInfos = DESTINATIONS.find(d => d.id == destination.type_arg);
+            this.game.setTooltip(`destination-card-${destination.id}`, `
+                <div>${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[destinationInfos.from], to: CITIES_NAMES[destinationInfos.to]})}, ${destinationInfos.points} ${_('points')}</div>
+                <div class="destination-card" style="${getBackgroundInlineStyleForDestination(destination)}"></div>
+            `);*/
             card.addEventListener('click', function () { return _this.activateNextDestination(_this.destinationsDone.some(function (d) { return d.id == destination.id; }) ? _this.destinationsDone : _this.destinationsTodo); });
             // highlight destination's cities on the map, on mouse over
             card.addEventListener('mouseenter', function () { return _this.game.setHighligthedDestination(destination); });
@@ -2344,7 +2351,7 @@ var EndScore = /** @class */ (function () {
             return "<div class=\"destination-card uncompleted\" style=\"" + getBackgroundInlineStyleForDestination(destination) + "\"></div>";
         })) + "\n            </div>\n        </div>";
         if (document.getElementById("destinations-score-" + player.id)) {
-            this.game.addTooltipHtml("destinations-score-" + player.id, html);
+            this.game.setTooltip("destinations-score-" + player.id, html);
         }
     };
     /**
@@ -2365,7 +2372,7 @@ var EndScore = /** @class */ (function () {
      */
     EndScore.prototype.setLongestPathWinner = function (playerId, length) {
         dojo.place("<div id=\"longest-path-bonus-card-" + playerId + "\" class=\"longest-path bonus-card bonus-card-icon\"></div>", "score-name-" + playerId);
-        this.game.addTooltipHtml("longest-path-bonus-card-" + playerId, "\n        <div><strong>" + _('Longest path') + " : " + length + "</strong></div>\n        <div>The player who has the Longest Continuous Path of routes receives this special bonus card and adds 10 points to his score.</div>\n        <div class=\"longest-path bonus-card\"></div>\n        ");
+        this.game.setTooltip("longest-path-bonus-card-" + playerId, "\n        <div><strong>" + _('Longest path') + " : " + length + "</strong></div>\n        <div>The player who has the Longest Continuous Path of routes receives this special bonus card and adds 10 points to his score.</div>\n        <div class=\"longest-path bonus-card\"></div>\n        ");
     };
     return EndScore;
 }());
@@ -2384,6 +2391,7 @@ var TicketToRide = /** @class */ (function () {
         this.isTouch = window.matchMedia('(hover: none)').matches;
         this.routeToConfirm = null;
         this.actionTimerId = null;
+        this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
     }
     /*
         setup:
@@ -2547,6 +2555,12 @@ var TicketToRide = /** @class */ (function () {
     ///////////////////////////////////////////////////
     //// Utility methods
     ///////////////////////////////////////////////////
+    TicketToRide.prototype.setTooltip = function (id, html) {
+        this.addTooltipHtml(id, html, this.TOOLTIP_DELAY);
+    };
+    TicketToRide.prototype.setTooltipToClass = function (className, html) {
+        this.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
+    };
     TicketToRide.prototype.setGamestateDescription = function (property) {
         if (property === void 0) { property = ''; }
         var originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
@@ -2644,9 +2658,9 @@ var TicketToRide = /** @class */ (function () {
                 dojo.place("<div class=\"player-turn-order\">" + _('Player ${number}').replace('${number}', "<strong>" + player.playerNo + "</strong>") + "</div>", "player_board_" + player.id);
             }
         });
-        this.addTooltipHtmlToClass('train-car-counter', _("Remaining train cars"));
-        this.addTooltipHtmlToClass('train-car-card-counter', _("Train cars cards"));
-        this.addTooltipHtmlToClass('destinations-counter', _("Completed / Total destination cards"));
+        this.setTooltipToClass('train-car-counter', _("Remaining train cars"));
+        this.setTooltipToClass('train-car-card-counter', _("Train cars cards"));
+        this.setTooltipToClass('destinations-counter', _("Completed / Total destination cards"));
     };
     /**
      * Update player score.
@@ -2780,8 +2794,12 @@ var TicketToRide = /** @class */ (function () {
      */
     TicketToRide.prototype.startActionTimer = function (buttonId, time) {
         var _this = this;
+        var _a;
         if (this.actionTimerId) {
             window.clearInterval(this.actionTimerId);
+        }
+        if (Number((_a = this.prefs[207]) === null || _a === void 0 ? void 0 : _a.value) == 2) {
+            return false;
         }
         var button = document.getElementById(buttonId);
         var _actionTimerLabel = button.innerHTML;

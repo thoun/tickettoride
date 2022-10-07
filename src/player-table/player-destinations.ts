@@ -50,6 +50,13 @@ class PlayerDestinations {
             
             const card = document.getElementById(`destination-card-${destination.id}`) as HTMLDivElement;
             setupDestinationCardDiv(card, destination.type_arg);
+            /*
+            Can't add a tooltip, because showing a tooltip will mess with the hover effect.
+            const destinationInfos = DESTINATIONS.find(d => d.id == destination.type_arg);            
+            this.game.setTooltip(`destination-card-${destination.id}`, `
+                <div>${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[destinationInfos.from], to: CITIES_NAMES[destinationInfos.to]})}, ${destinationInfos.points} ${_('points')}</div>
+                <div class="destination-card" style="${getBackgroundInlineStyleForDestination(destination)}"></div>
+            `);*/
 
             card.addEventListener('click', () => this.activateNextDestination(
                 this.destinationsDone.some(d => d.id == destination.id) ? this.destinationsDone : this.destinationsTodo

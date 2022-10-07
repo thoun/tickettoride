@@ -159,7 +159,7 @@ class EndScore {
         </div>`;
 
         if (document.getElementById(`destinations-score-${player.id}`)) {
-            (this as any).game.addTooltipHtml(`destinations-score-${player.id}`, html);
+            this.game.setTooltip(`destinations-score-${player.id}`, html);
         }
     }
     
@@ -190,7 +190,7 @@ class EndScore {
     public setLongestPathWinner(playerId: number | string, length: number) {
         dojo.place(`<div id="longest-path-bonus-card-${playerId}" class="longest-path bonus-card bonus-card-icon"></div>`, `score-name-${playerId}`);
 
-        (this.game as any).addTooltipHtml(`longest-path-bonus-card-${playerId}`, `
+        this.game.setTooltip(`longest-path-bonus-card-${playerId}`, `
         <div><strong>${_('Longest path')} : ${length}</strong></div>
         <div>The player who has the Longest Continuous Path of routes receives this special bonus card and adds 10 points to his score.</div>
         <div class="longest-path bonus-card"></div>

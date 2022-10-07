@@ -189,10 +189,10 @@ class TtrMap {
 
         this.inMapZoomManager = new InMapZoomManager();
 
-        (this.game as any).addTooltipHtmlToClass(`train-car-deck-hidden-pile-tooltip`, `<strong>${_('Train cars deck')}</strong><br><br>
+        this.game.setTooltipToClass(`train-car-deck-hidden-pile-tooltip`, `<strong>${_('Train cars deck')}</strong><br><br>
         ${_('Click here to pick one or two hidden train car cards')}`);
 
-        (this.game as any).addTooltipHtml(`destination-deck-hidden-pile`, `<strong>${_('Destinations deck')}</strong><br><br>
+        this.game.setTooltip(`destination-deck-hidden-pile`, `<strong>${_('Destinations deck')}</strong><br><br>
         ${_('Click here to take three new destination cards (keep at least one)')}`);
     }
 
