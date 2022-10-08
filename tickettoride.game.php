@@ -139,6 +139,7 @@ class TicketToRide extends Table {
         //$this->initStat('table', 'longestPath', 0); // only computed at the end
         //$this->initStat('player', 'longestPath', 0); // only computed at the end
         $this->initStat('player', 'longestPathBonus', 0);
+        // TODO1910 $this->initStat('player', 'globetrotterBonus', 0);
 
         // setup the initial game situation here
 

@@ -194,3 +194,9 @@ interface NotifLongestPathArgs {
     length: number;
     routes: Route[];
 }
+
+
+interface NotifBadgeArgs {
+    playerId: number;
+    length: number;
+}

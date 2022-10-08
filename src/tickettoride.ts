@@ -742,6 +742,7 @@ class TicketToRide implements TicketToRideGame {
             ['scoreDestination', 2000],
             ['longestPath', 2000],
             ['longestPathWinner', 1500],
+            ['globetrotterWinner', 1500],
             ['highlightWinnerScore', 1],
         ];
 
@@ -876,6 +877,13 @@ class TicketToRide implements TicketToRideGame {
     }
 
     /** 
+     * Add Globetrotter badge for end score.
+     */ 
+    notif_globetrotterWinner(notif: Notif<NotifBadgeArgs>) {
+        this.endScore?.setGlobetrotterWinner(notif.args.playerId, notif.args.length);
+    }
+
+    /** 
      * Animate longest path for end score.
      */ 
     notif_longestPath(notif: Notif<NotifLongestPathArgs>) {
@@ -885,7 +893,7 @@ class TicketToRide implements TicketToRideGame {
     /** 
      * Add longest path badge for end score.
      */ 
-    notif_longestPathWinner(notif: Notif<NotifLongestPathArgs>) {
+    notif_longestPathWinner(notif: Notif<NotifBadgeArgs>) {
         this.endScore?.setLongestPathWinner(notif.args.playerId, notif.args.length);
     }
 

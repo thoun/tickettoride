@@ -24,6 +24,13 @@
                         font-weight: bold;
                         text-overflow: ellipsis;
                         position: relative;
+
+                        .bonus-card-icons {
+                            position: absolute;
+                            right: 0;
+                            z-index: 25;
+                            display: flex;
+                        }
                     }
 
                     &.destinations {
@@ -143,17 +150,18 @@
     width: 250px;
     height: 161px;
 
+    &.globetrotter {
+        background: url('img/bonus-card-globetrotter.png');            
+    }
+
     &.longest-path {
         background: url('img/bonus-card-longest-path.png');            
     }
 
     &.bonus-card-icon {
-        position: absolute;
-        right: 0;
         transform-origin: center center;
         margin: -90px -106px;
         animation: bonus-card-animation 1.5s 1 forwards ease-in-out;
-        z-index: 25;
     }
 }
 

@@ -27,7 +27,7 @@ class EndScore {
             const playerId = Number(player.id);
 
             dojo.place(`<tr id="score${player.id}">
-                <td id="score-name-${player.id}" class="player-name" style="color: #${player.color}">${player.name}</td>
+                <td id="score-name-${player.id}" class="player-name" style="color: #${player.color}">${player.name}<div id="bonus-card-icons-${player.id}" class="bonus-card-icons"></div></td>
                 <td id="destinations-score-${player.id}" class="destinations">
                     <div class="icons-grid">
                         <div id="destination-counter-${player.id}" class="icon destination-card"></div>
@@ -185,14 +185,27 @@ class EndScore {
     }
     
     /** 
+     * Add Globetrotter badge to the Globetrotter winner(s).
+     */ 
+    public setGlobetrotterWinner(playerId: number | string, length: number) {
+        dojo.place(`<div id="globetrotter-bonus-card-${playerId}" class="globetrotter bonus-card bonus-card-icon"></div>`, `bonus-card-icons-${playerId}`);
+
+        this.game.setTooltip(`globetrotter-bonus-card-${playerId}`, `
+        <div><strong>${/* TODO1910_*/('Most Completed Tickets')} : ${length}</strong></div>
+        <div>${/* TODO1910_*/('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.')}</div>
+        <div class="globetrotter bonus-card"></div>
+        `);
+    }
+    
+    /** 
      * Add longest path badge to the longest path winner(s).
      */ 
     public setLongestPathWinner(playerId: number | string, length: number) {
-        dojo.place(`<div id="longest-path-bonus-card-${playerId}" class="longest-path bonus-card bonus-card-icon"></div>`, `score-name-${playerId}`);
+        dojo.place(`<div id="longest-path-bonus-card-${playerId}" class="longest-path bonus-card bonus-card-icon"></div>`, `bonus-card-icons-${playerId}`);
 
         this.game.setTooltip(`longest-path-bonus-card-${playerId}`, `
         <div><strong>${_('Longest path')} : ${length}</strong></div>
-        <div>The player who has the Longest Continuous Path of routes receives this special bonus card and adds 10 points to his score.</div>
+        <div>${_('The player who has the Longest Continuous Path of routes receives this special bonus card and adds 10 points to his score.')}</div>
         <div class="longest-path bonus-card"></div>
         `);
     }

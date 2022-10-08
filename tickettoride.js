@@ -1120,7 +1120,10 @@ var TtrMap = /** @class */ (function () {
                 var otherRoute_1 = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
                 otherRoute_1 === null || otherRoute_1 === void 0 ? void 0 : otherRoute_1.spaces.forEach(function (space, spaceIndex) {
                     var spaceDiv = document.getElementById("route-spaces-route" + otherRoute_1.id + "-space" + spaceIndex);
-                    spaceDiv === null || spaceDiv === void 0 ? void 0 : spaceDiv.classList.add('forbidden');
+                    if (spaceDiv) {
+                        spaceDiv.classList.add('forbidden');
+                        _this.game.setTooltip(spaceDiv.id, "<strong><span style=\"color: darkred\">" + _('Important Note:') + "</span> \n                        " + _('In 2 or 3 player games, only one of the Double-Routes can be used.') + "</strong>");
+                    }
                 });
             }
         });
@@ -2285,7 +2288,7 @@ var EndScore = /** @class */ (function () {
         this.uncompletedDestinationCounters = [];
         players.forEach(function (player) {
             var playerId = Number(player.id);
-            dojo.place("<tr id=\"score" + player.id + "\">\n                <td id=\"score-name-" + player.id + "\" class=\"player-name\" style=\"color: #" + player.color + "\">" + player.name + "</td>\n                <td id=\"destinations-score-" + player.id + "\" class=\"destinations\">\n                    <div class=\"icons-grid\">\n                        <div id=\"destination-counter-" + player.id + "\" class=\"icon destination-card\"></div>\n                        <div id=\"completed-destination-counter-" + player.id + "\" class=\"icon completed-destination\"></div>\n                        <div id=\"uncompleted-destination-counter-" + player.id + "\" class=\"icon uncompleted-destination\"></div>\n                    </div>\n                </td>\n                <td id=\"train-score-" + player.id + "\" class=\"train\">\n                    <div id=\"train-image-" + player.id + "\" class=\"train-image\" data-player-color=\"" + player.color + "\"></div>\n                </td>\n                <td id=\"end-score-" + player.id + "\" class=\"total\"></td>\n            </tr>", 'score-table-body');
+            dojo.place("<tr id=\"score" + player.id + "\">\n                <td id=\"score-name-" + player.id + "\" class=\"player-name\" style=\"color: #" + player.color + "\">" + player.name + "<div id=\"bonus-card-icons-" + player.id + "\" class=\"bonus-card-icons\"></div></td>\n                <td id=\"destinations-score-" + player.id + "\" class=\"destinations\">\n                    <div class=\"icons-grid\">\n                        <div id=\"destination-counter-" + player.id + "\" class=\"icon destination-card\"></div>\n                        <div id=\"completed-destination-counter-" + player.id + "\" class=\"icon completed-destination\"></div>\n                        <div id=\"uncompleted-destination-counter-" + player.id + "\" class=\"icon uncompleted-destination\"></div>\n                    </div>\n                </td>\n                <td id=\"train-score-" + player.id + "\" class=\"train\">\n                    <div id=\"train-image-" + player.id + "\" class=\"train-image\" data-player-color=\"" + player.color + "\"></div>\n                </td>\n                <td id=\"end-score-" + player.id + "\" class=\"total\"></td>\n            </tr>", 'score-table-body');
             var destinationCounter = new ebg.counter();
             destinationCounter.create("destination-counter-" + player.id);
             destinationCounter.setValue(fromReload ? 0 : _this.game.destinationCardCounters[player.id].getValue());
@@ -2393,11 +2396,18 @@ var EndScore = /** @class */ (function () {
         this.game.addAnimation(newDac);
     };
     /**
+     * Add Globetrotter badge to the Globetrotter winner(s).
+     */
+    EndScore.prototype.setGlobetrotterWinner = function (playerId, length) {
+        dojo.place("<div id=\"globetrotter-bonus-card-" + playerId + "\" class=\"globetrotter bonus-card bonus-card-icon\"></div>", "bonus-card-icons-" + playerId);
+        this.game.setTooltip("globetrotter-bonus-card-" + playerId, "\n        <div><strong>" + ('Most Completed Tickets') + " : " + length + "</strong></div>\n        <div>" + ('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.') + "</div>\n        <div class=\"globetrotter bonus-card\"></div>\n        ");
+    };
+    /**
      * Add longest path badge to the longest path winner(s).
      */
     EndScore.prototype.setLongestPathWinner = function (playerId, length) {
-        dojo.place("<div id=\"longest-path-bonus-card-" + playerId + "\" class=\"longest-path bonus-card bonus-card-icon\"></div>", "score-name-" + playerId);
-        this.game.setTooltip("longest-path-bonus-card-" + playerId, "\n        <div><strong>" + _('Longest path') + " : " + length + "</strong></div>\n        <div>The player who has the Longest Continuous Path of routes receives this special bonus card and adds 10 points to his score.</div>\n        <div class=\"longest-path bonus-card\"></div>\n        ");
+        dojo.place("<div id=\"longest-path-bonus-card-" + playerId + "\" class=\"longest-path bonus-card bonus-card-icon\"></div>", "bonus-card-icons-" + playerId);
+        this.game.setTooltip("longest-path-bonus-card-" + playerId, "\n        <div><strong>" + _('Longest path') + " : " + length + "</strong></div>\n        <div>" + _('The player who has the Longest Continuous Path of routes receives this special bonus card and adds 10 points to his score.') + "</div>\n        <div class=\"longest-path bonus-card\"></div>\n        ");
     };
     return EndScore;
 }());
@@ -3039,6 +3049,7 @@ var TicketToRide = /** @class */ (function () {
             ['scoreDestination', 2000],
             ['longestPath', 2000],
             ['longestPathWinner', 1500],
+            ['globetrotterWinner', 1500],
             ['highlightWinnerScore', 1],
         ];
         notifs.forEach(function (notif) {
@@ -3160,6 +3171,13 @@ var TicketToRide = /** @class */ (function () {
             (_b = document.getElementById("destination-card-" + notif.args.destination.id)) === null || _b === void 0 ? void 0 : _b.classList.add('uncompleted');
         }
         (_c = this.endScore) === null || _c === void 0 ? void 0 : _c.updateDestinationsTooltip(player);
+    };
+    /**
+     * Add Globetrotter badge for end score.
+     */
+    TicketToRide.prototype.notif_globetrotterWinner = function (notif) {
+        var _a;
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.setGlobetrotterWinner(notif.args.playerId, notif.args.length);
     };
     /**
      * Animate longest path for end score.

@@ -169,6 +169,11 @@ $stats_type = [
             "name" => totranslate("Longest Continuous Path bonus"),
             "type" => "bool"
         ],
+        /* TODO1910 "globetrotterBonus" => [
+            "id" => 45,
+            "name" => totranslate("Globetrotter bonus"),
+            "type" => "bool"
+        ],*/
     ],
 
 ];

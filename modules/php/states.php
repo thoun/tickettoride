@@ -121,8 +121,21 @@ trait StateTrait {
         }
 
         // Globetrotter
+        $globetrotterWinners = [];
+        $bestCompletedDestinationsCount = null;
         if (POINTS_FOR_GLOBETROTTER !== null) {
-            // we send notifications here for Globetrotter when the map supports it
+            $completedDestinationsBySize = [];
+            foreach ($completedDestinationsCount as $playerId => $size) {
+                $completedDestinationsBySize[$size] = array_key_exists($size, $completedDestinationsBySize) ?
+                    array_merge($completedDestinationsBySize[$size], [$playerId]):
+                    [$playerId];
+            }
+            $bestCompletedDestinationsCount = max(array_keys($completedDestinationsBySize));
+            $globetrotterWinners = $completedDestinationsBySize[$bestCompletedDestinationsCount];  
+            
+            foreach ($globetrotterWinners as $playerId) {
+                $totalScore[$playerId] += POINTS_FOR_GLOBETROTTER;
+            }
         }
 
         // we need to send bestScore before all score notifs, because train animations will show score ratio over best score
@@ -177,6 +190,24 @@ trait StateTrait {
             }
         }
 
+        // Globetrotter
+        if (POINTS_FOR_GLOBETROTTER !== null) {
+            foreach ($globetrotterWinners as $playerId) {
+                $points = POINTS_FOR_GLOBETROTTER;
+                $this->incScore($playerId, $points, /* TODO1910 clienttranslate*/('${player_name} gains ${delta} points with Globetrotter : ${destinations} completed destinations'), [
+                    'points' => $points,
+                    'destinations' => $bestCompletedDestinationsCount,
+                ]);
+
+                self::notifyAllPlayers('globetrotterWinner', '', [
+                    'playerId' => $playerId,
+                    'length' => $bestCompletedDestinationsCount,
+                ]);
+
+                // TODO1910 $this->setStat(1, 'globetrotterBonus', $playerId);
+            }
+        }
+
         // Longest continuous path 
         if (POINTS_FOR_LONGEST_PATH !== null) {
             foreach ($players as $playerId => $playerDb) {
@@ -207,11 +238,6 @@ trait StateTrait {
 
                 $this->setStat(1, 'longestPathBonus', $playerId);
             }
-        }
-
-        // Globetrotter
-        if (POINTS_FOR_GLOBETROTTER !== null) {
-            // we send notifications here for Globetrotter when the map supports it
         }
 
         $claimedRoutes = intval(self::getStat('claimedRoutes'));

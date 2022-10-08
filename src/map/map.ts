@@ -309,7 +309,11 @@ class TtrMap {
                 const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
                 otherRoute?.spaces.forEach((space, spaceIndex) => {
                     const spaceDiv = document.getElementById(`route-spaces-route${otherRoute.id}-space${spaceIndex}`);
-                    spaceDiv?.classList.add('forbidden');
+                    if (spaceDiv) {
+                        spaceDiv.classList.add('forbidden');
+                        this.game.setTooltip(spaceDiv.id, `<strong><span style="color: darkred">${_('Important Note:')}</span> 
+                        ${_('In 2 or 3 player games, only one of the Double-Routes can be used.')}</strong>`);
+                    }
                 });
             }
         });
