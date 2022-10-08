@@ -80,6 +80,7 @@ interface TicketToRideGamedatas {
     lastTurn: boolean;
     bestScore: number;
 
+    expansion1910: number;
     showTurnOrder: boolean;
 }
 

@@ -68,12 +68,16 @@ class EndScore {
         if (fromReload) {
             const longestPath = Math.max(...players.map(player => player.longestPathLength));
             this.setBestScore(bestScore);
+            const maxCompletedDestinations = players.map(player => player.completedDestinations.length).reduce((a, b) => (a > b) ? a : b, 0)
             players.forEach(player => {
                 if (Number(player.score) == bestScore) {
                     this.highlightWinnerScore(player.id);
                 }
-                if (player.longestPathLength == longestPath) {
+                if (player.longestPathLength == longestPath) { // TODO1910
                     this.setLongestPathWinner(player.id, longestPath);
+                }
+                if (false && player.completedDestinations.length == maxCompletedDestinations) { // TODO1910
+                    this.setGlobetrotterWinner(player.id, maxCompletedDestinations);
                 }
                 this.updateDestinationsTooltip(player);
             });

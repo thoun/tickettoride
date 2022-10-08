@@ -8,9 +8,6 @@ define('VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS', true); // Says if it is possib
 define('RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES', 3); // Resets visible cards when 3 locomotives are visible (null means disabled)
 define('TRAIN_CARS_NUMBER_TO_START_LAST_TURN', 2); // 2 means 0, 1, or 2 will start last turn
 define('TRAIN_CARS_PER_PLAYER', 45);
-define('INITIAL_DESTINATION_CARD_PICK', 3); // Number of destinations cards shown at the beginning.
-define('INITIAL_DESTINATION_MINIMUM_KEPT', 2); // Minimum number of destinations cards to keep at the beginning.
-define('ADDITIONAL_DESTINATION_CARD_PICK', 3); // Number of destinations cards shown at pick destination action.
 define('ADDITIONAL_DESTINATION_MINIMUM_KEPT', 1); // Minimum number of destinations cards to keep at pick destination action.
 define('UNUSED_DESTINATIONS_GO_TO_DECK_BOTTOM', true); // Indicates if unpicked destinations cards go back to the bottom of the deck.
 define('POINTS_FOR_LONGEST_PATH', 10); // points for maximum longest countinuous path (null means disabled)
@@ -18,7 +15,17 @@ define('POINTS_FOR_GLOBETROTTER', 15); // points for maximum completed destinati
 define('MINIMUM_PLAYER_FOR_DOUBLE_ROUTES', 4); // 4 means 2-3 players cant use double routes
 define('NUMBER_OF_LOCOMOTIVE_CARDS', 14);
 define('NUMBER_OF_COLORED_CARDS', 12);
-define('ACTIVATE1910', false); // TODO1910
+
+define('EXPANSION1910', 0); // TODO1910  0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
+define('BIG_CITIES', [
+    5, // Chicago',
+    6, // Dallas',
+    11, // Houston',
+    15, // Los Angeles',
+    16, // Miami',
+    20, // New York',
+    32, // Seattle',
+]);
 
 /* 
  * Colors 

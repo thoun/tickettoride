@@ -24,7 +24,7 @@ trait ArgsTrait {
         }
 
         return [
-            'minimum' => 2,
+            'minimum' => $this->getInitialDestinationMinimumKept(),
             '_private' => $private,
         ];
         
@@ -32,7 +32,7 @@ trait ArgsTrait {
 
     function argPrivateChooseInitialDestinations(int $playerId) {
         return [
-            'minimum' => 2,
+            'minimum' => $this->getInitialDestinationMinimumKept(),
             'destinations' => $this->getPickedDestinationCards($playerId),
         ];
     }
@@ -43,7 +43,7 @@ trait ArgsTrait {
         $destinations = $this->getPickedDestinationCards($playerId);
 
         return [
-            'minimum' => 1,
+            'minimum' => ADDITIONAL_DESTINATION_MINIMUM_KEPT,
             '_private' => [          // Using "_private" keyword, all data inside this array will be made private
                 'active' => [       // Using "active" keyword inside "_private", you select active player(s)
                     'destinations' => $destinations,   // will be send only to active player(s)
@@ -62,7 +62,7 @@ trait ArgsTrait {
 
         $possibleRoutes = $this->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
         $maxHiddenCardsPick = min(2, $this->getRemainingTrainCarCardsInDeck(true));
-        $maxDestinationsPick = min(ADDITIONAL_DESTINATION_CARD_PICK, $this->getRemainingDestinationCardsInDeck());
+        $maxDestinationsPick = min($this->getAdditionalDestinationCardNumber(), $this->getRemainingDestinationCardsInDeck());
 
         $costForRoute = [];
         foreach($possibleRoutes as $possibleRoute) {

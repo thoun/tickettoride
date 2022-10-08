@@ -18,7 +18,7 @@ trait DestinationDeckTrait {
      * Pick destination cards for beginning choice.
      */
     public function pickInitialDestinationCards(int $playerId) {
-		return $this->pickDestinationCards($playerId, INITIAL_DESTINATION_CARD_PICK);
+		return $this->pickDestinationCards($playerId, $this->getInitialDestinationCardNumber());
     }	
 
     /**
@@ -26,14 +26,14 @@ trait DestinationDeckTrait {
      * Unused destination cards are set back on the deck or discarded.
      */
     public function keepInitialDestinationCards(int $playerId, array $ids) {
-		$this->keepDestinationCards($playerId, $ids, INITIAL_DESTINATION_MINIMUM_KEPT);
+		$this->keepDestinationCards($playerId, $ids, $this->getInitialDestinationMinimumKept());
     }	
 	
     /**
      * Pick destination cards for pick destination action.
      */
     public function pickAdditionalDestinationCards(int $playerId) {
-		return $this->pickDestinationCards($playerId, ADDITIONAL_DESTINATION_CARD_PICK);
+		return $this->pickDestinationCards($playerId, $this->getAdditionalDestinationCardNumber());
     }	
 
     /**

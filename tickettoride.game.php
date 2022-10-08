@@ -220,14 +220,15 @@ class TicketToRide extends Table {
         $result['trainCarDeckMaxCount'] = 110;
         $result['destinationDeckMaxCount'] = 30;
 
+        $result['expansion1910'] = EXPANSION1910; // TODO1910
         $result['showTurnOrder'] = intval($this->getGameStateValue(SHOW_TURN_ORDER)) == 2;
         
         if ($isEnd) {
             $result['bestScore'] = max(array_map(fn($player) => intval($player['score']), $result['players']));
         } else {
-            $result['lastTurn'] = $this->getGameStateValue(LAST_TURN) > 0;
-            
+            $result['lastTurn'] = $this->getGameStateValue(LAST_TURN) > 0;            
         }
+
   
         return $result;
     }

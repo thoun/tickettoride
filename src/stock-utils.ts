@@ -18,6 +18,10 @@ function setupDestinationCards(stock: Stock) {
     for (let id=1; id<=35; id++) {
         stock.addItemType(200 + id, 200 + id, destinations1910Url, id - 1);
     }
+    const destinationsMegaUrl = `${g_gamethemeurl}img/destinations-mega.jpg`;
+    for (let id=1; id<=34; id++) {
+        stock.addItemType(300 + id, 300 + id, destinationsMegaUrl, id - 1);
+    }
 }
 
 const GRAY = 0;
@@ -165,10 +169,46 @@ const DESTINATIONS = [
     new DestinationCard(233, 34, 8, 13), // Vancouver	Duluth	13
     new DestinationCard(234, 35, 1, 4), // Washington	Atlanta 4
     new DestinationCard(235, 36, 31, 10), // Winnipeg	Santa Fe	10
+
+    // mega
+    new DestinationCard(301, 2, 16, 12), // Boston	Miami	12
+    new DestinationCard(302, 2, 35, 4), // Boston	Washington	4
+    new DestinationCard(303, 3, 23, 13), // Calgary	Phoenix	13
+    new DestinationCard(304, 3, 28, 7), // Calgary	Salt Lake City	7
+    new DestinationCard(305, 5, 19, 7), // Chicago	New Orleans	7
+    new DestinationCard(306, 5, 31, 9), // Chicago	Santa Fe	9
+    new DestinationCard(307, 6, 20, 11), // Dallas	New York	11
+    new DestinationCard(308, 7, 9, 4), // Denver	El Paso	4
+    new DestinationCard(309, 7, 24, 11), // Denver	Pittsburgh	11
+    new DestinationCard(310, 8, 9, 10), // Duluth	El Paso	10
+    new DestinationCard(311, 8, 11, 8), // Duluth	Houston	8
+    new DestinationCard(312, 10, 15, 8), // Helena	Los Angeles	8
+    new DestinationCard(313, 12, 11, 5), // Kansas City	Houston	5
+    new DestinationCard(314, 15, 5, 16), // Los Angeles Chicago	16
+    new DestinationCard(315, 15, 16, 19), // Los Angeles	Miami	19
+    new DestinationCard(316, 15, 20, 20), // Los Angeles	New York	20
+    new DestinationCard(317, 17, 1, 9), // Montréal	Atlanta	9
+    new DestinationCard(318, 17, 5, 7), // Montréal	Chicago	7
+    new DestinationCard(319, 17, 19, 13), // Montréal  New Orleans	13
+    new DestinationCard(320, 20, 1, 6), // New York	Atlanta	6
+    new DestinationCard(321, 25, 18, 17), // Portland	Nashville	17
+    new DestinationCard(322, 25, 23, 11), // Portland	Phoenix	11
+    new DestinationCard(323, 30, 1, 17), // San Francisco	Atlanta	17
+    new DestinationCard(324, 29, 18, 8), // Sault St. Marie	Nashville	8
+    new DestinationCard(325, 29, 21, 8), // Sault St. Marie	Oklahoma City	8
+    new DestinationCard(326, 32, 15, 9), // Seattle	Los Angeles	9
+    new DestinationCard(327, 32, 20, 20), // Seattle	New York	20
+    new DestinationCard(328, 33, 16, 10), // Toronto	Miami	10
+    new DestinationCard(329, 34, 17, 20), // Vancouver	Montréal	20
+    new DestinationCard(330, 34, 25, 2), // Vancouver	Portland	2
+    new DestinationCard(331, 34, 31, 13), // Vancouver	Santa Fe	13
+    new DestinationCard(332, 36, 11, 12), // Winnipeg	Houston	12
+    new DestinationCard(333, 36, 14, 11), // Winnipeg	Little Rock	11
+    new DestinationCard(334, 36, 22, 6), // Winnipeg	Omaha	6
 ];
 
 function setupDestinationCardDiv(cardDiv: HTMLDivElement, cardUniqueId: number) {
-    const destination = DESTINATIONS.find(d => d.id == cardUniqueId);
+    const destination = DESTINATIONS.find(d => d.id == cardUniqueId); // TODO1910 cards with changed values !!!
     cardDiv.title = `${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[destination.from], to: CITIES_NAMES[destination.to]})}, ${destination.points} ${_('points')}`;
 }
 
@@ -180,6 +220,9 @@ function getBackgroundInlineStyleForDestination(destination: Destination) {
             break;
         case 2: 
             file = 'destinations-1910.jpg';
+            break;
+        case 3: 
+            file = 'destinations-mega.jpg';
             break;
     }
 

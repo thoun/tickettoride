@@ -249,7 +249,44 @@ $this->DESTINATIONS = [
     33 => new DestinationCard(34, 8, 13), // Vancouver	Duluth	13
     34 => new DestinationCard(35, 1, 4), // Washington	Atlanta 4
     35 => new DestinationCard(36, 31, 10), // Winnipeg	Santa Fe	10
-  ]
+  ],
+
+  3 => [
+    1 => new DestinationCard(2, 16, 12), // Boston	Miami	12
+    2 => new DestinationCard(2, 35, 4), // Boston	Washington	4
+    3 => new DestinationCard(3, 23, 13), // Calgary	Phoenix	13
+    4 => new DestinationCard(3, 28, 7), // Calgary	Salt Lake City	7
+    5 => new DestinationCard(5, 19, 7), // Chicago	New Orleans	7
+    6 => new DestinationCard(5, 31, 9), // Chicago	Santa Fe	9
+    7 => new DestinationCard(6, 20, 11), // Dallas	New York	11
+    8 => new DestinationCard(7, 9, 4), // Denver	El Paso	4
+    9 => new DestinationCard(7, 24, 11), // Denver	Pittsburgh	11
+    10 => new DestinationCard(8, 9, 10), // Duluth	El Paso	10
+    11 => new DestinationCard(8, 11, 8), // Duluth	Houston	8
+    12 => new DestinationCard(10, 15, 8), // Helena	Los Angeles	8
+    13 => new DestinationCard(12, 11, 5), // Kansas City	Houston	5
+    14 => new DestinationCard(15, 5, 16), // Los Angeles Chicago	16
+    15 => new DestinationCard(15, 16, 19), // Los Angeles	Miami	19
+    16 => new DestinationCard(15, 20, 20), // Los Angeles	New York	20
+    17 => new DestinationCard(17, 1, 9), // Montréal	Atlanta	9
+    18 => new DestinationCard(17, 5, 7), // Montréal	Chicago	7
+    19 => new DestinationCard(17, 19, 13), // Montréal  New Orleans	13
+    20 => new DestinationCard(20, 1, 6), // New York	Atlanta	6
+    21 => new DestinationCard(25, 18, 17), // Portland	Nashville	17
+    22 => new DestinationCard(25, 23, 11), // Portland	Phoenix	11
+    23 => new DestinationCard(30, 1, 17), // San Francisco	Atlanta	17
+    24 => new DestinationCard(29, 18, 8), // Sault St. Marie	Nashville	8
+    25 => new DestinationCard(29, 21, 8), // Sault St. Marie	Oklahoma City	8
+    26 => new DestinationCard(32, 15, 9), // Seattle	Los Angeles	9
+    27 => new DestinationCard(32, 20, 20), // Seattle	New York	20
+    28 => new DestinationCard(33, 16, 10), // Toronto	Miami	10
+    29 => new DestinationCard(34, 17, 20), // Vancouver	Montréal	20
+    30 => new DestinationCard(34, 25, 2), // Vancouver	Portland	2
+    31 => new DestinationCard(34, 31, 13), // Vancouver	Santa Fe	13
+    32 => new DestinationCard(36, 11, 12), // Winnipeg	Houston	12
+    33 => new DestinationCard(36, 14, 11), // Winnipeg	Little Rock	11
+    34 => new DestinationCard(36, 22, 6), // Winnipeg	Omaha	6
+  ],
 ];
 
 /**
