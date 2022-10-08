@@ -49,7 +49,7 @@ class PlayerDestinations {
             dojo.place(html, `player-table-${this.playerId}-destinations-todo`);
             
             const card = document.getElementById(`destination-card-${destination.id}`) as HTMLDivElement;
-            setupDestinationCardDiv(card, destination.type_arg);
+            setupDestinationCardDiv(card, destination.type * 100 + destination.type_arg);
             /*
             Can't add a tooltip, because showing a tooltip will mess with the hover effect.
             const destinationInfos = DESTINATIONS.find(d => d.id == destination.type_arg);            

@@ -47,7 +47,7 @@ class TicketToRide implements TicketToRideGame {
 
     public setup(gamedatas: TicketToRideGamedatas) {
         // ignore loading of some pictures
-        (this as any).dontPreloadImage('publisher.png');
+        (this as any).dontPreloadImage('destinations-1910.jpg');
 
         log("Starting game setup");
         

@@ -62,6 +62,9 @@ trait StateTrait {
     }
 
     function stEndScore() {
+        $isGlobetrotterBonusActive = $this->isGlobetrotterBonusActive();
+        $isLongestPathBonusActive = $this->isLongestPathBonusActive();
+
         $sql = "SELECT player_id id, player_score score FROM player ORDER BY player_no ASC";
         $players = self::getCollectionFromDb($sql);
 
@@ -100,12 +103,13 @@ trait StateTrait {
         $playersLongestPaths = [];
         $longestPathWinners = [];
         $bestLongestPath = null;
-        if (POINTS_FOR_LONGEST_PATH !== null) {
-            foreach ($players as $playerId => $playerDb) {
-                $longestPath = $this->getLongestPath($playerId);
-                $playersLongestPaths[$playerId] = $longestPath;
-            }
 
+        foreach ($players as $playerId => $playerDb) {
+            $longestPath = $this->getLongestPath($playerId);
+            $playersLongestPaths[$playerId] = $longestPath;
+        }
+
+        if ($isLongestPathBonusActive) {
             $longestPathBySize = [];
             foreach ($playersLongestPaths as $playerId => $longestPath) {
                 $longestPathBySize[$longestPath->length] = array_key_exists($longestPath->length, $longestPathBySize) ?
@@ -123,7 +127,7 @@ trait StateTrait {
         // Globetrotter
         $globetrotterWinners = [];
         $bestCompletedDestinationsCount = null;
-        if (POINTS_FOR_GLOBETROTTER !== null) {
+        if ($isGlobetrotterBonusActive) {
             $completedDestinationsBySize = [];
             foreach ($completedDestinationsCount as $playerId => $size) {
                 $completedDestinationsBySize[$size] = array_key_exists($size, $completedDestinationsBySize) ?
@@ -191,7 +195,7 @@ trait StateTrait {
         }
 
         // Globetrotter
-        if (POINTS_FOR_GLOBETROTTER !== null) {
+        if ($isGlobetrotterBonusActive) {
             foreach ($globetrotterWinners as $playerId) {
                 $points = POINTS_FOR_GLOBETROTTER;
                 $this->incScore($playerId, $points, /* TODO1910 clienttranslate*/('${player_name} gains ${delta} points with Globetrotter : ${destinations} completed destinations'), [
@@ -209,7 +213,7 @@ trait StateTrait {
         }
 
         // Longest continuous path 
-        if (POINTS_FOR_LONGEST_PATH !== null) {
+        if ($isLongestPathBonusActive) {
             foreach ($players as $playerId => $playerDb) {
                 $longestPath = $playersLongestPaths[$playerId];
 

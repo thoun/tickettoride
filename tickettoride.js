@@ -23,8 +23,12 @@ function setupTrainCarCards(stock) {
 }
 function setupDestinationCards(stock) {
     var destinationsUrl = g_gamethemeurl + "img/destinations.jpg";
-    for (var id = 1; id <= 36; id++) {
-        stock.addItemType(id, id, destinationsUrl, id - 1);
+    for (var id = 1; id <= 30; id++) {
+        stock.addItemType(100 + id, 100 + id, destinationsUrl, id - 1);
+    }
+    var destinations1910Url = g_gamethemeurl + "img/destinations-1910.jpg";
+    for (var id = 1; id <= 35; id++) {
+        stock.addItemType(200 + id, 200 + id, destinations1910Url, id - 1);
     }
 }
 var GRAY = 0;
@@ -101,47 +105,93 @@ var CITIES_NAMES = [
     'Winnipeg',
 ];
 var DESTINATIONS = [
-    new DestinationCard(1, 2, 16, 12),
-    new DestinationCard(2, 3, 23, 13),
-    new DestinationCard(3, 3, 28, 7),
-    new DestinationCard(4, 5, 19, 7),
-    new DestinationCard(5, 5, 31, 9),
-    new DestinationCard(6, 6, 20, 11),
-    new DestinationCard(7, 7, 9, 4),
-    new DestinationCard(8, 7, 24, 11),
-    new DestinationCard(9, 8, 9, 10),
-    new DestinationCard(10, 8, 11, 8),
-    new DestinationCard(11, 10, 15, 8),
-    new DestinationCard(12, 12, 11, 5),
-    new DestinationCard(13, 15, 5, 16),
-    new DestinationCard(14, 15, 16, 20),
-    new DestinationCard(15, 15, 20, 21),
-    new DestinationCard(16, 17, 1, 9),
-    new DestinationCard(17, 17, 19, 13),
-    new DestinationCard(18, 20, 1, 6),
-    new DestinationCard(19, 25, 18, 17),
-    new DestinationCard(20, 25, 23, 11),
-    new DestinationCard(21, 30, 1, 17),
-    new DestinationCard(22, 29, 18, 8),
-    new DestinationCard(23, 29, 21, 9),
-    new DestinationCard(24, 32, 15, 9),
-    new DestinationCard(25, 32, 20, 22),
-    new DestinationCard(26, 33, 16, 10),
-    new DestinationCard(27, 34, 17, 20),
-    new DestinationCard(28, 34, 31, 13),
-    new DestinationCard(29, 36, 11, 12),
-    new DestinationCard(30, 36, 14, 11), // Winnipeg	Little Rock	11
+    // base game
+    new DestinationCard(101, 2, 16, 12),
+    new DestinationCard(102, 3, 23, 13),
+    new DestinationCard(103, 3, 28, 7),
+    new DestinationCard(104, 5, 19, 7),
+    new DestinationCard(105, 5, 31, 9),
+    new DestinationCard(106, 6, 20, 11),
+    new DestinationCard(107, 7, 9, 4),
+    new DestinationCard(108, 7, 24, 11),
+    new DestinationCard(109, 8, 9, 10),
+    new DestinationCard(110, 8, 11, 8),
+    new DestinationCard(111, 10, 15, 8),
+    new DestinationCard(112, 12, 11, 5),
+    new DestinationCard(113, 15, 5, 16),
+    new DestinationCard(114, 15, 16, 20),
+    new DestinationCard(115, 15, 20, 21),
+    new DestinationCard(116, 17, 1, 9),
+    new DestinationCard(117, 17, 19, 13),
+    new DestinationCard(118, 20, 1, 6),
+    new DestinationCard(119, 25, 18, 17),
+    new DestinationCard(120, 25, 23, 11),
+    new DestinationCard(121, 30, 1, 17),
+    new DestinationCard(122, 29, 18, 8),
+    new DestinationCard(123, 29, 21, 9),
+    new DestinationCard(124, 32, 15, 9),
+    new DestinationCard(125, 32, 20, 22),
+    new DestinationCard(126, 33, 16, 10),
+    new DestinationCard(127, 34, 17, 20),
+    new DestinationCard(128, 34, 31, 13),
+    new DestinationCard(129, 36, 11, 12),
+    new DestinationCard(130, 36, 14, 11),
+    // 1910
+    new DestinationCard(201, 3, 18, 14),
+    new DestinationCard(202, 5, 1, 5),
+    new DestinationCard(203, 5, 2, 5),
+    new DestinationCard(204, 5, 20, 5),
+    new DestinationCard(205, 7, 27, 6),
+    new DestinationCard(206, 8, 6, 7),
+    new DestinationCard(207, 11, 35, 10),
+    new DestinationCard(208, 12, 2, 11),
+    new DestinationCard(209, 13, 16, 21),
+    new DestinationCard(210, 13, 20, 19),
+    new DestinationCard(211, 15, 1, 15),
+    new DestinationCard(212, 15, 3, 12),
+    new DestinationCard(213, 15, 21, 9),
+    new DestinationCard(214, 17, 6, 13),
+    new DestinationCard(215, 17, 26, 7),
+    new DestinationCard(216, 18, 20, 6),
+    new DestinationCard(217, 20, 16, 10),
+    new DestinationCard(218, 22, 19, 8),
+    new DestinationCard(219, 23, 2, 19),
+    new DestinationCard(220, 24, 19, 8),
+    new DestinationCard(221, 25, 11, 16),
+    new DestinationCard(222, 25, 24, 19),
+    new DestinationCard(223, 28, 5, 11),
+    new DestinationCard(224, 28, 12, 7),
+    new DestinationCard(225, 30, 29, 17),
+    new DestinationCard(226, 30, 35, 21),
+    new DestinationCard(227, 29, 16, 12),
+    new DestinationCard(228, 32, 13, 10),
+    new DestinationCard(229, 32, 21, 14),
+    new DestinationCard(230, 27, 16, 8),
+    new DestinationCard(231, 33, 4, 6),
+    new DestinationCard(232, 34, 7, 11),
+    new DestinationCard(233, 34, 8, 13),
+    new DestinationCard(234, 35, 1, 4),
+    new DestinationCard(235, 36, 31, 10), // Winnipeg	Santa Fe	10
 ];
-function setupDestinationCardDiv(cardDiv, cardTypeId) {
-    var destination = DESTINATIONS.find(function (d) { return d.id == cardTypeId; });
+function setupDestinationCardDiv(cardDiv, cardUniqueId) {
+    var destination = DESTINATIONS.find(function (d) { return d.id == cardUniqueId; });
     cardDiv.title = dojo.string.substitute(_('${from} to ${to}'), { from: CITIES_NAMES[destination.from], to: CITIES_NAMES[destination.to] }) + ", " + destination.points + " " + _('points');
 }
 function getBackgroundInlineStyleForDestination(destination) {
+    var file;
+    switch (destination.type) {
+        case 1:
+            file = 'destinations.jpg';
+            break;
+        case 2:
+            file = 'destinations-1910.jpg';
+            break;
+    }
     var imagePosition = destination.type_arg - 1;
     var row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
     var xBackgroundPercent = (imagePosition - (row * IMAGE_ITEMS_PER_ROW)) * 100;
     var yBackgroundPercent = row * 100;
-    return "background-position: -" + xBackgroundPercent + "% -" + yBackgroundPercent + "%;";
+    return "background-image: url('" + g_gamethemeurl + "img/" + file + "'); background-position: -" + xBackgroundPercent + "% -" + yBackgroundPercent + "%;";
 }
 /**
  * Animation with highlighted wagons.
@@ -1442,7 +1492,7 @@ var DestinationSelection = /** @class */ (function () {
         this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $("destination-stock"), CARD_WIDTH, CARD_HEIGHT);
-        this.destinations.onItemCreate = function (cardDiv, cardTypeId) { return setupDestinationCardDiv(cardDiv, Number(cardTypeId)); };
+        this.destinations.onItemCreate = function (cardDiv, cardUniqueId) { return setupDestinationCardDiv(cardDiv, Number(cardUniqueId)); };
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
         this.destinations.item_margin = 20;
@@ -1456,7 +1506,7 @@ var DestinationSelection = /** @class */ (function () {
         var _this = this;
         dojo.removeClass('destination-deck', 'hidden');
         destinations.forEach(function (destination) {
-            _this.destinations.addToStockWithId(destination.type_arg, '' + destination.id);
+            _this.destinations.addToStockWithId(destination.type * 100 + destination.type_arg, '' + destination.id);
             var cardDiv = document.getElementById("destination-stock_item_" + destination.id);
             // when mouse hover destination, highlight it on the map
             cardDiv.addEventListener('mouseenter', function () { return _this.game.setHighligthedDestination(destination); });
@@ -1878,7 +1928,7 @@ var PlayerDestinations = /** @class */ (function () {
             var html = "\n            <div id=\"destination-card-" + destination.id + "\" class=\"destination-card\" style=\"" + getBackgroundInlineStyleForDestination(destination) + "\"></div>\n            ";
             dojo.place(html, "player-table-" + _this.playerId + "-destinations-todo");
             var card = document.getElementById("destination-card-" + destination.id);
-            setupDestinationCardDiv(card, destination.type_arg);
+            setupDestinationCardDiv(card, destination.type * 100 + destination.type_arg);
             /*
             Can't add a tooltip, because showing a tooltip will mess with the hover effect.
             const destinationInfos = DESTINATIONS.find(d => d.id == destination.type_arg);
@@ -2443,7 +2493,7 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.setup = function (gamedatas) {
         var _this = this;
         // ignore loading of some pictures
-        this.dontPreloadImage('publisher.png');
+        this.dontPreloadImage('destinations-1910.jpg');
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);

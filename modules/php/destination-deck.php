@@ -8,11 +8,8 @@ trait DestinationDeckTrait {
      * Create destination cards.
      */
     public function createDestinations() {
-        foreach($this->DESTINATIONS as $type => $typeDestinations) {
-            foreach($typeDestinations as $typeArg => $destination) {
-                $destinations[] = [ 'type' => $type, 'type_arg' => $typeArg, 'nbr' => 1];
-            }
-        }
+        $destinations = $this->getDestinationToGenerate();
+
         $this->destinations->createCards($destinations, 'deck');
         $this->destinations->shuffle('deck');
     }

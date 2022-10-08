@@ -148,6 +148,11 @@ trait ActionTrait {
             throw new BgaUserException("Not enough cards to claim the route.");
         }
 
+        $possibleRoutes = $this->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
+        if (!$this->array_some($possibleRoutes, fn($possibleRoute) => $possibleRoute->id == $routeId)) {
+            throw new BgaUserException("You can't claim this route");
+        }
+
         usort($colorAndLocomotiveCards, fn($card1, $card2) => $card1->type < $card2->type);
 
         $cardsToRemove = array_slice($colorAndLocomotiveCards, 0, $route->number);

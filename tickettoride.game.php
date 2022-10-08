@@ -28,6 +28,7 @@ require_once('modules/php/map.php');
 require_once('modules/php/train-car-deck.php');
 require_once('modules/php/destination-deck.php');
 require_once('modules/php/debug-util.php');
+require_once('modules/php/expansion.php');
 
 /*
  * Game main class.
@@ -42,6 +43,7 @@ class TicketToRide extends Table {
     use TrainCarDeckTrait;
     use DestinationDeckTrait;
     use DebugUtilTrait;
+    use ExpansionTrait;
 
 	function __construct() {
         parent::__construct();
