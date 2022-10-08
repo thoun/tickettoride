@@ -2404,21 +2404,28 @@ var EndScore = /** @class */ (function () {
     /**
      * Show score animation for a revealed destination.
      */
-    EndScore.prototype.scoreDestination = function (playerId, destination, destinationRoutes) {
+    EndScore.prototype.scoreDestination = function (playerId, destination, destinationRoutes, isFastEndScoring) {
         var _this = this;
+        if (isFastEndScoring === void 0) { isFastEndScoring = false; }
+        var state = destinationRoutes ? 'completed' : 'uncompleted';
+        var endFunction = function () {
+            (destinationRoutes ? _this.completedDestinationCounters : _this.uncompletedDestinationCounters)[playerId].incValue(1);
+            _this.destinationCounters[playerId].incValue(-1);
+            if (_this.destinationCounters[playerId].getValue() == 0) {
+                document.getElementById("destination-counter-" + playerId).classList.add('hidden');
+            }
+        };
+        if (isFastEndScoring) {
+            endFunction();
+            return;
+        }
         var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, "destination-counter-" + playerId, (destinationRoutes ? 'completed' : 'uncompleted') + "-destination-counter-" + playerId, {
             change: function () {
                 playSound("ttr-" + (destinationRoutes ? 'completed' : 'uncompleted') + "-end");
                 _this.game.disableNextMoveSound();
             },
-            end: function () {
-                (destinationRoutes ? _this.completedDestinationCounters : _this.uncompletedDestinationCounters)[playerId].incValue(1);
-                _this.destinationCounters[playerId].incValue(-1);
-                if (_this.destinationCounters[playerId].getValue() == 0) {
-                    document.getElementById("destination-counter-" + playerId).classList.add('hidden');
-                }
-            },
-        }, destinationRoutes ? 'completed' : 'uncompleted', 0.15 / this.game.getZoom());
+            end: endFunction,
+        }, state, 0.15 / this.game.getZoom());
         this.game.addAnimation(newDac);
     };
     EndScore.prototype.updateDestinationsTooltip = function (player) {
@@ -2435,8 +2442,12 @@ var EndScore = /** @class */ (function () {
     /**
      * Show longest path animation for a player.
      */
-    EndScore.prototype.showLongestPath = function (playerColor, routes, length) {
+    EndScore.prototype.showLongestPath = function (playerColor, routes, length, isFastEndScoring) {
         var _this = this;
+        if (isFastEndScoring === void 0) { isFastEndScoring = false; }
+        if (isFastEndScoring) {
+            return;
+        }
         var newDac = new LongestPathAnimation(this.game, routes, length, playerColor, {
             end: function () {
                 playSound("ttr-longest-line-scoring");
@@ -3072,6 +3083,10 @@ var TicketToRide = /** @class */ (function () {
         data.lock = true;
         this.ajaxcall("/tickettoride/tickettoride/" + action + ".html", data, this, function () { });
     };
+    TicketToRide.prototype.isFastEndScoring = function () {
+        var _a;
+        return Number((_a = this.prefs[208]) === null || _a === void 0 ? void 0 : _a.value) == 2;
+    };
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
     /*
@@ -3086,6 +3101,7 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.setupNotifications = function () {
         //log( 'notifications subscriptions setup' );
         var _this = this;
+        var skipEndOfGameAnimations = this.isFastEndScoring();
         var notifs = [
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
@@ -3096,10 +3112,10 @@ var TicketToRide = /** @class */ (function () {
             ['highlightVisibleLocomotives', 1000],
             ['lastTurn', 1],
             ['bestScore', 1],
-            ['scoreDestination', 2000],
-            ['longestPath', 2000],
-            ['longestPathWinner', 1500],
-            ['globetrotterWinner', 1500],
+            ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
+            ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
+            ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
+            ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['highlightWinnerScore', 1],
         ];
         notifs.forEach(function (notif) {
@@ -3212,7 +3228,7 @@ var TicketToRide = /** @class */ (function () {
         var _a, _b, _c;
         var playerId = notif.args.playerId;
         var player = this.gamedatas.players[playerId];
-        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.scoreDestination(playerId, notif.args.destination, notif.args.destinationRoutes);
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.scoreDestination(playerId, notif.args.destination, notif.args.destinationRoutes, this.isFastEndScoring());
         if (notif.args.destinationRoutes) {
             player.completedDestinations.push(notif.args.destination);
         }
@@ -3234,7 +3250,7 @@ var TicketToRide = /** @class */ (function () {
      */
     TicketToRide.prototype.notif_longestPath = function (notif) {
         var _a;
-        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length);
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length, this.isFastEndScoring());
     };
     /**
      * Add longest path badge for end score.

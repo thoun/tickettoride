@@ -116,4 +116,14 @@ $game_preferences = [
     ],
 
     // 206 and 207 already used
+    
+    208 => [
+        'name' => totranslate('End of game animations'),
+        'needReload' => true,
+        'values' => [
+            1 => [ 'name' => totranslate('Enabled')],
+            2 => [ 'name' => totranslate('Disabled')],
+        ],
+        'default' => 1
+    ],
 ];

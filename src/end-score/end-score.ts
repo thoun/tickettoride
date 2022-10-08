@@ -116,7 +116,21 @@ class EndScore {
     /** 
      * Show score animation for a revealed destination.
      */ 
-    public scoreDestination(playerId: number, destination: Destination, destinationRoutes: Route[]) { 
+    public scoreDestination(playerId: number, destination: Destination, destinationRoutes: Route[], isFastEndScoring: boolean = false) { 
+        const state = destinationRoutes ? 'completed' : 'uncompleted';
+        const endFunction = () => {
+            (destinationRoutes ? this.completedDestinationCounters : this.uncompletedDestinationCounters)[playerId].incValue(1);
+            this.destinationCounters[playerId].incValue(-1);
+            if (this.destinationCounters[playerId].getValue() == 0) {
+                document.getElementById(`destination-counter-${playerId}`).classList.add('hidden');
+            }
+        };
+
+        if (isFastEndScoring) {
+            endFunction();
+            return;
+        }
+
         const newDac = new DestinationCompleteAnimation(
             this.game,
             destination, 
@@ -129,15 +143,9 @@ class EndScore {
                     (this.game as any).disableNextMoveSound();
                 },
 
-                end: () => {
-                    (destinationRoutes ? this.completedDestinationCounters : this.uncompletedDestinationCounters)[playerId].incValue(1);
-                    this.destinationCounters[playerId].incValue(-1);
-                    if (this.destinationCounters[playerId].getValue() == 0) {
-                        document.getElementById(`destination-counter-${playerId}`).classList.add('hidden');
-                    }
-                },
+                end: endFunction,
             },
-            destinationRoutes ? 'completed' : 'uncompleted',
+            state,
             0.15 / this.game.getZoom()
         );
 
@@ -166,7 +174,11 @@ class EndScore {
     /** 
      * Show longest path animation for a player.
      */ 
-    public showLongestPath(playerColor: string, routes: Route[], length: number) {
+    public showLongestPath(playerColor: string, routes: Route[], length: number, isFastEndScoring: boolean = false) {
+        if (isFastEndScoring) {
+            return;
+        }
+        
         const newDac = new LongestPathAnimation(
             this.game,
             routes, 

@@ -714,6 +714,10 @@ class TicketToRide implements TicketToRideGame {
         (this as any).ajaxcall(`/tickettoride/tickettoride/${action}.html`, data, this, () => {});
     }
 
+    private isFastEndScoring() {
+        return Number((this as any).prefs[208]?.value) == 2;
+    }
+
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
 
@@ -729,6 +733,8 @@ class TicketToRide implements TicketToRideGame {
     setupNotifications() {
         //log( 'notifications subscriptions setup' );
 
+        const skipEndOfGameAnimations = this.isFastEndScoring();
+
         const notifs = [
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
@@ -739,10 +745,10 @@ class TicketToRide implements TicketToRideGame {
             ['highlightVisibleLocomotives', 1000],
             ['lastTurn', 1],
             ['bestScore', 1],
-            ['scoreDestination', 2000],
-            ['longestPath', 2000],
-            ['longestPathWinner', 1500],
-            ['globetrotterWinner', 1500],
+            ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
+            ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
+            ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
+            ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['highlightWinnerScore', 1],
         ];
 
@@ -866,7 +872,7 @@ class TicketToRide implements TicketToRideGame {
     notif_scoreDestination(notif: Notif<NotifDestinationCompletedArgs>) {
         const playerId = notif.args.playerId;
         const player = this.gamedatas.players[playerId];
-        this.endScore?.scoreDestination(playerId, notif.args.destination, notif.args.destinationRoutes);
+        this.endScore?.scoreDestination(playerId, notif.args.destination, notif.args.destinationRoutes, this.isFastEndScoring());
         if (notif.args.destinationRoutes) {
             player.completedDestinations.push(notif.args.destination);
         } else {
@@ -887,7 +893,7 @@ class TicketToRide implements TicketToRideGame {
      * Animate longest path for end score.
      */ 
     notif_longestPath(notif: Notif<NotifLongestPathArgs>) {
-        this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length);
+        this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length, this.isFastEndScoring());
     }
 
     /** 
