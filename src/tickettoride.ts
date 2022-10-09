@@ -74,7 +74,7 @@ class TicketToRide implements TicketToRideGame {
         this.createPlayerPanels(gamedatas);
 
         if (gamedatas.lastTurn) {
-            this.notif_lastTurn();
+            this.notif_lastTurn(false);
         }
         if (Number(gamedatas.gamestate.id) >= 90) { // score or end
             this.onEnteringEndScore(true);
@@ -853,9 +853,9 @@ class TicketToRide implements TicketToRideGame {
     /** 
      * Show last turn banner.
      */ 
-    notif_lastTurn() {
+    notif_lastTurn(animate: boolean = true) {
         dojo.place(`<div id="last-round">
-            ${_("This is the final round!")}
+            <span class="last-round-text ${animate ? 'animate' : ''}">${_("This is the final round!")}</span>
         </div>`, 'page-title');
     }
     

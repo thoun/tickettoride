@@ -2564,7 +2564,7 @@ var TicketToRide = /** @class */ (function () {
         }
         this.createPlayerPanels(gamedatas);
         if (gamedatas.lastTurn) {
-            this.notif_lastTurn();
+            this.notif_lastTurn(false);
         }
         if (Number(gamedatas.gamestate.id) >= 90) { // score or end
             this.onEnteringEndScore(true);
@@ -3257,8 +3257,9 @@ var TicketToRide = /** @class */ (function () {
     /**
      * Show last turn banner.
      */
-    TicketToRide.prototype.notif_lastTurn = function () {
-        dojo.place("<div id=\"last-round\">\n            " + _("This is the final round!") + "\n        </div>", 'page-title');
+    TicketToRide.prototype.notif_lastTurn = function (animate) {
+        if (animate === void 0) { animate = true; }
+        dojo.place("<div id=\"last-round\">\n            <span class=\"last-round-text " + (animate ? 'animate' : '') + "\">" + _("This is the final round!") + "</span>\n        </div>", 'page-title');
     };
     /**
      * Save best score for end score animations.
