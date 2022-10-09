@@ -84,10 +84,29 @@
   height: 64px;
   background: url("img/playerboard-train-background.png") no-repeat center;
   margin: -5px -10px -10px -10px;
+  position: relative;
   color: black;
 }
 .player-board .train-car-counter span {
   margin-top: -5px;
+}
+.player-board .train-car-counter.animate-low-count {
+  z-index: 1;
+  animation: train-car-low-count-animation 1.5s 1 forwards ease-in-out;
+}
+.player-board .train-car-counter.animate-low-count:after {
+  animation: train-car-low-count-after-animation 1.5s 1 forwards ease-in-out;
+}
+.player-board .train-car-counter:after {
+  content: "";
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  margin-left: -24px;
+  margin-top: -24px;
 }
 .player-board .player-turn-order {
   background: #FFFFFFAA;
@@ -99,6 +118,23 @@
   border-radius: 8px;
 }
 
+@keyframes train-car-low-count-animation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(3);
+    color: red;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes train-car-low-count-after-animation {
+  50% {
+    box-shadow: 0 0 10px 10px red;
+  }
+}
 .counters {
   display: flex;
   align-items: center;

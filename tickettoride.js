@@ -2978,6 +2978,9 @@ var TicketToRide = /** @class */ (function () {
         if (fromCancel) {
             this.setChooseActionGamestateDescription();
         }
+        if (this.actionTimerId) {
+            window.clearInterval(this.actionTimerId);
+        }
         var chooseActionArgs = this.gamedatas.gamestate.args;
         this.addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick }), function () { return _this.drawDestinations(); }, null, null, 'red');
         dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
@@ -3038,6 +3041,7 @@ var TicketToRide = /** @class */ (function () {
         this.map.setHoveredRoute(null);
         (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setSelectableTrainCarColors(null);
         this.routeToConfirm = null;
+        document.querySelectorAll("[id^=\"claimRouteWithColor_button\"]").forEach(function (button) { var _a; return (_a = button.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(button); });
     };
     /**
      * Player confirms claimed route.
@@ -3157,6 +3161,7 @@ var TicketToRide = /** @class */ (function () {
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
             ['highlightVisibleLocomotives', 1000],
+            ['notEnoughTrainCars', 1],
             ['lastTurn', 1],
             ['bestScore', 1],
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
@@ -3253,6 +3258,21 @@ var TicketToRide = /** @class */ (function () {
         this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
         playSound("ttr-completed-in-game");
         this.disableNextMoveSound();
+    };
+    /**
+     * Show an error message and animate train car counter to show the player can't take the route because he doesn't have enough train cars left.
+     */
+    TicketToRide.prototype.notif_notEnoughTrainCars = function () {
+        this.showMessage(_("Not enough train cars left to claim the route."), 'error');
+        var animatedElement = document.getElementById("train-car-counter-" + this.getPlayerId() + "-wrapper");
+        animatedElement.classList.remove('animate-low-count');
+        setTimeout(function () { return animatedElement.classList.add('animate-low-count'); }, 1);
+        if (document.getElementById("confirmRouteClaim-button")) {
+            this.cancelRouteClaim();
+        }
+        else {
+            document.querySelectorAll("[id^=\"claimRouteWithColor_button\"]").forEach(function (button) { var _a; return (_a = button.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(button); });
+        }
     };
     /**
      * Show last turn banner.

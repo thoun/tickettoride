@@ -132,13 +132,14 @@ trait ActionTrait {
 
         $route = $this->ROUTES[$routeId];
 
-        if ($this->getUniqueIntValueFromDB( "SELECT count(*) FROM `claimed_routes` WHERE `route_id` = $routeId") > 0) {
-            throw new BgaUserException("Route is already claimed.");
-        }
-
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
         if ($remainingTrainCars < $route->number) {
-            throw new BgaUserException(self::_("Not enough train cars left to claim the route."));
+            self::notifyPlayer($playerId, 'notEnoughTrainCars', '', []);
+            return;
+        }
+
+        if ($this->getUniqueIntValueFromDB( "SELECT count(*) FROM `claimed_routes` WHERE `route_id` = $routeId") > 0) {
+            throw new BgaUserException("Route is already claimed.");
         }
         
         $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));

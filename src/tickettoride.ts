@@ -543,6 +543,9 @@ class TicketToRide implements TicketToRideGame {
         if (fromCancel) {
             this.setChooseActionGamestateDescription();
         }
+        if (this.actionTimerId) {
+            window.clearInterval(this.actionTimerId);
+        }
 
         const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
         (this as any).addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), () => this.drawDestinations(), null, null, 'red');
@@ -606,6 +609,8 @@ class TicketToRide implements TicketToRideGame {
         this.map.setHoveredRoute(null);
         this.playerTable?.setSelectableTrainCarColors(null);
         this.routeToConfirm = null;
+
+        document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement?.removeChild(button));
     }
 
     /**
@@ -744,6 +749,7 @@ class TicketToRide implements TicketToRideGame {
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
             ['highlightVisibleLocomotives', 1000],
+            ['notEnoughTrainCars', 1],
             ['lastTurn', 1],
             ['bestScore', 1],
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
@@ -848,6 +854,22 @@ class TicketToRide implements TicketToRideGame {
 
         playSound(`ttr-completed-in-game`);
         (this as any).disableNextMoveSound();
+    }
+    
+    /** 
+     * Show an error message and animate train car counter to show the player can't take the route because he doesn't have enough train cars left.
+     */ 
+    notif_notEnoughTrainCars() {
+        (this as any).showMessage(_("Not enough train cars left to claim the route."), 'error');
+        const animatedElement = document.getElementById(`train-car-counter-${this.getPlayerId()}-wrapper`);
+        animatedElement.classList.remove('animate-low-count');
+        setTimeout(() => animatedElement.classList.add('animate-low-count'), 1);
+
+        if (document.getElementById(`confirmRouteClaim-button`)) {
+            this.cancelRouteClaim();
+        } else {            
+            document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement?.removeChild(button));
+        }
     }
     
     /** 
