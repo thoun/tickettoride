@@ -221,6 +221,9 @@ class TicketToRide extends Table {
         $result['destinationDeckMaxCount'] = 30;
 
         $result['expansion1910'] = EXPANSION1910; // TODO1910
+        $result['isGlobetrotterBonusActive'] = $this->isGlobetrotterBonusActive();
+        $result['isLongestPathBonusActive'] = $this->isLongestPathBonusActive();
+        
         $result['showTurnOrder'] = intval($this->getGameStateValue(SHOW_TURN_ORDER)) == 2;
         
         if ($isEnd) {

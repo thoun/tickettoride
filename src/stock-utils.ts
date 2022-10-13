@@ -207,8 +207,9 @@ const DESTINATIONS = [
     new DestinationCard(334, 36, 22, 6), // Winnipeg	Omaha	6
 ];
 
-function setupDestinationCardDiv(cardDiv: HTMLDivElement, cardUniqueId: number) {
-    const destination = DESTINATIONS.find(d => d.id == cardUniqueId); // TODO1910 cards with changed values !!!
+function setupDestinationCardDiv(cardDiv: HTMLDivElement, cardUniqueId: number, expansion1910: number) {
+    const destinations = DESTINATIONS.filter(d => expansion1910 > 0 ? d.id >= 200 : d.id < 200);
+    const destination = destinations.find(d => d.id == cardUniqueId);
     cardDiv.title = `${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[destination.from], to: CITIES_NAMES[destination.to]})}, ${destination.points} ${_('points')}`;
 }
 

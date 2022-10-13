@@ -212,8 +212,9 @@ var DESTINATIONS = [
     new DestinationCard(333, 36, 14, 11),
     new DestinationCard(334, 36, 22, 6), // Winnipeg	Omaha	6
 ];
-function setupDestinationCardDiv(cardDiv, cardUniqueId) {
-    var destination = DESTINATIONS.find(function (d) { return d.id == cardUniqueId; }); // TODO1910 cards with changed values !!!
+function setupDestinationCardDiv(cardDiv, cardUniqueId, expansion1910) {
+    var destinations = DESTINATIONS.filter(function (d) { return expansion1910 > 0 ? d.id >= 200 : d.id < 200; });
+    var destination = destinations.find(function (d) { return d.id == cardUniqueId; });
     cardDiv.title = dojo.string.substitute(_('${from} to ${to}'), { from: CITIES_NAMES[destination.from], to: CITIES_NAMES[destination.to] }) + ", " + destination.points + " " + _('points');
 }
 function getBackgroundInlineStyleForDestination(destination) {
@@ -1534,7 +1535,7 @@ var DestinationSelection = /** @class */ (function () {
         this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $("destination-stock"), CARD_WIDTH, CARD_HEIGHT);
-        this.destinations.onItemCreate = function (cardDiv, cardUniqueId) { return setupDestinationCardDiv(cardDiv, Number(cardUniqueId)); };
+        this.destinations.onItemCreate = function (cardDiv, cardUniqueId) { return setupDestinationCardDiv(cardDiv, Number(cardUniqueId), _this.game.expansion1910()); };
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
         this.destinations.item_margin = 20;
@@ -1970,7 +1971,7 @@ var PlayerDestinations = /** @class */ (function () {
             var html = "\n            <div id=\"destination-card-" + destination.id + "\" class=\"destination-card\" style=\"" + getBackgroundInlineStyleForDestination(destination) + "\"></div>\n            ";
             dojo.place(html, "player-table-" + _this.playerId + "-destinations-todo");
             var card = document.getElementById("destination-card-" + destination.id);
-            setupDestinationCardDiv(card, destination.type * 100 + destination.type_arg);
+            setupDestinationCardDiv(card, destination.type * 100 + destination.type_arg, _this.game.expansion1910());
             /*
             Can't add a tooltip, because showing a tooltip will mess with the hover effect.
             const destinationInfos = DESTINATIONS.find(d => d.id == destination.type_arg);
@@ -2408,10 +2409,10 @@ var EndScore = /** @class */ (function () {
                 if (Number(player.score) == bestScore) {
                     _this.highlightWinnerScore(player.id);
                 }
-                if (player.longestPathLength == longestPath_1) { // TODO1910
+                if (_this.game.isLongestPathBonusActive() && player.longestPathLength == longestPath_1) {
                     _this.setLongestPathWinner(player.id, longestPath_1);
                 }
-                if (false && player.completedDestinations.length == maxCompletedDestinations_1) { // TODO1910
+                if (_this.game.isGlobetrotterBonusActive() && player.completedDestinations.length == maxCompletedDestinations_1) {
                     _this.setGlobetrotterWinner(player.id, maxCompletedDestinations_1);
                 }
                 _this.updateDestinationsTooltip(player);
@@ -2698,6 +2699,15 @@ var TicketToRide = /** @class */ (function () {
     ///////////////////////////////////////////////////
     //// Utility methods
     ///////////////////////////////////////////////////
+    TicketToRide.prototype.expansion1910 = function () {
+        return this.gamedatas.expansion1910;
+    };
+    TicketToRide.prototype.isGlobetrotterBonusActive = function () {
+        return this.gamedatas.isGlobetrotterBonusActive;
+    };
+    TicketToRide.prototype.isLongestPathBonusActive = function () {
+        return this.gamedatas.isLongestPathBonusActive;
+    };
     TicketToRide.prototype.setTooltip = function (id, html) {
         this.addTooltipHtml(id, html, this.TOOLTIP_DELAY);
     };

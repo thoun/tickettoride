@@ -219,6 +219,17 @@ class TicketToRide implements TicketToRideGame {
 
 
     ///////////////////////////////////////////////////
+    
+    public expansion1910(): number {
+        return this.gamedatas.expansion1910;
+    }
+    public isGlobetrotterBonusActive(): boolean {
+        return this.gamedatas.isGlobetrotterBonusActive;
+    }
+
+    public isLongestPathBonusActive(): boolean {
+        return this.gamedatas.isLongestPathBonusActive;
+    }
 
     public setTooltip(id: string, html: string) {
         (this as any).addTooltipHtml(id, html, this.TOOLTIP_DELAY);

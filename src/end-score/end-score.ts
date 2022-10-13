@@ -73,10 +73,10 @@ class EndScore {
                 if (Number(player.score) == bestScore) {
                     this.highlightWinnerScore(player.id);
                 }
-                if (player.longestPathLength == longestPath) { // TODO1910
+                if (this.game.isLongestPathBonusActive() && player.longestPathLength == longestPath) {
                     this.setLongestPathWinner(player.id, longestPath);
                 }
-                if (false && player.completedDestinations.length == maxCompletedDestinations) { // TODO1910
+                if (this.game.isGlobetrotterBonusActive() && player.completedDestinations.length == maxCompletedDestinations) {
                     this.setGlobetrotterWinner(player.id, maxCompletedDestinations);
                 }
                 this.updateDestinationsTooltip(player);
