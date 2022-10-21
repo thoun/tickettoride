@@ -2678,9 +2678,9 @@ var TicketToRide = /** @class */ (function () {
         var _this = this;
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
-                case 'chooseInitialDestinations':
                 case 'privateChooseInitialDestinations':
                     this.addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), function () { return _this.chooseInitialDestinations(); });
+                    this.destinationSelection.selectionChange();
                     break;
                 case 'chooseAction':
                     var chooseActionArgs = args;

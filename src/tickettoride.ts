@@ -194,9 +194,9 @@ class TicketToRide implements TicketToRideGame {
     public onUpdateActionButtons(stateName: string, args: any) {
         if((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
-                case 'chooseInitialDestinations':
                 case 'privateChooseInitialDestinations':
                     (this as any).addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), () => this.chooseInitialDestinations());
+                    this.destinationSelection.selectionChange();
                     break;   
                 case 'chooseAction':
                     const chooseActionArgs = args as EnteringChooseActionArgs;
