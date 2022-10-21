@@ -3049,7 +3049,7 @@ var TicketToRide = /** @class */ (function () {
     };
     TicketToRide.prototype.setActionBarAskDoubleRoad = function (clickedRoute, otherRoute) {
         var _this = this;
-        var question = _("Which of the double route do you want to claim?");
+        var question = _("Which part of the double route do you want to claim?");
         this.setChooseActionGamestateDescription(question);
         document.getElementById("generalactions").innerHTML = '';
         [clickedRoute, otherRoute].forEach(function (route) {

@@ -492,7 +492,7 @@ class TicketToRide implements TicketToRideGame {
                 askDoubleRouteColor = false;
             }
         }
-        
+
         if(askDoubleRouteColor) {
             this.setActionBarAskDoubleRoad(route, otherRoute);
             return;
@@ -621,7 +621,7 @@ class TicketToRide implements TicketToRideGame {
     }
 
     private setActionBarAskDoubleRoad(clickedRoute: Route, otherRoute: Route) {
-        const question = _("Which of the double route do you want to claim?")
+        const question = _("Which part of the double route do you want to claim?")
         this.setChooseActionGamestateDescription(question);
 
         document.getElementById(`generalactions`).innerHTML = '';
