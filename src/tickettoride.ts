@@ -475,8 +475,30 @@ class TicketToRide implements TicketToRideGame {
     /** 
      * Handle route click.
      */ 
-    public clickedRoute(route: Route): void { 
-        if(!(this as any).isCurrentPlayerActive() || !this.canClaimRoute(route, 0)) {
+    public clickedRoute(route: Route, needToCheckDoubleRoute?: boolean): void { 
+        if(!(this as any).isCurrentPlayerActive()) {
+            return;
+        }
+
+        if (needToCheckDoubleRoute === undefined) {
+            needToCheckDoubleRoute = this.askDoubleRouteActive();
+        }
+
+        const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+        let askDoubleRouteColor = needToCheckDoubleRoute && otherRoute && otherRoute.color != route.color && this.canClaimRoute(route, 0) && this.canClaimRoute(otherRoute, 0);
+        if (askDoubleRouteColor) {
+            const selectedColor = this.playerTable.getSelectedColor();
+            if (selectedColor) {
+                askDoubleRouteColor = false;
+            }
+        }
+        
+        if(askDoubleRouteColor) {
+            this.setActionBarAskDoubleRoad(route, otherRoute);
+            return;
+        }
+
+        if(!this.canClaimRoute(route, 0)) {
             return;
         }
 
@@ -588,6 +610,25 @@ class TicketToRide implements TicketToRideGame {
     private confirmRouteClaimActive() {
         const preferenceValue = Number((this as any).prefs[202]?.value);
         return preferenceValue === 1 || (preferenceValue === 2 && this.isTouch);
+    }
+
+    /**
+     * Check if player should be asked for the color he wants when he clicks on a double route.
+     */
+    private askDoubleRouteActive() {
+        const preferenceValue = Number((this as any).prefs[209]?.value);
+        return preferenceValue === 1;
+    }
+
+    private setActionBarAskDoubleRoad(clickedRoute: Route, otherRoute: Route) {
+        const question = _("Which of the double route do you want to claim?")
+        this.setChooseActionGamestateDescription(question);
+
+        document.getElementById(`generalactions`).innerHTML = '';
+        [clickedRoute, otherRoute].forEach(route => {
+            (this as any).addActionButton(`claimDoubleRoute${route.id}-button`, getColor(route.color, 'route'), () => this.clickedRoute(route, false));
+        });
+        (this as any).addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
     }
 
     /**

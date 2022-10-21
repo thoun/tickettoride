@@ -2910,10 +2910,28 @@ var TicketToRide = /** @class */ (function () {
     /**
      * Handle route click.
      */
-    TicketToRide.prototype.clickedRoute = function (route) {
+    TicketToRide.prototype.clickedRoute = function (route, needToCheckDoubleRoute) {
         var _this = this;
         var _a;
-        if (!this.isCurrentPlayerActive() || !this.canClaimRoute(route, 0)) {
+        if (!this.isCurrentPlayerActive()) {
+            return;
+        }
+        if (needToCheckDoubleRoute === undefined) {
+            needToCheckDoubleRoute = this.askDoubleRouteActive();
+        }
+        var otherRoute = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+        var askDoubleRouteColor = needToCheckDoubleRoute && otherRoute && otherRoute.color != route.color && this.canClaimRoute(route, 0) && this.canClaimRoute(otherRoute, 0);
+        if (askDoubleRouteColor) {
+            var selectedColor = this.playerTable.getSelectedColor();
+            if (selectedColor) {
+                askDoubleRouteColor = false;
+            }
+        }
+        if (askDoubleRouteColor) {
+            this.setActionBarAskDoubleRoad(route, otherRoute);
+            return;
+        }
+        if (!this.canClaimRoute(route, 0)) {
             return;
         }
         document.querySelectorAll("[id^=\"claimRouteWithColor_button\"]").forEach(function (button) { return button.parentElement.removeChild(button); });
@@ -3020,6 +3038,24 @@ var TicketToRide = /** @class */ (function () {
         var _a;
         var preferenceValue = Number((_a = this.prefs[202]) === null || _a === void 0 ? void 0 : _a.value);
         return preferenceValue === 1 || (preferenceValue === 2 && this.isTouch);
+    };
+    /**
+     * Check if player should be asked for the color he wants when he clicks on a double route.
+     */
+    TicketToRide.prototype.askDoubleRouteActive = function () {
+        var _a;
+        var preferenceValue = Number((_a = this.prefs[209]) === null || _a === void 0 ? void 0 : _a.value);
+        return preferenceValue === 1;
+    };
+    TicketToRide.prototype.setActionBarAskDoubleRoad = function (clickedRoute, otherRoute) {
+        var _this = this;
+        var question = _("Which of the double route do you want to claim?");
+        this.setChooseActionGamestateDescription(question);
+        document.getElementById("generalactions").innerHTML = '';
+        [clickedRoute, otherRoute].forEach(function (route) {
+            _this.addActionButton("claimDoubleRoute" + route.id + "-button", getColor(route.color, 'route'), function () { return _this.clickedRoute(route, false); });
+        });
+        this.addActionButton("cancelRouteClaim-button", _("Cancel"), function () { return _this.cancelRouteClaim(); }, null, null, 'gray');
     };
     /**
      * Ask confirmation for claimed route.

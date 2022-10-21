@@ -63,6 +63,16 @@ $game_preferences = [
         'default' => 2
     ],
 
+    209 => [
+        'name' => totranslate('Ask wanted color for double routes'),
+        'needReload' => false,
+        'values' => [
+            1 => [ 'name' => totranslate('Enabled')],
+            2 => [ 'name' => totranslate('Disabled')],
+        ],
+        'default' => 1
+    ],
+
     202 => [
         'name' => totranslate('Confirm route claim'),
         'needReload' => false,
@@ -126,4 +136,6 @@ $game_preferences = [
         ],
         'default' => 1
     ],
+
+    // 209 already used
 ];
