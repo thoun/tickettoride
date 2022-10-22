@@ -61,6 +61,7 @@ class TicketToRide extends Table {
         $this->trainCars = $this->getNew("module.common.deck");
         $this->trainCars->init("traincar"); 
         $this->trainCars->autoreshuffle = true;
+        $this->trainCars->autoreshuffle_trigger = array('obj' => $this, 'method' => 'trainCarDeckAutoReshuffle');
 	}
 	
     protected function getGameName() {

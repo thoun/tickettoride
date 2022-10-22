@@ -31,7 +31,7 @@ trait DebugUtilTrait {
     }
 
     function debugEmptyDeck() {
-        $this->trainCars->moveAllCardsInLocation('deck', 'void');
+        $this->trainCars->moveAllCardsInLocation('deck', 'discard');
     }
     
     function debugAlmostEmptyDeck() {

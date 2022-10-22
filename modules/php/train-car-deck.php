@@ -247,4 +247,8 @@ trait TrainCarDeckTrait {
 
         return true;
     }
+
+    public function trainCarDeckAutoReshuffle() {
+        $this->notifyAllPlayers('log', clienttranslate('The train car deck has been reshuffled'), []);
+    }
 }
