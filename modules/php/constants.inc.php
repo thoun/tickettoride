@@ -4,7 +4,7 @@
  * Game version 
  */
 define('INITIAL_TRAIN_CAR_CARDS_IN_HAND', 4); // Number of train car cards in hand, for each player, at the beginning of the game.
-define('VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS', true); // Says if it is possible to take only one visible locomotive.
+define('VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS', true); // Says if it is possible to take only one visible locomotive. // TODO MAPS
 define('RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES', 3); // Resets visible cards when 3 locomotives are visible (null means disabled)
 define('TRAIN_CARS_NUMBER_TO_START_LAST_TURN', 2); // 2 means 0, 1, or 2 will start last turn
 define('TRAIN_CARS_PER_PLAYER', 45);
@@ -53,6 +53,7 @@ define('ST_PRIVATE_CHOOSE_INITIAL_DESTINATIONS', 22);
 define('ST_PLAYER_CHOOSE_ACTION', 30);
 define('ST_PLAYER_DRAW_SECOND_CARD', 31);
 define('ST_PLAYER_CHOOSE_ADDITIONAL_DESTINATIONS', 32);
+define('ST_PLAYER_CONFIRM_TUNNEL', 33);
 
 define('ST_NEXT_PLAYER', 80);
 
@@ -68,9 +69,15 @@ define('END_SCORE', 100);
 define('SHOW_TURN_ORDER', 'SHOW_TURN_ORDER');
 
 /*
- * Variables
+ * Variables (numbers)
  */
 
 define('LAST_TURN', 'LAST_TURN');
+
+/*
+ * Global variables (objects)
+ */
+
+define('TUNNEL_ATTEMPT', 'TUNNEL_ATTEMPT');
 
 ?>

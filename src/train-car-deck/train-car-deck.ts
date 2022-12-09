@@ -200,4 +200,21 @@ class TrainCarSelection {
             }
         });
     }
+
+    /** 
+     * Show the 3 cards drawn for the tunnel claim. Clear them if called with empty array.
+     */ 
+     public showTunnelCards(tunnelCards: TrainCar[]) {
+        if (tunnelCards?.length) {
+            dojo.place(`<div id="tunnel-cards"></div>`, 'train-car-deck-hidden-pile');
+            tunnelCards.forEach((card, index) => {
+                dojo.place(`<div id="tunnel-card-${index}" class="train-car-card tunnel-card animated" data-color="${card.type}"></div>`, 'tunnel-cards')
+                const element = document.getElementById(`tunnel-card-${index}`);
+                setTimeout(() => element.style.transform = `translateY(${55 * (index - 1)}px) scale(0.33)`);
+            });
+        } else {
+            (this.game as any).fadeOutAndDestroy('tunnel-cards');
+            //document.getElementById('tunnel-cards')?.remove();
+        }
+    }
 }

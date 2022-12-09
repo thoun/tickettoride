@@ -47,6 +47,35 @@ trait UtilTrait {
     }
 
     /**
+     * Save (insert or update) any object/array as variable.
+     */
+    function setGlobalVariable(string $name, /*object|array*/ $obj) {
+        $jsonObj = json_encode($obj);
+        $this->DbQuery("INSERT INTO `global_variables`(`name`, `value`)  VALUES ('$name', '$jsonObj') ON DUPLICATE KEY UPDATE `value` = '$jsonObj'");
+    }
+
+    /**
+     * Return a variable object/array.
+     * To force object/array type, set $asArray to false/true.
+     */
+    function getGlobalVariable(string $name, $asArray = null) {
+        $json_obj = $this->getUniqueValueFromDB("SELECT `value` FROM `global_variables` where `name` = '$name'");
+        if ($json_obj) {
+            $object = json_decode($json_obj, $asArray);
+            return $object;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Delete a variable object/array.
+     */
+    function deleteGlobalVariable(string $name) {
+        $this->DbQuery("DELETE FROM `global_variables` where `name` = '$name'");
+    }
+
+    /**
      * Transforms a TrainCar Db object to TrainCar class.
      */
     function getTrainCarFromDb($dbObject) {

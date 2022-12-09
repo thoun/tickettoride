@@ -1869,6 +1869,23 @@ var TrainCarSelection = /** @class */ (function () {
             }
         });
     };
+    /**
+     * Show the 3 cards drawn for the tunnel claim. Clear them if called with empty array.
+     */
+    TrainCarSelection.prototype.showTunnelCards = function (tunnelCards) {
+        if (tunnelCards === null || tunnelCards === void 0 ? void 0 : tunnelCards.length) {
+            dojo.place("<div id=\"tunnel-cards\"></div>", 'train-car-deck-hidden-pile');
+            tunnelCards.forEach(function (card, index) {
+                dojo.place("<div id=\"tunnel-card-" + index + "\" class=\"train-car-card tunnel-card animated\" data-color=\"" + card.type + "\"></div>", 'tunnel-cards');
+                var element = document.getElementById("tunnel-card-" + index);
+                setTimeout(function () { return element.style.transform = "translateY(" + 55 * (index - 1) + "px) scale(0.33)"; });
+            });
+        }
+        else {
+            this.game.fadeOutAndDestroy('tunnel-cards');
+            //document.getElementById('tunnel-cards')?.remove();
+        }
+    };
     return TrainCarSelection;
 }());
 /**
@@ -2604,6 +2621,9 @@ var TicketToRide = /** @class */ (function () {
             case 'drawSecondCard':
                 this.onEnteringDrawSecondCard(args.args);
                 break;
+            case 'confirmTunnel':
+                this.onEnteringConfirmTunnel(args.args);
+                break;
             case 'endScore':
                 this.onEnteringEndScore();
                 break;
@@ -2627,6 +2647,11 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.onEnteringDrawSecondCard = function (args) {
         this.trainCarSelection.setSelectableTopDeck(this.isCurrentPlayerActive(), args.maxHiddenCardsPick);
         this.trainCarSelection.setSelectableVisibleCards(args.availableVisibleCards);
+    };
+    TicketToRide.prototype.onEnteringConfirmTunnel = function (args) {
+        var route = ROUTES.find(function (route) { return route.id == args.tunnelAttempt.routeId; });
+        this.map.setHoveredRoute(route, true);
+        this.trainCarSelection.showTunnelCards(args.tunnelAttempt.tunnelCards);
     };
     /**
      * Show score board.
@@ -2669,6 +2694,10 @@ var TicketToRide = /** @class */ (function () {
             case 'drawSecondCard':
                 this.trainCarSelection.removeSelectableVisibleCards();
                 break;
+            case 'confirmTunnel':
+                this.map.setHoveredRoute(null);
+                this.trainCarSelection.showTunnelCards([]);
+                break;
         }
     };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -2692,6 +2721,15 @@ var TicketToRide = /** @class */ (function () {
                 case 'chooseAdditionalDestinations':
                     this.addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), function () { return _this.chooseAdditionalDestinations(); });
                     dojo.addClass('chooseAdditionalDestinations_button', 'disabled');
+                    break;
+                case 'confirmTunnel':
+                    var confirmTunnelArgs = args;
+                    var confirmLabel = /* TODO MAPS _*/ ("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : " (" + ("You don't have enough cards") + ")");
+                    this.addActionButton('claimTunnel_button', confirmLabel, function () { return _this.claimTunnel(); });
+                    this.addActionButton('skipTunnel_button', /* TODO MAPS _*/ ("Skip tunnel claim"), function () { return _this.skipTunnel(); }, null, null, 'gray');
+                    if (!confirmTunnelArgs.canPay) {
+                        dojo.addClass('claimTunnel_button', 'disabled');
+                    }
                     break;
             }
         }
@@ -3175,6 +3213,24 @@ var TicketToRide = /** @class */ (function () {
             color: color
         });
     };
+    /**
+     * Claim a tunnel (confirm paying extra cost).
+     */
+    TicketToRide.prototype.claimTunnel = function () {
+        if (!this.checkAction('claimTunnel')) {
+            return;
+        }
+        this.takeAction('claimTunnel');
+    };
+    /**
+     * Skip a tunnel (deny paying extra cost).
+     */
+    TicketToRide.prototype.skipTunnel = function () {
+        if (!this.checkAction('skipTunnel')) {
+            return;
+        }
+        this.takeAction('skipTunnel');
+    };
     TicketToRide.prototype.takeAction = function (action, data) {
         data = data || {};
         data.lock = true;
@@ -3206,6 +3262,7 @@ var TicketToRide = /** @class */ (function () {
             ['points', 1],
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
+            ['freeTunnel', 2000],
             ['highlightVisibleLocomotives', 1000],
             ['notEnoughTrainCars', 1],
             ['lastTurn', 1],
@@ -3306,6 +3363,16 @@ var TicketToRide = /** @class */ (function () {
         this.disableNextMoveSound();
     };
     /**
+     * Show the 3 cards when attempting a tunnel (case withno extra cards required, play automatically).
+     */
+    TicketToRide.prototype.notif_freeTunnel = function (notif) {
+        var _this = this;
+        if (document.visibilityState !== 'hidden' && !this.instantaneousMode) {
+            this.trainCarSelection.showTunnelCards(notif.args.tunnelCards);
+            setTimeout(function () { return _this.trainCarSelection.showTunnelCards([]); }, 2000);
+        }
+    };
+    /**
      * Show an error message and animate train car counter to show the player can't take the route because he doesn't have enough train cars left.
      */
     TicketToRide.prototype.notif_notEnoughTrainCars = function () {
@@ -3394,7 +3461,7 @@ var TicketToRide = /** @class */ (function () {
                     args.colors = args.colors.map(function (color) { return "<div class=\"train-car-color icon\" data-color=\"" + color + "\"></div>"; }).join('');
                 }
                 // make cities names in bold 
-                ['from', 'to', 'count'].forEach(function (field) {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards'].forEach(function (field) {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = "<strong>" + _(args[field]) + "</strong>";
                     }

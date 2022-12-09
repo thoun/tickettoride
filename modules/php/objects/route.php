@@ -14,12 +14,14 @@ class Route {
     public int $to;
     public int $number;
     public int $color;
+    public bool $tunnel;
 
-    public function __construct(int $from, int $to, int $number, int $color = 0) {
+    public function __construct(int $from, int $to, int $number, int $color = 0, bool $tunnel = false) {
         $this->from = $from;
         $this->to = $to;
         $this->number = $number;
         $this->color = $color;
+        $this->tunnel = $tunnel;
     } 
 }
 

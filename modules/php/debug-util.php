@@ -30,8 +30,12 @@ trait DebugUtilTrait {
         return $card;
     }
 
+    // SELECT card_location, count(*)  FROM `traincar` GROUP BY card_location
     function debugEmptyDeck() {
-        $this->trainCars->moveAllCardsInLocation('deck', 'discard');
+        $this->trainCars->moveAllCardsInLocation('deck', 'void');
+    }
+    function debugEmptyDiscard() {
+        $this->trainCars->moveAllCardsInLocation('discard', 'void');
     }
     
     function debugAlmostEmptyDeck() {

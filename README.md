@@ -34,3 +34,6 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 
 # How to start PHP unit test
 go on tests dir and start execute file, for example `php ./tickettoride.game.test-longest-path.php` / `php ./tickettoride.game.test-destination-completed.php`
+
+# About other maps
+Some code is already prepared in case of new maps. search "TODO MAPS" to activate them if you duplicate this project to create a new map

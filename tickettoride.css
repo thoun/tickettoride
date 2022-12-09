@@ -1396,6 +1396,9 @@ html, .mode_3d #game_play_area_background {
 .train-car-card.animated.from-hidden-pile {
   background-image: url("img/deck-cardLevel-10.png");
 }
+.train-car-card.tunnel-card {
+  transform: scale(0.1);
+}
 
 .stockitem {
   border-radius: 6px;

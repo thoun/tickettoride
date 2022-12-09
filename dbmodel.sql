@@ -47,3 +47,9 @@ CREATE TABLE IF NOT EXISTS `claimed_routes` (
 ) ENGINE=InnoDB;
 
 ALTER TABLE `player` ADD `player_remaining_train_cars` INT UNSIGNED NOT NULL;
+
+CREATE TABLE IF NOT EXISTS `global_variables` (
+  `name` varchar(50) NOT NULL,
+  `value` json,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

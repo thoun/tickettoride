@@ -93,4 +93,29 @@ trait ArgsTrait {
         ];
 
     }
+
+    function argConfirmTunnel() {
+        $playerId = intval(self::getActivePlayerId());
+
+        $tunnelAttempt = $this->getGlobalVariable(TUNNEL_ATTEMPT);
+
+        $route = $this->ROUTES[$tunnelAttempt->routeId];
+        $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);        
+        $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
+        $tunnelCost = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, $tunnelAttempt->extraCards);
+        $canPay = $tunnelCost != null;
+
+        $extraCards = null;
+        if ($canPay) {
+            $routeCost = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color);
+            $extraCards = array_values(array_filter($tunnelCost, fn($tunnelCard) => !$this->array_some($routeCost, fn($routeCard) => $routeCard->id == $tunnelCard->id)));
+        }
+
+        return [
+            'tunnelAttempt' => $tunnelAttempt,
+            'canPay' => $canPay,
+            'colors' => $extraCards == null ? '' : array_map(fn($card) => $card->type, $extraCards), // for title bar
+            'extraCards' => $tunnelAttempt->extraCards, // for title bar
+        ];
+    }
 }

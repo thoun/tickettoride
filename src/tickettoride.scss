@@ -91,6 +91,10 @@ html, .mode_3d #game_play_area_background {
             background-image: url("img/deck-cardLevel-10.png");
         }
     }
+
+    &.tunnel-card {
+        transform: scale(0.1);
+    }
 }
 
 .stockitem {

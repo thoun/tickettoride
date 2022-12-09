@@ -135,7 +135,9 @@ trait MapTrait {
      * If player cannot pay, returns null.
      * If player can pay return cards to pay for the route.
      */
-    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, /*int|null*/ $color = null) {
+    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, /*int|null*/ $color = null, int $extraCardsCost = 0) {
+        $cardCost = $route->number + $extraCardsCost;
+
         if ($remainingTrainCars < $route->number) {
             return null; // not enough remaining meeples
         }
@@ -155,17 +157,17 @@ trait MapTrait {
         
         if ($color === 0 && $route->color === 0) {
             // the user wants to pay with locomotives on a gray track
-            if (count($locomotiveCards) >= $route->number) {
+            if (count($locomotiveCards) >= $cardCost) {
                 // enough color card (including locomotives)
-                return array_slice($locomotiveCards, 0, $route->number); 
+                return array_slice($locomotiveCards, 0, $cardCost); 
             }
         } else {        
             // route is gray, check for each possible color
             foreach ($colorsToTest as $color) {
                 $colorCards = array_filter($trainCarsHand, fn($card) => $card->type == $color);
-                if (count($colorCards) + count($locomotiveCards) >= $route->number) {
+                if (count($colorCards) + count($locomotiveCards) >= $cardCost) {
                     // enough color card (including locomotives)
-                    return array_slice(array_merge($colorCards, $locomotiveCards), 0, $route->number); 
+                    return array_slice(array_merge($colorCards, $locomotiveCards), 0, $cardCost); 
                 }
             }
         }

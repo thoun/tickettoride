@@ -115,6 +115,9 @@ class TicketToRide implements TicketToRideGame {
             case 'drawSecondCard':
                 this.onEnteringDrawSecondCard(args.args as EnteringDrawSecondCardArgs);
                 break;
+            case 'confirmTunnel':
+                this.onEnteringConfirmTunnel(args.args as EnteringConfirmTunnelArgs);
+                break;
             case 'endScore':
                 this.onEnteringEndScore();
                 break;
@@ -142,6 +145,12 @@ class TicketToRide implements TicketToRideGame {
     private onEnteringDrawSecondCard(args: EnteringDrawSecondCardArgs) {
         this.trainCarSelection.setSelectableTopDeck((this as any).isCurrentPlayerActive(), args.maxHiddenCardsPick);
         this.trainCarSelection.setSelectableVisibleCards(args.availableVisibleCards);
+    }
+    
+    private onEnteringConfirmTunnel(args: EnteringConfirmTunnelArgs) {
+        const route = ROUTES.find(route => route.id == args.tunnelAttempt.routeId);
+        this.map.setHoveredRoute(route, true);
+        this.trainCarSelection.showTunnelCards(args.tunnelAttempt.tunnelCards);
     }
 
     /**
@@ -185,6 +194,10 @@ class TicketToRide implements TicketToRideGame {
             case 'drawSecondCard':
                 this.trainCarSelection.removeSelectableVisibleCards();  
                 break;
+            case 'confirmTunnel':
+                this.map.setHoveredRoute(null);
+                this.trainCarSelection.showTunnelCards([]);
+                break;
         }
     }
 
@@ -208,6 +221,15 @@ class TicketToRide implements TicketToRideGame {
                 case 'chooseAdditionalDestinations':
                     (this as any).addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), () => this.chooseAdditionalDestinations());
                     dojo.addClass('chooseAdditionalDestinations_button', 'disabled');
+                    break;  
+                case 'confirmTunnel':
+                    const confirmTunnelArgs = args as EnteringConfirmTunnelArgs;
+                    const confirmLabel = /* TODO MAPS _*/("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : ` (${/* TODO MAPS _*/("You don't have enough cards")})`);
+                    (this as any).addActionButton('claimTunnel_button', confirmLabel, () => this.claimTunnel());
+                    (this as any).addActionButton('skipTunnel_button', /* TODO MAPS _*/("Skip tunnel claim"), () => this.skipTunnel(), null, null, 'gray');
+                    if (!confirmTunnelArgs.canPay) {
+                        dojo.addClass('claimTunnel_button', 'disabled');
+                    }
                     break;  
             }
         }
@@ -766,6 +788,28 @@ class TicketToRide implements TicketToRideGame {
         });
     }
 
+    /** 
+     * Claim a tunnel (confirm paying extra cost).
+     */ 
+    public claimTunnel() {
+        if(!(this as any).checkAction('claimTunnel')) {
+            return;
+        }
+
+        this.takeAction('claimTunnel');
+    }
+
+    /** 
+     * Skip a tunnel (deny paying extra cost).
+     */ 
+    public skipTunnel() {
+        if(!(this as any).checkAction('skipTunnel')) {
+            return;
+        }
+
+        this.takeAction('skipTunnel');
+    }
+
     public takeAction(action: string, data?: any) {
         data = data || {};
         data.lock = true;
@@ -800,6 +844,7 @@ class TicketToRide implements TicketToRideGame {
             ['points', 1],
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
+            ['freeTunnel', 2000],
             ['highlightVisibleLocomotives', 1000],
             ['notEnoughTrainCars', 1],
             ['lastTurn', 1],
@@ -907,6 +952,16 @@ class TicketToRide implements TicketToRideGame {
         playSound(`ttr-completed-in-game`);
         (this as any).disableNextMoveSound();
     }
+
+    /** 
+     * Show the 3 cards when attempting a tunnel (case withno extra cards required, play automatically).
+     */ 
+    notif_freeTunnel(notif: Notif<NotifFreeTunnelArgs>) {
+        if (document.visibilityState !== 'hidden' && !(this as any).instantaneousMode) {
+            this.trainCarSelection.showTunnelCards(notif.args.tunnelCards);
+            setTimeout(() => this.trainCarSelection.showTunnelCards([]), 2000);
+        }
+    }
     
     /** 
      * Show an error message and animate train car counter to show the player can't take the route because he doesn't have enough train cars left.
@@ -1001,7 +1056,7 @@ class TicketToRide implements TicketToRideGame {
                 }
 
                 // make cities names in bold 
-                ['from', 'to', 'count'].forEach(field => {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }

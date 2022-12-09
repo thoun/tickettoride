@@ -1,5 +1,7 @@
 <?php
 
+require_once(__DIR__.'/objects/tunnel-attempt.php');
+
 trait ActionTrait {
 
     //////////////////////////////////////////////////////////////////////////////
@@ -154,9 +156,48 @@ trait ActionTrait {
             throw new BgaUserException("You can't claim this route");
         }
 
+        if ($route->tunnel) {
+            $remainingDeckCards = $this->getRemainingTrainCarCardsInDeck(true);
+            if ($remainingDeckCards == 0) {
+                self::notifyAllPlayers('log', /* TODO MAPS clienttranslate*/('No train car card in deck or discard, tunnel is free'), []);
+            } else {
+                $pickedCardCount = min(3, $remainingDeckCards);
+                $tunnelCards = $this->getTrainCarsFromDb($this->trainCars->pickCardsForLocation($pickedCardCount, 'deck', 'tunnel'));
+                $extraCards = count(array_filter($tunnelCards, fn($card) => $card->type == 0 || $card->type == $color));
+
+                
+                // show the revealed cards and log
+                self::notifyAllPlayers($extraCards > 0 ? 'log' : 'freeTunnel', /* TODO MAPS clienttranslate*/('${extraCards} extra cards over the ${pickedCards} train car cards revealed from the deck are needed to claim the route'), [
+                    'pickedCards' => $pickedCardCount,
+                    'extraCards' => $extraCards,
+                    'tunnelCards' => $tunnelCards,
+                ]);
+                
+                if ($extraCards > 0) { // TODO TOCHECK if the player can't afford, do we still ask to hide the fact he can't ?
+                    $this->setGlobalVariable(TUNNEL_ATTEMPT, new TunnelAttempt($routeId, $color, $extraCards, $tunnelCards));
+                    $this->gamestate->nextState('tunnel'); 
+                    return;
+                } else {
+                    // put back tunnel cards
+                    $this->endTunnelAttempt(false);
+                }
+            }
+        }
+
+        $this->applyClaimRoute($playerId, $routeId, $color, 0);
+    }
+
+    function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0) {
+        $route = $this->ROUTES[$routeId];
+        $cardCost = $route->number + $extraCardCost;
+        
+        $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
+        $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
+        $colorAndLocomotiveCards = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost);
+
         usort($colorAndLocomotiveCards, fn($card1, $card2) => $card1->type < $card2->type);
 
-        $cardsToRemove = array_slice($colorAndLocomotiveCards, 0, $route->number);
+        $cardsToRemove = array_slice($colorAndLocomotiveCards, 0, $cardCost);
         $this->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
 
         // save claimed route
@@ -167,7 +208,7 @@ trait ActionTrait {
         $this->incScore($playerId, $points);
 
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $route->number WHERE player_id = $playerId");
-
+        
         self::notifyAllPlayers('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
@@ -175,7 +216,7 @@ trait ActionTrait {
             'route' => $route,
             'from' => $this->CITIES[$route->from],
             'to' => $this->CITIES[$route->to],
-            'number' => $route->number,
+            'number' => $cardCost,
             'removeCards' => $cardsToRemove,
             'colors' => array_map(fn($card) => $card->type, $cardsToRemove),
         ]);
@@ -193,5 +234,42 @@ trait ActionTrait {
         $this->checkVisibleTrainCarCards();
 
         $this->gamestate->nextState('nextPlayer'); 
+    }
+  	
+    public function claimTunnel() {
+        self::checkAction('claimTunnel');
+        
+        $playerId = intval(self::getActivePlayerId());
+
+        $tunnelAttempt = $this->getGlobalVariable(TUNNEL_ATTEMPT);
+
+        $this->endTunnelAttempt(true);
+
+        $this->applyClaimRoute($playerId, $tunnelAttempt->routeId, $tunnelAttempt->color, $tunnelAttempt->extraCards);
+        // applyClaimRoute handles the call to nextState
+    }
+  	
+    public function skipTunnel() {
+        self::checkAction('skipTunnel');
+        
+        $playerId = intval(self::getActivePlayerId());
+        
+        $this->endTunnelAttempt(true);
+
+        self::notifyAllPlayers('log', /* TODO MAPS clienttranslate*/('${player_name} skip tunnel claim'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+        ]);
+
+        $this->gamestate->nextState('nextPlayer'); 
+    }
+
+    function endTunnelAttempt(bool $storedTunnelAttempt) {
+        // put back tunnel cards
+        $this->trainCars->moveAllCardsInLocation('tunnel', 'discard');
+
+        if ($storedTunnelAttempt) {
+            $this->deleteGlobalVariable(TUNNEL_ATTEMPT);
+        }
     }
 }

@@ -137,6 +137,18 @@ interface EnteringDrawSecondCardArgs {
     maxHiddenCardsPick: number;
 }
 
+interface TunnelAttempt {    
+    routeId: number;
+    color: number;
+    extraCards: number;
+    tunnelCards: TrainCar[];
+}
+
+interface EnteringConfirmTunnelArgs {
+    tunnelAttempt: TunnelAttempt;
+    canPay: boolean;
+}
+
 interface NotifPointsArgs {
     playerId: number;
     points: number;
@@ -179,6 +191,10 @@ interface NotifDestinationCompletedArgs {
     playerId: number;
     destination: Destination;
     destinationRoutes: Route[];
+}
+
+interface NotifFreeTunnelArgs {
+    tunnelCards: TrainCar[];
 }
 
 interface NotifBestScoreArgs {

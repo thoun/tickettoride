@@ -127,6 +127,7 @@ $playerActionsGameStates = [
         "transitions" => [
             "drawSecondCard" => ST_PLAYER_DRAW_SECOND_CARD,
             "drawDestinations" => ST_PLAYER_CHOOSE_ADDITIONAL_DESTINATIONS,
+            "tunnel" => ST_PLAYER_CONFIRM_TUNNEL,
             "nextPlayer" => ST_NEXT_PLAYER,
         ]
     ],
@@ -156,7 +157,18 @@ $playerActionsGameStates = [
         "transitions" => [
             "nextPlayer" => ST_NEXT_PLAYER,
         ],
+    ],
 
+    ST_PLAYER_CONFIRM_TUNNEL => [
+        "name" => "confirmTunnel",
+        "description" => /*TODO MAPS clienttranslate*/('${actplayer} must confirm tunnel claim using ${extraCards} extra card(s) ${colors}'),
+        "descriptionmyturn" => /*TODO MAPS clienttranslate*/('${you} must confirm tunnel claim using ${extraCards} extra card(s) ${colors}'),
+        "type" => "activeplayer",
+        "args" => "argConfirmTunnel",
+        "possibleactions" => [ "claimTunnel", "skipTunnel" ],
+        "transitions" => [
+            "nextPlayer" => ST_NEXT_PLAYER,
+        ],
     ],
 ];
 
