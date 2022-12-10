@@ -193,11 +193,8 @@ trait ActionTrait {
         
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
         $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
-        $colorAndLocomotiveCards = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost);
+        $cardsToRemove = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost);
 
-        usort($colorAndLocomotiveCards, fn($card1, $card2) => $card1->type < $card2->type);
-
-        $cardsToRemove = array_slice($colorAndLocomotiveCards, 0, $cardCost);
         $this->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
 
         // save claimed route

@@ -154,20 +154,46 @@ trait MapTrait {
         }
         $locomotiveCards = array_filter($trainCarsHand, fn($card) => $card->type == 0);
 
+        if (count($locomotiveCards) < $route->locomotives) {
+            return null;
+        }
         
-        if ($color === 0 && $route->color === 0) {
-            // the user wants to pay with locomotives on a gray track
+        if ($color === 0) {
+            // the user wants to pay with locomotives
             if (count($locomotiveCards) >= $cardCost) {
-                // enough color card (including locomotives)
+                // enough locomotive cards
                 return array_slice($locomotiveCards, 0, $cardCost); 
             }
         } else {        
             // route is gray, check for each possible color
             foreach ($colorsToTest as $color) {
                 $colorCards = array_filter($trainCarsHand, fn($card) => $card->type == $color);
-                if (count($colorCards) + count($locomotiveCards) >= $cardCost) {
-                    // enough color card (including locomotives)
-                    return array_slice(array_merge($colorCards, $locomotiveCards), 0, $cardCost); 
+
+                // first we set required locomotives
+                $locomotiveCardsCount = $route->locomotives;
+                $colorCardCount = 0;
+                // then we add as much color card as needed
+                if ($locomotiveCardsCount < $cardCost) {
+                    $colorCardCount = min($cardCost - $locomotiveCardsCount, count($colorCards));
+                }
+                // we complete with locomotives if needed
+                if ($locomotiveCardsCount + $colorCardCount < $cardCost) {
+                    $locomotiveCardsCount += min($cardCost - ($locomotiveCardsCount + $colorCardCount), count($locomotiveCards) - $locomotiveCardsCount);
+                }
+
+                if (
+                    ($locomotiveCardsCount + $colorCardCount) >= $cardCost 
+                    && $locomotiveCardsCount <= count($locomotiveCards) 
+                    && $colorCardCount <= count($colorCards)
+                ) {
+                    return array_merge(
+                        // first required locomotives
+                        array_slice($locomotiveCards, 0, $route->locomotives),
+                        // then color cards
+                        array_slice($colorCards, 0, $colorCardCount),
+                        // then remaining locomotives
+                        array_slice($locomotiveCards, $route->locomotives, $locomotiveCardsCount - $route->locomotives)
+                    );
                 }
             }
         }
