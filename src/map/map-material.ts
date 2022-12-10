@@ -6,6 +6,15 @@ class City {
     ) {}
 }
 
+class BigCity {
+    constructor(
+        public x: number,
+        public y: number,
+        public width: number,
+    ) {}
+}
+
+
 class RouteSpace {
     constructor(
         public x: number,
@@ -62,6 +71,16 @@ const CITIES = [
     new City(34, 140, 132), // Vancouver
     new City(35, 1619, 498), // Washington
     new City(36, 786, 119), // Winnipeg
+];
+
+const BIG_CITIES = [
+    new BigCity(1226, 479, 70), // Chicago
+    new BigCity(1007, 903, 64), // Dallas
+    new BigCity(1046, 1022, 79), // Houston
+    new BigCity(86, 904, 107), // Los Angeles
+    new BigCity(1633, 1066, 62), // Miami
+    new BigCity(1642, 359, 93), // New York
+    new BigCity(38, 234, 69), // Seattle
 ];
 
 const ROUTES = [

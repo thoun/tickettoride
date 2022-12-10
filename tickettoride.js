@@ -391,6 +391,14 @@ var City = /** @class */ (function () {
     }
     return City;
 }());
+var BigCity = /** @class */ (function () {
+    function BigCity(x, y, width) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+    }
+    return BigCity;
+}());
 var RouteSpace = /** @class */ (function () {
     function RouteSpace(x, y, angle, top) {
         if (top === void 0) { top = false; }
@@ -448,6 +456,15 @@ var CITIES = [
     new City(34, 140, 132),
     new City(35, 1619, 498),
     new City(36, 786, 119), // Winnipeg
+];
+var BIG_CITIES = [
+    new BigCity(1226, 479, 70),
+    new BigCity(1007, 903, 64),
+    new BigCity(1046, 1022, 79),
+    new BigCity(86, 904, 107),
+    new BigCity(1633, 1066, 62),
+    new BigCity(1642, 359, 93),
+    new BigCity(38, 234, 69), // Seattle
 ];
 var ROUTES = [
     new Route(1, 1, 4, [
@@ -1089,7 +1106,8 @@ var TtrMap = /** @class */ (function () {
     /**
      * Place map corner illustration and borders, cities, routes, and bind events.
      */
-    function TtrMap(game, players, claimedRoutes) {
+    function TtrMap(game, players, claimedRoutes, bigCities) {
+        if (bigCities === void 0) { bigCities = false; }
         this.game = game;
         this.players = players;
         this.dragOverlay = null;
@@ -1100,6 +1118,9 @@ var TtrMap = /** @class */ (function () {
         dojo.place("\n            <div class=\"illustration\"></div>\n            <div id=\"cities\"></div>\n            <div id=\"route-spaces\"></div>\n            <div id=\"train-cars\"></div>\n        ", 'map', 'first');
         SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map-and-borders'); });
         CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'map-and-borders'); });
+        if (bigCities) {
+            BIG_CITIES.forEach(function (bigCity) { return dojo.place("<div class=\"big-city\" style=\"left: " + bigCity.x + "px; top: " + bigCity.y + "px; width: " + bigCity.width + "px;\"></div>", 'cities'); });
+        }
         CITIES.forEach(function (city) {
             return dojo.place("<div id=\"city" + city.id + "\" class=\"city\" \n                style=\"transform: translate(" + city.x + "px, " + city.y + "px)\"\n                title=\"" + CITIES_NAMES[city.id] + "\"\n            ></div>", 'cities');
         });
@@ -2573,7 +2594,7 @@ var TicketToRide = /** @class */ (function () {
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
-        this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes);
+        this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.expansion1910 == 3);
         this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards, gamedatas.trainCarDeckCount, gamedatas.destinationDeckCount, gamedatas.trainCarDeckMaxCount, gamedatas.destinationDeckMaxCount);
         this.destinationSelection = new DestinationSelection(this);
         var player = gamedatas.players[this.getPlayerId()];

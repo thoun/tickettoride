@@ -476,6 +476,11 @@
   opacity: 1;
 }
 
+.big-city {
+  position: absolute;
+  border-bottom: 2px solid darkred;
+}
+
 .route-space {
   display: inline-block;
   margin: 10px;

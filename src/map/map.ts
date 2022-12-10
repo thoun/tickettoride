@@ -162,6 +162,7 @@ class TtrMap {
         private game: TicketToRideGame,
         private players: TicketToRidePlayer[],
         claimedRoutes: ClaimedRoute[],
+        bigCities: boolean = false,
     ) {
         // map border
         dojo.place(`
@@ -171,7 +172,10 @@ class TtrMap {
             <div id="train-cars"></div>
         `, 'map', 'first');
         SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'map-and-borders'));
-        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map-and-borders'));        
+        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map-and-borders'));
+        if (bigCities) {
+            BIG_CITIES.forEach(bigCity => dojo.place(`<div class="big-city" style="left: ${bigCity.x}px; top: ${bigCity.y}px; width: ${bigCity.width}px;"></div>`, 'cities'));
+        }     
 
         CITIES.forEach(city => 
             dojo.place(`<div id="city${city.id}" class="city" 
