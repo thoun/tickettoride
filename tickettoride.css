@@ -347,12 +347,27 @@
 #map-and-borders .illustration {
   position: absolute;
   pointer-events: none;
-  background: url("img/border-map-illustration.png");
+  background-image: url("img/border-map-illustration.png");
   left: 0;
   bottom: 0;
   width: 258px;
   height: 206px;
   z-index: 4;
+}
+#map-and-borders .illustration[data-expansion="1"] {
+  background-image: url("img/border-map-illustration-1.png");
+  width: 405px;
+  height: 260px;
+}
+#map-and-borders .illustration[data-expansion="2"] {
+  background-image: url("img/border-map-illustration-2.png");
+  width: 405px;
+  height: 260px;
+}
+#map-and-borders .illustration[data-expansion="3"] {
+  background-image: url("img/border-map-illustration-3.png");
+  width: 405px;
+  height: 260px;
 }
 
 #map-destination-highlight-shadow {

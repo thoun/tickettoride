@@ -56,7 +56,7 @@ class TicketToRide implements TicketToRideGame {
 
         log('gamedatas', gamedatas);
 
-        this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.expansion1910 == 3);
+        this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.expansion1910);
         this.trainCarSelection = new TrainCarSelection(this, 
             gamedatas.visibleTrainCards,
             gamedatas.trainCarDeckCount,

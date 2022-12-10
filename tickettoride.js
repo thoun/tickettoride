@@ -1106,8 +1106,7 @@ var TtrMap = /** @class */ (function () {
     /**
      * Place map corner illustration and borders, cities, routes, and bind events.
      */
-    function TtrMap(game, players, claimedRoutes, bigCities) {
-        if (bigCities === void 0) { bigCities = false; }
+    function TtrMap(game, players, claimedRoutes, expansion) {
         this.game = game;
         this.players = players;
         this.dragOverlay = null;
@@ -1115,10 +1114,10 @@ var TtrMap = /** @class */ (function () {
         this.crosshairHalfSize = 0;
         this.crosshairShift = 0;
         // map border
-        dojo.place("\n            <div class=\"illustration\"></div>\n            <div id=\"cities\"></div>\n            <div id=\"route-spaces\"></div>\n            <div id=\"train-cars\"></div>\n        ", 'map', 'first');
+        dojo.place("\n            <div class=\"illustration\" data-expansion=\"" + expansion + "\"></div>\n            <div id=\"cities\"></div>\n            <div id=\"route-spaces\"></div>\n            <div id=\"train-cars\"></div>\n        ", 'map', 'first');
         SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map-and-borders'); });
         CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'map-and-borders'); });
-        if (bigCities) {
+        if (expansion == 3) {
             BIG_CITIES.forEach(function (bigCity) { return dojo.place("<div class=\"big-city\" style=\"left: " + bigCity.x + "px; top: " + bigCity.y + "px; width: " + bigCity.width + "px;\"></div>", 'cities'); });
         }
         CITIES.forEach(function (city) {
@@ -2594,7 +2593,7 @@ var TicketToRide = /** @class */ (function () {
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
-        this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.expansion1910 == 3);
+        this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.expansion1910);
         this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards, gamedatas.trainCarDeckCount, gamedatas.destinationDeckCount, gamedatas.trainCarDeckMaxCount, gamedatas.destinationDeckMaxCount);
         this.destinationSelection = new DestinationSelection(this);
         var player = gamedatas.players[this.getPlayerId()];
