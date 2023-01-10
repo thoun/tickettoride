@@ -47,8 +47,10 @@ class TicketToRide implements TicketToRideGame {
 
     public setup(gamedatas: TicketToRideGamedatas) {
         // ignore loading of some pictures
-        (this as any).dontPreloadImage('destinations-1910.jpg');
-        (this as any).dontPreloadImage('destinations-mega.jpg');
+        if (!gamedatas.expansion1910) {
+            (this as any).dontPreloadImage('destinations-1910.jpg');
+            (this as any).dontPreloadImage('destinations-mega.jpg');
+        }
 
         log("Starting game setup");
         
@@ -605,6 +607,9 @@ class TicketToRide implements TicketToRideGame {
         const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
         (this as any).addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), () => this.drawDestinations(), null, null, 'red');
         dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
+        if (chooseActionArgs.canPass) {
+            (this as any).addActionButton('pass_button', _("Pass"), () => this.pass());
+        }
     }
     
     /**
@@ -786,6 +791,17 @@ class TicketToRide implements TicketToRideGame {
             routeId,
             color
         });
+    }
+
+    /** 
+     * Pass (in case of no possible action).
+     */ 
+    public pass() {
+        if(!(this as any).checkAction('pass')) {
+            return;
+        }
+
+        this.takeAction('pass');
     }
 
     /** 

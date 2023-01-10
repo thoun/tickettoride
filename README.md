@@ -35,5 +35,11 @@ Make sure ftp-sync.json and node_modules are in .gitignore
 # How to start PHP unit test
 go on tests dir and start execute file, for example `php ./tickettoride.game.test-longest-path.php` / `php ./tickettoride.game.test-destination-completed.php`
 
+# Points of rules
+If there is a lot of locomotives remaining in a small set of available cards (for example 3 locomotives in 5 visible cards, no card in discard), we attempt 3 times to replace and if there is still 3 locomotives, we log and let them visible (to avoid an infinite loop).
+In case the player cannot pick destination cards nor train car cards, and cannot claim a route, we let him pass.
+What if he can only construct ? Does he have to ? -> probably yes, no issue here
+What if he can only pick destinations ? Does he have to ? -> asked, can be a negative move for the player
+
 # About other maps
 Some code is already prepared in case of new maps. search "TODO MAPS" to activate them if you duplicate this project to create a new map

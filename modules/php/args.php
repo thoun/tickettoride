@@ -58,28 +58,39 @@ trait ArgsTrait {
         $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
         // we don't limit claimable routes to the number of remaining train cars, because the players don't understand why they can't claim the route
         // so instead they'll get an error when they try to claim the route, saying they don't have enough train cars left
-        $remainingTrainCars = 99; //$this->getRemainingTrainCarsCount($playerId);
+        $remainingTrainCars = 99;
+        $realRemainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
 
         $possibleRoutes = $this->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
         $maxHiddenCardsPick = min(2, $this->getRemainingTrainCarCardsInDeck(true));
         $maxDestinationsPick = min($this->getAdditionalDestinationCardNumber(), $this->getRemainingDestinationCardsInDeck());
 
+        $canClaimARoute = false;
         $costForRoute = [];
         foreach($possibleRoutes as $possibleRoute) {
             $colorsToTest = $possibleRoute->color > 0 ? [0, $possibleRoute->color] : [0,1,2,3,4,5,6,7,8];
             $costByColor = [];
             foreach($colorsToTest as $colorToTest) {
-                $costByColor[$colorToTest] = $this->canPayForRoute($possibleRoute, $trainCarsHand, $remainingTrainCars, $colorToTest);
+                $costByColor[$colorToTest] = $this->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest);
+
+                if (!$canClaimARoute && $costByColor[$colorToTest] != null && count($costByColor[$colorToTest]) <= $realRemainingTrainCars) {
+                    $canClaimARoute = true;
+                }
             }
             $costForRoute[$possibleRoute->id] = array_map(fn($cardCost) => $cardCost == null ? null : array_map(fn($card) => $card->type, $cardCost), $costByColor);
         }
+
+        $canTakeTrainCarCards = $this->getRemainingTrainCarCardsInDeck(true, true);
+
+        $canPass = !$canClaimARoute && $maxDestinationsPick == 0 && $canTakeTrainCarCards == 0;
 
         return [
             'possibleRoutes' => $possibleRoutes,
             'costForRoute' => $costForRoute,
             'maxHiddenCardsPick' => $maxHiddenCardsPick,
             'maxDestinationsPick' => $maxDestinationsPick,
-            'canTakeTrainCarCards' => $this->getRemainingTrainCarCardsInDeck(true, true),
+            'canTakeTrainCarCards' => $canTakeTrainCarCards,
+            'canPass' => $canPass,
         ];
     }
 

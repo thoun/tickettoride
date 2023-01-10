@@ -111,6 +111,14 @@
         self::ajaxResponse();
     }
   	
+    public function pass() {
+        self::setAjaxMode();
+
+        $this->game->pass();
+
+        self::ajaxResponse();
+    }
+  	
     public function claimTunnel() {
         self::setAjaxMode();
 

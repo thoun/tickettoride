@@ -130,6 +130,7 @@ interface EnteringChooseActionArgs {
     maxHiddenCardsPick: number;
     maxDestinationsPick: number;
     canTakeTrainCarCards: boolean;
+    canPass: boolean;
 }
 
 interface EnteringDrawSecondCardArgs {

@@ -2588,8 +2588,10 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.setup = function (gamedatas) {
         var _this = this;
         // ignore loading of some pictures
-        this.dontPreloadImage('destinations-1910.jpg');
-        this.dontPreloadImage('destinations-mega.jpg');
+        if (!gamedatas.expansion1910) {
+            this.dontPreloadImage('destinations-1910.jpg');
+            this.dontPreloadImage('destinations-mega.jpg');
+        }
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
@@ -3070,6 +3072,9 @@ var TicketToRide = /** @class */ (function () {
         var chooseActionArgs = this.gamedatas.gamestate.args;
         this.addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick }), function () { return _this.drawDestinations(); }, null, null, 'red');
         dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
+        if (chooseActionArgs.canPass) {
+            this.addActionButton('pass_button', _("Pass"), function () { return _this.pass(); });
+        }
     };
     /**
      * Sets the action bar (title and buttons) for Confirm route claim.
@@ -3232,6 +3237,15 @@ var TicketToRide = /** @class */ (function () {
             routeId: routeId,
             color: color
         });
+    };
+    /**
+     * Pass (in case of no possible action).
+     */
+    TicketToRide.prototype.pass = function () {
+        if (!this.checkAction('pass')) {
+            return;
+        }
+        this.takeAction('pass');
     };
     /**
      * Claim a tunnel (confirm paying extra cost).

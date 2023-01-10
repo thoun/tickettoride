@@ -122,7 +122,8 @@ $playerActionsGameStates = [
             "drawDeckCards",
             "drawTableCard",
             "claimRoute",
-            "drawDestinations"
+            "drawDestinations",
+            "pass",
         ],
         "transitions" => [
             "drawSecondCard" => ST_PLAYER_DRAW_SECOND_CARD,

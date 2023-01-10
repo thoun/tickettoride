@@ -31,6 +31,9 @@ trait DebugUtilTrait {
     }
 
     // SELECT card_location, count(*)  FROM `traincar` GROUP BY card_location
+    function debugEmptyHand() {
+        $this->trainCars->moveAllCardsInLocation('hand', 'void');
+    }
     function debugEmptyDeck() {
         $this->trainCars->moveAllCardsInLocation('deck', 'void');
     }
@@ -41,6 +44,12 @@ trait DebugUtilTrait {
     function debugAlmostEmptyDeck() {
         $moveNumber = $this->getRemainingTrainCarCardsInDeck(true) - 1;
         $this->trainCars->pickCardsForLocation($moveNumber, 'deck', 'void');
+    }
+
+    function debugNoAvailableTrainCardCards() {
+        $this->trainCars->moveAllCardsInLocation('table', 'void');
+        $this->trainCars->moveAllCardsInLocation('deck', 'void');
+        $this->trainCars->moveAllCardsInLocation('discard', 'void');
     }
 
     function debugEmptyDestinationDeck() {
@@ -92,6 +101,9 @@ trait DebugUtilTrait {
 
     function debugSetLastTurn() {
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = ".TRAIN_CARS_NUMBER_TO_START_LAST_TURN);
+    }
+    function debugNoTrainCar() {
+        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = 0");
     }
 
     // select all 3 destinations for each player

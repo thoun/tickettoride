@@ -232,6 +232,18 @@ trait ActionTrait {
 
         $this->gamestate->nextState('nextPlayer'); 
     }
+
+    function pass() {
+        self::checkAction('pass');
+        
+        $args = $this->argChooseAction();
+
+        if (!$args['canPass']) {
+            throw new BgaUserException("You cannot pass");
+        }
+
+        $this->gamestate->nextState('nextPlayer'); 
+    }
   	
     public function claimTunnel() {
         self::checkAction('claimTunnel');
