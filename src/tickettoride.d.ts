@@ -186,6 +186,7 @@ interface NotifClaimedRouteArgs {
     playerId: number;
     route: Route;
     removeCards: TrainCar[];
+    remainingTrainCars: number;
 }
 
 interface NotifDestinationCompletedArgs {

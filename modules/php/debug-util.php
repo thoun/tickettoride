@@ -77,6 +77,7 @@ trait DebugUtilTrait {
             'number' => $route->number,
             'removeCards' => [],
             'colors' => [],
+            'remainingTrainCars' => $this->getRemainingTrainCarsCount($playerId),
         ]);
     }
 
@@ -125,7 +126,8 @@ trait DebugUtilTrait {
 
 		// These are the id's from the BGAtable I need to debug.
         // SELECT JSON_ARRAYAGG(`player_id`) FROM `player`
-		$ids = [90574255, 93146640];
+		//$ids = [90574255, 93146640];
+        $ids = array_map(fn($dbPlayer) => intval($dbPlayer['player_id']), array_values($this->getCollectionFromDb('select player_id from player order by player_no')));
 
 		// Id of the first player in BGA Studio
 		$sid = 2343492;
@@ -140,6 +142,7 @@ trait DebugUtilTrait {
 			// tables specific to your schema that use player_ids
 			$this->DbQuery("UPDATE traincar SET card_location_arg=$sid WHERE card_location_arg = $id" );
 			$this->DbQuery("UPDATE destination SET card_location_arg=$sid WHERE card_location_arg = $id" );
+			$this->DbQuery("UPDATE destination SET card_location='pick$sid' WHERE card_location = 'pick$id'" );
 			$this->DbQuery("UPDATE claimed_routes SET player_id=$sid WHERE player_id = $id" );
             
 			++$sid;

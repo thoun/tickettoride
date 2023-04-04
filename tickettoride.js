@@ -3376,7 +3376,7 @@ var TicketToRide = /** @class */ (function () {
         var playerId = notif.args.playerId;
         var route = notif.args.route;
         this.trainCarCardCounters[playerId].incValue(-route.number);
-        this.trainCarCounters[playerId].incValue(-route.number);
+        this.trainCarCounters[playerId].toValue(notif.args.remainingTrainCars);
         this.map.setClaimedRoutes([{
                 playerId: playerId,
                 routeId: route.id

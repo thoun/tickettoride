@@ -216,6 +216,7 @@ trait ActionTrait {
             'number' => $cardCost,
             'removeCards' => $cardsToRemove,
             'colors' => array_map(fn($card) => $card->type, $cardsToRemove),
+            'remainingTrainCars' => $this->getRemainingTrainCarsCount($playerId),
         ]);
 
         self::incStat(1, 'claimedRoutes');
