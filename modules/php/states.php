@@ -198,7 +198,7 @@ trait StateTrait {
         if ($isGlobetrotterBonusActive) {
             foreach ($globetrotterWinners as $playerId) {
                 $points = POINTS_FOR_GLOBETROTTER;
-                $this->incScore($playerId, $points, /* TODO1910 clienttranslate*/('${player_name} gains ${delta} points with Globetrotter : ${destinations} completed destinations'), [
+                $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with Globetrotter : ${destinations} completed destinations'), [
                     'points' => $points,
                     'destinations' => $bestCompletedDestinationsCount,
                 ]);
@@ -208,7 +208,7 @@ trait StateTrait {
                     'length' => $bestCompletedDestinationsCount,
                 ]);
 
-                // TODO1910 $this->setStat(1, 'globetrotterBonus', $playerId);
+                $this->setStat(1, 'globetrotterBonus', $playerId);
             }
         }
 

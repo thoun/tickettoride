@@ -1,13 +1,16 @@
 <?php
 
 trait ExpansionTrait {
+    function getExpansionOption() {
+        return intval($this->getGameStateValue(EXPANSION1910));
+    }
     
     /**
      * List the destination tickets that will be used for the game.
      */
     function getDestinationToGenerate() {
         $destinations = [];
-        $expansion = EXPANSION1910;
+        $expansion = $this->getExpansionOption();
 
         switch ($expansion) {
             case 1:
@@ -40,21 +43,21 @@ trait ExpansionTrait {
      * Return if Globetrotter bonus card is used for the game.
      */
     function isGlobetrotterBonusActive() {
-        return in_array(EXPANSION1910, [1, 2]);
+        return in_array($this->getExpansionOption(), [1, 2]);
     }
     
     /**
      * Return if Longest Path bonus card is used for the game.
      */
     function isLongestPathBonusActive() {
-        return in_array(EXPANSION1910, [0, 2, 3]);
+        return in_array($this->getExpansionOption(), [0, 2]);
     }
     
     /**
      * Return the number of destinations cards shown at the beginning.
      */
     function getInitialDestinationCardNumber() {
-        switch (EXPANSION1910) {
+        switch ($this->getExpansionOption()) {
             case 2:
                 return 5;
             case 3:
@@ -68,7 +71,7 @@ trait ExpansionTrait {
      * Return the minimum number of destinations cards to keep at the beginning.
      */
     function getInitialDestinationMinimumKept() {
-        switch (EXPANSION1910) {
+        switch ($this->getExpansionOption()) {
             case 2:
                 return 3;
             default:
@@ -80,7 +83,7 @@ trait ExpansionTrait {
      * Return the number of destinations cards shown at pick destination action.
      */
     function getAdditionalDestinationCardNumber() {
-        switch (EXPANSION1910) {
+        switch ($this->getExpansionOption()) {
             case 2:
                 return 4;
             case 3:

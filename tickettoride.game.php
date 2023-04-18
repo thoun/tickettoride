@@ -52,6 +52,7 @@ class TicketToRide extends Table {
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
 
             // options
+            EXPANSION1910 => 101, // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
             SHOW_TURN_ORDER => 110, // last turn is the id of the player starting last turn, 0 if it's not last turn
         ]);
         
@@ -142,7 +143,7 @@ class TicketToRide extends Table {
         //$this->initStat('table', 'longestPath', 0); // only computed at the end
         //$this->initStat('player', 'longestPath', 0); // only computed at the end
         $this->initStat('player', 'longestPathBonus', 0);
-        // TODO1910 $this->initStat('player', 'globetrotterBonus', 0);
+        $this->initStat('player', 'globetrotterBonus', 0);
 
         // setup the initial game situation here
 
@@ -221,7 +222,7 @@ class TicketToRide extends Table {
         $result['trainCarDeckMaxCount'] = 110;
         $result['destinationDeckMaxCount'] = 30;
 
-        $result['expansion1910'] = EXPANSION1910; // TODO1910
+        $result['expansion1910'] = $this->getExpansionOption();
         $result['isGlobetrotterBonusActive'] = $this->isGlobetrotterBonusActive();
         $result['isLongestPathBonusActive'] = $this->isLongestPathBonusActive();
         

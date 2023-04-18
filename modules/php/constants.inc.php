@@ -16,7 +16,6 @@ define('MINIMUM_PLAYER_FOR_DOUBLE_ROUTES', 4); // 4 means 2-3 players cant use d
 define('NUMBER_OF_LOCOMOTIVE_CARDS', 14);
 define('NUMBER_OF_COLORED_CARDS', 12);
 
-define('EXPANSION1910', 0); // TODO1910  0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
 define('BIG_CITIES', [
     5, // Chicago',
     6, // Dallas',
@@ -66,6 +65,7 @@ define('END_SCORE', 100);
  * Options
  */
 
+define('EXPANSION1910', 'EXPANSION1910');
 define('SHOW_TURN_ORDER', 'SHOW_TURN_ORDER');
 
 /*
