@@ -19,6 +19,14 @@ interface TrainCar extends Card {
 interface Destination extends Card {
     from: number;
     to: number;
+    points: number;
+}
+
+interface RouteSpace {
+    x: number;
+    y: number;
+    angle: number;
+    top: boolean;
 }
 
 interface Route {
@@ -47,11 +55,35 @@ interface TicketToRidePlayer extends Player {
     longestPathLength: number;
 }
 
+interface City {
+    id: number;
+    name: string;
+    x: number;
+    y: number;
+}
+
+interface BigCity {
+    x: number;
+    y: number;
+    width: number;
+}
+
+interface TicketToRideMap {
+    code: string;
+    cities: { [id: number]: City };
+    routes: { [id: number]: Route };
+    destinations: { [type: number]: 
+        { [id: number]: Destination } 
+    };
+    bigCities: BigCity[];
+}
+
 /**
  * Your game interfaces
  */
 
 interface TicketToRideGamedatas {
+    map: TicketToRideMap;
     current_player_id: string;
     decision: {decision_type: string};
     game_result_neutralized: string;
@@ -88,6 +120,9 @@ interface TicketToRideGamedatas {
 
 interface TicketToRideGame extends Game {
     map: TtrMap;
+
+    getMap(): TicketToRideMap;
+    getCityName(to: number): string;
 
     clickedRoute(route: Route): void;
     setPlayerTablePosition(left: boolean): void;

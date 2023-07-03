@@ -1,8 +1,8 @@
 <?php
 
-trait ExpansionTrait {
+trait SettingsTrait {
     function getExpansionOption() {
-        return intval($this->getGameStateValue(EXPANSION1910));
+        return intval($this->getGameStateValue(EXPANSION1912));
     }
     
     /**
@@ -91,6 +91,20 @@ trait ExpansionTrait {
             default:
                 return 3;
         }
+    }
+
+    function getBigCities() {
+        return $this->getExpansionOption() == 3 ?
+        [
+            new BigCity(1226, 479, 70), // Chicago
+            new BigCity(1007, 903, 64), // Dallas
+            new BigCity(1046, 1022, 79), // Houston
+            new BigCity(86, 904, 107), // Los Angeles
+            new BigCity(1633, 1066, 62), // Miami
+            new BigCity(1642, 359, 93), // New York
+            new BigCity(38, 234, 69), // Seattle
+        ]
+        : [];
     }
     
 }

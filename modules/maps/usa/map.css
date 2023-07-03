@@ -1,0 +1,18 @@
+#map {
+    background-image: url('../../../img/usa/map.jpg');
+}
+
+.illustration {
+    background-image: url('../../../img/usa/border-map-illustration.png');
+    width: 258px;
+    height: 206px;
+}
+
+.illustration[data-expansion="1"], .illustration[data-expansion="2"], .illustration[data-expansion="3"] {
+    width: 405px;
+    height: 260px;
+}
+
+.illustration[data-expansion="1"] { background-image: url('../../../img/usa/border-map-illustration-1.png'); }
+.illustration[data-expansion="2"] { background-image: url('../../../img/usa/border-map-illustration-2.png'); }
+.illustration[data-expansion="3"] { background-image: url('../../../img/usa/border-map-illustration-3.png'); }

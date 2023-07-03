@@ -11,19 +11,21 @@ class DestinationSelection {
      * Init stock.
      */ 
     constructor(
-        private game: TicketToRideGame) {
+        private game: TicketToRideGame,
+        map: TicketToRideMap,
+    ) {
 
         this.destinations = new ebg.stock() as Stock;
         this.destinations.setSelectionAppearance('class');
         this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $(`destination-stock`), CARD_WIDTH, CARD_HEIGHT);
-        this.destinations.onItemCreate = (cardDiv: HTMLDivElement, cardUniqueId) => setupDestinationCardDiv(cardDiv, Number(cardUniqueId), this.game.expansion1910());
+        this.destinations.onItemCreate = (cardDiv: HTMLDivElement, cardUniqueId) => setupDestinationCardDiv(game, cardDiv, Number(cardUniqueId), this.game.expansion1910());
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
         this.destinations.item_margin = 20;
         dojo.connect(this.destinations, 'onChangeSelection', this, () => this.selectionChange());
-        setupDestinationCards(this.destinations);
+        setupDestinationCards(map, this.destinations);
     }
 
     /**

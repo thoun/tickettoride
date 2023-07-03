@@ -14,7 +14,7 @@ trait TrainCarDeckTrait {
         $this->trainCars->createCards($trainCars, 'deck');
         $this->trainCars->shuffle('deck');
 
-        $this->placeNewTrainCarCardsOnTable();
+        $this->placeNewTrainCarCardsOnTable(false);
         $this->checkTooMuchLocomotives();
     }
 
@@ -154,7 +154,7 @@ trait TrainCarDeckTrait {
                 $this->notifyAllPlayers('log', clienttranslate('Three locomotives have been revealed multiples times in a row, they will stay visible'), []);
             } else {
                 $this->trainCars->moveAllCardsInLocation('table', 'discard');
-                $this->placeNewTrainCarCardsOnTable();
+                $this->placeNewTrainCarCardsOnTable(true);
 
                 $this->checkTooMuchLocomotives($attempts + 1);
             }
@@ -164,7 +164,7 @@ trait TrainCarDeckTrait {
     /**
      * replace all visible cards
      */
-    private function placeNewTrainCarCardsOnTable() {
+    private function placeNewTrainCarCardsOnTable(bool $fromLocomotiveReset) {
         $cards = [];
         $spots = [];
         
@@ -176,7 +176,11 @@ trait TrainCarDeckTrait {
             $spots[$i] = $newCard;
         }
 
-        $this->notifyAllPlayers('highlightVisibleLocomotives', clienttranslate('Three locomotives have been revealed, visible train cards are replaced'), []);
+        if ($fromLocomotiveReset) {
+            $this->notifyAllPlayers('highlightVisibleLocomotives', clienttranslate('Three locomotives have been revealed, visible train cards are replaced'), []);
+
+            $this->incStat(1, 'visibleCardsReplaced');
+        }
 
         if (count($cards) > 0) {
             $this->notifyAllPlayers('newCardsOnTable', '', [
@@ -186,8 +190,6 @@ trait TrainCarDeckTrait {
                 'locomotiveRefill' => true,
             ]);
         }
-
-        $this->incStat(1, 'visibleCardsReplaced');
 
         return $cards;
     }
