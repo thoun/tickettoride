@@ -164,11 +164,11 @@ class TtrMap {
         private map: TicketToRideMap,
         private players: TicketToRidePlayer[],
         claimedRoutes: ClaimedRoute[],
-        expansion: number,
+        illustration: number,
     ) {
         // map border
         dojo.place(`
-            <div class="illustration" data-expansion="${expansion}"></div>
+            <div class="illustration" data-illustration="${illustration}"></div>
             <div id="cities"></div>
             <div id="route-spaces"></div>
             <div id="train-cars"></div>

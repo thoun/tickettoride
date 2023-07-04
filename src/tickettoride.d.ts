@@ -76,6 +76,7 @@ interface TicketToRideMap {
         { [id: number]: Destination } 
     };
     bigCities: BigCity[];
+    preloadImages: string[];
 }
 
 /**
@@ -112,7 +113,7 @@ interface TicketToRideGamedatas {
     lastTurn: boolean;
     bestScore: number;
 
-    expansion1910: number;
+    illustration: number;
     isGlobetrotterBonusActive: boolean;
     isLongestPathBonusActive: boolean;
     showTurnOrder: boolean;
@@ -146,7 +147,6 @@ interface TicketToRideGame extends Game {
     selectedColorChanged(selectedColor: number | null): void;
     setTooltip(id: string, html: string): void;
     setTooltipToClass(className: string, html: string): void;
-    expansion1910(): number;
     isGlobetrotterBonusActive(): boolean;
     isLongestPathBonusActive(): boolean;
 }

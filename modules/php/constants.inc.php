@@ -1,6 +1,6 @@
 <?php
 
-const MAP = 'usa';
+const MAP = 'europe';
 
 /* 
  * Colors 
@@ -21,7 +21,6 @@ define('GREEN', 8);
 define('ST_BGA_GAME_SETUP', 1);
 
 define('ST_DEAL_INITIAL_DESTINATIONS', 10);
-define('ST_MULTIPLAYER_CHOOSE_INITIAL_DESTINATIONS_OLD', 20);
 define('ST_MULTIPLAYER_CHOOSE_INITIAL_DESTINATIONS', 21);
 define('ST_PRIVATE_CHOOSE_INITIAL_DESTINATIONS', 22);
 
@@ -40,7 +39,6 @@ define('END_SCORE', 100);
 /*
  * Options
  */
-define('EXPANSION1912', 'EXPANSION1912');
 define('SHOW_TURN_ORDER', 'SHOW_TURN_ORDER');
 
 /*

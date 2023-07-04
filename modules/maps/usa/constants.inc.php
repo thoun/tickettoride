@@ -31,7 +31,7 @@ const BIG_CITIES = [
 
 function getMapOptions() {
     return [    
-        /* TODO1910 101 => [ // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
+        /* TODO1910*/ 101 => [ // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
             'name' => totranslate('1910 Expansion'),
             'values' => [
                 0 => [
@@ -54,6 +54,6 @@ function getMapOptions() {
                 ],
             ],
             'default' => 0,
-        ],*/
+        ],/**/
     ];
 } 

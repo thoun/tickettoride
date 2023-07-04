@@ -39,7 +39,7 @@ $this->ROUTES = getRoutes();
 /**
  * List of DestinationCard.
  */
-$this->DESTINATIONS = getDestinations();
+$this->DESTINATIONS = getAllDestinations();
 
 /**
  * Points scored for claimed routes.

@@ -182,6 +182,8 @@ class TicketToRide extends Table {
                 'routes' => $this->ROUTES,
                 'destinations' => $this->DESTINATIONS,
                 'bigCities' => $this->getBigCities(),
+                'illustration' => $this->getExpansionOption(),
+                'preloadImages' => $this->getPreloadImages(),
             ],
         ];
     
@@ -230,7 +232,7 @@ class TicketToRide extends Table {
         $result['trainCarDeckMaxCount'] = 110;
         $result['destinationDeckMaxCount'] = 30;
 
-        $result['expansion1910'] = $this->getExpansionOption();
+        $result['expansion1910'] = $this->getExpansionOption(); // TODO REMOVE
         $result['isGlobetrotterBonusActive'] = $this->isGlobetrotterBonusActive();
         $result['isLongestPathBonusActive'] = $this->isLongestPathBonusActive();
         

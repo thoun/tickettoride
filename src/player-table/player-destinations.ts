@@ -43,13 +43,13 @@ class PlayerDestinations {
     public addDestinations(destinations: Destination[], originStock?: Stock) {
         destinations.forEach(destination => {
             let html = `
-            <div id="destination-card-${destination.id}" class="destination-card" style="${getBackgroundInlineStyleForDestination(destination)}"></div>
+            <div id="destination-card-${destination.id}" class="destination-card" style="${getBackgroundInlineStyleForDestination(this.game.getMap(), destination)}"></div>
             `;
 
             dojo.place(html, `player-table-${this.playerId}-destinations-todo`);
             
             const card = document.getElementById(`destination-card-${destination.id}`) as HTMLDivElement;
-            setupDestinationCardDiv(this.game, card, destination.type * 100 + destination.type_arg, this.game.expansion1910());
+            setupDestinationCardDiv(this.game, card, destination.type * 1000 + destination.type_arg);
             /*
             Can't add a tooltip, because showing a tooltip will mess with the hover effect.
             const DESTINATIONS = this.getDestinations(game);

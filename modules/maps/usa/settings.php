@@ -14,22 +14,23 @@ trait SettingsTrait {
 
         switch ($expansion) {
             case 1:
-                foreach($this->DESTINATIONS[2] as $typeArg => $destination) {
-                    $destinations[] = [ 'type' => 2, 'type_arg' => $typeArg, 'nbr' => 1];
+                $expansion1910 = get1910Destinations();
+                foreach($expansion1910 as $typeArg => $destination) {
+                    $destinations[] = [ 'type' => 1, 'type_arg' => $typeArg, 'nbr' => 1];
                 }
                 break;
             case 2:
             case 3:
-                foreach([2, 3] as $type) {
-                    foreach($this->DESTINATIONS[$type] as $typeArg => $destination) {
-                        if ($expansion != 3 || in_array($destination->from, BIG_CITIES) || in_array($destination->to, BIG_CITIES)) {
-                            $destinations[] = [ 'type' => $type, 'type_arg' => $typeArg, 'nbr' => 1];
-                        }
+                $allExpansionDestinations = get1910Destinations() + getMegaDestinations();
+                foreach($allExpansionDestinations as $typeArg => $destination) {
+                    if ($expansion != 3 || in_array($destination->from, BIG_CITIES) || in_array($destination->to, BIG_CITIES)) {
+                        $destinations[] = [ 'type' => 1, 'type_arg' => $typeArg, 'nbr' => 1];
                     }
                 }
                 break;
             default:
-                foreach($this->DESTINATIONS[1] as $typeArg => $destination) {
+            $base = getBaseDestinations();
+                foreach($base as $typeArg => $destination) {
                     $destinations[] = [ 'type' => 1, 'type_arg' => $typeArg, 'nbr' => 1];
                 }
                 break;
@@ -105,6 +106,10 @@ trait SettingsTrait {
             new BigCity(38, 234, 69), // Seattle
         ]
         : [];
+    }
+
+    function getPreloadImages() {
+        return ['destinations-1-0.jpg', 'destinations-2-0.jpg'];
     }
     
 }

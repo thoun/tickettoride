@@ -10,18 +10,11 @@ function setupTrainCarCards(stock: Stock) {
 }
 
 function setupDestinationCards(map: TicketToRideMap, stock: Stock) {
-    const destinationsUrl = `${g_gamethemeurl}img/${map.code}/destinations.jpg`;
-    for (let id=1; id<=30; id++) {
-        stock.addItemType(100 + id, 100 + id, destinationsUrl, id - 1);
-    }
-    const destinations1910Url = `${g_gamethemeurl}img/${map.code}/destinations-1910.jpg`;
-    for (let id=1; id<=35; id++) {
-        stock.addItemType(200 + id, 200 + id, destinations1910Url, id - 1);
-    }
-    const destinationsMegaUrl = `${g_gamethemeurl}img/${map.code}/destinations-mega.jpg`;
-    for (let id=1; id<=34; id++) {
-        stock.addItemType(300 + id, 300 + id, destinationsMegaUrl, id - 1);
-    }
+    const destinations = getDestinations(map);
+    destinations.forEach(destination => {
+        const file = `${g_gamethemeurl}img/${map.code}/destinations-${destination.type}-${destination.setTypeArg}.jpg`;  
+        stock.addItemType(destination.uniqueId, destination.uniqueId, file, (destination.typeArg % 100) - 1);
+    });
 }
 
 const GRAY = 0;
@@ -53,49 +46,45 @@ function setupTrainCarCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
 }
 
 class DestinationCard {
+    public uniqueId: number;
+    public setTypeArg: number;
+
     constructor(
-        public id: number,
+        public type: number,
+        public typeArg: number,
         public from: number,
         public to: number,
         public points: number,
-    ) {}
+    ) {
+        this.uniqueId = 1000 * type + typeArg;
+        this.setTypeArg = Math.floor(typeArg / 100);
+    }
 }
 
-function getDestinations(game: TicketToRideGame): DestinationCard[] {
+function getDestinations(map: TicketToRideMap): DestinationCard[] {
     const destinations = [];
-    Object.entries(game.getMap().destinations).forEach(typeEntry => Object.entries(typeEntry[1]).forEach(destinationEntry => 
-        destinations.push(new DestinationCard(Number(typeEntry[0]) * 100 + Number(destinationEntry[0]), destinationEntry[1].from, destinationEntry[1].to, destinationEntry[1].points))
+    Object.entries(map.destinations).forEach(typeEntry => Object.entries(typeEntry[1]).forEach(destinationEntry => 
+        destinations.push(new DestinationCard(Number(typeEntry[0]), Number(destinationEntry[0]), destinationEntry[1].from, destinationEntry[1].to, destinationEntry[1].points))
     ));
     return destinations;
 }
 
-function setupDestinationCardDiv(game: TicketToRideGame, cardDiv: HTMLDivElement, cardUniqueId: number, expansion1910: number) {
-    const DESTINATIONS = getDestinations(game);
-    const destinations = DESTINATIONS.filter(d => expansion1910 > 0 ? d.id >= 200 : d.id < 200);
-    const destination = destinations.find(d => d.id == cardUniqueId);
+function setupDestinationCardDiv(game: TicketToRideGame, cardDiv: HTMLDivElement, cardUniqueId: number) {
+    const destinations = getDestinations(game.getMap());
+    const destination = destinations.find(d => d.uniqueId == cardUniqueId);
     cardDiv.title = `${dojo.string.substitute(_('${from} to ${to}'), {
         from: game.getCityName(destination.from), 
         to: game.getCityName(destination.to),
     })}, ${destination.points} ${_('points')}`;
 }
 
-function getBackgroundInlineStyleForDestination(destination: Destination) {
-    let file;
-    switch(destination.type) {
-        case 1: 
-            file = 'destinations.jpg';
-            break;
-        case 2: 
-            file = 'destinations-1910.jpg';
-            break;
-        case 3: 
-            file = 'destinations-mega.jpg';
-            break;
-    }
+function getBackgroundInlineStyleForDestination(map: TicketToRideMap, destination: Destination) {
+    const setTypeArg = Math.floor(destination.type_arg / 100);
+    let file = `destinations-${destination.type}-${setTypeArg}.jpg`;
 
-    const imagePosition = destination.type_arg - 1;
+    const imagePosition = (destination.type_arg % 100) - 1;
     const row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
     const xBackgroundPercent = (imagePosition - (row * IMAGE_ITEMS_PER_ROW)) * 100;
     const yBackgroundPercent = row * 100;
-    return `background-image: url('${g_gamethemeurl}img/${file}'); background-position: -${xBackgroundPercent}% -${yBackgroundPercent}%;`;
+    return `background-image: url('${g_gamethemeurl}img/${map.code}/${file}'); background-position: -${xBackgroundPercent}% -${yBackgroundPercent}%;`;
 }

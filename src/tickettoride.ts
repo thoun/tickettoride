@@ -55,17 +55,8 @@ class TicketToRide implements TicketToRideGame {
 
         (this as any).ensureSpecificGameImageLoading([
             `${map.code}/map.jpg`,
+            ...map.preloadImages.map(filename => `${map.code}/${filename}`)
         ]);
-        if (gamedatas.expansion1910) {
-            (this as any).ensureSpecificGameImageLoading([
-                `${map.code}/destinations-1910.jpg`,
-                `${map.code}/destinations-mega.jpg`,
-            ]);
-        } else {
-            (this as any).ensureSpecificGameImageLoading([
-                `${map.code}/destinations.jpg`,
-            ]);
-        }
 
         log("Starting game setup");
         
@@ -73,7 +64,7 @@ class TicketToRide implements TicketToRideGame {
 
         log('gamedatas', gamedatas);
 
-        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.expansion1910);
+        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.illustration);
         this.trainCarSelection = new TrainCarSelection(this, 
             gamedatas.visibleTrainCards,
             gamedatas.trainCarDeckCount,
@@ -259,9 +250,6 @@ class TicketToRide implements TicketToRideGame {
 
     ///////////////////////////////////////////////////
     
-    public expansion1910(): number {
-        return this.gamedatas.expansion1910;
-    }
     public isGlobetrotterBonusActive(): boolean {
         return this.gamedatas.isGlobetrotterBonusActive;
     }

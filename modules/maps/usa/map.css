@@ -8,11 +8,11 @@
     height: 206px;
 }
 
-.illustration[data-expansion="1"], .illustration[data-expansion="2"], .illustration[data-expansion="3"] {
+.illustration[data-illustration="1"], .illustration[data-illustration="2"], .illustration[data-illustration="3"] {
     width: 405px;
     height: 260px;
 }
 
-.illustration[data-expansion="1"] { background-image: url('../../../img/usa/border-map-illustration-1.png'); }
-.illustration[data-expansion="2"] { background-image: url('../../../img/usa/border-map-illustration-2.png'); }
-.illustration[data-expansion="3"] { background-image: url('../../../img/usa/border-map-illustration-3.png'); }
+.illustration[data-illustration="1"] { background-image: url('../../../img/usa/border-map-illustration-1.png'); }
+.illustration[data-illustration="2"] { background-image: url('../../../img/usa/border-map-illustration-2.png'); }
+.illustration[data-illustration="3"] { background-image: url('../../../img/usa/border-map-illustration-3.png'); }

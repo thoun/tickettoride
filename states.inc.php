@@ -75,19 +75,6 @@ $basicGameStates = [
 
 $playerActionsGameStates = [
 
-    ST_MULTIPLAYER_CHOOSE_INITIAL_DESTINATIONS_OLD => [
-        "name" => "chooseInitialDestinations",
-        "description" => clienttranslate('Other players must choose destination tickets'),
-        "descriptionmyturn" => clienttranslate('${you} must choose destination tickets (minimum ${minimum})'),
-        "type" => "multipleactiveplayer",
-        "action" => "stChooseInitialDestinationsOld",
-        "args" => "argChooseInitialDestinationsOld",
-        "possibleactions" => [ "chooseInitialDestinations" ],
-        "transitions" => [
-            "start" => ST_PLAYER_CHOOSE_ACTION,
-        ],
-    ],
-
     ST_MULTIPLAYER_CHOOSE_INITIAL_DESTINATIONS => [
         "name" => "multiChooseInitialDestinations",
         "description" => clienttranslate('Other players must choose destination tickets'),

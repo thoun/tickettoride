@@ -10,29 +10,14 @@ trait SettingsTrait {
      */
     function getDestinationToGenerate() {
         $destinations = [];
-        $expansion = $this->getExpansionOption();
-
-        switch ($expansion) {
-            case 1:
-                foreach($this->DESTINATIONS[2] as $typeArg => $destination) {
-                    $destinations[] = [ 'type' => 2, 'type_arg' => $typeArg, 'nbr' => 1];
-                }
-                break;
-            case 2:
-            case 3:
-                foreach([2, 3] as $type) {
-                    foreach($this->DESTINATIONS[$type] as $typeArg => $destination) {
-                        if ($expansion != 3 || in_array($destination->from, BIG_CITIES) || in_array($destination->to, BIG_CITIES)) {
-                            $destinations[] = [ 'type' => $type, 'type_arg' => $typeArg, 'nbr' => 1];
-                        }
-                    }
-                }
-                break;
-            default:
-                foreach($this->DESTINATIONS[1] as $typeArg => $destination) {
-                    $destinations[] = [ 'type' => 1, 'type_arg' => $typeArg, 'nbr' => 1];
-                }
-                break;
+        
+        $small = getSmallDestinations();
+        $big = getBigDestinations();
+        foreach ($small as $typeArg => $destination) {
+            $destinations[] = [ 'type' => 1, 'type_arg' => $typeArg, 'nbr' => 1];
+        }
+        foreach ($big as $typeArg => $destination) {
+            $destinations[] = [ 'type' => 2, 'type_arg' => $typeArg, 'nbr' => 1];
         }
 
         return $destinations;
@@ -95,7 +80,7 @@ trait SettingsTrait {
 
     function getBigCities() {
         return $this->getExpansionOption() == 3 ?
-        [
+        [ // TODO1912
             new BigCity(1226, 479, 70), // Chicago
             new BigCity(1007, 903, 64), // Dallas
             new BigCity(1046, 1022, 79), // Houston
@@ -105,6 +90,10 @@ trait SettingsTrait {
             new BigCity(38, 234, 69), // Seattle
         ]
         : [];
+    }
+
+    function getPreloadImages() {
+        return $this->getExpansionOption() > 0 ? ['destinations-1-1.jpg', 'destinations-1-2.jpg'] : ['destinations-1-0.jpg'];
     }
     
 }

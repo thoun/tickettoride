@@ -22,18 +22,11 @@ function setupTrainCarCards(stock) {
     }
 }
 function setupDestinationCards(map, stock) {
-    var destinationsUrl = "".concat(g_gamethemeurl, "img/").concat(map.code, "/destinations.jpg");
-    for (var id = 1; id <= 30; id++) {
-        stock.addItemType(100 + id, 100 + id, destinationsUrl, id - 1);
-    }
-    var destinations1910Url = "".concat(g_gamethemeurl, "img/").concat(map.code, "/destinations-1910.jpg");
-    for (var id = 1; id <= 35; id++) {
-        stock.addItemType(200 + id, 200 + id, destinations1910Url, id - 1);
-    }
-    var destinationsMegaUrl = "".concat(g_gamethemeurl, "img/").concat(map.code, "/destinations-mega.jpg");
-    for (var id = 1; id <= 34; id++) {
-        stock.addItemType(300 + id, 300 + id, destinationsMegaUrl, id - 1);
-    }
+    var destinations = getDestinations(map);
+    destinations.forEach(function (destination) {
+        var file = "".concat(g_gamethemeurl, "img/").concat(map.code, "/destinations-").concat(destination.type, "-").concat(destination.setTypeArg, ".jpg");
+        stock.addItemType(destination.uniqueId, destination.uniqueId, file, (destination.typeArg % 100) - 1);
+    });
 }
 var GRAY = 0;
 var PINK = 1;
@@ -61,48 +54,40 @@ function setupTrainCarCardDiv(cardDiv, cardTypeId) {
     cardDiv.title = getColor(Number(cardTypeId), 'train-car');
 }
 var DestinationCard = /** @class */ (function () {
-    function DestinationCard(id, from, to, points) {
-        this.id = id;
+    function DestinationCard(type, typeArg, from, to, points) {
+        this.type = type;
+        this.typeArg = typeArg;
         this.from = from;
         this.to = to;
         this.points = points;
+        this.uniqueId = 1000 * type + typeArg;
+        this.setTypeArg = Math.floor(typeArg / 100);
     }
     return DestinationCard;
 }());
-function getDestinations(game) {
+function getDestinations(map) {
     var destinations = [];
-    Object.entries(game.getMap().destinations).forEach(function (typeEntry) { return Object.entries(typeEntry[1]).forEach(function (destinationEntry) {
-        return destinations.push(new DestinationCard(Number(typeEntry[0]) * 100 + Number(destinationEntry[0]), destinationEntry[1].from, destinationEntry[1].to, destinationEntry[1].points));
+    Object.entries(map.destinations).forEach(function (typeEntry) { return Object.entries(typeEntry[1]).forEach(function (destinationEntry) {
+        return destinations.push(new DestinationCard(Number(typeEntry[0]), Number(destinationEntry[0]), destinationEntry[1].from, destinationEntry[1].to, destinationEntry[1].points));
     }); });
     return destinations;
 }
-function setupDestinationCardDiv(game, cardDiv, cardUniqueId, expansion1910) {
-    var DESTINATIONS = getDestinations(game);
-    var destinations = DESTINATIONS.filter(function (d) { return expansion1910 > 0 ? d.id >= 200 : d.id < 200; });
-    var destination = destinations.find(function (d) { return d.id == cardUniqueId; });
+function setupDestinationCardDiv(game, cardDiv, cardUniqueId) {
+    var destinations = getDestinations(game.getMap());
+    var destination = destinations.find(function (d) { return d.uniqueId == cardUniqueId; });
     cardDiv.title = "".concat(dojo.string.substitute(_('${from} to ${to}'), {
         from: game.getCityName(destination.from),
         to: game.getCityName(destination.to),
     }), ", ").concat(destination.points, " ").concat(_('points'));
 }
-function getBackgroundInlineStyleForDestination(destination) {
-    var file;
-    switch (destination.type) {
-        case 1:
-            file = 'destinations.jpg';
-            break;
-        case 2:
-            file = 'destinations-1910.jpg';
-            break;
-        case 3:
-            file = 'destinations-mega.jpg';
-            break;
-    }
-    var imagePosition = destination.type_arg - 1;
+function getBackgroundInlineStyleForDestination(map, destination) {
+    var setTypeArg = Math.floor(destination.type_arg / 100);
+    var file = "destinations-".concat(destination.type, "-").concat(setTypeArg, ".jpg");
+    var imagePosition = (destination.type_arg % 100) - 1;
     var row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
     var xBackgroundPercent = (imagePosition - (row * IMAGE_ITEMS_PER_ROW)) * 100;
     var yBackgroundPercent = row * 100;
-    return "background-image: url('".concat(g_gamethemeurl, "img/").concat(file, "'); background-position: -").concat(xBackgroundPercent, "% -").concat(yBackgroundPercent, "%;");
+    return "background-image: url('".concat(g_gamethemeurl, "img/").concat(map.code, "/").concat(file, "'); background-position: -").concat(xBackgroundPercent, "% -").concat(yBackgroundPercent, "%;");
 }
 /**
  * Animation with highlighted wagons.
@@ -161,7 +146,7 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
         return new Promise(function (resolve) {
             var _a, _b;
             var fromBR = document.getElementById(_this.fromId).getBoundingClientRect();
-            dojo.place("\n            <div id=\"animated-destination-card-".concat(_this.destination.id, "\" class=\"destination-card\" style=\"").concat(_this.getCardPosition(_this.destination)).concat(getBackgroundInlineStyleForDestination(_this.destination), "\"></div>\n            "), 'map');
+            dojo.place("\n            <div id=\"animated-destination-card-".concat(_this.destination.id, "\" class=\"destination-card\" style=\"").concat(_this.getCardPosition(_this.destination)).concat(getBackgroundInlineStyleForDestination(_this.game.getMap(), _this.destination), "\"></div>\n            "), 'map');
             var card = document.getElementById("animated-destination-card-".concat(_this.destination.id));
             (_b = (_a = _this.actions).start) === null || _b === void 0 ? void 0 : _b.call(_a, _this.destination);
             var cardBR = card.getBoundingClientRect();
@@ -202,7 +187,8 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
         card.parentElement.removeChild(card);
     };
     DestinationCompleteAnimation.prototype.getCardPosition = function (destination) {
-        var positions = [destination.from, destination.to].map(function (cityId) { return CITIES.find(function (city) { return city.id == cityId; }); });
+        var _this = this;
+        var positions = [destination.from, destination.to].map(function (cityId) { return _this.game.getMap().cities[cityId]; });
         var x = (positions[0].x + positions[1].x) / 2;
         var y = (positions[0].y + positions[1].y) / 2;
         return "left: ".concat(x - CARD_WIDTH / 2, "px; top: ").concat(y - CARD_HEIGHT / 2, "px;");
@@ -243,7 +229,8 @@ var LongestPathAnimation = /** @class */ (function (_super) {
         var x = 100;
         var y = 100;
         if (this.routes.length) {
-            var positions = [this.routes[0].from, this.routes[this.routes.length - 1].to].map(function (cityId) { return CITIES.find(function (city) { return city.id == cityId; }); });
+            var map_1 = this.game.getMap();
+            var positions = [this.routes[0].from, this.routes[this.routes.length - 1].to].map(function (cityId) { return map_1.cities[cityId]; });
             x = (positions[0].x + positions[1].x) / 2;
             y = (positions[0].y + positions[1].y) / 2;
         }
@@ -380,7 +367,7 @@ var TtrMap = /** @class */ (function () {
     /**
      * Place map corner illustration and borders, cities, routes, and bind events.
      */
-    function TtrMap(game, map, players, claimedRoutes, expansion) {
+    function TtrMap(game, map, players, claimedRoutes, illustration) {
         this.game = game;
         this.map = map;
         this.players = players;
@@ -389,7 +376,7 @@ var TtrMap = /** @class */ (function () {
         this.crosshairHalfSize = 0;
         this.crosshairShift = 0;
         // map border
-        dojo.place("\n            <div class=\"illustration\" data-expansion=\"".concat(expansion, "\"></div>\n            <div id=\"cities\"></div>\n            <div id=\"route-spaces\"></div>\n            <div id=\"train-cars\"></div>\n        "), 'map', 'first');
+        dojo.place("\n            <div class=\"illustration\" data-illustration=\"".concat(illustration, "\"></div>\n            <div id=\"cities\"></div>\n            <div id=\"route-spaces\"></div>\n            <div id=\"train-cars\"></div>\n        "), 'map', 'first');
         SIDES.forEach(function (side) { return dojo.place("<div class=\"side ".concat(side, "\"></div>"), 'map-and-borders'); });
         CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner ".concat(corner, "\"></div>"), 'map-and-borders'); });
         map.bigCities.forEach(function (bigCity) { return dojo.place("<div class=\"big-city\" style=\"left: ".concat(bigCity.x, "px; top: ").concat(bigCity.y, "px; width: ").concat(bigCity.width, "px;\"></div>"), 'cities'); });
@@ -834,7 +821,7 @@ var DestinationSelection = /** @class */ (function () {
         this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $("destination-stock"), CARD_WIDTH, CARD_HEIGHT);
-        this.destinations.onItemCreate = function (cardDiv, cardUniqueId) { return setupDestinationCardDiv(game, cardDiv, Number(cardUniqueId), _this.game.expansion1910()); };
+        this.destinations.onItemCreate = function (cardDiv, cardUniqueId) { return setupDestinationCardDiv(game, cardDiv, Number(cardUniqueId)); };
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
         this.destinations.item_margin = 20;
@@ -848,7 +835,7 @@ var DestinationSelection = /** @class */ (function () {
         var _this = this;
         dojo.removeClass('destination-deck', 'hidden');
         destinations.forEach(function (destination) {
-            _this.destinations.addToStockWithId(destination.type * 100 + destination.type_arg, '' + destination.id);
+            _this.destinations.addToStockWithId(destination.type * 1000 + destination.type_arg, '' + destination.id);
             var cardDiv = document.getElementById("destination-stock_item_".concat(destination.id));
             // when mouse hover destination, highlight it on the map
             cardDiv.addEventListener('mouseenter', function () { return _this.game.setHighligthedDestination(destination); });
@@ -1284,10 +1271,10 @@ var PlayerDestinations = /** @class */ (function () {
         var _a;
         var _this = this;
         destinations.forEach(function (destination) {
-            var html = "\n            <div id=\"destination-card-".concat(destination.id, "\" class=\"destination-card\" style=\"").concat(getBackgroundInlineStyleForDestination(destination), "\"></div>\n            ");
+            var html = "\n            <div id=\"destination-card-".concat(destination.id, "\" class=\"destination-card\" style=\"").concat(getBackgroundInlineStyleForDestination(_this.game.getMap(), destination), "\"></div>\n            ");
             dojo.place(html, "player-table-".concat(_this.playerId, "-destinations-todo"));
             var card = document.getElementById("destination-card-".concat(destination.id));
-            setupDestinationCardDiv(_this.game, card, destination.type * 100 + destination.type_arg, _this.game.expansion1910());
+            setupDestinationCardDiv(_this.game, card, destination.type * 1000 + destination.type_arg);
             /*
             Can't add a tooltip, because showing a tooltip will mess with the hover effect.
             const DESTINATIONS = this.getDestinations(game);
@@ -1793,11 +1780,12 @@ var EndScore = /** @class */ (function () {
         this.game.addAnimation(newDac);
     };
     EndScore.prototype.updateDestinationsTooltip = function (player) {
+        var _this = this;
         var _a, _b;
         var html = "<div class=\"destinations-flex\">\n            <div>\n                ".concat((_a = player.completedDestinations) === null || _a === void 0 ? void 0 : _a.map(function (destination) {
-            return "<div class=\"destination-card completed\" style=\"".concat(getBackgroundInlineStyleForDestination(destination), "\"></div>");
+            return "<div class=\"destination-card completed\" style=\"".concat(getBackgroundInlineStyleForDestination(_this.game.getMap(), destination), "\"></div>");
         }), "\n            </div>\n            <div>\n                ").concat((_b = player.uncompletedDestinations) === null || _b === void 0 ? void 0 : _b.map(function (destination) {
-            return "<div class=\"destination-card uncompleted\" style=\"".concat(getBackgroundInlineStyleForDestination(destination), "\"></div>");
+            return "<div class=\"destination-card uncompleted\" style=\"".concat(getBackgroundInlineStyleForDestination(_this.game.getMap(), destination), "\"></div>");
         }), "\n            </div>\n        </div>");
         if (document.getElementById("destinations-score-".concat(player.id))) {
             this.game.setTooltip("destinations-score-".concat(player.id), html);
@@ -1872,24 +1860,13 @@ var TicketToRide = /** @class */ (function () {
         Object.entries(map.routes).forEach(function (entry) { return entry[1].id = Number(entry[0]); });
         Object.entries(map.destinations).forEach(function (typeEntry) { return Object.entries(typeEntry[1]).forEach(function (entry) { return entry[1].id = Number(entry[0]); }); });
         document.getElementById("score").insertAdjacentHTML("beforebegin", "<link rel=\"stylesheet\" type=\"text/css\" href=\"".concat(g_gamethemeurl, "modules/maps/").concat(map.code, "/map.css\"/>"));
-        this.ensureSpecificGameImageLoading([
-            "".concat(map.code, "/map.jpg"),
-        ]);
-        if (gamedatas.expansion1910) {
-            this.ensureSpecificGameImageLoading([
-                "".concat(map.code, "/destinations-1910.jpg"),
-                "".concat(map.code, "/destinations-mega.jpg"),
-            ]);
-        }
-        else {
-            this.ensureSpecificGameImageLoading([
-                "".concat(map.code, "/destinations.jpg"),
-            ]);
-        }
+        this.ensureSpecificGameImageLoading(__spreadArray([
+            "".concat(map.code, "/map.jpg")
+        ], map.preloadImages.map(function (filename) { return "".concat(map.code, "/").concat(filename); }), true));
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
-        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.expansion1910);
+        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.illustration);
         this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards, gamedatas.trainCarDeckCount, gamedatas.destinationDeckCount, gamedatas.trainCarDeckMaxCount, gamedatas.destinationDeckMaxCount);
         this.destinationSelection = new DestinationSelection(this, map);
         var player = gamedatas.players[this.getPlayerId()];
@@ -2053,9 +2030,6 @@ var TicketToRide = /** @class */ (function () {
     ///////////////////////////////////////////////////
     //// Utility methods
     ///////////////////////////////////////////////////
-    TicketToRide.prototype.expansion1910 = function () {
-        return this.gamedatas.expansion1910;
-    };
     TicketToRide.prototype.isGlobetrotterBonusActive = function () {
         return this.gamedatas.isGlobetrotterBonusActive;
     };
