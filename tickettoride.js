@@ -25,7 +25,7 @@ function setupDestinationCards(map, stock) {
     var destinations = getDestinations(map);
     destinations.forEach(function (destination) {
         var file = "".concat(g_gamethemeurl, "img/").concat(map.code, "/destinations-").concat(destination.type, "-").concat(destination.setTypeArg, ".jpg");
-        stock.addItemType(destination.uniqueId, destination.uniqueId, file, (destination.typeArg % 100) - 1);
+        stock.addItemType(destination.uniqueId, -1000 * destination.type + destination.typeArg, file, (destination.typeArg % 100) - 1);
     });
 }
 var GRAY = 0;

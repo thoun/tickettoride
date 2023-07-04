@@ -10,15 +10,24 @@ trait DestinationDeckTrait {
     public function createDestinations() {
         $destinations = $this->getDestinationToGenerate();
 
-        $this->destinations->createCards($destinations, 'deck');
-        $this->destinations->shuffle('deck');
+        foreach($destinations as $deck => $cards) {
+            $this->destinations->createCards($cards, $deck);
+            $this->destinations->shuffle($deck);
+        }
     }
 	
     /**
      * Pick destination cards for beginning choice.
      */
     public function pickInitialDestinationCards(int $playerId) {
-		return $this->pickDestinationCards($playerId, $this->getInitialDestinationCardNumber());
+        $pick = $this->getInitialDestinationPick();
+
+        $cards = [];
+        foreach ($pick as $deck => $number) {
+            $cards = array_merge($cards, $this->pickDestinationCards($playerId, $number, $deck));
+        }
+
+		return $cards;
     }	
 
     /**
@@ -26,7 +35,7 @@ trait DestinationDeckTrait {
      * Unused destination cards are set back on the deck or discarded.
      */
     public function keepInitialDestinationCards(int $playerId, array $ids) {
-		$this->keepDestinationCards($playerId, $ids, $this->getInitialDestinationMinimumKept());
+		$this->keepDestinationCards($playerId, $ids, $this->getInitialDestinationMinimumKept(), UNUSED_INITIAL_DESTINATIONS_GO_TO_DECK_BOTTOM);
     }	
 	
     /**
@@ -41,7 +50,7 @@ trait DestinationDeckTrait {
      * Unused destination cards are set back on the deck or discarded.
      */
     public function keepAdditionalDestinationCards(int $playerId, array $ids) {
-		$this->keepDestinationCards($playerId, $ids, ADDITIONAL_DESTINATION_MINIMUM_KEPT);
+		$this->keepDestinationCards($playerId, $ids, ADDITIONAL_DESTINATION_MINIMUM_KEPT, UNUSED_ADDITIONAL_DESTINATIONS_GO_TO_DECK_BOTTOM);
     }
 
     /**
@@ -68,15 +77,15 @@ trait DestinationDeckTrait {
     /**
      * place a number of destinations cards to pick$playerId.
      */
-    private function pickDestinationCards($playerId, int $number) {
-        $cards = $this->getDestinationsFromDb($this->destinations->pickCardsForLocation($number, 'deck', "pick$playerId"));
+    private function pickDestinationCards($playerId, int $number, string $from = 'deck') {
+        $cards = $this->getDestinationsFromDb($this->destinations->pickCardsForLocation($number, $from, "pick$playerId"));
         return $cards;
     }
 
     /**
      * move selected cards to player hand, and empty pick$playerId.
      */
-    private function keepDestinationCards(int $playerId, array $ids, int $minimum) {
+    private function keepDestinationCards(int $playerId, array $ids, int $minimum, bool $toDeckBottom) {
         if (count($ids) < $minimum) {
             throw new BgaUserException("You must keep at least $minimum cards.");
         }
@@ -89,14 +98,14 @@ trait DestinationDeckTrait {
 
         $remainingCardsInPick = intval($this->destinations->countCardInLocation("pick$playerId"));
         if ($remainingCardsInPick > 0) {
-            if (UNUSED_DESTINATIONS_GO_TO_DECK_BOTTOM) {
+            if ($toDeckBottom) {
                 $this->destinations->shuffle("pick$playerId");
                 // we put remaining cards in pick at the bottom of the deck
                 $this->DbQuery("UPDATE destination SET `card_location_arg` = card_location_arg + $remainingCardsInPick WHERE `card_location` = 'deck'");
                 $this->destinations->moveAllCardsInLocationKeepOrder("pick$playerId", 'deck');
             } else {
                 // we discard remaining cards in pick
-                $this->destinations->moveAllCardsInLocationKeepOrder("pick$playerId", 'discard');
+                $this->destinations->moveAllCardsInLocation("pick$playerId", 'void');
             }
         }
 

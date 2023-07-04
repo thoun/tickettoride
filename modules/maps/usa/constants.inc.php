@@ -12,7 +12,8 @@ const RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES = 3; // Resets visible cards when 3 l
 const TRAIN_CARS_NUMBER_TO_START_LAST_TURN = 2; // 2 means 0, 1, or 2 will start last turn
 const TRAIN_CARS_PER_PLAYER = 45;
 const ADDITIONAL_DESTINATION_MINIMUM_KEPT = 1; // Minimum number of destinations cards to keep at pick destination action.
-const UNUSED_DESTINATIONS_GO_TO_DECK_BOTTOM = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
+const UNUSED_INITIAL_DESTINATIONS_GO_TO_DECK_BOTTOM = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
+const UNUSED_ADDITIONAL_DESTINATIONS_GO_TO_DECK_BOTTOM = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
 const POINTS_FOR_LONGEST_PATH = 10; // points for maximum longest countinuous path (null means disabled)
 const POINTS_FOR_GLOBETROTTER = 15; // points for maximum completed destinations (null means disabled)
 const MINIMUM_PLAYER_FOR_DOUBLE_ROUTES = 4; // 4 means 2-3 players cant use double routes
@@ -31,7 +32,7 @@ const BIG_CITIES = [
 
 function getMapOptions() {
     return [    
-        /* TODO1910*/ 101 => [ // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
+        /* TODO1910 101 => [ // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
             'name' => totranslate('1910 Expansion'),
             'values' => [
                 0 => [
@@ -54,6 +55,6 @@ function getMapOptions() {
                 ],
             ],
             'default' => 0,
-        ],/**/
+        ],*/
     ];
 } 

@@ -36,8 +36,9 @@ trait SettingsTrait {
                 break;
         }
 
-        return $destinations;
-
+        return [
+            'deck' => $destinations
+        ];
     }
     
     /**
@@ -55,16 +56,16 @@ trait SettingsTrait {
     }
     
     /**
-     * Return the number of destinations cards shown at the beginning.
+     * Return the number of destinations cards shown at the beginning, for each deck.
      */
-    function getInitialDestinationCardNumber() {
+    function getInitialDestinationPick() {
         switch ($this->getExpansionOption()) {
             case 2:
-                return 5;
+                return ['deck' => 5];
             case 3:
-                return 4;
+                return ['deck' => 4];
             default:
-                return 3;
+                return ['deck' => 3];
         }
     }
     
@@ -109,7 +110,7 @@ trait SettingsTrait {
     }
 
     function getPreloadImages() {
-        return ['destinations-1-0.jpg', 'destinations-2-0.jpg'];
+        return $this->getExpansionOption() > 0 ? ['destinations-1-1.jpg', 'destinations-1-2.jpg'] : ['destinations-1-0.jpg'];
     }
     
 }

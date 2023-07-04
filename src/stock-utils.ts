@@ -13,7 +13,7 @@ function setupDestinationCards(map: TicketToRideMap, stock: Stock) {
     const destinations = getDestinations(map);
     destinations.forEach(destination => {
         const file = `${g_gamethemeurl}img/${map.code}/destinations-${destination.type}-${destination.setTypeArg}.jpg`;  
-        stock.addItemType(destination.uniqueId, destination.uniqueId, file, (destination.typeArg % 100) - 1);
+        stock.addItemType(destination.uniqueId, -1000 * destination.type + destination.typeArg, file, (destination.typeArg % 100) - 1);
     });
 }
 
