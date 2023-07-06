@@ -1813,7 +1813,7 @@ var EndScore = /** @class */ (function () {
      */
     EndScore.prototype.setGlobetrotterWinner = function (playerId, length) {
         dojo.place("<div id=\"globetrotter-bonus-card-".concat(playerId, "\" class=\"globetrotter bonus-card bonus-card-icon\"></div>"), "bonus-card-icons-".concat(playerId));
-        this.game.setTooltip("globetrotter-bonus-card-".concat(playerId), "\n        <div><strong>".concat(/* TODO1910_*/ ('Most Completed Tickets'), " : ").concat(length, "</strong></div>\n        <div>").concat(/* TODO1910_*/ ('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.'), "</div>\n        <div class=\"globetrotter bonus-card\"></div>\n        "));
+        this.game.setTooltip("globetrotter-bonus-card-".concat(playerId), "\n        <div><strong>".concat(_('Most Completed Tickets'), " : ").concat(length, "</strong></div>\n        <div>").concat(_('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.'), "</div>\n        <div class=\"globetrotter bonus-card\"></div>\n        "));
     };
     /**
      * Add longest path badge to the longest path winner(s).
@@ -1870,7 +1870,7 @@ var TicketToRide = /** @class */ (function () {
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
-        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.illustration);
+        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.map.illustration);
         this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards, gamedatas.trainCarDeckCount, gamedatas.destinationDeckCount, gamedatas.trainCarDeckMaxCount, gamedatas.destinationDeckMaxCount);
         this.destinationSelection = new DestinationSelection(this, map);
         var player = gamedatas.players[this.getPlayerId()];

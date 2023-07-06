@@ -207,8 +207,8 @@ class EndScore {
         dojo.place(`<div id="globetrotter-bonus-card-${playerId}" class="globetrotter bonus-card bonus-card-icon"></div>`, `bonus-card-icons-${playerId}`);
 
         this.game.setTooltip(`globetrotter-bonus-card-${playerId}`, `
-        <div><strong>${/* TODO1910_*/('Most Completed Tickets')} : ${length}</strong></div>
-        <div>${/* TODO1910_*/('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.')}</div>
+        <div><strong>${_('Most Completed Tickets')} : ${length}</strong></div>
+        <div>${_('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.')}</div>
         <div class="globetrotter bonus-card"></div>
         `);
     }

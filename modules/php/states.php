@@ -195,7 +195,7 @@ trait StateTrait {
         }
 
         // Globetrotter
-        /* TODO1910 if ($isGlobetrotterBonusActive) {
+        if ($isGlobetrotterBonusActive) {
             foreach ($globetrotterWinners as $playerId) {
                 $points = POINTS_FOR_GLOBETROTTER;
                 $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with Globetrotter : ${destinations} completed destinations'), [
@@ -210,7 +210,7 @@ trait StateTrait {
 
                 $this->setStat(1, 'globetrotterBonus', $playerId);
             }
-        }*/
+        }
 
         // Longest continuous path 
         if ($isLongestPathBonusActive) {

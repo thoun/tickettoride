@@ -77,6 +77,7 @@ interface TicketToRideMap {
     };
     bigCities: BigCity[];
     preloadImages: string[];
+    illustration: number;
 }
 
 /**
@@ -113,7 +114,6 @@ interface TicketToRideGamedatas {
     lastTurn: boolean;
     bestScore: number;
 
-    illustration: number;
     isGlobetrotterBonusActive: boolean;
     isLongestPathBonusActive: boolean;
     showTurnOrder: boolean;

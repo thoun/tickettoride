@@ -32,7 +32,7 @@ const BIG_CITIES = [
 
 function getMapOptions() {
     return [    
-        /* TODO1910 101 => [ // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
+        101 => [ // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
             'name' => totranslate('1910 Expansion'),
             'values' => [
                 0 => [
@@ -42,19 +42,45 @@ function getMapOptions() {
                     'name' => totranslate('1910'),
                     'description' => totranslate('New tickets. Globetrotter - Most Completed Tickets bonus card instead of Longest Route Bonus card'),
                     'tmdisplay' => totranslate('1910 Expansion : 1910'),
+                    'nobeginner' => true,
                 ],
                 2 => [
                     'name' => totranslate('The Mega Game'),
                     'description' => totranslate('All tickets, both bonus cards, more tickets when choosing'),
                     'tmdisplay' => totranslate('1910 Expansion : The Mega Game'),
+                    'nobeginner' => true,
                 ],
                 3 => [
                     'name' => totranslate('The Big Cities'),
                     'description' => totranslate('Tickets with Big Cities'),
                     'tmdisplay' => totranslate('1910 Expansion : The Big Cities'),
+                    'nobeginner' => true,
                 ],
             ],
             'default' => 0,
-        ],*/
+            'startcondition' => [
+                1 => [
+                    [ 
+                        'type' => 'minplayers',
+                        'value' => 9,
+                        'message' => 'Available soon',
+                    ] 
+                ],
+                2 => [
+                    [ 
+                        'type' => 'minplayers',
+                        'value' => 9,
+                        'message' => 'Available soon',
+                    ] 
+                ],
+                3 => [
+                    [ 
+                        'type' => 'minplayers',
+                        'value' => 9,
+                        'message' => 'Available soon',
+                    ] 
+                ],
+            ],
+        ],
     ];
 } 
