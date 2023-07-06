@@ -9,31 +9,24 @@ function animateCardToCounterAndDestroy(game, cardOrCardId, destinationId) {
     var zoom = game.getZoom();
     var x = (toBR.x - cardBR.x) / zoom;
     var y = (toBR.y - cardBR.y) / zoom;
-    card.style.transform = "translate(" + x + "px, " + y + "px) scale(" + 0.15 / zoom + ")";
+    card.style.transform = "translate(".concat(x, "px, ").concat(y, "px) scale(").concat(0.15 / zoom, ")");
     setTimeout(function () { var _a; return (_a = card.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(card); }, 500);
 }
 var CARD_WIDTH = 250;
 var CARD_HEIGHT = 161;
 var DESTINATION_CARD_SHIFT = 32;
 function setupTrainCarCards(stock) {
-    var trainCarsUrl = g_gamethemeurl + "img/train-cards.jpg";
+    var trainCarsUrl = "".concat(g_gamethemeurl, "img/train-cards.jpg");
     for (var type = 0; type <= 8; type++) {
         stock.addItemType(type, type, trainCarsUrl, type);
     }
 }
-function setupDestinationCards(stock) {
-    var destinationsUrl = g_gamethemeurl + "img/destinations.jpg";
-    for (var id = 1; id <= 30; id++) {
-        stock.addItemType(100 + id, 100 + id, destinationsUrl, id - 1);
-    }
-    var destinations1910Url = g_gamethemeurl + "img/destinations-1910.jpg";
-    for (var id = 1; id <= 35; id++) {
-        stock.addItemType(200 + id, 200 + id, destinations1910Url, id - 1);
-    }
-    var destinationsMegaUrl = g_gamethemeurl + "img/destinations-mega.jpg";
-    for (var id = 1; id <= 34; id++) {
-        stock.addItemType(300 + id, 300 + id, destinationsMegaUrl, id - 1);
-    }
+function setupDestinationCards(map, stock) {
+    var destinations = getDestinations(map);
+    destinations.forEach(function (destination) {
+        var file = "".concat(g_gamethemeurl, "img/").concat(map.code, "/destinations-").concat(destination.type, "-").concat(destination.setTypeArg, ".jpg");
+        stock.addItemType(destination.uniqueId, -1000 * destination.type + destination.typeArg, file, (destination.typeArg % 100) - 1);
+    });
 }
 var GRAY = 0;
 var PINK = 1;
@@ -61,180 +54,40 @@ function setupTrainCarCardDiv(cardDiv, cardTypeId) {
     cardDiv.title = getColor(Number(cardTypeId), 'train-car');
 }
 var DestinationCard = /** @class */ (function () {
-    function DestinationCard(id, from, to, points) {
-        this.id = id;
+    function DestinationCard(type, typeArg, from, to, points) {
+        this.type = type;
+        this.typeArg = typeArg;
         this.from = from;
         this.to = to;
         this.points = points;
+        this.uniqueId = 1000 * type + typeArg;
+        this.setTypeArg = Math.floor(typeArg / 100);
     }
     return DestinationCard;
 }());
-var CITIES_NAMES = [
-    null,
-    'Atlanta',
-    'Boston',
-    'Calgary',
-    'Charleston',
-    'Chicago',
-    'Dallas',
-    'Denver',
-    'Duluth',
-    'El Paso',
-    'Helena',
-    'Houston',
-    'Kansas City',
-    'Las Vegas',
-    'Little Rock',
-    'Los Angeles',
-    'Miami',
-    'Montréal',
-    'Nashville',
-    'New Orleans',
-    'New York',
-    'Oklahoma City',
-    'Omaha',
-    'Phoenix',
-    'Pittsburgh',
-    'Portland',
-    'Raleigh',
-    'Saint Louis',
-    'Salt Lake City',
-    'Sault St. Marie',
-    'San Francisco',
-    'Santa Fe',
-    'Seattle',
-    'Toronto',
-    'Vancouver',
-    'Washington',
-    'Winnipeg',
-];
-var DESTINATIONS = [
-    // base game
-    new DestinationCard(101, 2, 16, 12),
-    new DestinationCard(102, 3, 23, 13),
-    new DestinationCard(103, 3, 28, 7),
-    new DestinationCard(104, 5, 19, 7),
-    new DestinationCard(105, 5, 31, 9),
-    new DestinationCard(106, 6, 20, 11),
-    new DestinationCard(107, 7, 9, 4),
-    new DestinationCard(108, 7, 24, 11),
-    new DestinationCard(109, 8, 9, 10),
-    new DestinationCard(110, 8, 11, 8),
-    new DestinationCard(111, 10, 15, 8),
-    new DestinationCard(112, 12, 11, 5),
-    new DestinationCard(113, 15, 5, 16),
-    new DestinationCard(114, 15, 16, 20),
-    new DestinationCard(115, 15, 20, 21),
-    new DestinationCard(116, 17, 1, 9),
-    new DestinationCard(117, 17, 19, 13),
-    new DestinationCard(118, 20, 1, 6),
-    new DestinationCard(119, 25, 18, 17),
-    new DestinationCard(120, 25, 23, 11),
-    new DestinationCard(121, 30, 1, 17),
-    new DestinationCard(122, 29, 18, 8),
-    new DestinationCard(123, 29, 21, 9),
-    new DestinationCard(124, 32, 15, 9),
-    new DestinationCard(125, 32, 20, 22),
-    new DestinationCard(126, 33, 16, 10),
-    new DestinationCard(127, 34, 17, 20),
-    new DestinationCard(128, 34, 31, 13),
-    new DestinationCard(129, 36, 11, 12),
-    new DestinationCard(130, 36, 14, 11),
-    // 1910
-    new DestinationCard(201, 3, 18, 14),
-    new DestinationCard(202, 5, 1, 5),
-    new DestinationCard(203, 5, 2, 5),
-    new DestinationCard(204, 5, 20, 5),
-    new DestinationCard(205, 7, 27, 6),
-    new DestinationCard(206, 8, 6, 7),
-    new DestinationCard(207, 11, 35, 10),
-    new DestinationCard(208, 12, 2, 11),
-    new DestinationCard(209, 13, 16, 21),
-    new DestinationCard(210, 13, 20, 19),
-    new DestinationCard(211, 15, 1, 15),
-    new DestinationCard(212, 15, 3, 12),
-    new DestinationCard(213, 15, 21, 9),
-    new DestinationCard(214, 17, 6, 13),
-    new DestinationCard(215, 17, 26, 7),
-    new DestinationCard(216, 18, 20, 6),
-    new DestinationCard(217, 20, 16, 10),
-    new DestinationCard(218, 22, 19, 8),
-    new DestinationCard(219, 23, 2, 19),
-    new DestinationCard(220, 24, 19, 8),
-    new DestinationCard(221, 25, 11, 16),
-    new DestinationCard(222, 25, 24, 19),
-    new DestinationCard(223, 28, 5, 11),
-    new DestinationCard(224, 28, 12, 7),
-    new DestinationCard(225, 30, 29, 17),
-    new DestinationCard(226, 30, 35, 21),
-    new DestinationCard(227, 29, 16, 12),
-    new DestinationCard(228, 32, 13, 10),
-    new DestinationCard(229, 32, 21, 14),
-    new DestinationCard(230, 27, 16, 8),
-    new DestinationCard(231, 33, 4, 6),
-    new DestinationCard(232, 34, 7, 11),
-    new DestinationCard(233, 34, 8, 13),
-    new DestinationCard(234, 35, 1, 4),
-    new DestinationCard(235, 36, 31, 10),
-    // mega
-    new DestinationCard(301, 2, 16, 12),
-    new DestinationCard(302, 2, 35, 4),
-    new DestinationCard(303, 3, 23, 13),
-    new DestinationCard(304, 3, 28, 7),
-    new DestinationCard(305, 5, 19, 7),
-    new DestinationCard(306, 5, 31, 9),
-    new DestinationCard(307, 6, 20, 11),
-    new DestinationCard(308, 7, 9, 4),
-    new DestinationCard(309, 7, 24, 11),
-    new DestinationCard(310, 8, 9, 10),
-    new DestinationCard(311, 8, 11, 8),
-    new DestinationCard(312, 10, 15, 8),
-    new DestinationCard(313, 12, 11, 5),
-    new DestinationCard(314, 15, 5, 16),
-    new DestinationCard(315, 15, 16, 19),
-    new DestinationCard(316, 15, 20, 20),
-    new DestinationCard(317, 17, 1, 9),
-    new DestinationCard(318, 17, 5, 7),
-    new DestinationCard(319, 17, 19, 13),
-    new DestinationCard(320, 20, 1, 6),
-    new DestinationCard(321, 25, 18, 17),
-    new DestinationCard(322, 25, 23, 11),
-    new DestinationCard(323, 30, 1, 17),
-    new DestinationCard(324, 29, 18, 8),
-    new DestinationCard(325, 29, 21, 8),
-    new DestinationCard(326, 32, 15, 9),
-    new DestinationCard(327, 32, 20, 20),
-    new DestinationCard(328, 33, 16, 10),
-    new DestinationCard(329, 34, 17, 20),
-    new DestinationCard(330, 34, 25, 2),
-    new DestinationCard(331, 34, 31, 13),
-    new DestinationCard(332, 36, 11, 12),
-    new DestinationCard(333, 36, 14, 11),
-    new DestinationCard(334, 36, 22, 6), // Winnipeg	Omaha	6
-];
-function setupDestinationCardDiv(cardDiv, cardUniqueId, expansion1910) {
-    var destinations = DESTINATIONS.filter(function (d) { return expansion1910 > 0 ? d.id >= 200 : d.id < 200; });
-    var destination = destinations.find(function (d) { return d.id == cardUniqueId; });
-    cardDiv.title = dojo.string.substitute(_('${from} to ${to}'), { from: CITIES_NAMES[destination.from], to: CITIES_NAMES[destination.to] }) + ", " + destination.points + " " + _('points');
+function getDestinations(map) {
+    var destinations = [];
+    Object.entries(map.destinations).forEach(function (typeEntry) { return Object.entries(typeEntry[1]).forEach(function (destinationEntry) {
+        return destinations.push(new DestinationCard(Number(typeEntry[0]), Number(destinationEntry[0]), destinationEntry[1].from, destinationEntry[1].to, destinationEntry[1].points));
+    }); });
+    return destinations;
 }
-function getBackgroundInlineStyleForDestination(destination) {
-    var file;
-    switch (destination.type) {
-        case 1:
-            file = 'destinations.jpg';
-            break;
-        case 2:
-            file = 'destinations-1910.jpg';
-            break;
-        case 3:
-            file = 'destinations-mega.jpg';
-            break;
-    }
-    var imagePosition = destination.type_arg - 1;
+function setupDestinationCardDiv(game, cardDiv, cardUniqueId) {
+    var destinations = getDestinations(game.getMap());
+    var destination = destinations.find(function (d) { return d.uniqueId == cardUniqueId; });
+    cardDiv.title = "".concat(dojo.string.substitute(_('${from} to ${to}'), {
+        from: game.getCityName(destination.from),
+        to: game.getCityName(destination.to),
+    }), ", ").concat(destination.points, " ").concat(_('points'));
+}
+function getBackgroundInlineStyleForDestination(map, destination) {
+    var setTypeArg = Math.floor(destination.type_arg / 100);
+    var file = "destinations-".concat(destination.type, "-").concat(setTypeArg, ".jpg");
+    var imagePosition = (destination.type_arg % 100) - 1;
     var row = Math.floor(imagePosition / IMAGE_ITEMS_PER_ROW);
     var xBackgroundPercent = (imagePosition - (row * IMAGE_ITEMS_PER_ROW)) * 100;
     var yBackgroundPercent = row * 100;
-    return "background-image: url('" + g_gamethemeurl + "img/" + file + "'); background-position: -" + xBackgroundPercent + "% -" + yBackgroundPercent + "%;";
+    return "background-image: url('".concat(g_gamethemeurl, "img/").concat(map.code, "/").concat(file, "'); background-position: -").concat(xBackgroundPercent, "% -").concat(yBackgroundPercent, "%;");
 }
 /**
  * Animation with highlighted wagons.
@@ -248,7 +101,7 @@ var WagonsAnimation = /** @class */ (function () {
         this.shadowDiv = document.getElementById('map-destination-highlight-shadow');
         destinationRoutes === null || destinationRoutes === void 0 ? void 0 : destinationRoutes.forEach(function (route) {
             var _a;
-            return (_a = _this.wagons).push.apply(_a, Array.from(document.querySelectorAll("[id^=\"wagon-route" + route.id + "-space\"]")));
+            return (_a = _this.wagons).push.apply(_a, Array.from(document.querySelectorAll("[id^=\"wagon-route".concat(route.id, "-space\"]"))));
         });
     }
     WagonsAnimation.prototype.setWagonsVisibility = function (visible) {
@@ -293,13 +146,13 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
         return new Promise(function (resolve) {
             var _a, _b;
             var fromBR = document.getElementById(_this.fromId).getBoundingClientRect();
-            dojo.place("\n            <div id=\"animated-destination-card-" + _this.destination.id + "\" class=\"destination-card\" style=\"" + _this.getCardPosition(_this.destination) + getBackgroundInlineStyleForDestination(_this.destination) + "\"></div>\n            ", 'map');
-            var card = document.getElementById("animated-destination-card-" + _this.destination.id);
+            dojo.place("\n            <div id=\"animated-destination-card-".concat(_this.destination.id, "\" class=\"destination-card\" style=\"").concat(_this.getCardPosition(_this.destination)).concat(getBackgroundInlineStyleForDestination(_this.game.getMap(), _this.destination), "\"></div>\n            "), 'map');
+            var card = document.getElementById("animated-destination-card-".concat(_this.destination.id));
             (_b = (_a = _this.actions).start) === null || _b === void 0 ? void 0 : _b.call(_a, _this.destination);
             var cardBR = card.getBoundingClientRect();
             var x = (fromBR.x - cardBR.x) / _this.zoom;
             var y = (fromBR.y - cardBR.y) / _this.zoom;
-            card.style.transform = "translate(" + x + "px, " + y + "px) scale(" + _this.initialSize + ")";
+            card.style.transform = "translate(".concat(x, "px, ").concat(y, "px) scale(").concat(_this.initialSize, ")");
             _this.setWagonsVisibility(true);
             _this.game.setSelectedDestination(_this.destination, true);
             setTimeout(function () {
@@ -319,7 +172,7 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
                 var toBR = document.getElementById(_this.toId).getBoundingClientRect();
                 var x = (toBR.x - cardBR.x) / _this.zoom;
                 var y = (toBR.y - cardBR.y) / _this.zoom;
-                card.style.transform = "translate(" + x + "px, " + y + "px) scale(" + _this.initialSize + ")";
+                card.style.transform = "translate(".concat(x, "px, ").concat(y, "px) scale(").concat(_this.initialSize, ")");
                 setTimeout(function () { return _this.endAnimation(resolve, card); }, 500);
             }, 500);
         }, 750);
@@ -334,10 +187,11 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
         card.parentElement.removeChild(card);
     };
     DestinationCompleteAnimation.prototype.getCardPosition = function (destination) {
-        var positions = [destination.from, destination.to].map(function (cityId) { return CITIES.find(function (city) { return city.id == cityId; }); });
+        var _this = this;
+        var positions = [destination.from, destination.to].map(function (cityId) { return _this.game.getMap().cities[cityId]; });
         var x = (positions[0].x + positions[1].x) / 2;
         var y = (positions[0].y + positions[1].y) / 2;
-        return "left: " + (x - CARD_WIDTH / 2) + "px; top: " + (y - CARD_HEIGHT / 2) + "px;";
+        return "left: ".concat(x - CARD_WIDTH / 2, "px; top: ").concat(y - CARD_HEIGHT / 2, "px;");
     };
     return DestinationCompleteAnimation;
 }(WagonsAnimation));
@@ -357,7 +211,7 @@ var LongestPathAnimation = /** @class */ (function (_super) {
     LongestPathAnimation.prototype.animate = function () {
         var _this = this;
         return new Promise(function (resolve) {
-            dojo.place("\n            <div id=\"longest-path-animation\" style=\"color: #" + _this.playerColor + ";" + _this.getCardPosition() + "\">" + _this.length + "</div>\n            ", 'map');
+            dojo.place("\n            <div id=\"longest-path-animation\" style=\"color: #".concat(_this.playerColor, ";").concat(_this.getCardPosition(), "\">").concat(_this.length, "</div>\n            "), 'map');
             _this.setWagonsVisibility(true);
             setTimeout(function () { return _this.endAnimation(resolve); }, 1900);
         });
@@ -375,608 +229,15 @@ var LongestPathAnimation = /** @class */ (function (_super) {
         var x = 100;
         var y = 100;
         if (this.routes.length) {
-            var positions = [this.routes[0].from, this.routes[this.routes.length - 1].to].map(function (cityId) { return CITIES.find(function (city) { return city.id == cityId; }); });
+            var map_1 = this.game.getMap();
+            var positions = [this.routes[0].from, this.routes[this.routes.length - 1].to].map(function (cityId) { return map_1.cities[cityId]; });
             x = (positions[0].x + positions[1].x) / 2;
             y = (positions[0].y + positions[1].y) / 2;
         }
-        return "left: " + x + "px; top: " + y + "px;";
+        return "left: ".concat(x, "px; top: ").concat(y, "px;");
     };
     return LongestPathAnimation;
 }(WagonsAnimation));
-var City = /** @class */ (function () {
-    function City(id, x, y) {
-        this.id = id;
-        this.x = x;
-        this.y = y;
-    }
-    return City;
-}());
-var BigCity = /** @class */ (function () {
-    function BigCity(x, y, width) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-    }
-    return BigCity;
-}());
-var RouteSpace = /** @class */ (function () {
-    function RouteSpace(x, y, angle, top) {
-        if (top === void 0) { top = false; }
-        this.x = x;
-        this.y = y;
-        this.angle = angle;
-        this.top = top;
-    }
-    return RouteSpace;
-}());
-var Route = /** @class */ (function () {
-    function Route(id, from, to, spaces, color) {
-        this.id = id;
-        this.from = from;
-        this.to = to;
-        this.spaces = spaces;
-        this.color = color;
-    }
-    return Route;
-}());
-var CITIES = [
-    new City(1, 1395, 726),
-    new City(2, 1701, 197),
-    new City(3, 378, 99),
-    new City(4, 1564, 739),
-    new City(5, 1214, 442),
-    new City(6, 973, 908),
-    new City(7, 666, 622),
-    new City(8, 991, 330),
-    new City(9, 644, 950),
-    new City(10, 559, 340),
-    new City(11, 1049, 980),
-    new City(12, 973, 590),
-    new City(13, 327, 764),
-    new City(14, 1101, 755),
-    new City(15, 209, 871),
-    new City(16, 1624, 1025),
-    new City(17, 1571, 90),
-    new City(18, 1302, 663),
-    new City(19, 1223, 966),
-    new City(20, 1606, 333),
-    new City(21, 937, 747),
-    new City(22, 937, 497),
-    new City(23, 428, 884),
-    new City(24, 1452, 414),
-    new City(25, 94, 322),
-    new City(26, 1514, 619),
-    new City(27, 1133, 592),
-    new City(28, 430, 564),
-    new City(29, 1223, 209),
-    new City(30, 69, 682),
-    new City(31, 653, 787),
-    new City(32, 133, 230),
-    new City(33, 1421, 251),
-    new City(34, 140, 132),
-    new City(35, 1619, 498),
-    new City(36, 786, 119), // Winnipeg
-];
-var BIG_CITIES = [
-    new BigCity(1226, 479, 70),
-    new BigCity(1007, 903, 64),
-    new BigCity(1046, 1022, 79),
-    new BigCity(86, 904, 107),
-    new BigCity(1633, 1066, 62),
-    new BigCity(1642, 359, 93),
-    new BigCity(38, 234, 69), // Seattle
-];
-var ROUTES = [
-    new Route(1, 1, 4, [
-        new RouteSpace(1413, 729, 3),
-        new RouteSpace(1479, 731, 3),
-    ], GRAY),
-    new Route(2, 1, 16, [
-        new RouteSpace(1385, 763, 51),
-        new RouteSpace(1427, 814, 51),
-        new RouteSpace(1468, 865, 51),
-        new RouteSpace(1508, 915, 51),
-        new RouteSpace(1549, 965, 51, true),
-    ], BLUE),
-    new Route(3, 1, 18, [
-        new RouteSpace(1306, 673, 35),
-    ], GRAY),
-    new Route(4, 1, 19, [
-        new RouteSpace(1198, 889, 291),
-        new RouteSpace(1227, 831, 303),
-        new RouteSpace(1266, 779, 310),
-        new RouteSpace(1312, 732, 319),
-    ], YELLOW),
-    new Route(5, 1, 19, [
-        new RouteSpace(1214, 906, 291),
-        new RouteSpace(1245, 847, 303),
-        new RouteSpace(1284, 795, 310),
-        new RouteSpace(1329, 749, 319),
-    ], ORANGE),
-    new Route(6, 1, 26, [
-        new RouteSpace(1385, 669, -41),
-        new RouteSpace(1434, 627, -41),
-    ], GRAY),
-    new Route(7, 1, 26, [
-        new RouteSpace(1449, 643, -41),
-        new RouteSpace(1400, 687, -41),
-    ], GRAY),
-    new Route(8, 2, 17, [
-        new RouteSpace(1583, 98, 40),
-        new RouteSpace(1633, 139, 40),
-    ], GRAY),
-    new Route(9, 2, 17, [
-        new RouteSpace(1568, 115, 40),
-        new RouteSpace(1618, 156, 40),
-    ], GRAY),
-    new Route(10, 2, 20, [
-        new RouteSpace(1630, 220, 122),
-        new RouteSpace(1596, 275, 122),
-    ], YELLOW),
-    new Route(11, 2, 20, [
-        new RouteSpace(1649, 232, 122),
-        new RouteSpace(1615, 287, 122),
-    ], RED),
-    new Route(100, 3, 10, [
-        new RouteSpace(377, 127, 50),
-        new RouteSpace(420, 178, 50),
-        new RouteSpace(461, 227, 50),
-        new RouteSpace(503, 277, 50),
-    ], GRAY),
-    new Route(12, 3, 32, [
-        new RouteSpace(154, 211, 0),
-        new RouteSpace(220, 207, -7),
-        new RouteSpace(281, 183, -37),
-        new RouteSpace(324, 131, -63),
-    ], GRAY),
-    new Route(13, 3, 34, [
-        new RouteSpace(159, 103, -6),
-        new RouteSpace(224, 95, -6),
-        new RouteSpace(290, 88, -6),
-    ], GRAY),
-    new Route(14, 3, 36, [
-        new RouteSpace(391, 66, -23),
-        new RouteSpace(453, 47, -11),
-        new RouteSpace(518, 37, -2),
-        new RouteSpace(585, 38, 4),
-        new RouteSpace(650, 51, 15),
-        new RouteSpace(710, 73, 25),
-    ], WHITE),
-    new Route(15, 4, 16, [
-        new RouteSpace(1530, 768, 87),
-        new RouteSpace(1535, 834, 82),
-        new RouteSpace(1551, 899, 73),
-        new RouteSpace(1577, 958, 59),
-    ], PINK),
-    new Route(16, 4, 26, [
-        new RouteSpace(1514, 634, 35),
-        new RouteSpace(1544, 678, -65),
-    ], GRAY),
-    new Route(17, 5, 8, [
-        new RouteSpace(994, 344, 28),
-        new RouteSpace(1054, 371, 21),
-        new RouteSpace(1117, 390, 14),
-    ], RED),
-    new Route(18, 5, 22, [
-        new RouteSpace(945, 461, -34, true),
-        new RouteSpace(998, 425, -34),
-        new RouteSpace(1062, 410, 8),
-        new RouteSpace(1124, 419, 8),
-    ], BLUE),
-    new Route(19, 5, 24, [
-        new RouteSpace(1221, 389, -14),
-        new RouteSpace(1285, 375, -9),
-        new RouteSpace(1351, 372, 3),
-    ], ORANGE),
-    new Route(20, 5, 24, [
-        new RouteSpace(1229, 412, -14),
-        new RouteSpace(1294, 398, -9),
-        new RouteSpace(1358, 395, 3),
-    ], BLACK),
-    new Route(21, 5, 27, [
-        new RouteSpace(1101, 519, -57),
-        new RouteSpace(1135, 466, -57),
-    ], GREEN),
-    new Route(22, 5, 27, [
-        new RouteSpace(1121, 529, -57),
-        new RouteSpace(1155, 475, -57),
-    ], WHITE),
-    new Route(23, 5, 33, [
-        new RouteSpace(1186, 371, -48),
-        new RouteSpace(1236, 328, -35),
-        new RouteSpace(1296, 299, -17),
-        new RouteSpace(1354, 269, -39, true),
-    ], WHITE),
-    new Route(24, 6, 9, [
-        new RouteSpace(691, 933, 351),
-        new RouteSpace(755, 922, 351),
-        new RouteSpace(819, 913, 351),
-        new RouteSpace(884, 904, 351),
-    ], RED),
-    new Route(25, 6, 11, [
-        new RouteSpace(964, 930, 49, true),
-    ], GRAY),
-    new Route(26, 6, 11, [
-        new RouteSpace(982, 915, 49),
-    ], GRAY),
-    new Route(27, 6, 14, [
-        new RouteSpace(986, 830, -55),
-        new RouteSpace(1024, 777, -55),
-    ], GRAY),
-    new Route(28, 6, 21, [
-        new RouteSpace(911, 777, -97),
-        new RouteSpace(919, 841, -97),
-    ], GRAY),
-    new Route(29, 6, 21, [
-        new RouteSpace(933, 775, -97),
-        new RouteSpace(941, 839, -97),
-    ], GRAY),
-    new Route(30, 7, 10, [
-        new RouteSpace(545, 369, 67),
-        new RouteSpace(568, 428, 67),
-        new RouteSpace(593, 488, 67),
-        new RouteSpace(617, 549, 67),
-    ], GREEN),
-    new Route(31, 7, 12, [
-        new RouteSpace(692, 605, 5),
-        new RouteSpace(758, 606, -5),
-        new RouteSpace(822, 596, -11),
-        new RouteSpace(886, 576, -23),
-    ], BLACK),
-    new Route(32, 7, 12, [
-        new RouteSpace(692, 629, 5),
-        new RouteSpace(758, 630, -5),
-        new RouteSpace(822, 620, -11),
-        new RouteSpace(886, 600, -23),
-    ], ORANGE),
-    new Route(33, 7, 21, [
-        new RouteSpace(662, 658, 224),
-        new RouteSpace(717, 696, 205),
-        new RouteSpace(779, 714, 189),
-        new RouteSpace(844, 720, 184),
-    ], RED),
-    new Route(34, 7, 22, [
-        new RouteSpace(668, 566, -38),
-        new RouteSpace(723, 532, -26),
-        new RouteSpace(784, 508, -16),
-        new RouteSpace(848, 493, -12),
-    ], PINK),
-    new Route(35, 7, 23, [
-        new RouteSpace(411, 818, -68),
-        new RouteSpace(439, 762, -61),
-        new RouteSpace(473, 706, -55),
-        new RouteSpace(516, 658, -39),
-        new RouteSpace(574, 624, -20),
-    ], WHITE),
-    new Route(36, 7, 28, [
-        new RouteSpace(445, 543, 11),
-        new RouteSpace(510, 556, 11),
-        new RouteSpace(571, 568, 11),
-    ], RED),
-    new Route(37, 7, 28, [
-        new RouteSpace(441, 565, 11),
-        new RouteSpace(506, 578, 11),
-        new RouteSpace(567, 590, 11),
-    ], YELLOW),
-    new Route(99, 7, 31, [
-        new RouteSpace(619, 657, 273),
-        new RouteSpace(616, 721, 273),
-    ], GRAY),
-    new Route(38, 8, 10, [
-        new RouteSpace(576, 320, -1),
-        new RouteSpace(642, 320, -1),
-        new RouteSpace(708, 319, -1),
-        new RouteSpace(773, 318, -1),
-        new RouteSpace(839, 317, -1),
-        new RouteSpace(905, 316, -1),
-    ], ORANGE),
-    new Route(39, 8, 22, [
-        new RouteSpace(925, 363, -68),
-        new RouteSpace(901, 423, -68),
-    ], GRAY),
-    new Route(40, 8, 22, [
-        new RouteSpace(945, 370, -68),
-        new RouteSpace(921, 431, -68),
-    ], GRAY),
-    new Route(41, 8, 29, [
-        new RouteSpace(1016, 269, -23),
-        new RouteSpace(1076, 245, -23),
-        new RouteSpace(1136, 219, -23),
-    ], GRAY),
-    new Route(42, 8, 33, [
-        new RouteSpace(1004, 303, -8),
-        new RouteSpace(1068, 292, -8),
-        new RouteSpace(1133, 280, -8),
-        new RouteSpace(1198, 270, -8),
-        new RouteSpace(1261, 259, -8),
-        new RouteSpace(1327, 247, -8),
-    ], PINK),
-    new Route(43, 8, 36, [
-        new RouteSpace(784, 140, 44),
-        new RouteSpace(832, 185, 44),
-        new RouteSpace(878, 230, 44),
-        new RouteSpace(925, 276, 44),
-    ], BLACK),
-    new Route(44, 9, 11, [
-        new RouteSpace(647, 962, 30),
-        new RouteSpace(707, 989, 18),
-        new RouteSpace(770, 1004, 8),
-        new RouteSpace(836, 1010, 2),
-        new RouteSpace(902, 1006, -10),
-        new RouteSpace(964, 989, -19),
-    ], GREEN),
-    new Route(45, 9, 15, [
-        new RouteSpace(221, 886, 36),
-        new RouteSpace(277, 919, 24),
-        new RouteSpace(340, 941, 15),
-        new RouteSpace(405, 954, 9),
-        new RouteSpace(470, 956, -4),
-        new RouteSpace(534, 946, -14, true),
-    ], BLACK),
-    new Route(46, 9, 21, [
-        new RouteSpace(656, 913, 342),
-        new RouteSpace(716, 889, 334),
-        new RouteSpace(775, 856, 326),
-        new RouteSpace(825, 814, 315),
-        new RouteSpace(867, 764, 305),
-    ], YELLOW),
-    new Route(47, 9, 23, [
-        new RouteSpace(562, 917, 16),
-        new RouteSpace(499, 899, 16),
-        new RouteSpace(437, 881, 16),
-    ], GRAY),
-    new Route(48, 9, 31, [
-        new RouteSpace(609, 883, 273),
-        new RouteSpace(612, 816, 273),
-    ], GRAY),
-    new Route(49, 10, 22, [
-        new RouteSpace(593, 357, 22),
-        new RouteSpace(653, 381, 22),
-        new RouteSpace(714, 406, 22),
-        new RouteSpace(776, 431, 22),
-        new RouteSpace(835, 456, 22),
-    ], RED),
-    new Route(50, 10, 28, [
-        new RouteSpace(493, 371, -59),
-        new RouteSpace(461, 426, -59),
-        new RouteSpace(426, 483, -59),
-    ], PINK),
-    new Route(51, 10, 32, [
-        new RouteSpace(149, 245, 12),
-        new RouteSpace(213, 260, 12),
-        new RouteSpace(276, 274, 12),
-        new RouteSpace(340, 289, 12),
-        new RouteSpace(403, 303, 12),
-        new RouteSpace(467, 317, 12),
-    ], YELLOW),
-    new Route(52, 10, 36, [
-        new RouteSpace(569, 277, -47),
-        new RouteSpace(615, 230, -47),
-        new RouteSpace(661, 185, -47),
-        new RouteSpace(706, 138, -47),
-    ], BLUE),
-    new Route(53, 11, 19, [
-        new RouteSpace(1126, 943, 352),
-        new RouteSpace(1062, 953, 352),
-    ], GRAY),
-    new Route(54, 12, 21, [
-        new RouteSpace(924, 618, -74),
-        new RouteSpace(906, 680, -74),
-    ], GRAY),
-    new Route(55, 12, 21, [
-        new RouteSpace(945, 624, -74),
-        new RouteSpace(928, 686, -74),
-    ], GRAY),
-    new Route(56, 12, 22, [
-        new RouteSpace(913, 531, -115, true),
-    ], GRAY),
-    new Route(57, 12, 22, [
-        new RouteSpace(933, 521, -115),
-    ], GRAY),
-    new Route(58, 12, 27, [
-        new RouteSpace(984, 558, -1),
-        new RouteSpace(1049, 556, -1),
-    ], BLUE),
-    new Route(59, 12, 27, [
-        new RouteSpace(984, 581, -1),
-        new RouteSpace(1049, 579, -1),
-    ], PINK),
-    new Route(60, 13, 15, [
-        new RouteSpace(191, 796, -65),
-        new RouteSpace(242, 754, -12),
-    ], GRAY),
-    new Route(61, 13, 28, [
-        new RouteSpace(334, 719, -45),
-        new RouteSpace(370, 665, -67),
-        new RouteSpace(388, 601, -81),
-    ], ORANGE),
-    new Route(62, 14, 18, [
-        new RouteSpace(1111, 731, -4),
-        new RouteSpace(1177, 714, -24),
-        new RouteSpace(1233, 678, -41),
-    ], WHITE),
-    new Route(63, 14, 19, [
-        new RouteSpace(1090, 779, 63),
-        new RouteSpace(1119, 836, 63),
-        new RouteSpace(1151, 894, 63),
-    ], GREEN),
-    new Route(64, 14, 21, [
-        new RouteSpace(954, 730, -2),
-        new RouteSpace(1017, 728, -2),
-    ], GRAY),
-    new Route(65, 14, 27, [
-        new RouteSpace(1087, 621, -75),
-        new RouteSpace(1072, 685, -75),
-    ], GRAY),
-    new Route(66, 15, 23, [
-        new RouteSpace(220, 837, -8),
-        new RouteSpace(285, 834, 1),
-        new RouteSpace(350, 841, 13),
-    ], GRAY),
-    new Route(67, 15, 30, [
-        new RouteSpace(47, 717, -113, true),
-        new RouteSpace(78, 776, -125, true),
-        new RouteSpace(120, 826, -134, true),
-    ], YELLOW),
-    new Route(68, 15, 30, [
-        new RouteSpace(66, 705, -113),
-        new RouteSpace(98, 762, -125),
-        new RouteSpace(139, 812, -134),
-    ], PINK),
-    new Route(69, 16, 19, [
-        new RouteSpace(1537, 993, 49),
-        new RouteSpace(1492, 946, 40),
-        new RouteSpace(1437, 910, 28),
-        new RouteSpace(1374, 894, 0),
-        new RouteSpace(1308, 902, 345),
-        new RouteSpace(1248, 929, 330),
-    ], RED),
-    new Route(70, 17, 20, [
-        new RouteSpace(1528, 134, 80),
-        new RouteSpace(1538, 199, 80),
-        new RouteSpace(1549, 262, 80),
-    ], BLUE),
-    new Route(71, 17, 29, [
-        new RouteSpace(1227, 155, -40),
-        new RouteSpace(1281, 119, -28),
-        new RouteSpace(1340, 93, -19),
-        new RouteSpace(1405, 75, -13),
-        new RouteSpace(1470, 68, 0),
-    ], BLACK),
-    new Route(72, 17, 33, [
-        new RouteSpace(1389, 184, -59),
-        new RouteSpace(1431, 133, -42),
-        new RouteSpace(1487, 97, -23),
-    ], GRAY),
-    new Route(73, 18, 24, [
-        new RouteSpace(1259, 603, -62),
-        new RouteSpace(1295, 547, -51),
-        new RouteSpace(1344, 502, -33),
-        new RouteSpace(1391, 458, -56),
-    ], YELLOW),
-    new Route(74, 18, 26, [
-        new RouteSpace(1305, 613, -32),
-        new RouteSpace(1365, 588, -13),
-        new RouteSpace(1431, 582, 4),
-    ], BLACK),
-    new Route(75, 18, 27, [
-        new RouteSpace(1141, 613, 17),
-        new RouteSpace(1203, 633, 17),
-    ], GRAY),
-    new Route(76, 20, 24, [
-        new RouteSpace(1455, 356, -31),
-        new RouteSpace(1510, 322, -31),
-    ], WHITE),
-    new Route(77, 20, 24, [
-        new RouteSpace(1467, 375, -31),
-        new RouteSpace(1522, 342, -31),
-    ], GREEN),
-    new Route(78, 20, 35, [
-        new RouteSpace(1568, 366, 87),
-        new RouteSpace(1571, 432, 87),
-    ], ORANGE),
-    new Route(79, 20, 35, [
-        new RouteSpace(1590, 364, 87),
-        new RouteSpace(1593, 430, 87),
-    ], BLACK),
-    new Route(80, 21, 31, [
-        new RouteSpace(670, 765, -7),
-        new RouteSpace(734, 759, -7),
-        new RouteSpace(800, 751, -7),
-    ], BLUE),
-    new Route(81, 23, 31, [
-        new RouteSpace(449, 839, -23),
-        new RouteSpace(511, 812, -23),
-        new RouteSpace(569, 785, -23),
-    ], GRAY),
-    new Route(82, 24, 26, [
-        new RouteSpace(1437, 467, 77),
-        new RouteSpace(1452, 532, 77),
-    ], GRAY),
-    new Route(83, 24, 27, [
-        new RouteSpace(1141, 564, -30),
-        new RouteSpace(1198, 531, -30),
-        new RouteSpace(1254, 498, -30),
-        new RouteSpace(1311, 466, -30),
-        new RouteSpace(1368, 434, -30),
-    ], GREEN),
-    new Route(84, 24, 33, [
-        new RouteSpace(1399, 277, -93),
-        new RouteSpace(1403, 344, -93),
-    ], GRAY),
-    new Route(85, 24, 35, [
-        new RouteSpace(1470, 428, 28),
-        new RouteSpace(1528, 459, 28),
-    ], GRAY),
-    new Route(86, 25, 28, [
-        new RouteSpace(111, 315, 12),
-        new RouteSpace(173, 333, 20),
-        new RouteSpace(234, 363, 33),
-        new RouteSpace(287, 401, 40),
-        new RouteSpace(334, 446, 49),
-        new RouteSpace(371, 499, 61),
-    ], BLUE),
-    new Route(87, 25, 30, [
-        new RouteSpace(28, 351, 111),
-        new RouteSpace(8, 414, 102),
-        new RouteSpace(1, 479, 93, true),
-        new RouteSpace(2, 544, 86, true),
-        new RouteSpace(14, 610, 73, true),
-    ], GREEN),
-    new Route(88, 25, 30, [
-        new RouteSpace(51, 354, 111),
-        new RouteSpace(31, 417, 102),
-        new RouteSpace(24, 482, 93),
-        new RouteSpace(25, 547, 86),
-        new RouteSpace(37, 613, 73),
-    ], PINK),
-    new Route(89, 25, 32, [
-        new RouteSpace(67, 254, 112),
-    ], GRAY),
-    new Route(90, 25, 32, [
-        new RouteSpace(88, 262, 112),
-    ], GRAY),
-    new Route(91, 26, 35, [
-        new RouteSpace(1502, 561, -50),
-        new RouteSpace(1545, 511, -50),
-    ], GRAY),
-    new Route(92, 26, 35, [
-        new RouteSpace(1519, 575, -50),
-        new RouteSpace(1561, 525, -50),
-    ], GRAY),
-    new Route(93, 28, 30, [
-        new RouteSpace(92, 633, -18),
-        new RouteSpace(153, 613, -18),
-        new RouteSpace(214, 593, -18),
-        new RouteSpace(274, 572, -18),
-        new RouteSpace(336, 553, -18),
-    ], ORANGE),
-    new Route(94, 28, 30, [
-        new RouteSpace(99, 654, -18),
-        new RouteSpace(160, 634, -18),
-        new RouteSpace(221, 614, -18),
-        new RouteSpace(282, 593, -18),
-        new RouteSpace(343, 573, -18),
-    ], WHITE),
-    new Route(95, 29, 33, [
-        new RouteSpace(1245, 201, 11),
-        new RouteSpace(1309, 215, 11),
-    ], GRAY),
-    new Route(96, 29, 36, [
-        new RouteSpace(816, 105, 12),
-        new RouteSpace(880, 118, 12),
-        new RouteSpace(944, 131, 12),
-        new RouteSpace(1007, 145, 12),
-        new RouteSpace(1070, 159, 12),
-        new RouteSpace(1134, 171, 12),
-    ], GRAY),
-    new Route(97, 32, 34, [
-        new RouteSpace(89, 165, 89),
-    ], GRAY),
-    new Route(98, 32, 34, [
-        new RouteSpace(112, 165, 89),
-    ], GRAY),
-];
 var DRAG_AUTO_ZOOM_DELAY = 2000;
 var SIDES = ['left', 'right', 'top', 'bottom'];
 var CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
@@ -991,7 +252,7 @@ var LEFT_RATIO = (PLAYER_WIDTH + MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT);
  * Manager for in-map zoom.
  */
 var InMapZoomManager = /** @class */ (function () {
-    function InMapZoomManager() {
+    function InMapZoomManager(map) {
         var _this = this;
         this.pos = { dragging: false, top: 0, left: 0, x: 0, y: 0 }; // for map drag (if zoomed)
         this.zoomed = false; // indicates if in-map zoom is active
@@ -1106,39 +367,43 @@ var TtrMap = /** @class */ (function () {
     /**
      * Place map corner illustration and borders, cities, routes, and bind events.
      */
-    function TtrMap(game, players, claimedRoutes, expansion) {
+    function TtrMap(game, map, players, claimedRoutes, illustration) {
         this.game = game;
+        this.map = map;
         this.players = players;
         this.dragOverlay = null;
         this.crosshairTarget = null;
         this.crosshairHalfSize = 0;
         this.crosshairShift = 0;
         // map border
-        dojo.place("\n            <div class=\"illustration\" data-expansion=\"" + expansion + "\"></div>\n            <div id=\"cities\"></div>\n            <div id=\"route-spaces\"></div>\n            <div id=\"train-cars\"></div>\n        ", 'map', 'first');
-        SIDES.forEach(function (side) { return dojo.place("<div class=\"side " + side + "\"></div>", 'map-and-borders'); });
-        CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner " + corner + "\"></div>", 'map-and-borders'); });
-        if (expansion == 3) {
-            BIG_CITIES.forEach(function (bigCity) { return dojo.place("<div class=\"big-city\" style=\"left: " + bigCity.x + "px; top: " + bigCity.y + "px; width: " + bigCity.width + "px;\"></div>", 'cities'); });
-        }
-        CITIES.forEach(function (city) {
-            return dojo.place("<div id=\"city" + city.id + "\" class=\"city\" \n                style=\"transform: translate(" + city.x + "px, " + city.y + "px)\"\n                title=\"" + CITIES_NAMES[city.id] + "\"\n            ></div>", 'cities');
+        dojo.place("\n            <div class=\"illustration\" data-illustration=\"".concat(illustration, "\"></div>\n            <div id=\"cities\"></div>\n            <div id=\"route-spaces\"></div>\n            <div id=\"train-cars\"></div>\n        "), 'map', 'first');
+        SIDES.forEach(function (side) { return dojo.place("<div class=\"side ".concat(side, "\"></div>"), 'map-and-borders'); });
+        CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner ".concat(corner, "\"></div>"), 'map-and-borders'); });
+        map.bigCities.forEach(function (bigCity) { return dojo.place("<div class=\"big-city\" style=\"left: ".concat(bigCity.x, "px; top: ").concat(bigCity.y, "px; width: ").concat(bigCity.width, "px;\"></div>"), 'cities'); });
+        Object.entries(map.cities).forEach(function (entry) {
+            var id = Number(entry[0]);
+            var city = entry[1];
+            dojo.place("<div id=\"city".concat(id, "\" class=\"city\" \n                style=\"transform: translate(").concat(city.x, "px, ").concat(city.y, "px)\"\n                title=\"").concat(game.getCityName(id), "\"\n            ></div>"), 'cities');
         });
         this.createRouteSpaces('route-spaces');
         this.setClaimedRoutes(claimedRoutes, null);
         this.resizedDiv = document.getElementById('resized');
         this.mapDiv = document.getElementById('map');
-        this.inMapZoomManager = new InMapZoomManager();
-        this.game.setTooltipToClass("train-car-deck-hidden-pile-tooltip", "<strong>" + _('Train cars deck') + "</strong><br><br>\n        " + _('Click here to pick one or two hidden train car cards'));
-        this.game.setTooltip("destination-deck-hidden-pile", "<strong>" + _('Destinations deck') + "</strong><br><br>\n        " + _('Click here to take three new destination cards (keep at least one)'));
+        this.inMapZoomManager = new InMapZoomManager(map);
+        this.game.setTooltipToClass("train-car-deck-hidden-pile-tooltip", "<strong>".concat(_('Train cars deck'), "</strong><br><br>\n        ").concat(_('Click here to pick one or two hidden train car cards')));
+        this.game.setTooltip("destination-deck-hidden-pile", "<strong>".concat(_('Destinations deck'), "</strong><br><br>\n        ").concat(_('Click here to take three new destination cards (keep at least one)')));
     }
     TtrMap.prototype.createRouteSpaces = function (destination, shiftX, shiftY) {
         var _this = this;
         if (shiftX === void 0) { shiftX = 0; }
         if (shiftY === void 0) { shiftY = 0; }
-        ROUTES.forEach(function (route) {
+        Object.values(this.map.routes).forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"" + destination + "-route" + route.id + "-space" + spaceIndex + "\" class=\"route-space\" \n                    style=\"transform: translate(" + (space.x + shiftX) + "px, " + (space.y + shiftY) + "px) rotate(" + space.angle + "deg)\"\n                    title=\"" + dojo.string.substitute(_('${from} to ${to}'), { from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to] }) + ", " + route.spaces.length + " " + getColor(route.color, 'route') + "\"\n                    data-route=\"" + route.id + "\" data-color=\"" + route.color + "\"\n                ></div>", destination);
-                var spaceDiv = document.getElementById(destination + "-route" + route.id + "-space" + spaceIndex);
+                dojo.place("<div id=\"".concat(destination, "-route").concat(route.id, "-space").concat(spaceIndex, "\" class=\"route-space\" \n                    style=\"transform: translate(").concat(space.x + shiftX, "px, ").concat(space.y + shiftY, "px) rotate(").concat(space.angle, "deg)\"\n                    title=\"").concat(dojo.string.substitute(_('${from} to ${to}'), {
+                    from: _this.game.getCityName(route.from),
+                    to: _this.game.getCityName(route.to),
+                }), ", ").concat(route.spaces.length, " ").concat(getColor(route.color, 'route'), "\"\n                    data-route=\"").concat(route.id, "\" data-color=\"").concat(route.color, "\"\n                ></div>"), destination);
+                var spaceDiv = document.getElementById("".concat(destination, "-route").concat(route.id, "-space").concat(spaceIndex));
                 if (destination == 'route-spaces') {
                     _this.setSpaceClickEvents(spaceDiv, route);
                 }
@@ -1155,7 +420,7 @@ var TtrMap = /** @class */ (function () {
         var cardsColor = Number(this.mapDiv.dataset.dragColor);
         var overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            var otherRoute = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+            var otherRoute = Object.values(this.map.routes).find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -1181,7 +446,7 @@ var TtrMap = /** @class */ (function () {
         mapDiv.dataset.dragColor = '';
         var overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            var otherRoute = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+            var otherRoute = Object.values(this.map.routes).find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -1214,9 +479,10 @@ var TtrMap = /** @class */ (function () {
      * Highlight selectable route spaces.
      */
     TtrMap.prototype.setSelectableRoutes = function (selectable, possibleRoutes) {
+        var _this = this;
         dojo.query('.route-space').removeClass('selectable');
         if (selectable) {
-            possibleRoutes.forEach(function (route) { return ROUTES.find(function (r) { return r.id == route.id; }).spaces.forEach(function (_, index) { var _a; return (_a = document.getElementById("route-spaces-route" + route.id + "-space" + index)) === null || _a === void 0 ? void 0 : _a.classList.add('selectable'); }); });
+            possibleRoutes.forEach(function (route) { return _this.map.routes[route.id].spaces.forEach(function (_, index) { var _a; return (_a = document.getElementById("route-spaces-route".concat(route.id, "-space").concat(index))) === null || _a === void 0 ? void 0 : _a.classList.add('selectable'); }); });
         }
     };
     /**
@@ -1226,16 +492,16 @@ var TtrMap = /** @class */ (function () {
     TtrMap.prototype.setClaimedRoutes = function (claimedRoutes, fromPlayerId) {
         var _this = this;
         claimedRoutes.forEach(function (claimedRoute) {
-            var route = ROUTES.find(function (r) { return r.id == claimedRoute.routeId; });
+            var route = _this.map.routes[claimedRoute.routeId];
             var player = _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; });
             _this.setWagons(route, player, fromPlayerId, false);
             if (_this.game.isDoubleRouteForbidden()) {
-                var otherRoute_1 = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+                var otherRoute_1 = Object.values(_this.map.routes).find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
                 otherRoute_1 === null || otherRoute_1 === void 0 ? void 0 : otherRoute_1.spaces.forEach(function (space, spaceIndex) {
-                    var spaceDiv = document.getElementById("route-spaces-route" + otherRoute_1.id + "-space" + spaceIndex);
+                    var spaceDiv = document.getElementById("route-spaces-route".concat(otherRoute_1.id, "-space").concat(spaceIndex));
                     if (spaceDiv) {
                         spaceDiv.classList.add('forbidden');
-                        _this.game.setTooltip(spaceDiv.id, "<strong><span style=\"color: darkred\">" + _('Important Note:') + "</span> \n                        " + _('In 2 or 3 player games, only one of the Double-Routes can be used.') + "</strong>");
+                        _this.game.setTooltip(spaceDiv.id, "<strong><span style=\"color: darkred\">".concat(_('Important Note:'), "</span> \n                        ").concat(_('In 2 or 3 player games, only one of the Double-Routes can be used.'), "</strong>"));
                     }
                 });
             }
@@ -1244,14 +510,14 @@ var TtrMap = /** @class */ (function () {
     TtrMap.prototype.animateWagonFromCounter = function (playerId, wagonId, toX, toY) {
         var wagon = document.getElementById(wagonId);
         var wagonBR = wagon.getBoundingClientRect();
-        var fromBR = document.getElementById("train-car-counter-" + playerId + "-wrapper").getBoundingClientRect();
+        var fromBR = document.getElementById("train-car-counter-".concat(playerId, "-wrapper")).getBoundingClientRect();
         var zoom = this.game.getZoom();
         var fromX = (fromBR.x - wagonBR.x) / zoom;
         var fromY = (fromBR.y - wagonBR.y) / zoom;
-        wagon.style.transform = "translate(" + (fromX + toX) + "px, " + (fromY + toY) + "px)";
+        wagon.style.transform = "translate(".concat(fromX + toX, "px, ").concat(fromY + toY, "px)");
         setTimeout(function () {
             wagon.style.transition = 'transform 0.5s';
-            wagon.style.transform = "translate(" + toX + "px, " + toY + "px";
+            wagon.style.transform = "translate(".concat(toX, "px, ").concat(toY, "px");
         }, 0);
     };
     /**
@@ -1260,7 +526,7 @@ var TtrMap = /** @class */ (function () {
      * Phantom is for dragging over a route : wagons are showns translucent.
      */
     TtrMap.prototype.setWagon = function (route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute) {
-        var id = "wagon-route" + route.id + "-space" + spaceIndex + (phantom ? '-phantom' : '');
+        var id = "wagon-route".concat(route.id, "-space").concat(spaceIndex).concat(phantom ? '-phantom' : '');
         if (document.getElementById(id)) {
             return;
         }
@@ -1282,7 +548,7 @@ var TtrMap = /** @class */ (function () {
             x += 10 * Math.abs(Math.sin(angle * Math.PI / 180));
             y += 10 * Math.abs(Math.cos(angle * Math.PI / 180));
         }
-        var wagonHtml = "<div id=\"" + id + "\" class=\"wagon angle" + angleClassNumber + " " + (phantom ? 'phantom' : '') + " " + (space.top ? 'top' : '') + "\" data-player-color=\"" + player.color + "\" data-color-blind-player-no=\"" + player.playerNo + "\" data-xy=\"" + xy + "\" style=\"transform: translate(" + x + "px, " + y + "px)\"></div>";
+        var wagonHtml = "<div id=\"".concat(id, "\" class=\"wagon angle").concat(angleClassNumber, " ").concat(phantom ? 'phantom' : '', " ").concat(space.top ? 'top' : '', "\" data-player-color=\"").concat(player.color, "\" data-color-blind-player-no=\"").concat(player.playerNo, "\" data-xy=\"").concat(xy, "\" style=\"transform: translate(").concat(x, "px, ").concat(y, "px)\"></div>");
         // we consider a wagon must be more visible than another if its X + Y is > as the other
         if (!alreadyPlacedWagons.length) {
             dojo.place(wagonHtml, 'train-cars');
@@ -1313,7 +579,7 @@ var TtrMap = /** @class */ (function () {
         var _this = this;
         if (!phantom) {
             route.spaces.forEach(function (space, spaceIndex) {
-                var spaceDiv = document.getElementById("route-spaces-route" + route.id + "-space" + spaceIndex);
+                var spaceDiv = document.getElementById("route-spaces-route".concat(route.id, "-space").concat(spaceIndex));
                 spaceDiv === null || spaceDiv === void 0 ? void 0 : spaceDiv.parentElement.removeChild(spaceDiv);
             });
         }
@@ -1335,7 +601,7 @@ var TtrMap = /** @class */ (function () {
      * Check if the route is mostly horizontal, and the lowest from a double route
      */
     TtrMap.prototype.isLowestFromDoubleHorizontalRoute = function (route) {
-        var otherRoute = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+        var otherRoute = Object.values(this.map.routes).find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
         if (!otherRoute) { // not a double route
             return false;
         }
@@ -1371,8 +637,8 @@ var TtrMap = /** @class */ (function () {
         var horizontalScale = document.getElementById('game_play_area').clientWidth / gameWidth;
         var verticalScale = (window.innerHeight - 80) / gameHeight;
         this.scale = Math.min(1, horizontalScale, verticalScale);
-        this.resizedDiv.style.transform = this.scale === 1 ? '' : "scale(" + this.scale + ")";
-        this.resizedDiv.style.marginBottom = "-" + (1 - this.scale) * gameHeight + "px";
+        this.resizedDiv.style.transform = this.scale === 1 ? '' : "scale(".concat(this.scale, ")");
+        this.resizedDiv.style.marginBottom = "-".concat((1 - this.scale) * gameHeight, "px");
         this.setOutline();
     };
     /**
@@ -1391,12 +657,12 @@ var TtrMap = /** @class */ (function () {
                 return;
             }
             [previousDestination.from, previousDestination.to].forEach(function (city) {
-                return document.getElementById("city" + city).dataset.selectedDestination = 'false';
+                return document.getElementById("city".concat(city)).dataset.selectedDestination = 'false';
             });
         }
         if (destination) {
             [destination.from, destination.to].forEach(function (city) {
-                return document.getElementById("city" + city).dataset.selectedDestination = 'true';
+                return document.getElementById("city".concat(city)).dataset.selectedDestination = 'true';
             });
         }
     };
@@ -1408,7 +674,7 @@ var TtrMap = /** @class */ (function () {
         this.inMapZoomManager.setHoveredRoute(route);
         if (route) {
             [route.from, route.to].forEach(function (city) {
-                var cityDiv = document.getElementById("city" + city);
+                var cityDiv = document.getElementById("city".concat(city));
                 cityDiv.dataset.hovered = 'true';
                 cityDiv.dataset.valid = valid.toString();
             });
@@ -1417,8 +683,8 @@ var TtrMap = /** @class */ (function () {
             }
         }
         else {
-            ROUTES.forEach(function (r) { return [r.from, r.to].forEach(function (city) {
-                return document.getElementById("city" + city).dataset.hovered = 'false';
+            Object.values(this.map.routes).forEach(function (r) { return [r.from, r.to].forEach(function (city) {
+                return document.getElementById("city".concat(city)).dataset.hovered = 'false';
             }); });
             // remove phantom wagons
             this.mapDiv.querySelectorAll('.wagon.phantom').forEach(function (spaceDiv) { return spaceDiv.parentElement.removeChild(spaceDiv); });
@@ -1429,7 +695,7 @@ var TtrMap = /** @class */ (function () {
      */
     TtrMap.prototype.setSelectableDestination = function (destination, visible) {
         [destination.from, destination.to].forEach(function (city) {
-            document.getElementById("city" + city).dataset.selectable = '' + visible;
+            document.getElementById("city".concat(city)).dataset.selectable = '' + visible;
         });
     };
     /**
@@ -1437,7 +703,7 @@ var TtrMap = /** @class */ (function () {
      */
     TtrMap.prototype.setSelectedDestination = function (destination, visible) {
         [destination.from, destination.to].forEach(function (city) {
-            document.getElementById("city" + city).dataset.selected = '' + visible;
+            document.getElementById("city".concat(city)).dataset.selected = '' + visible;
         });
     };
     /**
@@ -1447,7 +713,7 @@ var TtrMap = /** @class */ (function () {
         this.mapDiv.querySelectorAll(".city[data-to-connect]").forEach(function (city) { return city.dataset.toConnect = 'false'; });
         var cities = [];
         destinations.forEach(function (destination) { return cities.push(destination.from, destination.to); });
-        cities.forEach(function (city) { return document.getElementById("city" + city).dataset.toConnect = 'true'; });
+        cities.forEach(function (city) { return document.getElementById("city".concat(city)).dataset.toConnect = 'true'; });
     };
     /**
      * Highlight destination (on destination mouse over).
@@ -1465,7 +731,7 @@ var TtrMap = /** @class */ (function () {
         else {
             cities = [shadow.dataset.from, shadow.dataset.to];
         }
-        cities.forEach(function (city) { return document.getElementById("city" + city).dataset.highlight = visible; });
+        cities.forEach(function (city) { return document.getElementById("city".concat(city)).dataset.highlight = visible; });
     };
     /**
      * Create the crosshair target when drag starts over the drag overlay.
@@ -1547,7 +813,7 @@ var DestinationSelection = /** @class */ (function () {
     /**
      * Init stock.
      */
-    function DestinationSelection(game) {
+    function DestinationSelection(game, map) {
         var _this = this;
         this.game = game;
         this.destinations = new ebg.stock();
@@ -1555,12 +821,12 @@ var DestinationSelection = /** @class */ (function () {
         this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $("destination-stock"), CARD_WIDTH, CARD_HEIGHT);
-        this.destinations.onItemCreate = function (cardDiv, cardUniqueId) { return setupDestinationCardDiv(cardDiv, Number(cardUniqueId), _this.game.expansion1910()); };
+        this.destinations.onItemCreate = function (cardDiv, cardUniqueId) { return setupDestinationCardDiv(game, cardDiv, Number(cardUniqueId)); };
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
         this.destinations.item_margin = 20;
         dojo.connect(this.destinations, 'onChangeSelection', this, function () { return _this.selectionChange(); });
-        setupDestinationCards(this.destinations);
+        setupDestinationCards(map, this.destinations);
     }
     /**
      * Set visible destination cards.
@@ -1569,8 +835,8 @@ var DestinationSelection = /** @class */ (function () {
         var _this = this;
         dojo.removeClass('destination-deck', 'hidden');
         destinations.forEach(function (destination) {
-            _this.destinations.addToStockWithId(destination.type * 100 + destination.type_arg, '' + destination.id);
-            var cardDiv = document.getElementById("destination-stock_item_" + destination.id);
+            _this.destinations.addToStockWithId(destination.type * 1000 + destination.type_arg, '' + destination.id);
+            var cardDiv = document.getElementById("destination-stock_item_".concat(destination.id));
             // when mouse hover destination, highlight it on the map
             cardDiv.addEventListener('mouseenter', function () { return _this.game.setHighligthedDestination(destination); });
             cardDiv.addEventListener('mouseleave', function () { return _this.game.setHighligthedDestination(null); });
@@ -1579,7 +845,7 @@ var DestinationSelection = /** @class */ (function () {
         });
         this.minimumDestinations = minimumDestinations;
         visibleColors.forEach(function (color, index) {
-            document.getElementById("visible-train-cards-mini" + index).dataset.color = '' + color;
+            document.getElementById("visible-train-cards-mini".concat(index)).dataset.color = '' + color;
         });
     };
     /**
@@ -1615,7 +881,7 @@ var VisibleCardSpot = /** @class */ (function () {
     function VisibleCardSpot(game, spotNumber) {
         this.game = game;
         this.spotNumber = spotNumber;
-        this.spotDiv = document.getElementById("visible-train-cards-stock" + this.spotNumber);
+        this.spotDiv = document.getElementById("visible-train-cards-stock".concat(this.spotNumber));
     }
     /**
      * Set selectable visible cards (locomotive can't be selected if 1 visible card has been picked).
@@ -1639,7 +905,7 @@ var VisibleCardSpot = /** @class */ (function () {
         var _this = this;
         if (this.card) {
             var oldCardDiv = this.getCardDiv();
-            if (oldCardDiv === null || oldCardDiv === void 0 ? void 0 : oldCardDiv.closest("#visible-train-cards-stock" + this.spotNumber)) {
+            if (oldCardDiv === null || oldCardDiv === void 0 ? void 0 : oldCardDiv.closest("#visible-train-cards-stock".concat(this.spotNumber))) {
                 oldCardDiv.parentElement.removeChild(oldCardDiv);
                 this.card = null;
             }
@@ -1671,13 +937,13 @@ var VisibleCardSpot = /** @class */ (function () {
         if (!this.card) {
             return null;
         }
-        return document.getElementById("train-car-card-" + this.card.id);
+        return document.getElementById("train-car-card-".concat(this.card.id));
     };
     /**
      * Create the card in the spot.
      */
     VisibleCardSpot.prototype.createCard = function (card) {
-        dojo.place("<div id=\"train-car-card-" + card.id + "\" class=\"train-car-card\" data-color=\"" + this.card.type + "\"></div>", this.spotDiv);
+        dojo.place("<div id=\"train-car-card-".concat(card.id, "\" class=\"train-car-card\" data-color=\"").concat(this.card.type, "\"></div>"), this.spotDiv);
     };
     /**
      * Animation when train car cards are picked by another player.
@@ -1686,7 +952,7 @@ var VisibleCardSpot = /** @class */ (function () {
         this.createCard(this.card);
         var cardDiv = this.getCardDiv();
         if (cardDiv) {
-            animateCardToCounterAndDestroy(this.game, cardDiv, "train-car-card-counter-" + playerId + "-wrapper");
+            animateCardToCounterAndDestroy(this.game, cardDiv, "train-car-card-counter-".concat(playerId, "-wrapper"));
         }
     };
     /**
@@ -1710,7 +976,7 @@ var VisibleCardSpot = /** @class */ (function () {
         var deltaY = destinationBR.top - originBR.top;
         card.style.zIndex = '10';
         var zoom = this.game.getZoom();
-        card.style.transform = "translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
+        card.style.transform = "translate(".concat(-deltaX / zoom, "px, ").concat(-deltaY / zoom, "px)");
         setTimeout(function () {
             card.style.transition = "transform 0.5s linear";
             card.style.transform = null;
@@ -1729,11 +995,11 @@ var DBL_CLICK_TIMEOUT = 300;
 var Gauge = /** @class */ (function () {
     function Gauge(containerId, className, max) {
         this.max = max;
-        dojo.place("\n        <div id=\"gauge-" + className + "\" class=\"gauge " + className + "\">\n            <div class=\"inner\" id=\"gauge-" + className + "-level\"></div>\n        </div>", containerId);
-        this.levelDiv = document.getElementById("gauge-" + className + "-level");
+        dojo.place("\n        <div id=\"gauge-".concat(className, "\" class=\"gauge ").concat(className, "\">\n            <div class=\"inner\" id=\"gauge-").concat(className, "-level\"></div>\n        </div>"), containerId);
+        this.levelDiv = document.getElementById("gauge-".concat(className, "-level"));
     }
     Gauge.prototype.setCount = function (count) {
-        this.levelDiv.style.height = 100 * count / this.max + "%";
+        this.levelDiv.style.height = "".concat(100 * count / this.max, "%");
     };
     return Gauge;
 }());
@@ -1814,14 +1080,14 @@ var TrainCarSelection = /** @class */ (function () {
      */
     TrainCarSelection.prototype.setTrainCarCount = function (count) {
         this.trainCarGauge.setCount(count);
-        document.getElementById("train-car-deck-level").dataset.level = "" + Math.min(10, Math.ceil(count / 10));
+        document.getElementById("train-car-deck-level").dataset.level = "".concat(Math.min(10, Math.ceil(count / 10)));
     };
     /**
      * Update destination gauge.
      */
     TrainCarSelection.prototype.setDestinationCount = function (count) {
         this.destinationGauge.setCount(count);
-        document.getElementById("destination-deck-level").dataset.level = "" + Math.min(10, Math.ceil(count / 10));
+        document.getElementById("destination-deck-level").dataset.level = "".concat(Math.min(10, Math.ceil(count / 10)));
     };
     /**
      * Make hidden train car cads selection buttons visible (user preference).
@@ -1833,7 +1099,7 @@ var TrainCarSelection = /** @class */ (function () {
      * Get HTML Element represented by "origin" (0 means invisible, 1 to 5 are visible cards).
      */
     TrainCarSelection.prototype.getStockElement = function (origin) {
-        return origin === 0 ? document.getElementById('train-car-deck-hidden-pile') : document.getElementById("visible-train-cards-stock" + origin);
+        return origin === 0 ? document.getElementById('train-car-deck-hidden-pile') : document.getElementById("visible-train-cards-stock".concat(origin));
     };
     /**
      * Animation when train car cards are picked by another player.
@@ -1847,8 +1113,8 @@ var TrainCarSelection = /** @class */ (function () {
         else {
             var _loop_1 = function (i) {
                 setTimeout(function () {
-                    dojo.place("\n                    <div id=\"animated-train-car-card-0-" + i + "\" class=\"animated train-car-card from-hidden-pile\"></div>\n                    ", document.getElementById('train-car-deck-hidden-pile'));
-                    animateCardToCounterAndDestroy(_this.game, "animated-train-car-card-0-" + i, "train-car-card-counter-" + playerId + "-wrapper");
+                    dojo.place("\n                    <div id=\"animated-train-car-card-0-".concat(i, "\" class=\"animated train-car-card from-hidden-pile\"></div>\n                    "), document.getElementById('train-car-deck-hidden-pile'));
+                    animateCardToCounterAndDestroy(_this.game, "animated-train-car-card-0-".concat(i), "train-car-card-counter-".concat(playerId, "-wrapper"));
                 }, 200 * i);
             };
             for (var i = 0; i < number; i++) {
@@ -1863,8 +1129,8 @@ var TrainCarSelection = /** @class */ (function () {
         var _this = this;
         var _loop_2 = function (i) {
             setTimeout(function () {
-                dojo.place("\n                <div id=\"animated-destination-card-" + i + "\" class=\"animated-destination-card\"></div>\n                ", 'destination-deck-hidden-pile');
-                animateCardToCounterAndDestroy(_this.game, "animated-destination-card-" + i, "destinations-counter-" + playerId + "-wrapper");
+                dojo.place("\n                <div id=\"animated-destination-card-".concat(i, "\" class=\"animated-destination-card\"></div>\n                "), 'destination-deck-hidden-pile');
+                animateCardToCounterAndDestroy(_this.game, "animated-destination-card-".concat(i), "destinations-counter-".concat(playerId, "-wrapper"));
             }, 200 * i);
         };
         for (var i = 0; i < number; i++) {
@@ -1896,9 +1162,9 @@ var TrainCarSelection = /** @class */ (function () {
         if (tunnelCards === null || tunnelCards === void 0 ? void 0 : tunnelCards.length) {
             dojo.place("<div id=\"tunnel-cards\"></div>", 'train-car-deck-hidden-pile');
             tunnelCards.forEach(function (card, index) {
-                dojo.place("<div id=\"tunnel-card-" + index + "\" class=\"train-car-card tunnel-card animated\" data-color=\"" + card.type + "\"></div>", 'tunnel-cards');
-                var element = document.getElementById("tunnel-card-" + index);
-                setTimeout(function () { return element.style.transform = "translateY(" + 55 * (index - 1) + "px) scale(0.33)"; });
+                dojo.place("<div id=\"tunnel-card-".concat(index, "\" class=\"train-car-card tunnel-card animated\" data-color=\"").concat(card.type, "\"></div>"), 'tunnel-cards');
+                var element = document.getElementById("tunnel-card-".concat(index));
+                setTimeout(function () { return element.style.transform = "translateY(".concat(55 * (index - 1), "px) scale(0.33)"); });
             });
         }
         else {
@@ -1913,7 +1179,7 @@ var TrainCarSelection = /** @class */ (function () {
  */
 var PlayerTable = /** @class */ (function () {
     function PlayerTable(game, player, trainCars, destinations, completedDestinations) {
-        var html = "\n            <div id=\"player-table\" class=\"player-table\">\n                <div id=\"player-table-" + player.id + "-destinations\" class=\"player-table-destinations\"></div>\n                <div id=\"player-table-" + player.id + "-train-cars\" class=\"player-table-train-cars\"></div>\n            </div>\n        ";
+        var html = "\n            <div id=\"player-table\" class=\"player-table\">\n                <div id=\"player-table-".concat(player.id, "-destinations\" class=\"player-table-destinations\"></div>\n                <div id=\"player-table-").concat(player.id, "-train-cars\" class=\"player-table-train-cars\"></div>\n            </div>\n        ");
         dojo.place(html, 'resized');
         this.playerDestinations = new PlayerDestinations(game, player, destinations, completedDestinations);
         this.playerTrainCars = new PlayerTrainCars(game, player, trainCars);
@@ -1989,8 +1255,8 @@ var PlayerDestinations = /** @class */ (function () {
         /** Destinations in "done" column */
         this.destinationsDone = [];
         this.playerId = Number(player.id);
-        var html = "\n        <div id=\"player-table-" + player.id + "-destinations-todo\" class=\"player-table-destinations-column todo\"></div>\n        <div id=\"player-table-" + player.id + "-destinations-done\" class=\"player-table-destinations-column done\"></div>\n        ";
-        dojo.place(html, "player-table-" + player.id + "-destinations");
+        var html = "\n        <div id=\"player-table-".concat(player.id, "-destinations-todo\" class=\"player-table-destinations-column todo\"></div>\n        <div id=\"player-table-").concat(player.id, "-destinations-done\" class=\"player-table-destinations-column done\"></div>\n        ");
+        dojo.place(html, "player-table-".concat(player.id, "-destinations"));
         this.addDestinations(destinations);
         destinations.filter(function (destination) { return completedDestinations.some(function (d) { return d.id == destination.id; }); }).forEach(function (destination) {
             return _this.markDestinationComplete(destination);
@@ -2005,15 +1271,16 @@ var PlayerDestinations = /** @class */ (function () {
         var _a;
         var _this = this;
         destinations.forEach(function (destination) {
-            var html = "\n            <div id=\"destination-card-" + destination.id + "\" class=\"destination-card\" style=\"" + getBackgroundInlineStyleForDestination(destination) + "\"></div>\n            ";
-            dojo.place(html, "player-table-" + _this.playerId + "-destinations-todo");
-            var card = document.getElementById("destination-card-" + destination.id);
-            setupDestinationCardDiv(card, destination.type * 100 + destination.type_arg, _this.game.expansion1910());
+            var html = "\n            <div id=\"destination-card-".concat(destination.id, "\" class=\"destination-card\" style=\"").concat(getBackgroundInlineStyleForDestination(_this.game.getMap(), destination), "\"></div>\n            ");
+            dojo.place(html, "player-table-".concat(_this.playerId, "-destinations-todo"));
+            var card = document.getElementById("destination-card-".concat(destination.id));
+            setupDestinationCardDiv(_this.game, card, destination.type * 1000 + destination.type_arg);
             /*
             Can't add a tooltip, because showing a tooltip will mess with the hover effect.
+            const DESTINATIONS = this.getDestinations(game);
             const destinationInfos = DESTINATIONS.find(d => d.id == destination.type_arg);
             this.game.setTooltip(`destination-card-${destination.id}`, `
-                <div>${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[destinationInfos.from], to: CITIES_NAMES[destinationInfos.to]})}, ${destinationInfos.points} ${_('points')}</div>
+                <div>${dojo.string.substitute(_('${from} to ${to}'), {from: this.game.getCityName(destinationInfos.from), to: this.game.getCityName(destinationInfos.to)})}, ${destinationInfos.points} ${_('points')}</div>
                 <div class="destination-card" style="${getBackgroundInlineStyleForDestination(destination)}"></div>
             `);*/
             card.addEventListener('click', function () { return _this.activateNextDestination(_this.destinationsDone.some(function (d) { return d.id == destination.id; }) ? _this.destinationsDone : _this.destinationsTodo); });
@@ -2021,7 +1288,7 @@ var PlayerDestinations = /** @class */ (function () {
             card.addEventListener('mouseenter', function () { return _this.game.setHighligthedDestination(destination); });
             card.addEventListener('mouseleave', function () { return _this.game.setHighligthedDestination(null); });
             if (originStock) {
-                _this.addAnimationFrom(card, document.getElementById(originStock.container_div.id + "_item_" + destination.id));
+                _this.addAnimationFrom(card, document.getElementById("".concat(originStock.container_div.id, "_item_").concat(destination.id)));
             }
         });
         originStock === null || originStock === void 0 ? void 0 : originStock.removeAll();
@@ -2037,7 +1304,7 @@ var PlayerDestinations = /** @class */ (function () {
             this.destinationsTodo.splice(index, 1);
         }
         this.destinationsDone.push(destination);
-        document.getElementById("player-table-" + this.playerId + "-destinations-done").appendChild(document.getElementById("destination-card-" + destination.id));
+        document.getElementById("player-table-".concat(this.playerId, "-destinations-done")).appendChild(document.getElementById("destination-card-".concat(destination.id)));
         this.destinationColumnsUpdated();
     };
     /**
@@ -2045,10 +1312,10 @@ var PlayerDestinations = /** @class */ (function () {
      */
     PlayerDestinations.prototype.markDestinationCompleteAnimation = function (destination, destinationRoutes) {
         var _this = this;
-        var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, "destination-card-" + destination.id, "destination-card-" + destination.id, {
-            start: function (d) { return document.getElementById("destination-card-" + d.id).classList.add('hidden-for-animation'); },
+        var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, "destination-card-".concat(destination.id), "destination-card-".concat(destination.id), {
+            start: function (d) { return document.getElementById("destination-card-".concat(d.id)).classList.add('hidden-for-animation'); },
             change: function (d) { return _this.markDestinationCompleteNoAnimation(d); },
-            end: function (d) { return document.getElementById("destination-card-" + d.id).classList.remove('hidden-for-animation'); },
+            end: function (d) { return document.getElementById("destination-card-".concat(d.id)).classList.remove('hidden-for-animation'); },
         }, 'completed');
         this.game.addAnimation(newDac);
     };
@@ -2074,8 +1341,8 @@ var PlayerDestinations = /** @class */ (function () {
         }
         this.selectedDestination = destinationList[0];
         this.game.setActiveDestination(this.selectedDestination, oldSelectedDestination);
-        document.getElementById("player-table-" + this.playerId + "-destinations-todo").classList.toggle('front', destinationList == this.destinationsTodo);
-        document.getElementById("player-table-" + this.playerId + "-destinations-done").classList.toggle('front', destinationList == this.destinationsDone);
+        document.getElementById("player-table-".concat(this.playerId, "-destinations-todo")).classList.toggle('front', destinationList == this.destinationsTodo);
+        document.getElementById("player-table-".concat(this.playerId, "-destinations-done")).classList.toggle('front', destinationList == this.destinationsDone);
         this.destinationColumnsUpdated();
     };
     /**
@@ -2083,11 +1350,11 @@ var PlayerDestinations = /** @class */ (function () {
      */
     PlayerDestinations.prototype.destinationColumnsUpdated = function () {
         var doubleColumn = this.destinationsTodo.length > 0 && this.destinationsDone.length > 0;
-        var destinationsDiv = document.getElementById("player-table-" + this.playerId + "-destinations");
+        var destinationsDiv = document.getElementById("player-table-".concat(this.playerId, "-destinations"));
         var maxBottom = Math.max(this.placeCards(this.destinationsTodo, doubleColumn ? DESTINATION_CARD_SHIFT : 0), this.placeCards(this.destinationsDone));
-        var height = maxBottom + CARD_HEIGHT + "px";
+        var height = "".concat(maxBottom + CARD_HEIGHT, "px");
         destinationsDiv.style.height = height;
-        document.getElementById("player-table-" + this.playerId + "-train-cars").style.height = height;
+        document.getElementById("player-table-".concat(this.playerId, "-train-cars")).style.height = height;
         this.game.setDestinationsToConnect(this.destinationsTodo);
     };
     /**
@@ -2098,9 +1365,9 @@ var PlayerDestinations = /** @class */ (function () {
         var maxBottom = 0;
         list.forEach(function (destination, index) {
             var bottom = originalBottom + index * DESTINATION_CARD_SHIFT;
-            var card = document.getElementById("destination-card-" + destination.id);
+            var card = document.getElementById("destination-card-".concat(destination.id));
             card.parentElement.prepend(card);
-            card.style.bottom = bottom + "px";
+            card.style.bottom = "".concat(bottom, "px");
             if (bottom > maxBottom) {
                 maxBottom = bottom;
             }
@@ -2121,7 +1388,7 @@ var PlayerDestinations = /** @class */ (function () {
         card.style.zIndex = '10';
         card.style.transition = "transform 0.5s linear";
         var zoom = this.game.getZoom();
-        card.style.transform = "translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
+        card.style.transform = "translate(".concat(-deltaX / zoom, "px, ").concat(-deltaY / zoom, "px)");
         setTimeout(function () { return card.style.transform = null; });
         setTimeout(function () {
             card.style.zIndex = null;
@@ -2152,21 +1419,21 @@ var PlayerTrainCars = /** @class */ (function () {
         trainCars.forEach(function (trainCar) {
             var group = _this.getGroup(trainCar.type);
             var deg = Math.round(-4 + Math.random() * 8);
-            var card = document.getElementById("train-car-card-" + trainCar.id);
+            var card = document.getElementById("train-car-card-".concat(trainCar.id));
             var groupTrainCarCards = group.getElementsByClassName('train-car-cards')[0];
             if (!card) {
-                var html = "\n                <div id=\"train-car-card-" + trainCar.id + "\" class=\"train-car-card\" data-color=\"" + trainCar.type + "\"></div>\n                ";
+                var html = "\n                <div id=\"train-car-card-".concat(trainCar.id, "\" class=\"train-car-card\" data-color=\"").concat(trainCar.type, "\"></div>\n                ");
                 dojo.place(html, groupTrainCarCards);
-                card = document.getElementById("train-car-card-" + trainCar.id);
+                card = document.getElementById("train-car-card-".concat(trainCar.id));
             }
             else {
                 groupTrainCarCards.appendChild(card);
             }
-            card.dataset.handRotation = "" + deg;
+            card.dataset.handRotation = "".concat(deg);
             var degWithColorBlind = _this.left && _this.game.isColorBlindMode() ? 180 + deg : deg;
-            card.style.transform = "rotate(" + degWithColorBlind + "deg)";
+            card.style.transform = "rotate(".concat(degWithColorBlind, "deg)");
             if (from) {
-                var card_1 = document.getElementById("train-car-card-" + trainCar.id);
+                var card_1 = document.getElementById("train-car-card-".concat(trainCar.id));
                 _this.addAnimationFrom(card_1, group, from, deg, degWithColorBlind);
             }
         });
@@ -2177,7 +1444,7 @@ var PlayerTrainCars = /** @class */ (function () {
      */
     PlayerTrainCars.prototype.setPosition = function (left) {
         this.left = left;
-        var div = document.getElementById("player-table-" + this.playerId + "-train-cars");
+        var div = document.getElementById("player-table-".concat(this.playerId, "-train-cars"));
         div.classList.toggle('left', left);
         this.updateCounters(); // to realign
         this.updateColorBlindRotation();
@@ -2187,11 +1454,11 @@ var PlayerTrainCars = /** @class */ (function () {
      */
     PlayerTrainCars.prototype.updateColorBlindRotation = function () {
         var _this = this;
-        var cards = Array.from(document.getElementById("player-table-" + this.playerId + "-train-cars").getElementsByClassName('train-car-card'));
+        var cards = Array.from(document.getElementById("player-table-".concat(this.playerId, "-train-cars")).getElementsByClassName('train-car-card'));
         cards.forEach(function (card) {
             var deg = Number(card.dataset.handRotation);
             var degWithColorBlind = _this.left && _this.game.isColorBlindMode() ? 180 + deg : deg;
-            card.style.transform = "rotate(" + degWithColorBlind + "deg)";
+            card.style.transform = "rotate(".concat(degWithColorBlind, "deg)");
         });
     };
     /**
@@ -2200,7 +1467,7 @@ var PlayerTrainCars = /** @class */ (function () {
     PlayerTrainCars.prototype.removeCards = function (removeCards) {
         var _this = this;
         removeCards.forEach(function (card) {
-            var div = document.getElementById("train-car-card-" + card.id);
+            var div = document.getElementById("train-car-card-".concat(card.id));
             if (div) {
                 var groupDiv = div.closest('.train-car-group');
                 div.parentElement.removeChild(div);
@@ -2233,11 +1500,11 @@ var PlayerTrainCars = /** @class */ (function () {
      */
     PlayerTrainCars.prototype.getGroup = function (type) {
         var _this = this;
-        var group = document.getElementById("train-car-group-" + type);
+        var group = document.getElementById("train-car-group-".concat(type));
         if (!group) {
-            dojo.place("\n            <div id=\"train-car-group-" + type + "\" class=\"train-car-group\" data-type=\"" + type + "\">\n                <div id=\"train-car-group-" + type + "-counter\" class=\"train-car-group-counter\">0</div>\n                <div id=\"train-car-group-" + type + "-cards\" class=\"train-car-cards\"></div>\n            </div>\n            ", "player-table-" + this.playerId + "-train-cars", type == 0 ? 'first' : 'last');
+            dojo.place("\n            <div id=\"train-car-group-".concat(type, "\" class=\"train-car-group\" data-type=\"").concat(type, "\">\n                <div id=\"train-car-group-").concat(type, "-counter\" class=\"train-car-group-counter\">0</div>\n                <div id=\"train-car-group-").concat(type, "-cards\" class=\"train-car-cards\"></div>\n            </div>\n            "), "player-table-".concat(this.playerId, "-train-cars"), type == 0 ? 'first' : 'last');
             this.updateCounters();
-            group = document.getElementById("train-car-group-" + type);
+            group = document.getElementById("train-car-group-".concat(type));
             group.addEventListener('dragstart', function (e) {
                 _this.deselectColor(_this.selectedColor);
                 var dt = e.dataTransfer;
@@ -2289,7 +1556,7 @@ var PlayerTrainCars = /** @class */ (function () {
         return this.selectedColor;
     };
     PlayerTrainCars.prototype.selectColor = function (color) {
-        var group = document.getElementById("train-car-group-" + color);
+        var group = document.getElementById("train-car-group-".concat(color));
         group === null || group === void 0 ? void 0 : group.classList.add('selected');
         this.selectedColor = color;
         this.game.selectedColorChanged(this.selectedColor);
@@ -2298,7 +1565,7 @@ var PlayerTrainCars = /** @class */ (function () {
         if (color === null) {
             return;
         }
-        var group = document.getElementById("train-car-group-" + color);
+        var group = document.getElementById("train-car-group-".concat(color));
         group === null || group === void 0 ? void 0 : group.classList.remove('selected');
         this.selectedColor = null;
         this.game.selectedColorChanged(this.selectedColor);
@@ -2317,10 +1584,10 @@ var PlayerTrainCars = /** @class */ (function () {
             var distanceFromIndex = index - middleIndex;
             var count = groupDiv.getElementsByClassName('train-car-card').length;
             groupDiv.dataset.count = '' + count;
-            groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = "" + (count > 1 ? count : '');
+            groupDiv.getElementsByClassName('train-car-group-counter')[0].innerHTML = "".concat(count > 1 ? count : '');
             var angle = distanceFromIndex * 4;
             groupDiv.dataset.angle = '' + angle;
-            groupDiv.style.transform = "translate" + (_this.left ? 'X(-' : 'Y(') + Math.pow(Math.abs(distanceFromIndex) * 2, 2) + "px) rotate(" + angle + "deg)";
+            groupDiv.style.transform = "translate".concat(_this.left ? 'X(-' : 'Y(').concat(Math.pow(Math.abs(distanceFromIndex) * 2, 2), "px) rotate(").concat(angle, "deg)");
             groupDiv.parentNode.appendChild(groupDiv);
         });
     };
@@ -2331,7 +1598,7 @@ var PlayerTrainCars = /** @class */ (function () {
         if (document.visibilityState === 'hidden' || this.game.instantaneousMode) {
             return;
         }
-        var trainCars = document.getElementById("player-table-" + this.playerId + "-train-cars");
+        var trainCars = document.getElementById("player-table-".concat(this.playerId, "-train-cars"));
         trainCars.classList.add('new-card-animation');
         var destinationBR = card.getBoundingClientRect();
         var originBR = from.getBoundingClientRect();
@@ -2341,11 +1608,11 @@ var PlayerTrainCars = /** @class */ (function () {
         card.style.transition = "transform 0.5s linear";
         var zoom = this.game.getZoom();
         var angle = -Number(group.dataset.angle);
-        card.style.transform = "rotate(" + (this.left ? angle : angle - 90) + "deg) translate(" + -deltaX / zoom + "px, " + -deltaY / zoom + "px)";
+        card.style.transform = "rotate(".concat(this.left ? angle : angle - 90, "deg) translate(").concat(-deltaX / zoom, "px, ").concat(-deltaY / zoom, "px)");
         setTimeout(function () {
-            card.style.transform = "rotate(" + deg + "deg)";
+            card.style.transform = "rotate(".concat(deg, "deg)");
             if (degWithColorBlind != deg) {
-                setTimeout(function () { return card.style.transform = "rotate(" + degWithColorBlind + "deg)"; }, 500);
+                setTimeout(function () { return card.style.transform = "rotate(".concat(degWithColorBlind, "deg)"); }, 500);
             }
         }, 0);
         setTimeout(function () {
@@ -2418,21 +1685,21 @@ var EndScore = /** @class */ (function () {
         this.uncompletedDestinationCounters = [];
         players.forEach(function (player) {
             var playerId = Number(player.id);
-            dojo.place("<tr id=\"score" + player.id + "\">\n                <td id=\"score-name-" + player.id + "\" class=\"player-name\" style=\"color: #" + player.color + "\">" + player.name + "<div id=\"bonus-card-icons-" + player.id + "\" class=\"bonus-card-icons\"></div></td>\n                <td id=\"destinations-score-" + player.id + "\" class=\"destinations\">\n                    <div class=\"icons-grid\">\n                        <div id=\"destination-counter-" + player.id + "\" class=\"icon destination-card\"></div>\n                        <div id=\"completed-destination-counter-" + player.id + "\" class=\"icon completed-destination\"></div>\n                        <div id=\"uncompleted-destination-counter-" + player.id + "\" class=\"icon uncompleted-destination\"></div>\n                    </div>\n                </td>\n                <td id=\"train-score-" + player.id + "\" class=\"train\">\n                    <div id=\"train-image-" + player.id + "\" class=\"train-image\" data-player-color=\"" + player.color + "\"></div>\n                </td>\n                <td id=\"end-score-" + player.id + "\" class=\"total\"></td>\n            </tr>", 'score-table-body');
+            dojo.place("<tr id=\"score".concat(player.id, "\">\n                <td id=\"score-name-").concat(player.id, "\" class=\"player-name\" style=\"color: #").concat(player.color, "\">").concat(player.name, "<div id=\"bonus-card-icons-").concat(player.id, "\" class=\"bonus-card-icons\"></div></td>\n                <td id=\"destinations-score-").concat(player.id, "\" class=\"destinations\">\n                    <div class=\"icons-grid\">\n                        <div id=\"destination-counter-").concat(player.id, "\" class=\"icon destination-card\"></div>\n                        <div id=\"completed-destination-counter-").concat(player.id, "\" class=\"icon completed-destination\"></div>\n                        <div id=\"uncompleted-destination-counter-").concat(player.id, "\" class=\"icon uncompleted-destination\"></div>\n                    </div>\n                </td>\n                <td id=\"train-score-").concat(player.id, "\" class=\"train\">\n                    <div id=\"train-image-").concat(player.id, "\" class=\"train-image\" data-player-color=\"").concat(player.color, "\"></div>\n                </td>\n                <td id=\"end-score-").concat(player.id, "\" class=\"total\"></td>\n            </tr>"), 'score-table-body');
             var destinationCounter = new ebg.counter();
-            destinationCounter.create("destination-counter-" + player.id);
+            destinationCounter.create("destination-counter-".concat(player.id));
             destinationCounter.setValue(fromReload ? 0 : _this.game.destinationCardCounters[player.id].getValue());
             _this.destinationCounters[playerId] = destinationCounter;
             var completedDestinationCounter = new ebg.counter();
-            completedDestinationCounter.create("completed-destination-counter-" + player.id);
+            completedDestinationCounter.create("completed-destination-counter-".concat(player.id));
             completedDestinationCounter.setValue(fromReload ? player.completedDestinations.length : 0);
             _this.completedDestinationCounters[playerId] = completedDestinationCounter;
             var uncompletedDestinationCounter = new ebg.counter();
-            uncompletedDestinationCounter.create("uncompleted-destination-counter-" + player.id);
+            uncompletedDestinationCounter.create("uncompleted-destination-counter-".concat(player.id));
             uncompletedDestinationCounter.setValue(fromReload ? player.uncompletedDestinations.length : 0);
             _this.uncompletedDestinationCounters[playerId] = uncompletedDestinationCounter;
             var scoreCounter = new ebg.counter();
-            scoreCounter.create("end-score-" + player.id);
+            scoreCounter.create("end-score-".concat(player.id));
             scoreCounter.setValue(_this.game.getPlayerScore(playerId));
             _this.scoreCounters[playerId] = scoreCounter;
             _this.moveTrain(playerId);
@@ -2460,8 +1727,8 @@ var EndScore = /** @class */ (function () {
      * Add golden highlight to top score player(s)
      */
     EndScore.prototype.highlightWinnerScore = function (playerId) {
-        document.getElementById("score" + playerId).classList.add('highlight');
-        document.getElementById("score-name-" + playerId).style.color = '';
+        document.getElementById("score".concat(playerId)).classList.add('highlight');
+        document.getElementById("score-name-".concat(playerId)).style.color = '';
     };
     /**
      * Save best score so we can move trains.
@@ -2483,7 +1750,7 @@ var EndScore = /** @class */ (function () {
      */
     EndScore.prototype.moveTrain = function (playerId) {
         var scorePercent = 100 * this.scoreCounters[playerId].getValue() / Math.max(50, this.bestScore);
-        document.getElementById("train-image-" + playerId).style.right = 100 - scorePercent + "%";
+        document.getElementById("train-image-".concat(playerId)).style.right = "".concat(100 - scorePercent, "%");
     };
     /**
      * Show score animation for a revealed destination.
@@ -2496,16 +1763,16 @@ var EndScore = /** @class */ (function () {
             (destinationRoutes ? _this.completedDestinationCounters : _this.uncompletedDestinationCounters)[playerId].incValue(1);
             _this.destinationCounters[playerId].incValue(-1);
             if (_this.destinationCounters[playerId].getValue() == 0) {
-                document.getElementById("destination-counter-" + playerId).classList.add('hidden');
+                document.getElementById("destination-counter-".concat(playerId)).classList.add('hidden');
             }
         };
         if (isFastEndScoring) {
             endFunction();
             return;
         }
-        var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, "destination-counter-" + playerId, (destinationRoutes ? 'completed' : 'uncompleted') + "-destination-counter-" + playerId, {
+        var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, "destination-counter-".concat(playerId), "".concat(destinationRoutes ? 'completed' : 'uncompleted', "-destination-counter-").concat(playerId), {
             change: function () {
-                playSound("ttr-" + (destinationRoutes ? 'completed' : 'uncompleted') + "-end");
+                playSound("ttr-".concat(destinationRoutes ? 'completed' : 'uncompleted', "-end"));
                 _this.game.disableNextMoveSound();
             },
             end: endFunction,
@@ -2513,14 +1780,15 @@ var EndScore = /** @class */ (function () {
         this.game.addAnimation(newDac);
     };
     EndScore.prototype.updateDestinationsTooltip = function (player) {
+        var _this = this;
         var _a, _b;
-        var html = "<div class=\"destinations-flex\">\n            <div>\n                " + ((_a = player.completedDestinations) === null || _a === void 0 ? void 0 : _a.map(function (destination) {
-            return "<div class=\"destination-card completed\" style=\"" + getBackgroundInlineStyleForDestination(destination) + "\"></div>";
-        })) + "\n            </div>\n            <div>\n                " + ((_b = player.uncompletedDestinations) === null || _b === void 0 ? void 0 : _b.map(function (destination) {
-            return "<div class=\"destination-card uncompleted\" style=\"" + getBackgroundInlineStyleForDestination(destination) + "\"></div>";
-        })) + "\n            </div>\n        </div>";
-        if (document.getElementById("destinations-score-" + player.id)) {
-            this.game.setTooltip("destinations-score-" + player.id, html);
+        var html = "<div class=\"destinations-flex\">\n            <div>\n                ".concat((_a = player.completedDestinations) === null || _a === void 0 ? void 0 : _a.map(function (destination) {
+            return "<div class=\"destination-card completed\" style=\"".concat(getBackgroundInlineStyleForDestination(_this.game.getMap(), destination), "\"></div>");
+        }), "\n            </div>\n            <div>\n                ").concat((_b = player.uncompletedDestinations) === null || _b === void 0 ? void 0 : _b.map(function (destination) {
+            return "<div class=\"destination-card uncompleted\" style=\"".concat(getBackgroundInlineStyleForDestination(_this.game.getMap(), destination), "\"></div>");
+        }), "\n            </div>\n        </div>");
+        if (document.getElementById("destinations-score-".concat(player.id))) {
+            this.game.setTooltip("destinations-score-".concat(player.id), html);
         }
     };
     /**
@@ -2544,15 +1812,15 @@ var EndScore = /** @class */ (function () {
      * Add Globetrotter badge to the Globetrotter winner(s).
      */
     EndScore.prototype.setGlobetrotterWinner = function (playerId, length) {
-        dojo.place("<div id=\"globetrotter-bonus-card-" + playerId + "\" class=\"globetrotter bonus-card bonus-card-icon\"></div>", "bonus-card-icons-" + playerId);
-        this.game.setTooltip("globetrotter-bonus-card-" + playerId, "\n        <div><strong>" + ('Most Completed Tickets') + " : " + length + "</strong></div>\n        <div>" + ('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.') + "</div>\n        <div class=\"globetrotter bonus-card\"></div>\n        ");
+        dojo.place("<div id=\"globetrotter-bonus-card-".concat(playerId, "\" class=\"globetrotter bonus-card bonus-card-icon\"></div>"), "bonus-card-icons-".concat(playerId));
+        this.game.setTooltip("globetrotter-bonus-card-".concat(playerId), "\n        <div><strong>".concat(/* TODO1910_*/ ('Most Completed Tickets'), " : ").concat(length, "</strong></div>\n        <div>").concat(/* TODO1910_*/ ('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.'), "</div>\n        <div class=\"globetrotter bonus-card\"></div>\n        "));
     };
     /**
      * Add longest path badge to the longest path winner(s).
      */
     EndScore.prototype.setLongestPathWinner = function (playerId, length) {
-        dojo.place("<div id=\"longest-path-bonus-card-" + playerId + "\" class=\"longest-path bonus-card bonus-card-icon\"></div>", "bonus-card-icons-" + playerId);
-        this.game.setTooltip("longest-path-bonus-card-" + playerId, "\n        <div><strong>" + _('Longest path') + " : " + length + "</strong></div>\n        <div>" + _('The player who has the Longest Continuous Path of routes receives this special bonus card and adds 10 points to his score.') + "</div>\n        <div class=\"longest-path bonus-card\"></div>\n        ");
+        dojo.place("<div id=\"longest-path-bonus-card-".concat(playerId, "\" class=\"longest-path bonus-card bonus-card-icon\"></div>"), "bonus-card-icons-".concat(playerId));
+        this.game.setTooltip("longest-path-bonus-card-".concat(playerId), "\n        <div><strong>".concat(_('Longest path'), " : ").concat(length, "</strong></div>\n        <div>").concat(_('The player who has the Longest Continuous Path of routes receives this special bonus card and adds 10 points to his score.'), "</div>\n        <div class=\"longest-path bonus-card\"></div>\n        "));
     };
     return EndScore;
 }());
@@ -2587,17 +1855,24 @@ var TicketToRide = /** @class */ (function () {
     */
     TicketToRide.prototype.setup = function (gamedatas) {
         var _this = this;
-        // ignore loading of some pictures
-        if (!gamedatas.expansion1910) {
-            this.dontPreloadImage('destinations-1910.jpg');
-            this.dontPreloadImage('destinations-mega.jpg');
-        }
+        var map = this.getMap();
+        Object.entries(map.cities).forEach(function (entry) { return entry[1].id = Number(entry[0]); });
+        Object.entries(map.routes).forEach(function (entry) { return entry[1].id = Number(entry[0]); });
+        Object.entries(map.destinations).forEach(function (typeEntry) { return Object.entries(typeEntry[1]).forEach(function (entry) { return entry[1].id = Number(entry[0]); }); });
+        document.getElementById("score").insertAdjacentHTML("beforebegin", "<link rel=\"stylesheet\" type=\"text/css\" href=\"".concat(g_gamethemeurl, "img/").concat(map.code, "/map.css\"/>"));
+        /*(this as any).ensureSpecificGameImageLoading([
+            `${map.code}/map.jpg`,
+            ...map.preloadImages.map(filename => `${map.code}/${filename}`)
+        ]);*/
+        g_img_preload.push.apply(g_img_preload, __spreadArray([
+            "".concat(map.code, "/map.jpg")
+        ], map.preloadImages.map(function (filename) { return "".concat(map.code, "/").concat(filename); }), true));
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
-        this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.expansion1910);
+        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.illustration);
         this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards, gamedatas.trainCarDeckCount, gamedatas.destinationDeckCount, gamedatas.trainCarDeckMaxCount, gamedatas.destinationDeckMaxCount);
-        this.destinationSelection = new DestinationSelection(this);
+        this.destinationSelection = new DestinationSelection(this, map);
         var player = gamedatas.players[this.getPlayerId()];
         if (player) {
             this.playerTable = new PlayerTable(this, player, gamedatas.handTrainCars, gamedatas.handDestinations, gamedatas.completedDestinations);
@@ -2671,7 +1946,7 @@ var TicketToRide = /** @class */ (function () {
         this.trainCarSelection.setSelectableVisibleCards(args.availableVisibleCards);
     };
     TicketToRide.prototype.onEnteringConfirmTunnel = function (args) {
-        var route = ROUTES.find(function (route) { return route.id == args.tunnelAttempt.routeId; });
+        var route = this.getMap().routes[args.tunnelAttempt.routeId];
         this.map.setHoveredRoute(route, true);
         this.trainCarSelection.showTunnelCards(args.tunnelAttempt.tunnelCards);
     };
@@ -2746,7 +2021,7 @@ var TicketToRide = /** @class */ (function () {
                     break;
                 case 'confirmTunnel':
                     var confirmTunnelArgs = args;
-                    var confirmLabel = /* TODO MAPS _*/ ("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : " (" + ("You don't have enough cards") + ")");
+                    var confirmLabel = /* TODO MAPS _*/ ("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : " (".concat(/* TODO MAPS _*/ ("You don't have enough cards"), ")"));
                     this.addActionButton('claimTunnel_button', confirmLabel, function () { return _this.claimTunnel(); });
                     this.addActionButton('skipTunnel_button', /* TODO MAPS _*/ ("Skip tunnel claim"), function () { return _this.skipTunnel(); }, null, null, 'gray');
                     if (!confirmTunnelArgs.canPay) {
@@ -2759,9 +2034,6 @@ var TicketToRide = /** @class */ (function () {
     ///////////////////////////////////////////////////
     //// Utility methods
     ///////////////////////////////////////////////////
-    TicketToRide.prototype.expansion1910 = function () {
-        return this.gamedatas.expansion1910;
-    };
     TicketToRide.prototype.isGlobetrotterBonusActive = function () {
         return this.gamedatas.isGlobetrotterBonusActive;
     };
@@ -2839,6 +2111,12 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.isDoubleRouteForbidden = function () {
         return Object.values(this.gamedatas.players).length <= 3;
     };
+    TicketToRide.prototype.getMap = function () {
+        return this.gamedatas.map;
+    };
+    TicketToRide.prototype.getCityName = function (id) {
+        return this.gamedatas.map.cities[id].name;
+    };
     /**
      * Place counters on player panels.
      */
@@ -2846,29 +2124,29 @@ var TicketToRide = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
-            document.getElementById("overall_player_board_" + player.id).dataset.playerColor = player.color;
+            document.getElementById("overall_player_board_".concat(player.id)).dataset.playerColor = player.color;
             // public counters
-            dojo.place("<div class=\"counters\">\n                <div id=\"train-car-counter-" + player.id + "-wrapper\" class=\"counter train-car-counter\">\n                    <div class=\"icon train\" data-player-color=\"" + player.color + "\" data-color-blind-player-no=\"" + player.playerNo + "\"></div> \n                    <span id=\"train-car-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"train-car-card-counter-" + player.id + "-wrapper\" class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card-icon\"></div> \n                    <span id=\"train-car-card-counter-" + player.id + "\"></span>\n                </div>\n                <div id=\"destinations-counter-" + player.id + "-wrapper\" class=\"counter destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-" + player.id + "\">" + (_this.getPlayerId() !== playerId ? '?' : '') + "</span>/<span id=\"destination-card-counter-" + player.id + "\"></span>\n                </div>\n            </div>", "player_board_" + player.id);
+            dojo.place("<div class=\"counters\">\n                <div id=\"train-car-counter-".concat(player.id, "-wrapper\" class=\"counter train-car-counter\">\n                    <div class=\"icon train\" data-player-color=\"").concat(player.color, "\" data-color-blind-player-no=\"").concat(player.playerNo, "\"></div> \n                    <span id=\"train-car-counter-").concat(player.id, "\"></span>\n                </div>\n                <div id=\"train-car-card-counter-").concat(player.id, "-wrapper\" class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card-icon\"></div> \n                    <span id=\"train-car-card-counter-").concat(player.id, "\"></span>\n                </div>\n                <div id=\"destinations-counter-").concat(player.id, "-wrapper\" class=\"counter destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-").concat(player.id, "\">").concat(_this.getPlayerId() !== playerId ? '?' : '', "</span>/<span id=\"destination-card-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>"), "player_board_".concat(player.id));
             var trainCarCounter = new ebg.counter();
-            trainCarCounter.create("train-car-counter-" + player.id);
+            trainCarCounter.create("train-car-counter-".concat(player.id));
             trainCarCounter.setValue(player.remainingTrainCarsCount);
             _this.trainCarCounters[playerId] = trainCarCounter;
             var trainCarCardCounter = new ebg.counter();
-            trainCarCardCounter.create("train-car-card-counter-" + player.id);
+            trainCarCardCounter.create("train-car-card-counter-".concat(player.id));
             trainCarCardCounter.setValue(player.trainCarsCount);
             _this.trainCarCardCounters[playerId] = trainCarCardCounter;
             var destinationCardCounter = new ebg.counter();
-            destinationCardCounter.create("destination-card-counter-" + player.id);
+            destinationCardCounter.create("destination-card-counter-".concat(player.id));
             destinationCardCounter.setValue(player.destinationsCount);
             _this.destinationCardCounters[playerId] = destinationCardCounter;
             // private counters
             if (_this.getPlayerId() === playerId) {
                 _this.completedDestinationsCounter = new ebg.counter();
-                _this.completedDestinationsCounter.create("completed-destinations-counter-" + player.id);
+                _this.completedDestinationsCounter.create("completed-destinations-counter-".concat(player.id));
                 _this.completedDestinationsCounter.setValue(gamedatas.completedDestinations.length);
             }
             if (gamedatas.showTurnOrder && gamedatas.gamestate.id < 30) { // don't show turn order if game is already started (refresh or TB game)
-                dojo.place("<div class=\"player-turn-order\">" + _('Player ${number}').replace('${number}', "<strong>" + player.playerNo + "</strong>") + "</div>", "player_board_" + player.id);
+                dojo.place("<div class=\"player-turn-order\">".concat(_('Player ${number}').replace('${number}', "<strong>".concat(player.playerNo, "</strong>")), "</div>"), "player_board_".concat(player.id));
             }
         });
         this.setTooltipToClass('train-car-counter', _("Remaining train cars"));
@@ -2979,7 +2257,7 @@ var TicketToRide = /** @class */ (function () {
         if (needToCheckDoubleRoute === undefined) {
             needToCheckDoubleRoute = this.askDoubleRouteActive();
         }
-        var otherRoute = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+        var otherRoute = Object.values(this.getMap().routes).find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
         var askDoubleRouteColor = needToCheckDoubleRoute && otherRoute && otherRoute.color != route.color && this.canClaimRoute(route, 0) && this.canClaimRoute(otherRoute, 0);
         if (askDoubleRouteColor) {
             var selectedColor = this.playerTable.getSelectedColor();
@@ -3011,9 +2289,9 @@ var TicketToRide = /** @class */ (function () {
                 else if (possibleColors.length > 1) {
                     possibleColors.forEach(function (color) {
                         var label = dojo.string.substitute(_("Use ${color}"), {
-                            'color': "<div class=\"train-car-color icon\" data-color=\"" + color + "\"></div> " + getColor(color, 'train-car')
+                            'color': "<div class=\"train-car-color icon\" data-color=\"".concat(color, "\"></div> ").concat(getColor(color, 'train-car'))
                         });
-                        _this.addActionButton("claimRouteWithColor_button" + color, label, function () { return _this.askRouteClaimConfirmation(route, color); });
+                        _this.addActionButton("claimRouteWithColor_button".concat(color), label, function () { return _this.askRouteClaimConfirmation(route, color); });
                     });
                     this.playerTable.setSelectableTrainCarColors(route, possibleColors);
                 }
@@ -3082,12 +2360,12 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.setActionBarConfirmRouteClaim = function (route, color) {
         var _this = this;
         var chooseActionArgs = this.gamedatas.gamestate.args;
-        var colors = chooseActionArgs.costForRoute[route.id][color].map(function (cardColor) { return "<div class=\"train-car-color icon\" data-color=\"" + cardColor + "\"></div>"; });
+        var colors = chooseActionArgs.costForRoute[route.id][color].map(function (cardColor) { return "<div class=\"train-car-color icon\" data-color=\"".concat(cardColor, "\"></div>"); });
         var confirmationQuestion = _("Confirm ${color} route from ${from} to ${to} with ${colors} ?")
             .replace('${color}', getColor(route.color, 'route'))
-            .replace('${from}', CITIES_NAMES[route.from])
-            .replace('${to}', CITIES_NAMES[route.to])
-            .replace('${colors}', "<div class=\"color-cards\">" + colors.join('') + "</div>");
+            .replace('${from}', this.getCityName(route.from))
+            .replace('${to}', this.getCityName(route.to))
+            .replace('${colors}', "<div class=\"color-cards\">".concat(colors.join(''), "</div>"));
         this.setChooseActionGamestateDescription(confirmationQuestion);
         document.getElementById("generalactions").innerHTML = '';
         this.addActionButton("confirmRouteClaim-button", _("Confirm"), function () { return _this.confirmRouteClaim(); });
@@ -3116,7 +2394,7 @@ var TicketToRide = /** @class */ (function () {
         this.setChooseActionGamestateDescription(question);
         document.getElementById("generalactions").innerHTML = '';
         [clickedRoute, otherRoute].forEach(function (route) {
-            _this.addActionButton("claimDoubleRoute" + route.id + "-button", getColor(route.color, 'route'), function () { return _this.clickedRoute(route, false); });
+            _this.addActionButton("claimDoubleRoute".concat(route.id, "-button"), getColor(route.color, 'route'), function () { return _this.clickedRoute(route, false); });
         });
         this.addActionButton("cancelRouteClaim-button", _("Cancel"), function () { return _this.cancelRouteClaim(); }, null, null, 'gray');
     };
@@ -3126,7 +2404,7 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.askRouteClaimConfirmation = function (route, color) {
         var selectedColor = this.playerTable.getSelectedColor();
         if (route.color !== 0 && selectedColor !== null && selectedColor !== 0 && route.color !== selectedColor) {
-            var otherRoute = ROUTES.find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
+            var otherRoute = Object.values(this.getMap().routes).find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
             if (otherRoute.color === selectedColor) {
                 this.askRouteClaimConfirmation(otherRoute, selectedColor);
             }
@@ -3268,7 +2546,7 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.takeAction = function (action, data) {
         data = data || {};
         data.lock = true;
-        this.ajaxcall("/tickettoride/tickettoride/" + action + ".html", data, this, function () { });
+        this.ajaxcall("/tickettoride/tickettoride/".concat(action, ".html"), data, this, function () { });
     };
     TicketToRide.prototype.isFastEndScoring = function () {
         var _a;
@@ -3308,7 +2586,7 @@ var TicketToRide = /** @class */ (function () {
             ['highlightWinnerScore', 1],
         ];
         notifs.forEach(function (notif) {
-            dojo.subscribe(notif[0], _this, "notif_" + notif[0]);
+            dojo.subscribe(notif[0], _this, "notif_".concat(notif[0]));
             _this.notifqueue.setSynchronous(notif[0], notif[1]);
         });
         this.notifqueue.setIgnoreNotificationCheck('trainCarPicked', function (notif) {
@@ -3411,7 +2689,7 @@ var TicketToRide = /** @class */ (function () {
      */
     TicketToRide.prototype.notif_notEnoughTrainCars = function () {
         this.showMessage(_("Not enough train cars left to claim the route."), 'error');
-        var animatedElement = document.getElementById("train-car-counter-" + this.getPlayerId() + "-wrapper");
+        var animatedElement = document.getElementById("train-car-counter-".concat(this.getPlayerId(), "-wrapper"));
         animatedElement.classList.remove('animate-low-count');
         setTimeout(function () { return animatedElement.classList.add('animate-low-count'); }, 1);
         if (document.getElementById("confirmRouteClaim-button")) {
@@ -3426,7 +2704,7 @@ var TicketToRide = /** @class */ (function () {
      */
     TicketToRide.prototype.notif_lastTurn = function (animate) {
         if (animate === void 0) { animate = true; }
-        dojo.place("<div id=\"last-round\">\n            <span class=\"last-round-text " + (animate ? 'animate' : '') + "\">" + _("This is the final round!") + "</span>\n        </div>", 'page-title');
+        dojo.place("<div id=\"last-round\">\n            <span class=\"last-round-text ".concat(animate ? 'animate' : '', "\">").concat(_("This is the final round!"), "</span>\n        </div>"), 'page-title');
     };
     /**
      * Save best score for end score animations.
@@ -3449,7 +2727,7 @@ var TicketToRide = /** @class */ (function () {
         }
         else {
             player.uncompletedDestinations.push(notif.args.destination);
-            (_b = document.getElementById("destination-card-" + notif.args.destination.id)) === null || _b === void 0 ? void 0 : _b.classList.add('uncompleted');
+            (_b = document.getElementById("destination-card-".concat(notif.args.destination.id))) === null || _b === void 0 ? void 0 : _b.classList.add('uncompleted');
         }
         (_c = this.endScore) === null || _c === void 0 ? void 0 : _c.updateDestinationsTooltip(player);
     };
@@ -3489,15 +2767,15 @@ var TicketToRide = /** @class */ (function () {
         try {
             if (log && args && !args.processed) {
                 if (typeof args.color == 'number') {
-                    args.color = "<div class=\"train-car-color icon\" data-color=\"" + args.color + "\"></div>";
+                    args.color = "<div class=\"train-car-color icon\" data-color=\"".concat(args.color, "\"></div>");
                 }
                 if (typeof args.colors == 'object') {
-                    args.colors = args.colors.map(function (color) { return "<div class=\"train-car-color icon\" data-color=\"" + color + "\"></div>"; }).join('');
+                    args.colors = args.colors.map(function (color) { return "<div class=\"train-car-color icon\" data-color=\"".concat(color, "\"></div>"); }).join('');
                 }
                 // make cities names in bold 
                 ['from', 'to', 'count', 'extraCards', 'pickedCards'].forEach(function (field) {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
-                        args[field] = "<strong>" + _(args[field]) + "</strong>";
+                        args[field] = "<strong>".concat(_(args[field]), "</strong>");
                     }
                 });
                 ['you', 'actplayer', 'player_name'].forEach(function (field) {

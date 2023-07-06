@@ -160,12 +160,12 @@ class EndScore {
         let html = `<div class="destinations-flex">
             <div>
                 ${player.completedDestinations?.map(destination =>
-                    `<div class="destination-card completed" style="${getBackgroundInlineStyleForDestination(destination)}"></div>`
+                    `<div class="destination-card completed" style="${getBackgroundInlineStyleForDestination(this.game.getMap(), destination)}"></div>`
                 )}
             </div>
             <div>
                 ${player.uncompletedDestinations?.map(destination =>
-                    `<div class="destination-card uncompleted" style="${getBackgroundInlineStyleForDestination(destination)}"></div>`
+                    `<div class="destination-card uncompleted" style="${getBackgroundInlineStyleForDestination(this.game.getMap(), destination)}"></div>`
                 )}
             </div>
         </div>`;

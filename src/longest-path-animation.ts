@@ -42,7 +42,8 @@ class LongestPathAnimation extends WagonsAnimation {
         let x = 100;
         let y = 100;
         if (this.routes.length) {
-            const positions = [this.routes[0].from, this.routes[this.routes.length-1].to].map(cityId => CITIES.find(city => city.id == cityId));
+            const map = this.game.getMap();
+            const positions = [this.routes[0].from, this.routes[this.routes.length-1].to].map(cityId => map.cities[cityId]);
             x = (positions[0].x + positions[1].x) / 2;
             y = (positions[0].y + positions[1].y) / 2;
         }

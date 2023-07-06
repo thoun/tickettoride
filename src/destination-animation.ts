@@ -27,7 +27,7 @@ class DestinationCompleteAnimation extends WagonsAnimation {
             const fromBR = document.getElementById(this.fromId).getBoundingClientRect();
 
             dojo.place(`
-            <div id="animated-destination-card-${this.destination.id}" class="destination-card" style="${this.getCardPosition(this.destination)}${getBackgroundInlineStyleForDestination(this.destination)}"></div>
+            <div id="animated-destination-card-${this.destination.id}" class="destination-card" style="${this.getCardPosition(this.destination)}${getBackgroundInlineStyleForDestination(this.game.getMap(), this.destination)}"></div>
             `, 'map');
 
             const card = document.getElementById(`animated-destination-card-${this.destination.id}`);
@@ -81,7 +81,7 @@ class DestinationCompleteAnimation extends WagonsAnimation {
     }
     
     private getCardPosition(destination: Destination) {
-        const positions = [destination.from, destination.to].map(cityId => CITIES.find(city => city.id == cityId));
+        const positions = [destination.from, destination.to].map(cityId => this.game.getMap().cities[cityId]);
 
         let x = (positions[0].x + positions[1].x) / 2;
         let y = (positions[0].y + positions[1].y) / 2;

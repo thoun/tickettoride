@@ -26,9 +26,10 @@ class InMapZoomManager {
     private dragClientX: number;
     private dragClientY: number;
 
-    constructor() {        
+    constructor(map: TicketToRideMap) {        
         this.mapZoomDiv = document.getElementById('map-zoom') as HTMLDivElement;
         this.mapDiv = document.getElementById('map') as HTMLDivElement;
+
         // Attach the handler
         this.mapDiv.addEventListener('mousedown', e => this.mouseDownHandler(e));
         document.addEventListener('mousemove', e => this.mouseMoveHandler(e));
@@ -160,29 +161,30 @@ class TtrMap {
      */ 
     constructor(
         private game: TicketToRideGame,
+        private map: TicketToRideMap,
         private players: TicketToRidePlayer[],
         claimedRoutes: ClaimedRoute[],
-        expansion: number,
+        illustration: number,
     ) {
         // map border
         dojo.place(`
-            <div class="illustration" data-expansion="${expansion}"></div>
+            <div class="illustration" data-illustration="${illustration}"></div>
             <div id="cities"></div>
             <div id="route-spaces"></div>
             <div id="train-cars"></div>
         `, 'map', 'first');
         SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'map-and-borders'));
         CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map-and-borders'));
-        if (expansion == 3) {
-            BIG_CITIES.forEach(bigCity => dojo.place(`<div class="big-city" style="left: ${bigCity.x}px; top: ${bigCity.y}px; width: ${bigCity.width}px;"></div>`, 'cities'));
-        }     
+        map.bigCities.forEach(bigCity => dojo.place(`<div class="big-city" style="left: ${bigCity.x}px; top: ${bigCity.y}px; width: ${bigCity.width}px;"></div>`, 'cities')); 
 
-        CITIES.forEach(city => 
-            dojo.place(`<div id="city${city.id}" class="city" 
+        Object.entries(map.cities).forEach(entry => {
+            const id = Number(entry[0]);
+            const city = entry[1];
+            dojo.place(`<div id="city${id}" class="city" 
                 style="transform: translate(${city.x}px, ${city.y}px)"
-                title="${CITIES_NAMES[city.id]}"
+                title="${game.getCityName(id)}"
             ></div>`, 'cities')
-        );
+        });
 
         this.createRouteSpaces('route-spaces');
 
@@ -191,7 +193,7 @@ class TtrMap {
         this.resizedDiv = document.getElementById('resized') as HTMLDivElement;
         this.mapDiv = document.getElementById('map') as HTMLDivElement;
 
-        this.inMapZoomManager = new InMapZoomManager();
+        this.inMapZoomManager = new InMapZoomManager(map);
 
         this.game.setTooltipToClass(`train-car-deck-hidden-pile-tooltip`, `<strong>${_('Train cars deck')}</strong><br><br>
         ${_('Click here to pick one or two hidden train car cards')}`);
@@ -201,11 +203,14 @@ class TtrMap {
     }
 
     private createRouteSpaces(destination: 'route-spaces' | 'map-drag-overlay', shiftX: number = 0, shiftY: number = 0) {
-        ROUTES.forEach(route => 
+        Object.values(this.map.routes).forEach(route => 
             route.spaces.forEach((space, spaceIndex) => {
                 dojo.place(`<div id="${destination}-route${route.id}-space${spaceIndex}" class="route-space" 
                     style="transform: translate(${space.x + shiftX}px, ${space.y + shiftY}px) rotate(${space.angle}deg)"
-                    title="${dojo.string.substitute(_('${from} to ${to}'), {from: CITIES_NAMES[route.from], to: CITIES_NAMES[route.to]})}, ${(route.spaces as any).length} ${getColor(route.color, 'route')}"
+                    title="${dojo.string.substitute(_('${from} to ${to}'), {
+                        from: this.game.getCityName(route.from),
+                        to: this.game.getCityName(route.to),
+                    })}, ${(route.spaces as any).length} ${getColor(route.color, 'route')}"
                     data-route="${route.id}" data-color="${route.color}"
                 ></div>`, destination);
                 const spaceDiv = document.getElementById(`${destination}-route${route.id}-space${spaceIndex}`);
@@ -226,7 +231,7 @@ class TtrMap {
 
         let overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -256,7 +261,7 @@ class TtrMap {
         
         let overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -293,7 +298,7 @@ class TtrMap {
         dojo.query('.route-space').removeClass('selectable');
 
         if (selectable) {
-            possibleRoutes.forEach(route => ROUTES.find(r => r.id == route.id).spaces.forEach((_, index) => 
+            possibleRoutes.forEach(route => this.map.routes[route.id].spaces.forEach((_, index) => 
                 document.getElementById(`route-spaces-route${route.id}-space${index}`)?.classList.add('selectable'))
             );
         }
@@ -305,12 +310,12 @@ class TtrMap {
      */ 
     public setClaimedRoutes(claimedRoutes: ClaimedRoute[], fromPlayerId: number) {
         claimedRoutes.forEach(claimedRoute => {
-            const route = ROUTES.find(r => r.id == claimedRoute.routeId);
+            const route = this.map.routes[claimedRoute.routeId];
             const player = this.players.find(player => Number(player.id) == claimedRoute.playerId);
             this.setWagons(route, player, fromPlayerId, false);
 
             if (this.game.isDoubleRouteForbidden()) {
-                const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+                const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
                 otherRoute?.spaces.forEach((space, spaceIndex) => {
                     const spaceDiv = document.getElementById(`route-spaces-route${otherRoute.id}-space${spaceIndex}`);
                     if (spaceDiv) {
@@ -428,7 +433,7 @@ class TtrMap {
      * Check if the route is mostly horizontal, and the lowest from a double route
      */ 
     private isLowestFromDoubleHorizontalRoute(route: Route) {
-        const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+        const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
         if (!otherRoute) { // not a double route
             return false;
         }
@@ -527,7 +532,7 @@ class TtrMap {
 
         } else {
 
-            ROUTES.forEach(r => [r.from, r.to].forEach(city => 
+            Object.values(this.map.routes).forEach(r => [r.from, r.to].forEach(city => 
                 document.getElementById(`city${city}`).dataset.hovered = 'false'
             ));
 

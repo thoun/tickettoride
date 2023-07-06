@@ -136,20 +136,9 @@
   .illustration {
     position: absolute;
     pointer-events: none;
-    background-image: url('img/border-map-illustration.png');
     left: 0;
     bottom: 0;
-    width: 258px;
-    height: 206px;
     z-index: 4;
-
-    @for $i from 1 through 3 {
-      &[data-expansion="#{$i}"] {
-        background-image: url('img/border-map-illustration-#{$i}.png');
-        width: 405px;
-        height: 260px;
-      }
-    }
   }
 }
 
@@ -178,7 +167,6 @@
     position: relative;
     width: 1744px;
     height: 1125px;
-    background: url('img/map.jpg');
     transform-origin: top left;
 }
 

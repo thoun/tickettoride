@@ -1,0 +1,18 @@
+#map {
+    background-image: url('./map.jpg');
+}
+
+.illustration {
+    background-image: url('./border-map-illustration.png');
+    width: 258px;
+    height: 206px;
+}
+
+.illustration[data-illustration="1"], .illustration[data-illustration="2"], .illustration[data-illustration="3"] {
+    width: 405px;
+    height: 260px;
+}
+
+.illustration[data-illustration="1"] { background-image: url('./border-map-illustration-1.png'); }
+.illustration[data-illustration="2"] { background-image: url('./border-map-illustration-2.png'); }
+.illustration[data-illustration="3"] { background-image: url('./border-map-illustration-3.png'); }

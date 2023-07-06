@@ -11,19 +11,21 @@ class DestinationSelection {
      * Init stock.
      */ 
     constructor(
-        private game: TicketToRideGame) {
+        private game: TicketToRideGame,
+        map: TicketToRideMap,
+    ) {
 
         this.destinations = new ebg.stock() as Stock;
         this.destinations.setSelectionAppearance('class');
         this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
         this.destinations.create(game, $(`destination-stock`), CARD_WIDTH, CARD_HEIGHT);
-        this.destinations.onItemCreate = (cardDiv: HTMLDivElement, cardUniqueId) => setupDestinationCardDiv(cardDiv, Number(cardUniqueId), this.game.expansion1910());
+        this.destinations.onItemCreate = (cardDiv: HTMLDivElement, cardUniqueId) => setupDestinationCardDiv(game, cardDiv, Number(cardUniqueId));
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
         this.destinations.item_margin = 20;
         dojo.connect(this.destinations, 'onChangeSelection', this, () => this.selectionChange());
-        setupDestinationCards(this.destinations);
+        setupDestinationCards(map, this.destinations);
     }
 
     /**
@@ -33,7 +35,7 @@ class DestinationSelection {
         dojo.removeClass('destination-deck', 'hidden');
 
         destinations.forEach(destination => {
-            this.destinations.addToStockWithId(destination.type * 100 + destination.type_arg, ''+destination.id);
+            this.destinations.addToStockWithId(destination.type * 1000 + destination.type_arg, ''+destination.id);
 
             const cardDiv = document.getElementById(`destination-stock_item_${destination.id}`);
             // when mouse hover destination, highlight it on the map

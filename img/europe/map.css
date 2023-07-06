@@ -1,0 +1,9 @@
+#map {
+    background-image: url('./map.jpg');
+}
+
+.illustration {
+    background-image: url('./border-map-illustration.png');
+    width: 258px;
+    height: 206px;
+}

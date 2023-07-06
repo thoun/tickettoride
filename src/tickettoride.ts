@@ -1,3 +1,5 @@
+declare const g_img_preload;
+
 const ANIMATION_MS = 500;
 const SCORE_MS = 1500;
 
@@ -46,11 +48,21 @@ class TicketToRide implements TicketToRideGame {
     */
 
     public setup(gamedatas: TicketToRideGamedatas) {
-        // ignore loading of some pictures
-        if (!gamedatas.expansion1910) {
-            (this as any).dontPreloadImage('destinations-1910.jpg');
-            (this as any).dontPreloadImage('destinations-mega.jpg');
-        }
+        const map = this.getMap();
+        Object.entries(map.cities).forEach(entry => entry[1].id = Number(entry[0]));
+        Object.entries(map.routes).forEach(entry => entry[1].id = Number(entry[0]));
+        Object.entries(map.destinations).forEach(typeEntry => Object.entries(typeEntry[1]).forEach(entry => entry[1].id = Number(entry[0])));
+
+        document.getElementById(`score`).insertAdjacentHTML(`beforebegin`, `<link rel="stylesheet" type="text/css" href="${g_gamethemeurl}img/${map.code}/map.css"/>`);
+
+        /*(this as any).ensureSpecificGameImageLoading([
+            `${map.code}/map.jpg`,
+            ...map.preloadImages.map(filename => `${map.code}/${filename}`)
+        ]);*/
+        g_img_preload.push(...[
+            `${map.code}/map.jpg`,
+            ...map.preloadImages.map(filename => `${map.code}/${filename}`)
+        ]);
 
         log("Starting game setup");
         
@@ -58,7 +70,7 @@ class TicketToRide implements TicketToRideGame {
 
         log('gamedatas', gamedatas);
 
-        this.map = new TtrMap(this, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.expansion1910);
+        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.illustration);
         this.trainCarSelection = new TrainCarSelection(this, 
             gamedatas.visibleTrainCards,
             gamedatas.trainCarDeckCount,
@@ -66,7 +78,7 @@ class TicketToRide implements TicketToRideGame {
             gamedatas.trainCarDeckMaxCount,
             gamedatas.destinationDeckMaxCount,
         );
-        this.destinationSelection = new DestinationSelection(this);
+        this.destinationSelection = new DestinationSelection(this, map);
 
         const player = gamedatas.players[this.getPlayerId()];
         if (player) {
@@ -150,7 +162,7 @@ class TicketToRide implements TicketToRideGame {
     }
     
     private onEnteringConfirmTunnel(args: EnteringConfirmTunnelArgs) {
-        const route = ROUTES.find(route => route.id == args.tunnelAttempt.routeId);
+        const route = this.getMap().routes[args.tunnelAttempt.routeId];
         this.map.setHoveredRoute(route, true);
         this.trainCarSelection.showTunnelCards(args.tunnelAttempt.tunnelCards);
     }
@@ -244,9 +256,6 @@ class TicketToRide implements TicketToRideGame {
 
     ///////////////////////////////////////////////////
     
-    public expansion1910(): number {
-        return this.gamedatas.expansion1910;
-    }
     public isGlobetrotterBonusActive(): boolean {
         return this.gamedatas.isGlobetrotterBonusActive;
     }
@@ -332,6 +341,14 @@ class TicketToRide implements TicketToRideGame {
 
     public isDoubleRouteForbidden(): boolean {
         return Object.values(this.gamedatas.players).length <= 3;
+    }
+
+    public getMap(): TicketToRideMap {
+        return this.gamedatas.map;
+    }
+
+    public getCityName(id: number): string {
+        return this.gamedatas.map.cities[id].name;
     }
 
     /**
@@ -508,7 +525,7 @@ class TicketToRide implements TicketToRideGame {
             needToCheckDoubleRoute = this.askDoubleRouteActive();
         }
 
-        const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+        const otherRoute = Object.values(this.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
         let askDoubleRouteColor = needToCheckDoubleRoute && otherRoute && otherRoute.color != route.color && this.canClaimRoute(route, 0) && this.canClaimRoute(otherRoute, 0);
         if (askDoubleRouteColor) {
             const selectedColor = this.playerTable.getSelectedColor();
@@ -620,8 +637,8 @@ class TicketToRide implements TicketToRideGame {
         const colors = chooseActionArgs.costForRoute[route.id][color].map(cardColor => `<div class="train-car-color icon" data-color="${cardColor}"></div>`);
         const confirmationQuestion = _("Confirm ${color} route from ${from} to ${to} with ${colors} ?")
             .replace('${color}', getColor(route.color, 'route'))
-            .replace('${from}', CITIES_NAMES[route.from])
-            .replace('${to}', CITIES_NAMES[route.to])
+            .replace('${from}', this.getCityName(route.from))
+            .replace('${to}', this.getCityName(route.to))
             .replace('${colors}', `<div class="color-cards">${colors.join('')}</div>`);
         this.setChooseActionGamestateDescription(confirmationQuestion);
 
@@ -664,7 +681,7 @@ class TicketToRide implements TicketToRideGame {
     public askRouteClaimConfirmation(route: Route, color: number) {
         const selectedColor = this.playerTable.getSelectedColor();
         if (route.color !== 0 && selectedColor !== null && selectedColor !== 0 && route.color !== selectedColor) {
-            const otherRoute = ROUTES.find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            const otherRoute = Object.values(this.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
             if (otherRoute.color === selectedColor) {
                 this.askRouteClaimConfirmation(otherRoute, selectedColor);
             }
