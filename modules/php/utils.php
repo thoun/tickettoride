@@ -196,8 +196,8 @@ trait UtilTrait {
                         'playerId' => $playerId,
                         'player_name' => $this->getPlayerName($playerId),
                         'destination' => $destination,
-                        'from' => $this->CITIES[$destination->from],
-                        'to' => $this->CITIES[$destination->to],
+                        'from' => $this->getCityName($destination->from),
+                        'to' => $this->getCityName($destination->to),
                         'you' => clienttranslate('You'),
                         'i18n' => ['you'],
                         'destinationRoutes' => $destinationRoutes,
@@ -208,5 +208,9 @@ trait UtilTrait {
                 }
             }
         }
+    }
+
+    function getCityName(string $id) {
+        return $this->CITIES[$id]->name;
     }
 }

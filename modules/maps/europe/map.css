@@ -1,0 +1,9 @@
+#map {
+    background-image: url('../../../img/europe/map.jpg');
+}
+
+.illustration {
+    background-image: url('img/europe/border-map-illustration.png');
+    width: 258px;
+    height: 206px;
+}

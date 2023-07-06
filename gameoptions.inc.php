@@ -24,32 +24,10 @@
  *
  */
 
-$game_options = [    
-    /*TODO1910 101 => [ // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
-        'name' => totranslate('1910 Expansion'),
-        'values' => [
-            0 => [
-                'name' => totranslate('Disabled'),
-            ],
-            1 => [
-                'name' => totranslate('1910'),
-                'description' => totranslate('New tickets. Globetrotter - Most Completed Tickets bonus card instead of Longest Route Bonus card'),
-                'tmdisplay' => totranslate('1910 Expansion : 1910'),
-            ],
-            2 => [
-                'name' => totranslate('The Mega Game'),
-                'description' => totranslate('All tickets, both bonus cards, more tickets when choosing'),
-                'tmdisplay' => totranslate('1910 Expansion : The Mega Game'),
-            ],
-            3 => [
-                'name' => totranslate('The Big Cities'),
-                'description' => totranslate('Tickets with Big Cities'),
-                'tmdisplay' => totranslate('1910 Expansion : The Big Cities'),
-            ],
-        ],
-        'default' => 0,
-    ],*/
+require_once('modules/php/constants.inc.php');
+require_once('modules/maps/'.MAP.'/constants.inc.php');
 
+$game_options = getMapOptions() + [
     110 => [
         'name' => totranslate('Turn order'),
         'values' => [

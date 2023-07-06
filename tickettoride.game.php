@@ -20,6 +20,7 @@
 require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
 
 require_once('modules/php/constants.inc.php');
+require_once('modules/maps/'.MAP.'/constants.inc.php');
 require_once('modules/php/utils.php');
 require_once('modules/php/states.php');
 require_once('modules/php/args.php');
@@ -28,7 +29,7 @@ require_once('modules/php/map.php');
 require_once('modules/php/train-car-deck.php');
 require_once('modules/php/destination-deck.php');
 require_once('modules/php/debug-util.php');
-require_once('modules/php/expansion.php');
+require_once('modules/maps/'.MAP.'/settings.php');
 
 /*
  * Game main class.
@@ -43,18 +44,17 @@ class TicketToRide extends Table {
     use TrainCarDeckTrait;
     use DestinationDeckTrait;
     use DebugUtilTrait;
-    use ExpansionTrait;
+    use SettingsTrait;
 
 	function __construct() {
         parent::__construct();
         
-        $this->initGameStateLabels([
+        $this->initGameStateLabels(array_merge([
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
 
             // options
-            EXPANSION1910 => 101, // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
             SHOW_TURN_ORDER => 110, // last turn is the id of the player starting last turn, 0 if it's not last turn
-        ]);
+        ], INIT_GAME_STATE_LABELS));
         
         $this->destinations = $this->getNew("module.common.deck");
         $this->destinations->init("destination");
@@ -62,7 +62,7 @@ class TicketToRide extends Table {
         $this->trainCars = $this->getNew("module.common.deck");
         $this->trainCars->init("traincar"); 
         $this->trainCars->autoreshuffle = true;
-        $this->trainCars->autoreshuffle_trigger = array('obj' => $this, 'method' => 'trainCarDeckAutoReshuffle');
+        $this->trainCars->autoreshuffle_trigger = ['obj' => $this, 'method' => 'trainCarDeckAutoReshuffle'];
 	}
 	
     protected function getGameName() {
@@ -143,7 +143,7 @@ class TicketToRide extends Table {
         //$this->initStat('table', 'longestPath', 0); // only computed at the end
         //$this->initStat('player', 'longestPath', 0); // only computed at the end
         $this->initStat('player', 'longestPathBonus', 0);
-        $this->initStat('player', 'globetrotterBonus', 0);
+        // TODO1910 $this->initStat('player', 'globetrotterBonus', 0);
 
         // setup the initial game situation here
 
@@ -175,7 +175,17 @@ class TicketToRide extends Table {
         $stateName = $this->gamestate->state()['name']; 
         $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
 
-        $result = [];
+        $result = [
+            'map' => [
+                'code' => MAP,
+                'cities' => $this->CITIES,
+                'routes' => $this->ROUTES,
+                'destinations' => $this->DESTINATIONS,
+                'bigCities' => $this->getBigCities(),
+                'illustration' => $this->getExpansionOption(),
+                'preloadImages' => $this->getPreloadImages(),
+            ],
+        ];
     
         $currentPlayerId = $this->getCurrentPlayerId();    // !! We must only return informations visible by this player !!
     
@@ -222,7 +232,7 @@ class TicketToRide extends Table {
         $result['trainCarDeckMaxCount'] = 110;
         $result['destinationDeckMaxCount'] = 30;
 
-        $result['expansion1910'] = $this->getExpansionOption();
+        $result['expansion1910'] = $this->getExpansionOption(); // TODO REMOVE
         $result['isGlobetrotterBonusActive'] = $this->isGlobetrotterBonusActive();
         $result['isLongestPathBonusActive'] = $this->isLongestPathBonusActive();
         

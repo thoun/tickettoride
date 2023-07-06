@@ -163,8 +163,8 @@ trait StateTrait {
                     'playerId' => $playerId,
                     'player_name' => $this->getPlayerName($playerId),
                     'destination' => $destination,
-                    'from' => $this->CITIES[$destination->from],
-                    'to' => $this->CITIES[$destination->to],
+                    'from' => $this->getCityName($destination->from),
+                    'to' => $this->getCityName($destination->to),
                     'destinationRoutes' => $destinationRoutes,
                 ]);
                 
@@ -172,8 +172,8 @@ trait StateTrait {
                 $this->incScore($playerId, $points, $message, [
                     'delta' => $destination->points,
                     'absdelta' => abs($destination->points),
-                    'from' => $this->CITIES[$destination->from],
-                    'to' => $this->CITIES[$destination->to],
+                    'from' => $this->getCityName($destination->from),
+                    'to' => $this->getCityName($destination->to),
                     'i18n' => ['gainsloses'],
                     'gainsloses' => $completed ? clienttranslate('gains') : clienttranslate('loses'),
                 ]);
@@ -195,7 +195,7 @@ trait StateTrait {
         }
 
         // Globetrotter
-        if ($isGlobetrotterBonusActive) {
+        /* TODO1910 if ($isGlobetrotterBonusActive) {
             foreach ($globetrotterWinners as $playerId) {
                 $points = POINTS_FOR_GLOBETROTTER;
                 $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with Globetrotter : ${destinations} completed destinations'), [
@@ -210,7 +210,7 @@ trait StateTrait {
 
                 $this->setStat(1, 'globetrotterBonus', $playerId);
             }
-        }
+        }*/
 
         // Longest continuous path 
         if ($isLongestPathBonusActive) {
