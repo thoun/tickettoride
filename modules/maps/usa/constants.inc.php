@@ -58,29 +58,6 @@ function getMapOptions() {
                 ],
             ],
             'default' => 0,
-            'startcondition' => [
-                1 => [
-                    [ 
-                        'type' => 'minplayers',
-                        'value' => 9,
-                        'message' => 'Available soon',
-                    ] 
-                ],
-                2 => [
-                    [ 
-                        'type' => 'minplayers',
-                        'value' => 9,
-                        'message' => 'Available soon',
-                    ] 
-                ],
-                3 => [
-                    [ 
-                        'type' => 'minplayers',
-                        'value' => 9,
-                        'message' => 'Available soon',
-                    ] 
-                ],
-            ],
         ],
     ];
 } 

@@ -41,7 +41,7 @@ function get1910Destinations() {
   return [
     101 => new DestinationCard(3, 18, 14), // Calgary	Nashville	14
     102 => new DestinationCard(5, 1, 5), // Chicago	Atlanta 5
-    103 => new DestinationCard(5, 2, 5), // Chicago	Boston	5
+    103 => new DestinationCard(5, 2, 7), // Chicago	Boston	7
     104 => new DestinationCard(5, 20, 5), // Chicago	New-York	5
     105 => new DestinationCard(7, 27, 6), // Denver	Saint Louis	6
     106 => new DestinationCard(8, 6, 7), // Duluth	Dallas	7
