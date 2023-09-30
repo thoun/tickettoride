@@ -13,7 +13,7 @@
 $gameinfos = [
 
 // Name of the game in English (will serve as the basis for translation) 
-'game_name' => "Ticket to Ride",
+'game_name' => "Ticket to Ride: Europe",
 
 // Game designer (or game designers, separated by commas)
 'designer' => 'Alan R. Moon',       
@@ -22,7 +22,7 @@ $gameinfos = [
 'artist' => 'Cyrille Daujean, Julien Delval',         
 
 // Year of FIRST publication of this game. Can be negative.
-'year' => 2004,                 
+'year' => 2005,                 
 
 // Game publisher (use empty string if there is no publisher)
 'publisher' => 'Days of Wonder',                     
@@ -34,7 +34,7 @@ $gameinfos = [
 'publisher_bgg_id' => 1027,
 
 // Board game geek ID of the game
-'bgg_id' => 9209,
+'bgg_id' => 0, // TODO MAPS 14996
 
 
 // Players configuration that can be played (ex: 2 to 4 players)
@@ -65,8 +65,8 @@ $gameinfos = [
 // the formula used to compute "player_score_aux". This description will be used as a tooltip to explain
 // the tie breaker to the players.
 // Note: if you are NOT using any tie breaker, leave the empty string.
-'tie_breaker_description' => totranslate("Most completed Destination Tickets, or Longest Continuous Path"),
-'tie_breaker_split' => [1000, 1],
+'tie_breaker_description' => totranslate("Most completed Destination Tickets, least number of Stations, or Longest Continuous Path"),
+'tie_breaker_split' => [1000, 100, 1],
 
 // If in the game, all losers are equal (no score to rank them or explicit in the rules that losers are not ranked between them), set this to true 
 // The game end result will display "Winner" for the 1st player and "Loser" for all other players
@@ -131,7 +131,7 @@ $gameinfos = [
 // Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
 // A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
 'presentation' => [ // description from https://www.daysofwonder.com/tickettoride/en/
-    totranslate("Ticket to Ride is a cross-country train adventure where players collect cards of various types of train cars that enable them to claim railway routes connecting cities in various countries around the world."),
+    totranslate("From the craggy hillsides of Edinburgh to the sunlit docks of Constantinople, from the dusty alleys of Pamplona to a windswept station in Berlin, Ticket to Ride Europe takes you on an exciting train adventure through the great cities of turn-of-the-century Europe."),
 ],
 
 // Games categories

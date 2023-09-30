@@ -2,13 +2,13 @@
  /**
   *------
   * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
-  * TicketToRide implementation : © <Your name here> <Your email address here>
+  * TicketToRideEurope implementation : © <Your name here> <Your email address here>
   * 
   * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
   * See http://en.boardgamearena.com/#!doc/Studio for more information.
   * -----
   * 
-  * tickettoride.game.php
+  * tickettorideeurope.game.php
   *
   * This is the main file for your game logic.
   *
@@ -35,7 +35,7 @@ require_once('modules/maps/'.MAP.'/settings.php');
  * Game main class.
  * For readability, main sections (util, action, state, args) have been splited into Traits with the section name on modules/php directory.
  */
-class TicketToRide extends Table {
+class TicketToRideEurope extends Table {
     use UtilTrait;
     use ActionTrait;
     use StateTrait;
@@ -67,7 +67,7 @@ class TicketToRide extends Table {
 	
     protected function getGameName() {
 		// Used for translations and stuff. Please do not modify.
-        return "tickettoride";
+        return "tickettorideeurope";
     }	
 
     /*
