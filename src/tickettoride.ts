@@ -866,7 +866,7 @@ class TicketToRide implements TicketToRideGame {
     public takeAction(action: string, data?: any) {
         data = data || {};
         data.lock = true;
-        (this as any).ajaxcall(`/tickettoride/tickettoride/${action}.html`, data, this, () => {});
+        (this as any).ajaxcall(`/tickettorideeurope/tickettorideeurope/${action}.html`, data, this, () => {});
     }
 
     private isFastEndScoring() {
