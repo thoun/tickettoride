@@ -2,13 +2,13 @@
  /**
   *------
   * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
-  * TicketToRide implementation : © <Your name here> <Your email address here>
+  * TicketToRideEurope implementation : © <Your name here> <Your email address here>
   * 
   * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
   * See http://en.boardgamearena.com/#!doc/Studio for more information.
   * -----
   * 
-  * tickettoride.game.php
+  * tickettorideeurope.game.php
   *
   * This is the main file for your game logic.
   *
@@ -16,7 +16,7 @@
   *
   */
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideEurope;
 
 require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
 
@@ -71,7 +71,7 @@ class Game extends \Table {
 	
     protected function getGameName() {
 		// Used for translations and stuff. Please do not modify.
-        return "tickettoride";
+        return "tickettorideeurope";
     }	
 
     /*
