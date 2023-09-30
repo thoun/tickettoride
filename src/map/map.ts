@@ -205,12 +205,20 @@ class TtrMap {
     private createRouteSpaces(destination: 'route-spaces' | 'map-drag-overlay', shiftX: number = 0, shiftY: number = 0) {
         Object.values(this.map.routes).forEach(route => 
             route.spaces.forEach((space, spaceIndex) => {
+                let title = `${dojo.string.substitute(_('${from} to ${to}'), {
+                    from: this.game.getCityName(route.from),
+                    to: this.game.getCityName(route.to),
+                })}, ${(route.spaces as any).length} ${getColor(route.color, 'route')}`;
+                if (route.tunnel) {
+                    title += ` (${/* TODO MAPS _*/("Tunnel")})`;
+                }
+                if (route.locomotives) {
+                    title += ` (${/* TODO MAPS _*/("${number} locomotive(s) required").replace('${number}', `${route.locomotives}`)})`;
+                }  
+                
                 dojo.place(`<div id="${destination}-route${route.id}-space${spaceIndex}" class="route-space" 
                     style="transform: translate(${space.x + shiftX}px, ${space.y + shiftY}px) rotate(${space.angle}deg)"
-                    title="${dojo.string.substitute(_('${from} to ${to}'), {
-                        from: this.game.getCityName(route.from),
-                        to: this.game.getCityName(route.to),
-                    })}, ${(route.spaces as any).length} ${getColor(route.color, 'route')}"
+                    title="${title}"
                     data-route="${route.id}" data-color="${route.color}"
                 ></div>`, destination);
                 const spaceDiv = document.getElementById(`${destination}-route${route.id}-space${spaceIndex}`);

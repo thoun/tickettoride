@@ -18,7 +18,7 @@ function getRoutes() {
       new RouteSpace(761, 436, 155),
       new RouteSpace(820, 408, 155)
     ]),
-    3 => new Route(10, 10, RED, [
+    3 => new Route(44, 10, RED, [
       new RouteSpace(998, 592, 31)
     ]),
     4 => new Route(43, 45, RED, [
@@ -141,8 +141,8 @@ function getRoutes() {
       new RouteSpace(193, 1088, 160)
     ]),
     28 => new Route(30, 18, ORANGE, [
-      new RouteSpace(507, 566, 163),
-      new RouteSpace(566, 540, 150),
+      new RouteSpace(507, 566, 163, true),
+      new RouteSpace(572, 540, 150),
       new RouteSpace(621, 505, 144)
     ]),
     29 => new Route(27, 44, ORANGE, [
@@ -174,7 +174,7 @@ function getRoutes() {
       new RouteSpace(285, 604, 56),
       new RouteSpace(236, 563, 21)
     ]),
-    35 => new Route(14, 14, PINK, [
+    35 => new Route(14, 30, PINK, [
       new RouteSpace(387, 511, 46)
     ]),
     36 => new Route(18, 27, PINK, [
@@ -220,7 +220,7 @@ function getRoutes() {
       new RouteSpace(931, 35, 152)
     ]),
     45 => new Route(45, 37, YELLOW, [
-      new RouteSpace(1379, 280, 126),
+      new RouteSpace(1379, 280, 126, true),
       new RouteSpace(1422, 257, 36),
       new RouteSpace(1474, 295, 36)
     ]),
@@ -245,10 +245,10 @@ function getRoutes() {
       new RouteSpace(370, 550, 7)
     ]),
     50 => new Route(23, 15, BLACK, [
-      new RouteSpace(338, 284, 67),
-      new RouteSpace(313, 225, 67),
-      new RouteSpace(288, 167, 67),
-      new RouteSpace(263, 108, 67)
+      new RouteSpace(338, 284, 67, true),
+      new RouteSpace(313, 225, 67, true),
+      new RouteSpace(288, 167, 67, true),
+      new RouteSpace(263, 108, 67, true)
     ]),
     51 => new Route(24, 29, BLACK, [
       new RouteSpace(175, 926, 129),
@@ -261,7 +261,7 @@ function getRoutes() {
     ]),
     53 => new Route(2, 16, BLACK, [
       new RouteSpace(1573, 1073, 31),
-      new RouteSpace(1637, 1084, 171),
+      new RouteSpace(1637, 1084, 171, true),
       new RouteSpace(1677, 1057, 80)
     ]),
     54 => new Route(13, 32, BLACK, [
@@ -269,7 +269,7 @@ function getRoutes() {
       new RouteSpace(1099, 128, 127),
       new RouteSpace(1152, 90, 160)
     ]),
-    55 => new Route(1, 1, BLACK, [
+    55 => new Route(1, 8, BLACK, [
       new RouteSpace(517, 367, 114)
     ]),
     56 => new Route(18, 5, BLACK, [
@@ -282,8 +282,8 @@ function getRoutes() {
       new RouteSpace(621, 413, 45)
     ]),
     58 => new Route(18, 30, WHITE, [
-      new RouteSpace(608, 483, 144),
-      new RouteSpace(554, 519, 150),
+      new RouteSpace(608, 483, 144, true),
+      new RouteSpace(560, 519, 150),
       new RouteSpace(495, 545, 162)
     ]),
     59 => new Route(33, 7, WHITE, [
@@ -302,7 +302,7 @@ function getRoutes() {
       new RouteSpace(1398, 675, 166),
       new RouteSpace(1340, 707, 137)
     ]),
-    62 => new Route(44, 44, WHITE, [
+    62 => new Route(44, 10, WHITE, [
       new RouteSpace(985, 611, 31)
     ]),
     63 => new Route(20, 41, WHITE, [
@@ -317,26 +317,26 @@ function getRoutes() {
     ], true),
     65 => new Route(23, 14, GRAY, [
       new RouteSpace(345, 366, 96),
-      new RouteSpace(339, 430, 94, true)
-    ]),
+      new RouteSpace(339, 430, 94)
+    ], false, 1),
     66 => new Route(23, 14, GRAY, [
       new RouteSpace(368, 368, 96),
-      new RouteSpace(361, 432, 95, true)
-    ]),
+      new RouteSpace(361, 432, 95)
+    ], false, 1),
     67 => new Route(23, 1, GRAY, [
-      new RouteSpace(416, 320, 181, true),
-      new RouteSpace(482, 324, 182, true)
-    ]),
+      new RouteSpace(416, 320, 181),
+      new RouteSpace(482, 324, 182)
+    ], false, 2),
     68 => new Route(17, 20, GRAY, [
-      new RouteSpace(695, 293, 125, true),
+      new RouteSpace(695, 293, 125),
       new RouteSpace(730, 238, 125),
       new RouteSpace(766, 185, 124)
-    ]),
+    ], false, 1),
     69 => new Route(17, 20, GRAY, [
-      new RouteSpace(713, 306, 124, true),
+      new RouteSpace(713, 306, 124),
       new RouteSpace(748, 251, 124),
       new RouteSpace(785, 197, 124)
-    ]),
+    ], false, 1),
     70 => new Route(5, 13, GRAY, [
       new RouteSpace(863, 313, 99),
       new RouteSpace(889, 252, 126),
@@ -387,20 +387,20 @@ function getRoutes() {
     ]),
     79 => new Route(39, 36, GRAY, [
       new RouteSpace(1655, 782, 9),
-      new RouteSpace(1592, 772, 9, true)
-    ]),
+      new RouteSpace(1592, 772, 9)
+    ], false, 1),
     80 => new Route(36, 16, GRAY, [
-      new RouteSpace(1553, 811, 90, true),
-      new RouteSpace(1557, 876, 81, true),
+      new RouteSpace(1553, 811, 90),
+      new RouteSpace(1557, 876, 81),
       new RouteSpace(1580, 936, 55),
       new RouteSpace(1626, 982, 35)
-    ]),
+    ], false, 2),
     81 => new Route(36, 12, GRAY, [
-      new RouteSpace(1528, 810, 90, true),
-      new RouteSpace(1506, 873, 129, true),
+      new RouteSpace(1528, 810, 90),
+      new RouteSpace(1506, 873, 129),
       new RouteSpace(1463, 897, 217),
       new RouteSpace(1419, 921, 127)
-    ]),
+    ], false, 2),
     82 => new Route(21, 9, GRAY, [
       new RouteSpace(1369, 504, 108),
       new RouteSpace(1348, 567, 108),
@@ -408,34 +408,34 @@ function getRoutes() {
       new RouteSpace(1309, 688, 109)
     ]),
     83 => new Route(38, 28, GRAY, [
-      new RouteSpace(1267, 1097, 0, true),
-      new RouteSpace(1202, 1097, 1, true),
+      new RouteSpace(1267, 1097, 0),
+      new RouteSpace(1202, 1097, 1),
       new RouteSpace(1136, 1095, 180),
       new RouteSpace(1073, 1095, 180),
       new RouteSpace(1007, 1095, 180),
       new RouteSpace(942, 1094, 180)
-    ]),
+    ], false, 2),
     84 => new Route(38, 3, GRAY, [
       new RouteSpace(1275, 1061, 25),
-      new RouteSpace(1210, 1049, 180, true)
-    ]),
+      new RouteSpace(1210, 1049, 180)
+    ], false, 1),
     85 => new Route(3, 7, GRAY, [
       new RouteSpace(1121, 1062, 173),
       new RouteSpace(1054, 1056, 21),
       new RouteSpace(1007, 1011, 67),
-      new RouteSpace(981, 951, 67, true)
-    ]),
+      new RouteSpace(981, 951, 67)
+    ], false, 1),
     86 => new Route(7, 28, GRAY, [
-      new RouteSpace(959, 959, 67),
+      new RouteSpace(959, 959, 67, true),
       new RouteSpace(946, 1021, 135),
-      new RouteSpace(903, 1072, 130, true)
-    ]),
+      new RouteSpace(903, 1072, 130)
+    ], false, 1),
     87 => new Route(28, 33, GRAY, [
-      new RouteSpace(885, 1058, 128, true),
+      new RouteSpace(885, 1058, 128),
       new RouteSpace(906, 996, 91),
       new RouteSpace(886, 933, 53),
       new RouteSpace(838, 890, 29)
-    ]),
+    ], false, 1),
     88 => new Route(42, 46, GRAY, [
       new RouteSpace(827, 696, 165),
       new RouteSpace(892, 706, 214)
@@ -457,7 +457,7 @@ function getRoutes() {
       new RouteSpace(381, 949, 132)
     ]),
     92 => new Route(30, 47, GRAY, [
-      new RouteSpace(481, 608, 59),
+      new RouteSpace(481, 614, 59),
       new RouteSpace(529, 652, 27),
       new RouteSpace(593, 665, -0)
     ], true),
@@ -498,7 +498,7 @@ function getRoutes() {
       new RouteSpace(1358, 458, 4)
     ], true),
     100 => new Route(41, 31, GRAY, [
-      new RouteSpace(1018, 58, 52),
+      new RouteSpace(1018, 58, 52, true),
       new RouteSpace(1065, 48, 142),
       new RouteSpace(1128, 27, 180),
       new RouteSpace(1193, 27, 180),

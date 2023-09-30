@@ -36,6 +36,8 @@ interface Route {
     spaces: RouteSpace[];
     number?: number;
     color: number;
+    locomotives: number;
+    tunnel: boolean;
 }
 
 interface ClaimedRoute {

@@ -399,10 +399,17 @@ var TtrMap = /** @class */ (function () {
         if (shiftY === void 0) { shiftY = 0; }
         Object.values(this.map.routes).forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
-                dojo.place("<div id=\"".concat(destination, "-route").concat(route.id, "-space").concat(spaceIndex, "\" class=\"route-space\" \n                    style=\"transform: translate(").concat(space.x + shiftX, "px, ").concat(space.y + shiftY, "px) rotate(").concat(space.angle, "deg)\"\n                    title=\"").concat(dojo.string.substitute(_('${from} to ${to}'), {
+                var title = "".concat(dojo.string.substitute(_('${from} to ${to}'), {
                     from: _this.game.getCityName(route.from),
                     to: _this.game.getCityName(route.to),
-                }), ", ").concat(route.spaces.length, " ").concat(getColor(route.color, 'route'), "\"\n                    data-route=\"").concat(route.id, "\" data-color=\"").concat(route.color, "\"\n                ></div>"), destination);
+                }), ", ").concat(route.spaces.length, " ").concat(getColor(route.color, 'route'));
+                if (route.tunnel) {
+                    title += " (".concat(/* TODO MAPS _*/ ("Tunnel"), ")");
+                }
+                if (route.locomotives) {
+                    title += " (".concat(/* TODO MAPS _*/ ("${number} locomotive(s) required").replace('${number}', "".concat(route.locomotives)), ")");
+                }
+                dojo.place("<div id=\"".concat(destination, "-route").concat(route.id, "-space").concat(spaceIndex, "\" class=\"route-space\" \n                    style=\"transform: translate(").concat(space.x + shiftX, "px, ").concat(space.y + shiftY, "px) rotate(").concat(space.angle, "deg)\"\n                    title=\"").concat(title, "\"\n                    data-route=\"").concat(route.id, "\" data-color=\"").concat(route.color, "\"\n                ></div>"), destination);
                 var spaceDiv = document.getElementById("".concat(destination, "-route").concat(route.id, "-space").concat(spaceIndex));
                 if (destination == 'route-spaces') {
                     _this.setSpaceClickEvents(spaceDiv, route);

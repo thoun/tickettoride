@@ -476,8 +476,8 @@
   display: inline-block;
   margin: 10px;
   position: absolute;
-  top: 0;
-  left: 0;
+  top: -18px;
+  left: -37px;
   width: 54px;
   height: 16px;
 }
@@ -543,14 +543,13 @@
 }
 .wagon {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: -18px;
+  left: -37px;
   width: 85px;
   height: 85px;
   margin-left: -7px;
   margin-top: -28px;
   background-size: 600%;
-  pointer-events: none;
 }
 .wagon.angle0 {
   background-position: 0% 0%;

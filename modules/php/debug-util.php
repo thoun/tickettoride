@@ -21,7 +21,13 @@ trait DebugUtilTrait {
 
         //$this->debugSetRemainingTrainCarDeck(1);
 
+        self::DbQuery("update `traincar` set card_location='hand', card_location_arg=2343492 WHERE `card_type` LIKE '0'");
+
         //$this->gamestate->changeActivePlayer(2343492);
+    }
+
+    function allLocos() {
+        self::DbQuery("update `traincar` set card_location='hand', card_location_arg=2343492 WHERE `card_type` LIKE '0'");
     }
 
     function debugSetDestinationInHand($cardType, $playerId) {
