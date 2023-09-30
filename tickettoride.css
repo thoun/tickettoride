@@ -550,6 +550,7 @@
   margin-left: -7px;
   margin-top: -28px;
   background-size: 600%;
+  pointer-events: none;
 }
 .wagon.angle0 {
   background-position: 0% 0%;

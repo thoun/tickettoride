@@ -342,7 +342,7 @@
   margin-left: -7px;
   margin-top: -28px;
   background-size: 600%;
-  //pointer-events: none;
+  pointer-events: none;
 
   @for $i from 0 through 35 {
     &.angle#{$i} {

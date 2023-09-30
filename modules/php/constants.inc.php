@@ -1,6 +1,6 @@
 <?php
 
-const MAP = 'europe';
+const MAP = 'usa';
 
 /* 
  * Colors 

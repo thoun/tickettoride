@@ -375,6 +375,7 @@ var TtrMap = /** @class */ (function () {
         this.crosshairTarget = null;
         this.crosshairHalfSize = 0;
         this.crosshairShift = 0;
+        this.claimedRoutesIds = [];
         // map border
         dojo.place("\n            <div class=\"illustration\" data-illustration=\"".concat(illustration, "\"></div>\n            <div id=\"cities\"></div>\n            <div id=\"route-spaces\"></div>\n            <div id=\"train-cars\"></div>\n        "), 'map', 'first');
         SIDES.forEach(function (side) { return dojo.place("<div class=\"side ".concat(side, "\"></div>"), 'map-and-borders'); });
@@ -397,7 +398,7 @@ var TtrMap = /** @class */ (function () {
         var _this = this;
         if (shiftX === void 0) { shiftX = 0; }
         if (shiftY === void 0) { shiftY = 0; }
-        Object.values(this.map.routes).forEach(function (route) {
+        Object.values(this.map.routes).filter(function (route) { return !_this.claimedRoutesIds.includes(route.id); }).forEach(function (route) {
             return route.spaces.forEach(function (space, spaceIndex) {
                 var title = "".concat(dojo.string.substitute(_('${from} to ${to}'), {
                     from: _this.game.getCityName(route.from),
@@ -499,18 +500,22 @@ var TtrMap = /** @class */ (function () {
     TtrMap.prototype.setClaimedRoutes = function (claimedRoutes, fromPlayerId) {
         var _this = this;
         claimedRoutes.forEach(function (claimedRoute) {
+            _this.claimedRoutesIds.push(claimedRoute.routeId);
             var route = _this.map.routes[claimedRoute.routeId];
             var player = _this.players.find(function (player) { return Number(player.id) == claimedRoute.playerId; });
             _this.setWagons(route, player, fromPlayerId, false);
             if (_this.game.isDoubleRouteForbidden()) {
                 var otherRoute_1 = Object.values(_this.map.routes).find(function (r) { return route.from == r.from && route.to == r.to && route.id != r.id; });
-                otherRoute_1 === null || otherRoute_1 === void 0 ? void 0 : otherRoute_1.spaces.forEach(function (space, spaceIndex) {
-                    var spaceDiv = document.getElementById("route-spaces-route".concat(otherRoute_1.id, "-space").concat(spaceIndex));
-                    if (spaceDiv) {
-                        spaceDiv.classList.add('forbidden');
-                        _this.game.setTooltip(spaceDiv.id, "<strong><span style=\"color: darkred\">".concat(_('Important Note:'), "</span> \n                        ").concat(_('In 2 or 3 player games, only one of the Double-Routes can be used.'), "</strong>"));
-                    }
-                });
+                if (otherRoute_1) {
+                    _this.claimedRoutesIds.push(otherRoute_1.id);
+                    otherRoute_1.spaces.forEach(function (space, spaceIndex) {
+                        var spaceDiv = document.getElementById("route-spaces-route".concat(otherRoute_1.id, "-space").concat(spaceIndex));
+                        if (spaceDiv) {
+                            spaceDiv.classList.add('forbidden');
+                            _this.game.setTooltip(spaceDiv.id, "<strong><span style=\"color: darkred\">".concat(_('Important Note:'), "</span> \n                            ").concat(_('In 2 or 3 player games, only one of the Double-Routes can be used.'), "</strong>"));
+                        }
+                    });
+                }
             }
         });
     };

@@ -156,6 +156,8 @@ class TtrMap {
     private crosshairHalfSize: number = 0;
     private crosshairShift: number = 0;
 
+    private claimedRoutesIds = [];
+
     /** 
      * Place map corner illustration and borders, cities, routes, and bind events.
      */ 
@@ -203,7 +205,7 @@ class TtrMap {
     }
 
     private createRouteSpaces(destination: 'route-spaces' | 'map-drag-overlay', shiftX: number = 0, shiftY: number = 0) {
-        Object.values(this.map.routes).forEach(route => 
+        Object.values(this.map.routes).filter(route => !this.claimedRoutesIds.includes(route.id)).forEach(route => 
             route.spaces.forEach((space, spaceIndex) => {
                 let title = `${dojo.string.substitute(_('${from} to ${to}'), {
                     from: this.game.getCityName(route.from),
@@ -318,20 +320,24 @@ class TtrMap {
      */ 
     public setClaimedRoutes(claimedRoutes: ClaimedRoute[], fromPlayerId: number) {
         claimedRoutes.forEach(claimedRoute => {
+            this.claimedRoutesIds.push(claimedRoute.routeId);
             const route = this.map.routes[claimedRoute.routeId];
             const player = this.players.find(player => Number(player.id) == claimedRoute.playerId);
             this.setWagons(route, player, fromPlayerId, false);
 
             if (this.game.isDoubleRouteForbidden()) {
                 const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
-                otherRoute?.spaces.forEach((space, spaceIndex) => {
-                    const spaceDiv = document.getElementById(`route-spaces-route${otherRoute.id}-space${spaceIndex}`);
-                    if (spaceDiv) {
-                        spaceDiv.classList.add('forbidden');
-                        this.game.setTooltip(spaceDiv.id, `<strong><span style="color: darkred">${_('Important Note:')}</span> 
-                        ${_('In 2 or 3 player games, only one of the Double-Routes can be used.')}</strong>`);
-                    }
-                });
+                if (otherRoute) {
+                    this.claimedRoutesIds.push(otherRoute.id);
+                    otherRoute.spaces.forEach((space, spaceIndex) => {
+                        const spaceDiv = document.getElementById(`route-spaces-route${otherRoute.id}-space${spaceIndex}`);
+                        if (spaceDiv) {
+                            spaceDiv.classList.add('forbidden');
+                            this.game.setTooltip(spaceDiv.id, `<strong><span style="color: darkred">${_('Important Note:')}</span> 
+                            ${_('In 2 or 3 player games, only one of the Double-Routes can be used.')}</strong>`);
+                        }
+                    });
+                }
             }
         });
     }
