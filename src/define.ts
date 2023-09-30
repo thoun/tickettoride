@@ -5,5 +5,5 @@ define([
     "ebg/stock"
 ],
 function (dojo, declare) {
-    return declare("bgagame.tickettoride", ebg.core.gamegui, new TicketToRide());             
+    return declare("bgagame.tickettorideeurope", ebg.core.gamegui, new TicketToRide());             
 });
