@@ -3,7 +3,9 @@
 }
 
 .illustration {
-    background-image: url('./border-map-illustration.png');
-    width: 258px;
-    height: 206px;
+    background-image: url('./border-map-illustration.png');    
+    left: 0;
+    top: 150px;
+    width: 225px;
+    height: 375px;
 }
