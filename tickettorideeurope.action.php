@@ -111,6 +111,17 @@
         self::ajaxResponse();
     }
   	
+    public function buildStation() {
+        self::setAjaxMode();
+
+        $cityId = self::getArg("cityId", AT_posint, true);
+        $color = self::getArg("color", AT_posint, true);
+
+        $this->game->buildStation($cityId, $color);
+
+        self::ajaxResponse();
+    }
+  	
     public function pass() {
         self::setAjaxMode();
 

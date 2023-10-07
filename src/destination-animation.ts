@@ -9,6 +9,7 @@ class DestinationCompleteAnimation extends WagonsAnimation {
         game: TicketToRideGame,
         private destination: Destination,
         destinationRoutes: Route[],
+        destinationStations: number[],
         private fromId: string,
         private toId: string,
         private actions: {
@@ -19,7 +20,7 @@ class DestinationCompleteAnimation extends WagonsAnimation {
         private state: 'completed' | 'uncompleted',
         private initialSize: number = 1,
     ) {
-        super(game, destinationRoutes);
+        super(game, destinationRoutes, destinationStations);
     }
 
     public animate(): Promise<WagonsAnimation> {

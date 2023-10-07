@@ -139,6 +139,7 @@ class EndScore {
             this.game,
             destination, 
             destinationRoutes, 
+            [],
             `destination-counter-${playerId}`,
             `${destinationRoutes ? 'completed' : 'uncompleted'}-destination-counter-${playerId}`,
             {
@@ -193,6 +194,26 @@ class EndScore {
                     playSound(`ttr-longest-line-scoring`);
                     (this.game as any).disableNextMoveSound();
                 }
+            }
+        );
+        
+
+        this.game.addAnimation(newDac);
+    }
+    
+    /** 
+     * Show longest path animation for a player.
+     */ 
+    public showRemainingStations(playerColor: string, remainingStations: number, isFastEndScoring: boolean = false) {
+        if (isFastEndScoring) {
+            return;
+        }
+        
+        const newDac = new RemainingStationsAnimation(
+            this.game,
+            remainingStations,
+            playerColor,
+            {
             }
         );
         
