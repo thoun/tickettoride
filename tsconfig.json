@@ -17,6 +17,7 @@
         "src/wagons-animation.ts",
         "src/destination-animation.ts",
         "src/longest-path-animation.ts",
+        "src/remaining-stations-animation.ts",
         "src/map/map.ts",
         "src/destination-deck/destination-deck.ts",
         "src/train-car-deck/visible-card-spot.ts",

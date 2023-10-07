@@ -81,15 +81,30 @@ trait ArgsTrait {
         }
 
         $canTakeTrainCarCards = $this->getRemainingTrainCarCardsInDeck(true, true);
+        $remainingStations = $this->getRemainingStations($playerId);
+        $canBuildStation = $remainingStations > 0 && $this->canPayForStation($trainCarsHand, 4 - $remainingStations) != null;
+        $possibleStations = $canBuildStation ? $this->claimableStations() : [];
+        $costForStation = [];
+        if ($canBuildStation) {
+            $colorsToTest = [0,1,2,3,4,5,6,7,8];
+            $costByColor = [];
+            foreach($colorsToTest as $colorToTest) {
+                $costByColor[$colorToTest] = $this->canPayForStation($trainCarsHand, 4 - $remainingStations, $colorToTest);
+            }
+            $costForStation = array_map(fn($cardCost) => $cardCost == null ? null : array_map(fn($card) => $card->type, $cardCost), $costByColor);
+        }
 
-        $canPass = !$canClaimARoute && $maxDestinationsPick == 0 && $canTakeTrainCarCards == 0;
+        $canPass = !$canClaimARoute && !$canBuildStation && $maxDestinationsPick == 0 && $canTakeTrainCarCards == 0;
 
         return [
             'possibleRoutes' => $possibleRoutes,
+            'possibleStations' => $possibleStations,
             'costForRoute' => $costForRoute,
             'maxHiddenCardsPick' => $maxHiddenCardsPick,
             'maxDestinationsPick' => $maxDestinationsPick,
             'canTakeTrainCarCards' => $canTakeTrainCarCards,
+            'canBuildStation' => $canBuildStation,
+            'costForStation' => $costForStation,
             'canPass' => $canPass,
         ];
     }

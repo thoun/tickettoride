@@ -53,3 +53,11 @@ CREATE TABLE IF NOT EXISTS `global_variables` (
   `value` json,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `placed_buildings` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `city_id` TINYINT unsigned NOT NULL,
+  `player_id` int(11) NOT NULL,
+  `building_type` tinyint NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
