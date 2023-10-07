@@ -1,27 +1,24 @@
 {
     "101": {
-        "name": "1910 Expansion",
+        "name": "1912 Expansion",
         "values": [
             {
                 "name": "Disabled"
             },
             {
-                "name": "1910",
-                "description": "New tickets. Globetrotter - Most Completed Tickets bonus card instead of Longest Route Bonus card",
-                "tmdisplay": "1910 Expansion : 1910",
-                "nobeginner": true
+                "name": "Europe Expanded",
+                "description": "19 additional regular Destination tickets",
+                "tmdisplay": "1912 Expansion : Europe Expanded"
             },
             {
-                "name": "The Mega Game",
-                "description": "All tickets, both bonus cards, more tickets when choosing",
-                "tmdisplay": "1910 Expansion : The Mega Game",
-                "nobeginner": true
+                "name": "Mega Europe",
+                "description": "All tickets, more tickets when choosing",
+                "tmdisplay": "1912 Expansion : Mega Europe"
             },
             {
-                "name": "The Big Cities",
+                "name": "Big Cities of Europe",
                 "description": "Tickets with Big Cities",
-                "tmdisplay": "1910 Expansion : The Big Cities",
-                "nobeginner": true
+                "tmdisplay": "1912 Expansion : Big Cities of Europe"
             }
         ],
         "default": 0

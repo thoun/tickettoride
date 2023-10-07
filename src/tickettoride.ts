@@ -18,6 +18,7 @@ class TicketToRide implements TicketToRideGame {
     private endScore: EndScore;
 
     private trainCarCounters: Counter[] = [];
+    private stationCounters: Counter[] = [];
     private trainCarCardCounters: Counter[] = [];
     private destinationCardCounters: Counter[] = [];
     private completedDestinationsCounter: Counter;
@@ -26,6 +27,7 @@ class TicketToRide implements TicketToRideGame {
 
     private isTouch = window.matchMedia('(hover: none)').matches;
     private routeToConfirm: { route: Route, color: number } | null = null;
+    private cityToConfirm: { city: City, color: number } | null = null;
     private originalTextChooseAction: string;
     private actionTimerId = null;
 
@@ -70,7 +72,7 @@ class TicketToRide implements TicketToRideGame {
 
         log('gamedatas', gamedatas);
 
-        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.map.illustration);
+        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.builtStations, gamedatas.map.illustration);
         this.trainCarSelection = new TrainCarSelection(this, 
             gamedatas.visibleTrainCards,
             gamedatas.trainCarDeckCount,
@@ -142,12 +144,20 @@ class TicketToRide implements TicketToRideGame {
      * Show selectable routes, and make train car draggable.
      */ 
     private onEnteringChooseAction(args: EnteringChooseActionArgs) {
-        this.setGamestateDescription(args.canTakeTrainCarCards ? '' : 'NoTrainCarsCards');
+        let suffix = '';
+        if (!args.canTakeTrainCarCards) {
+            suffix += 'NoTrainCarsCards';
+        }
+        if (args.canBuildStation) {
+            suffix += 'Station';
+        }
+        this.setGamestateDescription(suffix);
 
         const currentPlayerActive = (this as any).isCurrentPlayerActive();
         this.trainCarSelection.setSelectableTopDeck(currentPlayerActive, args.maxHiddenCardsPick);
         
         this.map.setSelectableRoutes(currentPlayerActive, args.possibleRoutes);
+        this.map.setSelectableStations(currentPlayerActive, args.possibleStations);
 
         this.playerTable?.setDraggable(currentPlayerActive);
         this.playerTable?.setSelectable(currentPlayerActive);        
@@ -199,6 +209,7 @@ class TicketToRide implements TicketToRideGame {
                 break;
             case 'chooseAction':
                 this.map.setSelectableRoutes(false, []);
+                this.map.setSelectableStations(false, []);
                 this.playerTable?.setDraggable(false);
                 this.playerTable?.setSelectable(false);   
                 this.playerTable?.setSelectableTrainCarColors(null);
@@ -238,9 +249,9 @@ class TicketToRide implements TicketToRideGame {
                     break;  
                 case 'confirmTunnel':
                     const confirmTunnelArgs = args as EnteringConfirmTunnelArgs;
-                    const confirmLabel = /* TODO MAPS _*/("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : ` (${/* TODO MAPS _*/("You don't have enough cards")})`);
+                    const confirmLabel = _("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : ` (${_("You don't have enough cards")})`);
                     (this as any).addActionButton('claimTunnel_button', confirmLabel, () => this.claimTunnel());
-                    (this as any).addActionButton('skipTunnel_button', /* TODO MAPS _*/("Skip tunnel claim"), () => this.skipTunnel(), null, null, 'gray');
+                    (this as any).addActionButton('skipTunnel_button', _("Skip tunnel claim"), () => this.skipTunnel(), null, null, 'gray');
                     if (!confirmTunnelArgs.canPay) {
                         dojo.addClass('claimTunnel_button', 'disabled');
                     }
@@ -255,10 +266,6 @@ class TicketToRide implements TicketToRideGame {
 
 
     ///////////////////////////////////////////////////
-    
-    public isGlobetrotterBonusActive(): boolean {
-        return this.gamedatas.isGlobetrotterBonusActive;
-    }
 
     public isLongestPathBonusActive(): boolean {
         return this.gamedatas.isLongestPathBonusActive;
@@ -367,6 +374,10 @@ class TicketToRide implements TicketToRideGame {
                     <div class="icon train" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> 
                     <span id="train-car-counter-${player.id}"></span>
                 </div>
+                <div id="station-counter-${player.id}-wrapper" class="counter station-counter">
+                    <div class="icon station" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> 
+                    <span id="station-counter-${player.id}"></span>
+                </div>
                 <div id="train-car-card-counter-${player.id}-wrapper" class="counter train-car-card-counter">
                     <div class="icon train-car-card-icon"></div> 
                     <span id="train-car-card-counter-${player.id}"></span>
@@ -381,6 +392,11 @@ class TicketToRide implements TicketToRideGame {
             trainCarCounter.create(`train-car-counter-${player.id}`);
             trainCarCounter.setValue(player.remainingTrainCarsCount);
             this.trainCarCounters[playerId] = trainCarCounter;
+
+            const stationCounter = new ebg.counter();
+            stationCounter.create(`station-counter-${player.id}`);
+            stationCounter.setValue(player.remainingStations);
+            this.stationCounters[playerId] = stationCounter;
 
             const trainCarCardCounter = new ebg.counter();
             trainCarCardCounter.create(`train-car-card-counter-${player.id}`);
@@ -405,6 +421,7 @@ class TicketToRide implements TicketToRideGame {
         });
 
         this.setTooltipToClass('train-car-counter', _("Remaining train cars"));
+        this.setTooltipToClass('station-counter', _("Remaining stations"));
         this.setTooltipToClass('train-car-card-counter', _("Train cars cards"));
         this.setTooltipToClass('destinations-counter', _("Completed / Total destination cards"));
     }
@@ -432,6 +449,13 @@ class TicketToRide implements TicketToRideGame {
         ) && (
             (this.gamedatas.gamestate.args as EnteringChooseActionArgs).possibleRoutes.some(pr => pr.id == route.id)
         );
+    }
+
+    /** 
+     * Check if a route can be claimed with dragged cards.
+     */ 
+    public canClaimCity(city: City, cardsColor: number): boolean {
+        return (this.gamedatas.gamestate.args as EnteringChooseActionArgs).possibleStations.some(ps => ps.id == city.id);
     }
 
     /** 
@@ -568,6 +592,38 @@ class TicketToRide implements TicketToRideGame {
             }
         }
     }
+    
+    /** 
+     * Handle city click.
+     */ 
+    public clickedCity(city: City): void { 
+        if(!(this as any).isCurrentPlayerActive()) {
+            return;
+        }
+
+        if(!this.canClaimCity(city, 0)) {
+            return;
+        }
+        
+        this.map.setHoveredCity(null);
+
+        document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
+        
+        const selectedColor = this.playerTable.getSelectedColor();
+
+        if (selectedColor !== null) {
+            this.askCityClaimConfirmation(city, selectedColor);
+        } else {
+            const possibleColors: number[] = this.playerTable?.getPossibleColorsForStation(3 - this.stationCounters[this.getPlayerId()].getValue()) || [];
+
+            if (possibleColors.length == 1) {
+                this.askCityClaimConfirmation(city, possibleColors[0]);
+            } else if (possibleColors.length > 1) {
+                this.setActionBarChooseColorStation(city, possibleColors);
+                this.playerTable.setSelectableTrainCarColorsForStation(city, 3 - this.stationCounters[this.getPlayerId()].getValue());
+            }
+        }
+    }
 
     /**
      * Timer for Confirm button
@@ -667,6 +723,43 @@ class TicketToRide implements TicketToRideGame {
         (this as any).addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
         this.startActionTimer(`confirmRouteClaim-button`, ACTION_TIMER_DURATION);
     }
+    
+    /**
+     * Sets the action bar (title and buttons) for the color station.
+     */
+    private setActionBarChooseColorStation(city: City, possibleColors: number[]) {
+        const confirmationQuestion = _("Choose color for the station on ${city}")
+            .replace('${city}', city.name);
+        this.setChooseActionGamestateDescription(confirmationQuestion);
+
+        document.getElementById(`generalactions`).innerHTML = '';
+
+        possibleColors.forEach(color => {
+            const label = dojo.string.substitute(_("Use ${color}"), {
+                'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
+            });
+            (this as any).addActionButton(`claimRouteWithColor_button${color}`, label, () => this.askCityClaimConfirmation(city, color));
+        });
+
+        (this as any).addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
+    }
+    
+    /**
+     * Sets the action bar (title and buttons) for Confirm city claim.
+     */
+    private setActionBarConfirmStation(city: City, color: number) {
+        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
+        const colors = chooseActionArgs.costForStation[color].map(cardColor => `<div class="train-car-color icon" data-color="${cardColor}"></div>`);
+        const confirmationQuestion = _("Confirm station on ${city_name} with ${colors} ?")
+            .replace('${city_name}', this.getCityName(city.id))
+            .replace('${colors}', `<div class="color-cards">${colors.join('')}</div>`);
+        this.setChooseActionGamestateDescription(confirmationQuestion);
+
+        document.getElementById(`generalactions`).innerHTML = '';
+        (this as any).addActionButton(`confirmCityClaim-button`, _("Confirm station"), () => this.confirmStation());
+        (this as any).addActionButton(`cancelCityClaim-button`, _("Cancel"), () => this.cancelStation(), null, null, 'gray');
+        this.startActionTimer(`confirmCityClaim-button`, ACTION_TIMER_DURATION);
+    }
 
     /**
      * Check if player should be asked for a route claim confirmation.
@@ -718,6 +811,15 @@ class TicketToRide implements TicketToRideGame {
     }
 
     /**
+     * Ask confirmation for claimed city.
+     */
+    public askCityClaimConfirmation(city: City, color: number) {
+        this.cityToConfirm = { city, color };
+        this.map.setHoveredCity(city, true);
+        this.setActionBarConfirmStation(city, color);
+    }
+
+    /**
      * Player cancels claimed route.
      */
     public cancelRouteClaim() {
@@ -730,11 +832,31 @@ class TicketToRide implements TicketToRideGame {
     }
 
     /**
+     * Player cancels claimed city.
+     */
+    public cancelStation() {
+        this.setActionBarChooseAction(true);
+        this.map.setHoveredCity(null);
+        this.playerTable?.setSelectableTrainCarColors(null);
+        this.cityToConfirm = null;
+
+        document.querySelectorAll(`[id^="claimCityWithColor_button"]`).forEach(button => button.parentElement?.removeChild(button));
+    }
+
+    /**
      * Player confirms claimed route.
      */
     public confirmRouteClaim() {
         this.map.setHoveredRoute(null);
         this.claimRoute(this.routeToConfirm.route.id, this.routeToConfirm.color);
+    }
+
+    /**
+     * Player confirms claimed city.
+     */
+    public confirmStation() {
+        this.map.setHoveredCity(null);
+        this.buildStation(this.cityToConfirm.city.id, this.cityToConfirm.color);
     }
 
     /** 
@@ -807,6 +929,16 @@ class TicketToRide implements TicketToRideGame {
     }
 
     /** 
+     * Claim a city.
+     */ 
+    public buildStation(cityId: number, color: number) {
+        (this as any).bgaPerformAction('actBuildStation', {
+            cityId,
+            color
+        });
+    }
+
+    /** 
      * Pass (in case of no possible action).
      */ 
     public pass() {
@@ -851,6 +983,7 @@ class TicketToRide implements TicketToRideGame {
         const notifs = [
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
+            ['builtStation', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
@@ -863,7 +996,7 @@ class TicketToRide implements TicketToRideGame {
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
-            ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
+            ['remainingStations', skipEndOfGameAnimations ? 1 : 1500],
             ['highlightWinnerScore', 1],
         ];
 
@@ -952,13 +1085,33 @@ class TicketToRide implements TicketToRideGame {
     }
 
     /** 
+     * Update built stations.
+     */ 
+    notif_builtStation(notif: Notif<NotifBuiltStationArgs>) {
+        const playerId = notif.args.playerId;
+        const city: City = notif.args.city;
+
+        this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
+        this.stationCounters[playerId].incValue(-1);
+        this.map.setBuiltStations([{
+            playerId,
+            cityId: city.id
+        }], playerId);
+        if (playerId == this.getPlayerId()) {
+            this.playerTable.removeCards(notif.args.removeCards);
+
+            document.getElementById('stations-information-button').classList.add('visible');
+        }
+    }
+
+    /** 
      * Mark a destination as complete.
      */ 
     notif_destinationCompleted(notif: Notif<NotifDestinationCompletedArgs>) {
         const destination: Destination = notif.args.destination;
         this.completedDestinationsCounter.incValue(1);
         this.gamedatas.completedDestinations.push(destination);
-        this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
+        this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes, notif.args.destinationStations);
 
         playSound(`ttr-completed-in-game`);
         (this as any).disableNextMoveSound();
@@ -1024,13 +1177,6 @@ class TicketToRide implements TicketToRideGame {
     }
 
     /** 
-     * Add Globetrotter badge for end score.
-     */ 
-    notif_globetrotterWinner(notif: Notif<NotifBadgeArgs>) {
-        this.endScore?.setGlobetrotterWinner(notif.args.playerId, notif.args.length);
-    }
-
-    /** 
      * Animate longest path for end score.
      */ 
     notif_longestPath(notif: Notif<NotifLongestPathArgs>) {
@@ -1042,6 +1188,13 @@ class TicketToRide implements TicketToRideGame {
      */ 
     notif_longestPathWinner(notif: Notif<NotifBadgeArgs>) {
         this.endScore?.setLongestPathWinner(notif.args.playerId, notif.args.length);
+    }
+
+    /** 
+     * Animate remaining stations for end score.
+     */ 
+    notif_remainingStations(notif: Notif<NotifRemainingStationsArgs>) {
+        this.endScore?.showRemainingStations(this.gamedatas.players[notif.args.playerId].color, notif.args.remainingStations, this.isFastEndScoring());
     }
 
     /** 
@@ -1067,7 +1220,7 @@ class TicketToRide implements TicketToRideGame {
                 }
 
                 // make cities names in bold 
-                ['from', 'to', 'count', 'extraCards', 'pickedCards'].forEach(field => {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'city_name'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }

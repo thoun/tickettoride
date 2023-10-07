@@ -31,12 +31,14 @@ require_once('train-car-deck.php');
 require_once('destination-deck.php');
 require_once('debug-util.php');
 require_once(__DIR__.'/../maps/'.MAP.'/settings.php');
+require_once('stations.php');
 
 /*
  * Game main class.
  * For readability, main sections (util, action, state, args) have been splited into Traits with the section name on modules/php directory.
  */
-class Game extends \Table {
+
+ class Game extends \Table {
     use \UtilTrait;
     use \ActionTrait;
     use \StateTrait;
@@ -46,6 +48,7 @@ class Game extends \Table {
     use \DestinationDeckTrait;
     use \DebugUtilTrait;
     use \SettingsTrait;
+    use \StationTrait;
 
     private \Deck $destinations;
     private \Deck $trainCars;
@@ -146,15 +149,16 @@ class Game extends \Table {
         //$this->initStat('player', 'averageClaimedRouteLength', 0); // only computed at the end
         //$this->initStat('table', 'longestPath', 0); // only computed at the end
         //$this->initStat('player', 'longestPath', 0); // only computed at the end
+        // 50+ : stations
+        $this->initStat('table', 'builtStations', 0);
+        $this->initStat('player', 'builtStations', 0);
+        //$this->initStat('table', 'unusedStations', 0); // only computed at the end
+        //$this->initStat('player', 'unusedStations', 0); // only computed at the end
         
-        $isGlobetrotterBonusActive = $this->isGlobetrotterBonusActive();
         $isLongestPathBonusActive = $this->isLongestPathBonusActive();
 
         if ($isLongestPathBonusActive) {
             $this->initStat('player', 'longestPathBonus', 0);
-        }
-        if ($isGlobetrotterBonusActive) {
-            $this->initStat('player', 'globetrotterBonus', 0);
         }
 
         // setup the initial game situation here
@@ -210,6 +214,7 @@ class Game extends \Table {
         // Gather all information about current game situation (visible by player $currentPlayerId).
 
         $result['claimedRoutes'] = $this->getClaimedRoutes();
+        $result['builtStations'] = $this->getPlacedStations();
         $visibleTrainCards = $this->getVisibleTrainCarCards();
         $spotsCards = [];
         foreach($visibleTrainCards as $visibleTrainCard) {
@@ -228,6 +233,7 @@ class Game extends \Table {
             $player['trainCarsCount'] = intval($this->trainCars->countCardInLocation('hand', $playerId));
             $player['destinationsCount'] = intval($this->destinations->countCardInLocation('hand', $playerId));
             $player['remainingTrainCarsCount'] = $this->getRemainingTrainCarsCount($playerId);
+            $player['remainingStations'] = $this->getRemainingStations($playerId);
 
             if ($isEnd) {
                 $player['completedDestinations'] = $this->getDestinationsFromDb($this->destinations->getCards($this->getCompletedDestinationsIds($playerId)));
@@ -245,8 +251,6 @@ class Game extends \Table {
         $result['trainCarDeckMaxCount'] = 110;
         $result['destinationDeckMaxCount'] = 30;
 
-        $result['expansion1910'] = $this->getExpansionOption(); // TODO REMOVE
-        $result['isGlobetrotterBonusActive'] = $this->isGlobetrotterBonusActive();
         $result['isLongestPathBonusActive'] = $this->isLongestPathBonusActive();
         
         $result['showTurnOrder'] = intval($this->getGameStateValue(SHOW_TURN_ORDER)) == 2;

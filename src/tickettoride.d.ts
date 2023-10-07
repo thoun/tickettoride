@@ -45,11 +45,17 @@ interface ClaimedRoute {
     playerId: number;
 }
 
+interface BuiltStation {
+    cityId: number;
+    playerId: number;
+}
+
 interface TicketToRidePlayer extends Player {
     playerNo: number;
     trainCarsCount: number;
     destinationsCount: number;
     remainingTrainCarsCount: number;
+    remainingStations: number;
 
     // for end score
     completedDestinations?: Destination[];
@@ -102,6 +108,7 @@ interface TicketToRideGamedatas {
 
     // Add here variables you set up in getAllDatas   
     claimedRoutes: ClaimedRoute[];
+    builtStations: BuiltStation[];
     visibleTrainCards: { [spot: number]: TrainCar | null };
 
     // private informations for current player only
@@ -117,7 +124,6 @@ interface TicketToRideGamedatas {
     lastTurn: boolean;
     bestScore: number;
 
-    isGlobetrotterBonusActive: boolean;
     isLongestPathBonusActive: boolean;
     showTurnOrder: boolean;
 }
@@ -129,6 +135,7 @@ interface TicketToRideGame extends Game {
     getCityName(to: number): string;
 
     clickedRoute(route: Route): void;
+    clickedCity(city: City): void;
     setPlayerTablePosition(left: boolean): void;
     getZoom(): number;
     getCurrentPlayer(): TicketToRidePlayer;
@@ -139,8 +146,10 @@ interface TicketToRideGame extends Game {
     onVisibleTrainCarCardClick(itemId: number): void;
     onHiddenTrainCarDeckClick(number: number): void;
     askRouteClaimConfirmation(route: Route, color: number): void;
+    askCityClaimConfirmation(city: City, color: number): void;
     setActiveDestination(destination: Destination, previousDestination?: Destination): void;
     canClaimRoute(route: Route, cardsColor: number): boolean;
+    canClaimCity(city: City, cardsColor: number): boolean;
     setHighligthedDestination(destination: Destination | null): void;
     setSelectedDestination(destination: Destination, visible: boolean): void;
     addAnimation(animation: WagonsAnimation): void;
@@ -150,7 +159,6 @@ interface TicketToRideGame extends Game {
     selectedColorChanged(selectedColor: number | null): void;
     setTooltip(id: string, html: string): void;
     setTooltipToClass(className: string, html: string): void;
-    isGlobetrotterBonusActive(): boolean;
     isLongestPathBonusActive(): boolean;
 }
 
@@ -164,10 +172,13 @@ interface EnteringChooseDestinationsArgs {
 
 interface EnteringChooseActionArgs {
     possibleRoutes: Route[];
+    possibleStations: City[];
     costForRoute: { [routeId: number]: { [color: number]: number[] } };
+    costForStation: { [color: number]: number[] };
     maxHiddenCardsPick: number;
     maxDestinationsPick: number;
     canTakeTrainCarCards: boolean;
+    canBuildStation: boolean;
     canPass: boolean;
 }
 
@@ -228,10 +239,17 @@ interface NotifClaimedRouteArgs {
     remainingTrainCars: number;
 }
 
+interface NotifBuiltStationArgs {
+    playerId: number;
+    city: City;
+    removeCards: TrainCar[];
+}
+
 interface NotifDestinationCompletedArgs {
     playerId: number;
     destination: Destination;
     destinationRoutes: Route[];
+    destinationStations?: number[];
 }
 
 interface NotifFreeTunnelArgs {
@@ -262,4 +280,9 @@ interface NotifLongestPathArgs {
 interface NotifBadgeArgs {
     playerId: number;
     length: number;
+}
+
+interface NotifRemainingStationsArgs {
+    playerId: number;
+    remainingStations: number;
 }

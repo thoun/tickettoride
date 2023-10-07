@@ -93,20 +93,23 @@ function getBackgroundInlineStyleForDestination(map, destination) {
  * Animation with highlighted wagons.
  */
 var WagonsAnimation = /** @class */ (function () {
-    function WagonsAnimation(game, destinationRoutes) {
+    function WagonsAnimation(game, destinationRoutes, destinationStations) {
         var _this = this;
         this.game = game;
         this.wagons = [];
+        this.stations = [];
         this.zoom = this.game.getZoom();
         this.shadowDiv = document.getElementById('map-destination-highlight-shadow');
         destinationRoutes === null || destinationRoutes === void 0 ? void 0 : destinationRoutes.forEach(function (route) {
             var _a;
             return (_a = _this.wagons).push.apply(_a, Array.from(document.querySelectorAll("[id^=\"wagon-route".concat(route.id, "-space\"]"))));
         });
+        destinationStations === null || destinationStations === void 0 ? void 0 : destinationStations.forEach(function (cityId) { return _this.stations.push(document.getElementById("station".concat(cityId))); });
     }
     WagonsAnimation.prototype.setWagonsVisibility = function (visible) {
         this.shadowDiv.dataset.visible = visible ? 'true' : 'false';
         this.wagons.forEach(function (wagon) { return wagon.classList.toggle('highlight', visible); });
+        this.stations.forEach(function (station) { return station.classList.toggle('highlight', visible); });
     };
     return WagonsAnimation;
 }());
@@ -130,9 +133,9 @@ var __extends = (this && this.__extends) || (function () {
  */
 var DestinationCompleteAnimation = /** @class */ (function (_super) {
     __extends(DestinationCompleteAnimation, _super);
-    function DestinationCompleteAnimation(game, destination, destinationRoutes, fromId, toId, actions, state, initialSize) {
+    function DestinationCompleteAnimation(game, destination, destinationRoutes, destinationStations, fromId, toId, actions, state, initialSize) {
         if (initialSize === void 0) { initialSize = 1; }
-        var _this = _super.call(this, game, destinationRoutes) || this;
+        var _this = _super.call(this, game, destinationRoutes, destinationStations) || this;
         _this.destination = destination;
         _this.fromId = fromId;
         _this.toId = toId;
@@ -237,6 +240,37 @@ var LongestPathAnimation = /** @class */ (function (_super) {
         return "left: ".concat(x, "px; top: ").concat(y, "px;");
     };
     return LongestPathAnimation;
+}(WagonsAnimation));
+/**
+ * Remaining stations animation : Remaining stations count is displayed over the map.
+ */
+var RemainingStationsAnimation = /** @class */ (function (_super) {
+    __extends(RemainingStationsAnimation, _super);
+    function RemainingStationsAnimation(game, remainingStations, playerColor, actions) {
+        var _this = _super.call(this, game, []) || this;
+        _this.remainingStations = remainingStations;
+        _this.playerColor = playerColor;
+        _this.actions = actions;
+        return _this;
+    }
+    RemainingStationsAnimation.prototype.animate = function () {
+        var _this = this;
+        return new Promise(function (resolve) {
+            dojo.place("\n            <div id=\"remaining-station-animation\">\n                ".concat(_this.remainingStations, "\n                <div class=\"icon station\" data-player-color=\"").concat(_this.playerColor, "\"></div>\n            </div>\n            "), 'map');
+            _this.setWagonsVisibility(true);
+            setTimeout(function () { return _this.endAnimation(resolve); }, 1900);
+        });
+    };
+    RemainingStationsAnimation.prototype.endAnimation = function (resolve) {
+        var _a, _b;
+        this.setWagonsVisibility(false);
+        var number = document.getElementById('remaining-station-animation');
+        number.parentElement.removeChild(number);
+        resolve(this);
+        this.game.endAnimation(this);
+        (_b = (_a = this.actions).end) === null || _b === void 0 ? void 0 : _b.call(_a);
+    };
+    return RemainingStationsAnimation;
 }(WagonsAnimation));
 var DRAG_AUTO_ZOOM_DELAY = 2000;
 var SIDES = ['left', 'right', 'top', 'bottom'];
@@ -358,6 +392,9 @@ var InMapZoomManager = /** @class */ (function () {
     InMapZoomManager.prototype.setHoveredRoute = function (route) {
         this.hoveredRoute = route;
     };
+    InMapZoomManager.prototype.setHoveredCity = function (city) {
+        this.hoveredCity = city;
+    };
     return InMapZoomManager;
 }());
 /**
@@ -367,7 +404,7 @@ var TtrMap = /** @class */ (function () {
     /**
      * Place map corner illustration and borders, cities, routes, and bind events.
      */
-    function TtrMap(game, map, players, claimedRoutes, illustration) {
+    function TtrMap(game, map, players, claimedRoutes, builtStations, illustration) {
         this.game = game;
         this.map = map;
         this.players = players;
@@ -376,24 +413,41 @@ var TtrMap = /** @class */ (function () {
         this.crosshairHalfSize = 0;
         this.crosshairShift = 0;
         this.claimedRoutesIds = [];
+        this.claimedCitiesIds = [];
         // map border
-        dojo.place("\n            <div class=\"illustration\" data-illustration=\"".concat(illustration, "\"></div>\n            <div id=\"cities\"></div>\n            <div id=\"route-spaces\"></div>\n            <div id=\"train-cars\"></div>\n        "), 'map', 'first');
+        dojo.place("\n            <div class=\"illustration\" data-illustration=\"".concat(illustration, "\"></div>\n            <div id=\"cities\"></div>\n            <div id=\"route-spaces\"></div>\n            <div id=\"train-cars\"></div>\n            <div id=\"stations\"></div>\n        "), 'map', 'first');
         SIDES.forEach(function (side) { return dojo.place("<div class=\"side ".concat(side, "\"></div>"), 'map-and-borders'); });
         CORNERS.forEach(function (corner) { return dojo.place("<div class=\"corner ".concat(corner, "\"></div>"), 'map-and-borders'); });
         map.bigCities.forEach(function (bigCity) { return dojo.place("<div class=\"big-city\" style=\"left: ".concat(bigCity.x, "px; top: ").concat(bigCity.y, "px; width: ").concat(bigCity.width, "px;\"></div>"), 'cities'); });
-        Object.entries(map.cities).forEach(function (entry) {
-            var id = Number(entry[0]);
-            var city = entry[1];
-            dojo.place("<div id=\"city".concat(id, "\" class=\"city\" \n                style=\"transform: translate(").concat(city.x, "px, ").concat(city.y, "px)\"\n                title=\"").concat(game.getCityName(id), "\"\n            ></div>"), 'cities');
-        });
         this.createRouteSpaces('route-spaces');
+        this.createCities('cities');
         this.setClaimedRoutes(claimedRoutes, null);
+        this.setBuiltStations(builtStations, null);
         this.resizedDiv = document.getElementById('resized');
         this.mapDiv = document.getElementById('map');
         this.inMapZoomManager = new InMapZoomManager(map);
         this.game.setTooltipToClass("train-car-deck-hidden-pile-tooltip", "<strong>".concat(_('Train cars deck'), "</strong><br><br>\n        ").concat(_('Click here to pick one or two hidden train car cards')));
         this.game.setTooltip("destination-deck-hidden-pile", "<strong>".concat(_('Destinations deck'), "</strong><br><br>\n        ").concat(_('Click here to take three new destination cards (keep at least one)')));
     }
+    TtrMap.prototype.createCities = function (destination, shiftX, shiftY) {
+        var _this = this;
+        if (shiftX === void 0) { shiftX = 0; }
+        if (shiftY === void 0) { shiftY = 0; }
+        Object.entries(this.map.cities).forEach(function (entry) {
+            var city = entry[1];
+            city.id = Number(entry[0]);
+            dojo.place("<div id=\"city".concat(city.id).concat(destination === 'map-drag-overlay' ? '-drag' : '', "\" class=\"city\" \n                style=\"transform: translate(").concat(city.x + shiftX, "px, ").concat(city.y + shiftY, "px); ").concat(destination === 'map-drag-overlay' ? 'border: 2px solid red;' : '', "\"\n                title=\"").concat(_this.game.getCityName(city.id), "\"\n            ></div>"), destination);
+            var cityDiv = document.getElementById("city".concat(city.id).concat(destination === 'map-drag-overlay' ? '-drag' : ''));
+            if (!_this.claimedCitiesIds.some(function (id) { return id == city.id; })) {
+                if (destination == 'cities') {
+                    _this.setCityClickEvents(cityDiv, city);
+                }
+                else {
+                    _this.setCityDragEvents(cityDiv, city);
+                }
+            }
+        });
+    };
     TtrMap.prototype.createRouteSpaces = function (destination, shiftX, shiftY) {
         var _this = this;
         if (shiftX === void 0) { shiftX = 0; }
@@ -405,10 +459,10 @@ var TtrMap = /** @class */ (function () {
                     to: _this.game.getCityName(route.to),
                 }), ", ").concat(route.spaces.length, " ").concat(getColor(route.color, 'route'));
                 if (route.tunnel) {
-                    title += " (".concat(/* TODO MAPS _*/ ("Tunnel"), ")");
+                    title += " (".concat(_("Tunnel"), ")");
                 }
                 if (route.locomotives) {
-                    title += " (".concat(/* TODO MAPS _*/ ("${number} locomotive(s) required").replace('${number}', "".concat(route.locomotives)), ")");
+                    title += " (".concat(_("${number} locomotive(s) required").replace('${number}', "".concat(route.locomotives)), ")");
                 }
                 dojo.place("<div id=\"".concat(destination, "-route").concat(route.id, "-space").concat(spaceIndex, "\" class=\"route-space ").concat(route.tunnel ? 'tunnel' : '', "\" \n                    style=\"transform: translate(").concat(space.x + shiftX, "px, ").concat(space.y + shiftY, "px) rotate(").concat(space.angle, "deg);\"\n                    title=\"").concat(title, "\"\n                    data-route=\"").concat(route.id, "\" data-color=\"").concat(route.color, "\"\n                ></div>"), destination);
                 var spaceDiv = document.getElementById("".concat(destination, "-route").concat(route.id, "-space").concat(spaceIndex));
@@ -441,6 +495,18 @@ var TtrMap = /** @class */ (function () {
     };
     ;
     /**
+     * Handle dragging train car cards over a city.
+     */
+    TtrMap.prototype.cityDragOver = function (e, city) {
+        var cardsColor = Number(this.mapDiv.dataset.dragColor);
+        var canClaimCity = this.game.canClaimCity(city, cardsColor);
+        this.setHoveredCity(city, canClaimCity);
+        if (canClaimCity) {
+            e.preventDefault();
+        }
+    };
+    ;
+    /**
      * Handle dropping train car cards over a route.
      */
     TtrMap.prototype.routeDragDrop = function (e, route) {
@@ -461,17 +527,33 @@ var TtrMap = /** @class */ (function () {
         }
         this.game.askRouteClaimConfirmation(overRoute, cardsColor);
     };
-    ;
+    /**
+     * Handle dropping train car cards over a city.
+     */
+    TtrMap.prototype.cityDragDrop = function (e, city) {
+        e.preventDefault();
+        var mapDiv = document.getElementById('map');
+        if (mapDiv.dataset.dragColor == '') {
+            return;
+        }
+        this.setHoveredCity(null);
+        var cardsColor = Number(this.mapDiv.dataset.dragColor);
+        mapDiv.dataset.dragColor = '';
+        this.game.askCityClaimConfirmation(city, cardsColor);
+    };
     /**
      * Bind click events to route space.
      */
     TtrMap.prototype.setSpaceClickEvents = function (spaceDiv, route) {
         var _this = this;
-        spaceDiv.addEventListener('dragenter', function (e) { return _this.routeDragOver(e, route); });
-        spaceDiv.addEventListener('dragover', function (e) { return _this.routeDragOver(e, route); });
-        spaceDiv.addEventListener('dragleave', function (e) { return _this.setHoveredRoute(null); });
-        spaceDiv.addEventListener('drop', function (e) { return _this.routeDragDrop(e, route); });
         spaceDiv.addEventListener('click', function () { return _this.game.clickedRoute(route); });
+    };
+    /**
+     * Bind click events to vity.
+     */
+    TtrMap.prototype.setCityClickEvents = function (spaceDiv, city) {
+        var _this = this;
+        spaceDiv.addEventListener('click', function () { return _this.game.clickedCity(city); });
     };
     /**
      * Bind drag events to route space.
@@ -484,6 +566,16 @@ var TtrMap = /** @class */ (function () {
         spaceDiv.addEventListener('drop', function (e) { return _this.routeDragDrop(e, route); });
     };
     /**
+     * Bind drag events to city.
+     */
+    TtrMap.prototype.setCityDragEvents = function (cityDiv, city) {
+        var _this = this;
+        cityDiv.addEventListener('dragenter', function (e) { return _this.cityDragOver(e, city); });
+        cityDiv.addEventListener('dragover', function (e) { return _this.cityDragOver(e, city); });
+        cityDiv.addEventListener('dragleave', function (e) { return _this.setHoveredRoute(null); });
+        cityDiv.addEventListener('drop', function (e) { return _this.cityDragDrop(e, city); });
+    };
+    /**
      * Highlight selectable route spaces.
      */
     TtrMap.prototype.setSelectableRoutes = function (selectable, possibleRoutes) {
@@ -491,6 +583,15 @@ var TtrMap = /** @class */ (function () {
         dojo.query('.route-space').removeClass('selectable');
         if (selectable) {
             possibleRoutes.forEach(function (route) { return _this.map.routes[route.id].spaces.forEach(function (_, index) { var _a; return (_a = document.getElementById("route-spaces-route".concat(route.id, "-space").concat(index))) === null || _a === void 0 ? void 0 : _a.classList.add('selectable'); }); });
+        }
+    };
+    /**
+     * Highlight selectable cities.
+     */
+    TtrMap.prototype.setSelectableStations = function (selectable, possibleStations) {
+        dojo.query('.city').removeClass('selectable');
+        if (selectable) {
+            possibleStations.forEach(function (city) { var _a; return (_a = document.getElementById("city".concat(city.id))) === null || _a === void 0 ? void 0 : _a.classList.add('selectable'); });
         }
     };
     /**
@@ -530,6 +631,32 @@ var TtrMap = /** @class */ (function () {
         setTimeout(function () {
             wagon.style.transition = 'transform 0.5s';
             wagon.style.transform = "translate(".concat(toX, "px, ").concat(toY, "px");
+        }, 0);
+    };
+    /**
+     * Place stations claimed city.
+     * fromPlayerId is for animation (null for no animation)
+     */
+    TtrMap.prototype.setBuiltStations = function (builtStations, fromPlayerId) {
+        var _this = this;
+        builtStations.forEach(function (builtStation) {
+            _this.claimedCitiesIds.push(builtStation.cityId);
+            var city = _this.map.cities[builtStation.cityId];
+            var player = _this.players.find(function (player) { return Number(player.id) == builtStation.playerId; });
+            _this.setStation(city, player, fromPlayerId, false);
+        });
+    };
+    TtrMap.prototype.animateStationFromCounter = function (playerId, stationId, toX, toY) {
+        var station = document.getElementById(stationId);
+        var stationBR = station.getBoundingClientRect();
+        var fromBR = document.getElementById("station-counter-".concat(playerId, "-wrapper")).getBoundingClientRect();
+        var zoom = this.game.getZoom();
+        var fromX = (fromBR.x - stationBR.x) / zoom;
+        var fromY = (fromBR.y - stationBR.y) / zoom;
+        station.style.transform = "translate(".concat(fromX + toX, "px, ").concat(fromY + toY, "px)");
+        setTimeout(function () {
+            station.style.transition = 'transform 0.5s';
+            station.style.transform = "translate(".concat(toX, "px, ").concat(toY, "px");
         }, 0);
     };
     /**
@@ -607,6 +734,23 @@ var TtrMap = /** @class */ (function () {
         }
         else {
             route.spaces.forEach(function (space, spaceIndex) { return _this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute); });
+        }
+    };
+    /**
+     * Place station on a city.
+     * Phantom is for dragging over a route : station is shown translucent.
+     */
+    TtrMap.prototype.setStation = function (city, player, fromPlayerId, phantom) {
+        var id = "station".concat(city.id).concat(phantom ? '-phantom' : '');
+        if (document.getElementById(id)) {
+            return;
+        }
+        var x = city.x;
+        var y = city.y;
+        var stationHtml = "<div id=\"".concat(id, "\" class=\"station ").concat(phantom ? 'phantom' : '', "\" data-player-color=\"").concat(player.color, "\" data-color-blind-player-no=\"").concat(player.playerNo, "\" style=\"transform: translate(").concat(x, "px, ").concat(y, "px)\"></div>");
+        dojo.place(stationHtml, 'stations');
+        if (fromPlayerId) {
+            this.animateStationFromCounter(fromPlayerId, id, x, y);
         }
     };
     /**
@@ -704,6 +848,22 @@ var TtrMap = /** @class */ (function () {
         }
     };
     /**
+     * Highlight hovered city (when dragging train cars).
+     */
+    TtrMap.prototype.setHoveredCity = function (city, valid) {
+        if (valid === void 0) { valid = null; }
+        this.inMapZoomManager.setHoveredCity(city);
+        if (city) {
+            if (valid) {
+                this.setStation(city, this.game.getCurrentPlayer(), null, true);
+            }
+        }
+        else {
+            // remove phantom stations
+            this.mapDiv.querySelectorAll('.station.phantom').forEach(function (spaceDiv) { return spaceDiv.parentElement.removeChild(spaceDiv); });
+        }
+    };
+    /**
      * Highlight cities of selectable destination.
      */
     TtrMap.prototype.setSelectableDestination = function (destination, visible) {
@@ -787,6 +947,7 @@ var TtrMap = /** @class */ (function () {
         var touchDevice = 'ontouchstart' in window;
         this.crosshairShift = touchDevice ? this.crosshairHalfSize : 0;
         this.createRouteSpaces(id, 100 + this.crosshairShift, 100 + this.crosshairShift);
+        this.createCities(id, 100 + this.crosshairShift, 100 + this.crosshairShift);
         this.dragOverlay.addEventListener('dragenter', function (e) { return _this.overlayDragEnter(e); });
         var debounceTimer = null;
         var lastEvent = null;
@@ -829,6 +990,7 @@ var DestinationSelection = /** @class */ (function () {
     function DestinationSelection(game, map) {
         var _this = this;
         this.game = game;
+        var megaEurope = map.illustration === 2;
         this.destinations = new ebg.stock();
         this.destinations.setSelectionAppearance('class');
         this.destinations.selectionClass = 'selected';
@@ -837,9 +999,12 @@ var DestinationSelection = /** @class */ (function () {
         this.destinations.onItemCreate = function (cardDiv, cardUniqueId) { return setupDestinationCardDiv(game, cardDiv, Number(cardUniqueId)); };
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
-        this.destinations.item_margin = 20;
+        this.destinations.item_margin = megaEurope ? 0 : 20;
         dojo.connect(this.destinations, 'onChangeSelection', this, function () { return _this.selectionChange(); });
         setupDestinationCards(map, this.destinations);
+        if (megaEurope) {
+            $("destination-stock").style.marginTop = '-80px';
+        }
     }
     /**
      * Set visible destination cards.
@@ -1217,8 +1382,8 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.addDestinations = function (destinations, originStock) {
         this.playerDestinations.addDestinations(destinations, originStock);
     };
-    PlayerTable.prototype.markDestinationComplete = function (destination, destinationRoutes) {
-        this.playerDestinations.markDestinationComplete(destination, destinationRoutes);
+    PlayerTable.prototype.markDestinationComplete = function (destination, destinationRoutes, destinationStations) {
+        this.playerDestinations.markDestinationComplete(destination, destinationRoutes, destinationStations);
     };
     PlayerTable.prototype.addTrainCars = function (trainCars, from) {
         this.playerTrainCars.addTrainCars(trainCars, from);
@@ -1235,9 +1400,15 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.getPossibleColors = function (route) {
         return this.playerTrainCars.getPossibleColors(route);
     };
+    PlayerTable.prototype.getPossibleColorsForStation = function (placedStations) {
+        return this.playerTrainCars.getPossibleColorsForStation(placedStations);
+    };
     PlayerTable.prototype.setSelectableTrainCarColors = function (route, possibleColors) {
         if (possibleColors === void 0) { possibleColors = null; }
         this.playerTrainCars.setSelectableTrainCarColors(route, possibleColors);
+    };
+    PlayerTable.prototype.setSelectableTrainCarColorsForStation = function (city, placedStations) {
+        this.playerTrainCars.setSelectableTrainCarColorsForStation(city, placedStations);
     };
     PlayerTable.prototype.getSelectedColor = function () {
         return this.playerTrainCars.getSelectedColor();
@@ -1271,7 +1442,7 @@ var PlayerDestinations = /** @class */ (function () {
         /** Destinations in "done" column */
         this.destinationsDone = [];
         this.playerId = Number(player.id);
-        var html = "\n        <div id=\"player-table-".concat(player.id, "-destinations-todo\" class=\"player-table-destinations-column todo\"></div>\n        <div id=\"player-table-").concat(player.id, "-destinations-done\" class=\"player-table-destinations-column done\"></div>\n        ");
+        var html = "\n        <div id=\"player-table-".concat(player.id, "-destinations-todo\" class=\"player-table-destinations-column todo\"></div>\n        <div id=\"player-table-").concat(player.id, "-destinations-done\" class=\"player-table-destinations-column done\">\n            <div id=\"stations-information-button\">\n                <i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i>\n            </div>\n        </div>\n        ");
         dojo.place(html, "player-table-".concat(player.id, "-destinations"));
         this.addDestinations(destinations);
         destinations.filter(function (destination) { return completedDestinations.some(function (d) { return d.id == destination.id; }); }).forEach(function (destination) {
@@ -1279,6 +1450,22 @@ var PlayerDestinations = /** @class */ (function () {
         });
         // highlight the first "to do" destination
         this.activateNextDestination(this.destinationsTodo);
+        if (player.remainingStations < 3) {
+            document.getElementById('stations-information-button').classList.add('visible');
+        }
+        document.getElementById("stations-information-button").addEventListener('click', function () {
+            var stationsInformationsDialog = new ebg.popindialog();
+            stationsInformationsDialog.create('stationsInformationsDialog');
+            stationsInformationsDialog.setTitle(_("Destinations with stations"));
+            stationsInformationsDialog.setMaxWidth(500);
+            // Show the dialog
+            stationsInformationsDialog.setContent("\n                ".concat(_("When the game ends, the stations will automatically be used on the tickets scoring the most points."), "<br>\n                ").concat(_("This means that destinations using stations will not be marked as complete until the end of the game."), "<br><br>\n                <button id=\"stationsInformationsDialog-close-button\" class=\"bgabutton bgabutton_blue\">").concat(_("Close"), "</button>\n            "));
+            stationsInformationsDialog.show();
+            document.getElementById("stationsInformationsDialog-close-button").addEventListener('click', function (event) {
+                event.preventDefault();
+                stationsInformationsDialog.destroy();
+            });
+        });
     }
     /**
      * Add destinations to player's hand.
@@ -1326,9 +1513,9 @@ var PlayerDestinations = /** @class */ (function () {
     /**
      * Add an animation to mark a destination as complete.
      */
-    PlayerDestinations.prototype.markDestinationCompleteAnimation = function (destination, destinationRoutes) {
+    PlayerDestinations.prototype.markDestinationCompleteAnimation = function (destination, destinationRoutes, destinationStations) {
         var _this = this;
-        var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, "destination-card-".concat(destination.id), "destination-card-".concat(destination.id), {
+        var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, destinationStations, "destination-card-".concat(destination.id), "destination-card-".concat(destination.id), {
             start: function (d) { return document.getElementById("destination-card-".concat(d.id)).classList.add('hidden-for-animation'); },
             change: function (d) { return _this.markDestinationCompleteNoAnimation(d); },
             end: function (d) { return document.getElementById("destination-card-".concat(d.id)).classList.remove('hidden-for-animation'); },
@@ -1338,9 +1525,9 @@ var PlayerDestinations = /** @class */ (function () {
     /**
      * Mark a destination as complete.
      */
-    PlayerDestinations.prototype.markDestinationComplete = function (destination, destinationRoutes) {
+    PlayerDestinations.prototype.markDestinationComplete = function (destination, destinationRoutes, destinationStations) {
         if (destinationRoutes && !(document.visibilityState === 'hidden' || this.game.instantaneousMode)) {
-            this.markDestinationCompleteAnimation(destination, destinationRoutes);
+            this.markDestinationCompleteAnimation(destination, destinationRoutes, destinationStations);
         }
         else {
             this.markDestinationCompleteNoAnimation(destination);
@@ -1422,6 +1609,7 @@ var PlayerTrainCars = /** @class */ (function () {
         this.game = game;
         this.left = true;
         this.route = null;
+        this.city = null;
         this.selectable = false;
         this.selectedColor = null;
         this.playerId = Number(player.id);
@@ -1663,6 +1851,29 @@ var PlayerTrainCars = /** @class */ (function () {
         return possibleColors;
     };
     /**
+     * Get the colors a player can use to claim a station.
+     */
+    PlayerTrainCars.prototype.getPossibleColorsForStation = function (placedStations) {
+        var expectedCards = placedStations + 1;
+        var groups = this.getGroups();
+        var locomotiveGroup = groups.find(function (groupDiv) { return groupDiv.dataset.type == '0'; });
+        var locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
+        var possibleColors = [];
+        groups.forEach(function (groupDiv) {
+            var count = Number(groupDiv.dataset.count);
+            if (count + locomotives >= expectedCards) {
+                var color = Number(groupDiv.dataset.type);
+                if (color > 0) {
+                    possibleColors.push(color);
+                }
+            }
+        });
+        if (locomotives >= expectedCards) {
+            possibleColors.push(0);
+        }
+        return possibleColors;
+    };
+    /**
      * Get the colors a player can use to claim a given route.
      */
     PlayerTrainCars.prototype.setSelectableTrainCarColors = function (route, possibleColors) {
@@ -1674,6 +1885,25 @@ var PlayerTrainCars = /** @class */ (function () {
                 var color = Number(groupDiv.dataset.type);
                 var validColor = possibleColors.includes(color) || (color == 0 && canUseLocomotives);
                 groupDiv.classList.toggle('disabled', !validColor);
+            }
+            else {
+                groupDiv.classList.remove('disabled');
+            }
+        });
+    };
+    /**
+     * Get the colors a player can use to claim a given city.
+     */
+    PlayerTrainCars.prototype.setSelectableTrainCarColorsForStation = function (city, placedStations) {
+        this.city = city;
+        var groups = this.getGroups();
+        var locomotiveGroup = groups.find(function (groupDiv) { return groupDiv.dataset.type == '0'; });
+        var locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
+        groups.forEach(function (groupDiv) {
+            if (city) {
+                var count = Number(groupDiv.dataset.count);
+                var countWithLocomotives = groupDiv.dataset.type == '0' ? locomotives : count + locomotives;
+                groupDiv.classList.toggle('disabled', countWithLocomotives <= placedStations);
             }
             else {
                 groupDiv.classList.remove('disabled');
@@ -1729,16 +1959,12 @@ var EndScore = /** @class */ (function () {
         if (fromReload) {
             var longestPath_1 = Math.max.apply(Math, players.map(function (player) { return player.longestPathLength; }));
             this.setBestScore(bestScore);
-            var maxCompletedDestinations_1 = players.map(function (player) { return player.completedDestinations.length; }).reduce(function (a, b) { return (a > b) ? a : b; }, 0);
             players.forEach(function (player) {
                 if (Number(player.score) == bestScore) {
                     _this.highlightWinnerScore(player.id);
                 }
                 if (_this.game.isLongestPathBonusActive() && player.longestPathLength == longestPath_1) {
                     _this.setLongestPathWinner(player.id, longestPath_1);
-                }
-                if (_this.game.isGlobetrotterBonusActive() && player.completedDestinations.length == maxCompletedDestinations_1) {
-                    _this.setGlobetrotterWinner(player.id, maxCompletedDestinations_1);
                 }
                 _this.updateDestinationsTooltip(player);
             });
@@ -1791,7 +2017,7 @@ var EndScore = /** @class */ (function () {
             endFunction();
             return;
         }
-        var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, "destination-counter-".concat(playerId), "".concat(destinationRoutes ? 'completed' : 'uncompleted', "-destination-counter-").concat(playerId), {
+        var newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, [], "destination-counter-".concat(playerId), "".concat(destinationRoutes ? 'completed' : 'uncompleted', "-destination-counter-").concat(playerId), {
             change: function () {
                 playSound("ttr-".concat(destinationRoutes ? 'completed' : 'uncompleted', "-end"));
                 _this.game.disableNextMoveSound();
@@ -1830,11 +2056,15 @@ var EndScore = /** @class */ (function () {
         this.game.addAnimation(newDac);
     };
     /**
-     * Add Globetrotter badge to the Globetrotter winner(s).
+     * Show longest path animation for a player.
      */
-    EndScore.prototype.setGlobetrotterWinner = function (playerId, length) {
-        dojo.place("<div id=\"globetrotter-bonus-card-".concat(playerId, "\" class=\"globetrotter bonus-card bonus-card-icon\"></div>"), "bonus-card-icons-".concat(playerId));
-        this.game.setTooltip("globetrotter-bonus-card-".concat(playerId), "\n        <div><strong>".concat(_('Most Completed Tickets'), " : ").concat(length, "</strong></div>\n        <div>").concat(_('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.'), "</div>\n        <div class=\"globetrotter bonus-card\"></div>\n        "));
+    EndScore.prototype.showRemainingStations = function (playerColor, remainingStations, isFastEndScoring) {
+        if (isFastEndScoring === void 0) { isFastEndScoring = false; }
+        if (isFastEndScoring) {
+            return;
+        }
+        var newDac = new RemainingStationsAnimation(this.game, remainingStations, playerColor, {});
+        this.game.addAnimation(newDac);
     };
     /**
      * Add longest path badge to the longest path winner(s).
@@ -1854,11 +2084,13 @@ var TicketToRide = /** @class */ (function () {
     function TicketToRide() {
         this.playerTable = null;
         this.trainCarCounters = [];
+        this.stationCounters = [];
         this.trainCarCardCounters = [];
         this.destinationCardCounters = [];
         this.animations = [];
         this.isTouch = window.matchMedia('(hover: none)').matches;
         this.routeToConfirm = null;
+        this.cityToConfirm = null;
         this.actionTimerId = null;
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
     }
@@ -1891,7 +2123,7 @@ var TicketToRide = /** @class */ (function () {
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
-        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.map.illustration);
+        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.builtStations, gamedatas.map.illustration);
         this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards, gamedatas.trainCarDeckCount, gamedatas.destinationDeckCount, gamedatas.trainCarDeckMaxCount, gamedatas.destinationDeckMaxCount);
         this.destinationSelection = new DestinationSelection(this, map);
         var player = gamedatas.players[this.getPlayerId()];
@@ -1952,10 +2184,18 @@ var TicketToRide = /** @class */ (function () {
      */
     TicketToRide.prototype.onEnteringChooseAction = function (args) {
         var _a, _b;
-        this.setGamestateDescription(args.canTakeTrainCarCards ? '' : 'NoTrainCarsCards');
+        var suffix = '';
+        if (!args.canTakeTrainCarCards) {
+            suffix += 'NoTrainCarsCards';
+        }
+        if (args.canBuildStation) {
+            suffix += 'Station';
+        }
+        this.setGamestateDescription(suffix);
         var currentPlayerActive = this.isCurrentPlayerActive();
         this.trainCarSelection.setSelectableTopDeck(currentPlayerActive, args.maxHiddenCardsPick);
         this.map.setSelectableRoutes(currentPlayerActive, args.possibleRoutes);
+        this.map.setSelectableStations(currentPlayerActive, args.possibleStations);
         (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(currentPlayerActive);
         (_b = this.playerTable) === null || _b === void 0 ? void 0 : _b.setSelectable(currentPlayerActive);
     };
@@ -2003,6 +2243,7 @@ var TicketToRide = /** @class */ (function () {
                 break;
             case 'chooseAction':
                 this.map.setSelectableRoutes(false, []);
+                this.map.setSelectableStations(false, []);
                 (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(false);
                 (_b = this.playerTable) === null || _b === void 0 ? void 0 : _b.setSelectable(false);
                 (_c = this.playerTable) === null || _c === void 0 ? void 0 : _c.setSelectableTrainCarColors(null);
@@ -2042,9 +2283,9 @@ var TicketToRide = /** @class */ (function () {
                     break;
                 case 'confirmTunnel':
                     var confirmTunnelArgs = args;
-                    var confirmLabel = /* TODO MAPS _*/ ("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : " (".concat(/* TODO MAPS _*/ ("You don't have enough cards"), ")"));
+                    var confirmLabel = _("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : " (".concat(_("You don't have enough cards"), ")"));
                     this.addActionButton('claimTunnel_button', confirmLabel, function () { return _this.claimTunnel(); });
-                    this.addActionButton('skipTunnel_button', /* TODO MAPS _*/ ("Skip tunnel claim"), function () { return _this.skipTunnel(); }, null, null, 'gray');
+                    this.addActionButton('skipTunnel_button', _("Skip tunnel claim"), function () { return _this.skipTunnel(); }, null, null, 'gray');
                     if (!confirmTunnelArgs.canPay) {
                         dojo.addClass('claimTunnel_button', 'disabled');
                     }
@@ -2055,9 +2296,6 @@ var TicketToRide = /** @class */ (function () {
     ///////////////////////////////////////////////////
     //// Utility methods
     ///////////////////////////////////////////////////
-    TicketToRide.prototype.isGlobetrotterBonusActive = function () {
-        return this.gamedatas.isGlobetrotterBonusActive;
-    };
     TicketToRide.prototype.isLongestPathBonusActive = function () {
         return this.gamedatas.isLongestPathBonusActive;
     };
@@ -2147,11 +2385,15 @@ var TicketToRide = /** @class */ (function () {
             var playerId = Number(player.id);
             document.getElementById("overall_player_board_".concat(player.id)).dataset.playerColor = player.color;
             // public counters
-            dojo.place("<div class=\"counters\">\n                <div id=\"train-car-counter-".concat(player.id, "-wrapper\" class=\"counter train-car-counter\">\n                    <div class=\"icon train\" data-player-color=\"").concat(player.color, "\" data-color-blind-player-no=\"").concat(player.playerNo, "\"></div> \n                    <span id=\"train-car-counter-").concat(player.id, "\"></span>\n                </div>\n                <div id=\"train-car-card-counter-").concat(player.id, "-wrapper\" class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card-icon\"></div> \n                    <span id=\"train-car-card-counter-").concat(player.id, "\"></span>\n                </div>\n                <div id=\"destinations-counter-").concat(player.id, "-wrapper\" class=\"counter destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-").concat(player.id, "\">").concat(_this.getPlayerId() !== playerId ? '?' : '', "</span>/<span id=\"destination-card-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>"), "player_board_".concat(player.id));
+            dojo.place("<div class=\"counters\">\n                <div id=\"train-car-counter-".concat(player.id, "-wrapper\" class=\"counter train-car-counter\">\n                    <div class=\"icon train\" data-player-color=\"").concat(player.color, "\" data-color-blind-player-no=\"").concat(player.playerNo, "\"></div> \n                    <span id=\"train-car-counter-").concat(player.id, "\"></span>\n                </div>\n                <div id=\"station-counter-").concat(player.id, "-wrapper\" class=\"counter station-counter\">\n                    <div class=\"icon station\" data-player-color=\"").concat(player.color, "\" data-color-blind-player-no=\"").concat(player.playerNo, "\"></div> \n                    <span id=\"station-counter-").concat(player.id, "\"></span>\n                </div>\n                <div id=\"train-car-card-counter-").concat(player.id, "-wrapper\" class=\"counter train-car-card-counter\">\n                    <div class=\"icon train-car-card-icon\"></div> \n                    <span id=\"train-car-card-counter-").concat(player.id, "\"></span>\n                </div>\n                <div id=\"destinations-counter-").concat(player.id, "-wrapper\" class=\"counter destinations-counter\">\n                    <div class=\"icon destination-card\"></div> \n                    <span id=\"completed-destinations-counter-").concat(player.id, "\">").concat(_this.getPlayerId() !== playerId ? '?' : '', "</span>/<span id=\"destination-card-counter-").concat(player.id, "\"></span>\n                </div>\n            </div>"), "player_board_".concat(player.id));
             var trainCarCounter = new ebg.counter();
             trainCarCounter.create("train-car-counter-".concat(player.id));
             trainCarCounter.setValue(player.remainingTrainCarsCount);
             _this.trainCarCounters[playerId] = trainCarCounter;
+            var stationCounter = new ebg.counter();
+            stationCounter.create("station-counter-".concat(player.id));
+            stationCounter.setValue(player.remainingStations);
+            _this.stationCounters[playerId] = stationCounter;
             var trainCarCardCounter = new ebg.counter();
             trainCarCardCounter.create("train-car-card-counter-".concat(player.id));
             trainCarCardCounter.setValue(player.trainCarsCount);
@@ -2171,6 +2413,7 @@ var TicketToRide = /** @class */ (function () {
             }
         });
         this.setTooltipToClass('train-car-counter', _("Remaining train cars"));
+        this.setTooltipToClass('station-counter', _("Remaining stations"));
         this.setTooltipToClass('train-car-card-counter', _("Train cars cards"));
         this.setTooltipToClass('destinations-counter', _("Completed / Total destination cards"));
     };
@@ -2193,6 +2436,12 @@ var TicketToRide = /** @class */ (function () {
      */
     TicketToRide.prototype.canClaimRoute = function (route, cardsColor) {
         return (route.color == 0 || cardsColor == 0 || route.color == cardsColor) && (this.gamedatas.gamestate.args.possibleRoutes.some(function (pr) { return pr.id == route.id; }));
+    };
+    /**
+     * Check if a route can be claimed with dragged cards.
+     */
+    TicketToRide.prototype.canClaimCity = function (city, cardsColor) {
+        return this.gamedatas.gamestate.args.possibleStations.some(function (ps) { return ps.id == city.id; });
     };
     /**
      * Highlight destination (on destination mouse over).
@@ -2318,6 +2567,34 @@ var TicketToRide = /** @class */ (function () {
         }
     };
     /**
+     * Handle city click.
+     */
+    TicketToRide.prototype.clickedCity = function (city) {
+        var _a;
+        if (!this.isCurrentPlayerActive()) {
+            return;
+        }
+        if (!this.canClaimCity(city, 0)) {
+            return;
+        }
+        this.map.setHoveredCity(null);
+        document.querySelectorAll("[id^=\"claimRouteWithColor_button\"]").forEach(function (button) { return button.parentElement.removeChild(button); });
+        var selectedColor = this.playerTable.getSelectedColor();
+        if (selectedColor !== null) {
+            this.askCityClaimConfirmation(city, selectedColor);
+        }
+        else {
+            var possibleColors = ((_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.getPossibleColorsForStation(3 - this.stationCounters[this.getPlayerId()].getValue())) || [];
+            if (possibleColors.length == 1) {
+                this.askCityClaimConfirmation(city, possibleColors[0]);
+            }
+            else if (possibleColors.length > 1) {
+                this.setActionBarChooseColorStation(city, possibleColors);
+                this.playerTable.setSelectableTrainCarColorsForStation(city, 3 - this.stationCounters[this.getPlayerId()].getValue());
+            }
+        }
+    };
+    /**
      * Timer for Confirm button
      */
     TicketToRide.prototype.startActionTimer = function (buttonId, time) {
@@ -2410,6 +2687,39 @@ var TicketToRide = /** @class */ (function () {
         this.startActionTimer("confirmRouteClaim-button", ACTION_TIMER_DURATION);
     };
     /**
+     * Sets the action bar (title and buttons) for the color station.
+     */
+    TicketToRide.prototype.setActionBarChooseColorStation = function (city, possibleColors) {
+        var _this = this;
+        var confirmationQuestion = _("Choose color for the station on ${city}")
+            .replace('${city}', city.name);
+        this.setChooseActionGamestateDescription(confirmationQuestion);
+        document.getElementById("generalactions").innerHTML = '';
+        possibleColors.forEach(function (color) {
+            var label = dojo.string.substitute(_("Use ${color}"), {
+                'color': "<div class=\"train-car-color icon\" data-color=\"".concat(color, "\"></div> ").concat(getColor(color, 'train-car'))
+            });
+            _this.addActionButton("claimRouteWithColor_button".concat(color), label, function () { return _this.askCityClaimConfirmation(city, color); });
+        });
+        this.addActionButton("cancelRouteClaim-button", _("Cancel"), function () { return _this.cancelRouteClaim(); }, null, null, 'gray');
+    };
+    /**
+     * Sets the action bar (title and buttons) for Confirm city claim.
+     */
+    TicketToRide.prototype.setActionBarConfirmStation = function (city, color) {
+        var _this = this;
+        var chooseActionArgs = this.gamedatas.gamestate.args;
+        var colors = chooseActionArgs.costForStation[color].map(function (cardColor) { return "<div class=\"train-car-color icon\" data-color=\"".concat(cardColor, "\"></div>"); });
+        var confirmationQuestion = _("Confirm station on ${city_name} with ${colors} ?")
+            .replace('${city_name}', this.getCityName(city.id))
+            .replace('${colors}', "<div class=\"color-cards\">".concat(colors.join(''), "</div>"));
+        this.setChooseActionGamestateDescription(confirmationQuestion);
+        document.getElementById("generalactions").innerHTML = '';
+        this.addActionButton("confirmCityClaim-button", _("Confirm station"), function () { return _this.confirmStation(); });
+        this.addActionButton("cancelCityClaim-button", _("Cancel"), function () { return _this.cancelStation(); }, null, null, 'gray');
+        this.startActionTimer("confirmCityClaim-button", ACTION_TIMER_DURATION);
+    };
+    /**
      * Check if player should be asked for a route claim confirmation.
      */
     TicketToRide.prototype.confirmRouteClaimActive = function () {
@@ -2457,6 +2767,14 @@ var TicketToRide = /** @class */ (function () {
         }
     };
     /**
+     * Ask confirmation for claimed city.
+     */
+    TicketToRide.prototype.askCityClaimConfirmation = function (city, color) {
+        this.cityToConfirm = { city: city, color: color };
+        this.map.setHoveredCity(city, true);
+        this.setActionBarConfirmStation(city, color);
+    };
+    /**
      * Player cancels claimed route.
      */
     TicketToRide.prototype.cancelRouteClaim = function () {
@@ -2468,11 +2786,29 @@ var TicketToRide = /** @class */ (function () {
         document.querySelectorAll("[id^=\"claimRouteWithColor_button\"]").forEach(function (button) { var _a; return (_a = button.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(button); });
     };
     /**
+     * Player cancels claimed city.
+     */
+    TicketToRide.prototype.cancelStation = function () {
+        var _a;
+        this.setActionBarChooseAction(true);
+        this.map.setHoveredCity(null);
+        (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setSelectableTrainCarColors(null);
+        this.cityToConfirm = null;
+        document.querySelectorAll("[id^=\"claimCityWithColor_button\"]").forEach(function (button) { var _a; return (_a = button.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(button); });
+    };
+    /**
      * Player confirms claimed route.
      */
     TicketToRide.prototype.confirmRouteClaim = function () {
         this.map.setHoveredRoute(null);
         this.claimRoute(this.routeToConfirm.route.id, this.routeToConfirm.color);
+    };
+    /**
+     * Player confirms claimed city.
+     */
+    TicketToRide.prototype.confirmStation = function () {
+        this.map.setHoveredCity(null);
+        this.buildStation(this.cityToConfirm.city.id, this.cityToConfirm.color);
     };
     /**
      * Apply destination selection (initial objectives).
@@ -2536,6 +2872,15 @@ var TicketToRide = /** @class */ (function () {
         });
     };
     /**
+     * Claim a city.
+     */
+    TicketToRide.prototype.buildStation = function (cityId, color) {
+        this.bgaPerformAction('actBuildStation', {
+            cityId: cityId,
+            color: color
+        });
+    };
+    /**
      * Pass (in case of no possible action).
      */
     TicketToRide.prototype.pass = function () {
@@ -2575,6 +2920,7 @@ var TicketToRide = /** @class */ (function () {
         var notifs = [
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
+            ['builtStation', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
@@ -2587,7 +2933,7 @@ var TicketToRide = /** @class */ (function () {
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
-            ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
+            ['remainingStations', skipEndOfGameAnimations ? 1 : 1500],
             ['highlightWinnerScore', 1],
         ];
         notifs.forEach(function (notif) {
@@ -2669,13 +3015,30 @@ var TicketToRide = /** @class */ (function () {
         }
     };
     /**
+     * Update built stations.
+     */
+    TicketToRide.prototype.notif_builtStation = function (notif) {
+        var playerId = notif.args.playerId;
+        var city = notif.args.city;
+        this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
+        this.stationCounters[playerId].incValue(-1);
+        this.map.setBuiltStations([{
+                playerId: playerId,
+                cityId: city.id
+            }], playerId);
+        if (playerId == this.getPlayerId()) {
+            this.playerTable.removeCards(notif.args.removeCards);
+            document.getElementById('stations-information-button').classList.add('visible');
+        }
+    };
+    /**
      * Mark a destination as complete.
      */
     TicketToRide.prototype.notif_destinationCompleted = function (notif) {
         var destination = notif.args.destination;
         this.completedDestinationsCounter.incValue(1);
         this.gamedatas.completedDestinations.push(destination);
-        this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
+        this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes, notif.args.destinationStations);
         playSound("ttr-completed-in-game");
         this.disableNextMoveSound();
     };
@@ -2737,13 +3100,6 @@ var TicketToRide = /** @class */ (function () {
         (_c = this.endScore) === null || _c === void 0 ? void 0 : _c.updateDestinationsTooltip(player);
     };
     /**
-     * Add Globetrotter badge for end score.
-     */
-    TicketToRide.prototype.notif_globetrotterWinner = function (notif) {
-        var _a;
-        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.setGlobetrotterWinner(notif.args.playerId, notif.args.length);
-    };
-    /**
      * Animate longest path for end score.
      */
     TicketToRide.prototype.notif_longestPath = function (notif) {
@@ -2756,6 +3112,13 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.notif_longestPathWinner = function (notif) {
         var _a;
         (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.setLongestPathWinner(notif.args.playerId, notif.args.length);
+    };
+    /**
+     * Animate remaining stations for end score.
+     */
+    TicketToRide.prototype.notif_remainingStations = function (notif) {
+        var _a;
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.showRemainingStations(this.gamedatas.players[notif.args.playerId].color, notif.args.remainingStations, this.isFastEndScoring());
     };
     /**
      * Highlight winner for end score.
@@ -2778,7 +3141,7 @@ var TicketToRide = /** @class */ (function () {
                     args.colors = args.colors.map(function (color) { return "<div class=\"train-car-color icon\" data-color=\"".concat(color, "\"></div>"); }).join('');
                 }
                 // make cities names in bold 
-                ['from', 'to', 'count', 'extraCards', 'pickedCards'].forEach(function (field) {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'city_name'].forEach(function (field) {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = "<strong>".concat(_(args[field]), "</strong>");
                     }

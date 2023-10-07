@@ -190,24 +190,33 @@ trait UtilTrait {
             if (!in_array($destination->id, $alreadyCompleted)) {
                 $destinationRoutes = $this->getDestinationRoutes($playerId, $destination);
                 if ($destinationRoutes != null) {
-                    self::DbQuery("UPDATE `destination` SET `completed` = 1 where `card_id` = $destination->id");
-
-                    self::notifyPlayer($playerId, 'destinationCompleted', clienttranslate('${you} completed a new destination : ${from} - ${to}'), [
-                        'playerId' => $playerId,
-                        'player_name' => $this->getPlayerName($playerId),
-                        'destination' => $destination,
-                        'from' => $this->getCityName($destination->from),
-                        'to' => $this->getCityName($destination->to),
-                        'you' => clienttranslate('You'),
-                        'i18n' => ['you'],
-                        'destinationRoutes' => $destinationRoutes,
-                    ]);
-
-                    self::incStat(1, 'completedDestinations');
-                    self::incStat(1, 'completedDestinations', $playerId);
+                    $this->markCompletedDestination($playerId, $destination, $destinationRoutes);
                 }
             }
         }
+    }
+
+    function markCompletedDestination(int $playerId, object $destination, array $destinationRoutes, array $stations = []) {
+        self::DbQuery("UPDATE `destination` SET `completed` = 1 where `card_id` = $destination->id");
+
+        $message = count($stations) > 0 ?
+            clienttranslate('${you} completed a new destination : ${from} - ${to} using station(s) : ${city_name}') :
+            clienttranslate('${you} completed a new destination : ${from} - ${to}');
+        self::notifyPlayer($playerId, 'destinationCompleted', $message, [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'destination' => $destination,
+            'from' => $this->getCityName($destination->from),
+            'to' => $this->getCityName($destination->to),
+            'you' => clienttranslate('You'),
+            'i18n' => ['you'],
+            'destinationRoutes' => $destinationRoutes,
+            'destinationStations' => $stations,
+            'city_name' => implode(', ', array_map(fn($station) => $this->getCityName($station), $stations)),
+        ]);
+
+        self::incStat(1, 'completedDestinations');
+        self::incStat(1, 'completedDestinations', $playerId);
     }
 
     function getCityName(string $id) {

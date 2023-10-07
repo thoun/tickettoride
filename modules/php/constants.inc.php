@@ -1,6 +1,6 @@
 <?php
 
-const MAP = 'usa';
+const MAP = 'europe';
 
 /* 
  * Colors 
@@ -14,6 +14,11 @@ define('ORANGE', 5);
 define('BLACK', 6);
 define('RED', 7);
 define('GREEN', 8);
+
+/*
+ * Building types
+ */
+const STATION = 1;
 
 /*
  * State constants

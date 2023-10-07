@@ -3,7 +3,7 @@
 const EXPANSION1912 = 'EXPANSION1912';
 
 const INIT_GAME_STATE_LABELS = [
-    EXPANSION1912 => 101, // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
+    EXPANSION1912 => 101, // 0 => base game, 1 => extended, 2 => mega game, 3 => big cities
 ];
 
 const INITIAL_TRAIN_CAR_CARDS_IN_HAND = 4; // Number of train car cards in hand, for each player, at the beginning of the game.
@@ -36,29 +36,29 @@ const BIG_CITIES = [
 
 function getMapOptions() {
     return [    
-        /* TODO1912 101 => [ // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
+        101 => [ // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
             'name' => totranslate('1912 Expansion'),
             'values' => [
                 0 => [
                     'name' => totranslate('Disabled'),
                 ],
                 1 => [
-                    'name' => totranslate('1912'),
-                    'description' => totranslate('New tickets. Globetrotter - Most Completed Tickets bonus card instead of Longest Route Bonus card'),
-                    'tmdisplay' => totranslate('1912 Expansion : 1912'),
+                    'name' => totranslate('Europe Expanded'),
+                    'description' => totranslate('19 additional regular Destination tickets'),
+                    'tmdisplay' => totranslate('1912 Expansion : Europe Expanded'),
                 ],
                 2 => [
-                    'name' => totranslate('The Mega Game'),
-                    'description' => totranslate('All tickets, both bonus cards, more tickets when choosing'),
-                    'tmdisplay' => totranslate('1912 Expansion : The Mega Game'),
+                    'name' => totranslate('Mega Europe'),
+                    'description' => totranslate('All tickets, more tickets when choosing'),
+                    'tmdisplay' => totranslate('1912 Expansion : Mega Europe'),
                 ],
                 3 => [
-                    'name' => totranslate('The Big Cities'),
+                    'name' => totranslate('Big Cities of Europe'),
                     'description' => totranslate('Tickets with Big Cities'),
-                    'tmdisplay' => totranslate('1912 Expansion : The Big Cities'),
+                    'tmdisplay' => totranslate('1912 Expansion : Big Cities of Europe'),
                 ],
             ],
             'default' => 0,
-        ],*/
+        ],
     ];
 } 

@@ -94,6 +94,11 @@ trait DestinationDeckTrait {
             throw new BgaUserException("Selected cards are not available.");
         }
 
+        $cards = $this->getDestinationsFromDb($this->destinations->getCards($ids));
+        if (count(array_filter($cards, fn($card) => $card->type == 2)) > 1) {
+            throw new BgaUserException($this->_("You cannot keep both long routes."));
+        }
+
         $this->destinations->moveCards($ids, 'hand', $playerId);
 
         $remainingCardsInPick = intval($this->destinations->countCardInLocation("pick$playerId"));

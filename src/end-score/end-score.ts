@@ -68,16 +68,12 @@ class EndScore {
         if (fromReload) {
             const longestPath = Math.max(...players.map(player => player.longestPathLength));
             this.setBestScore(bestScore);
-            const maxCompletedDestinations = players.map(player => player.completedDestinations.length).reduce((a, b) => (a > b) ? a : b, 0)
             players.forEach(player => {
                 if (Number(player.score) == bestScore) {
                     this.highlightWinnerScore(player.id);
                 }
                 if (this.game.isLongestPathBonusActive() && player.longestPathLength == longestPath) {
                     this.setLongestPathWinner(player.id, longestPath);
-                }
-                if (this.game.isGlobetrotterBonusActive() && player.completedDestinations.length == maxCompletedDestinations) {
-                    this.setGlobetrotterWinner(player.id, maxCompletedDestinations);
                 }
                 this.updateDestinationsTooltip(player);
             });
@@ -139,6 +135,7 @@ class EndScore {
             this.game,
             destination, 
             destinationRoutes, 
+            [],
             `destination-counter-${playerId}`,
             `${destinationRoutes ? 'completed' : 'uncompleted'}-destination-counter-${playerId}`,
             {
@@ -201,16 +198,23 @@ class EndScore {
     }
     
     /** 
-     * Add Globetrotter badge to the Globetrotter winner(s).
+     * Show longest path animation for a player.
      */ 
-    public setGlobetrotterWinner(playerId: number | string, length: number) {
-        dojo.place(`<div id="globetrotter-bonus-card-${playerId}" class="globetrotter bonus-card bonus-card-icon"></div>`, `bonus-card-icons-${playerId}`);
+    public showRemainingStations(playerColor: string, remainingStations: number, isFastEndScoring: boolean = false) {
+        if (isFastEndScoring) {
+            return;
+        }
+        
+        const newDac = new RemainingStationsAnimation(
+            this.game,
+            remainingStations,
+            playerColor,
+            {
+            }
+        );
+        
 
-        this.game.setTooltip(`globetrotter-bonus-card-${playerId}`, `
-        <div><strong>${_('Most Completed Tickets')} : ${length}</strong></div>
-        <div>${_('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.')}</div>
-        <div class="globetrotter bonus-card"></div>
-        `);
+        this.game.addAnimation(newDac);
     }
     
     /** 

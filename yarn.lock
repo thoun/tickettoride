@@ -1154,9 +1154,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tickettoride@workspace:.":
+"tickettorideeurope@workspace:.":
   version: 0.0.0-use.local
-  resolution: "tickettoride@workspace:."
+  resolution: "tickettorideeurope@workspace:."
   dependencies:
     sass: ^1.70.0
     typescript: ^5.3.3

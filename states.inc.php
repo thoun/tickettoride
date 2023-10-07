@@ -105,12 +105,17 @@ $playerActionsGameStates = [
         "descriptionmyturn" => clienttranslate('${you} must draw train car cards, claim a route or draw destination tickets'),
         "descriptionNoTrainCarsCards" => clienttranslate('${actplayer} must claim a route or draw destination tickets'),
         "descriptionmyturnNoTrainCarsCards" => clienttranslate('${you} must claim a route or draw destination tickets'),
+        "descriptionStation" => clienttranslate('${actplayer} must draw train car cards, claim a route, build a station or draw destination tickets'),
+        "descriptionmyturnStation" => clienttranslate('${you} must draw train car cards, claim a route, build a station or draw destination tickets'),
+        "descriptionNoTrainCarsCardsStation" => clienttranslate('${actplayer} must claim a route, build a station or draw destination tickets'),
+        "descriptionmyturnNoTrainCarsCardsStation" => clienttranslate('${you} must claim a route, build a station or draw destination tickets'),
         "type" => "activeplayer",
         "args" => "argChooseAction",
         "possibleactions" => [
             "actDrawDeckCards",
             "actDrawTableCard",
             "actClaimRoute",
+            "actBuildStation",
             "actDrawDestinations",
             "actPass",
         ],
@@ -153,8 +158,8 @@ $playerActionsGameStates = [
 
     ST_PLAYER_CONFIRM_TUNNEL => [
         "name" => "confirmTunnel",
-        "description" => /*TODO MAPS clienttranslate*/('${actplayer} must confirm tunnel claim using ${extraCards} extra card(s) ${colors}'),
-        "descriptionmyturn" => /*TODO MAPS clienttranslate*/('${you} must confirm tunnel claim using ${extraCards} extra card(s) ${colors}'),
+        "description" => clienttranslate('${actplayer} must confirm tunnel claim using ${extraCards} extra card(s) ${colors}'),
+        "descriptionmyturn" => clienttranslate('${you} must confirm tunnel claim using ${extraCards} extra card(s) ${colors}'),
         "type" => "activeplayer",
         "args" => "argConfirmTunnel",
         "possibleactions" => [

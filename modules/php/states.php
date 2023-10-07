@@ -62,7 +62,6 @@ trait StateTrait {
     }
 
     function stEndScore() {
-        $isGlobetrotterBonusActive = $this->isGlobetrotterBonusActive();
         $isLongestPathBonusActive = $this->isLongestPathBonusActive();
 
         $sql = "SELECT player_id id, player_score score FROM player ORDER BY player_no ASC";
@@ -72,6 +71,24 @@ trait StateTrait {
         $totalScore = [];
         foreach ($players as $playerId => $playerDb) {
             $totalScore[$playerId] = intval($playerDb['score']);
+        }
+
+        $useStationResult = [];
+        $playersRemainingStations = [];
+        foreach ($players as $playerId => $playerDb) {
+            $useStationResult[$playerId] = [0, [], [], []];
+            $playerStations = $this->getPlacedStations($playerId);
+            $usedStations = count($playerStations);
+            if ($usedStations > 0) {
+                $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
+                $uncompletedDestinations = array_values(array_filter($destinations, fn($destination) => !boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"))));
+                
+                if (count($uncompletedDestinations) > 0) {
+                    $useStationResult[$playerId] = $this->useStations($playerId, $playerStations, $uncompletedDestinations);
+                }
+            }
+            $playersRemainingStations[$playerId] = 3 - $usedStations;
+            $totalScore[$playerId] += 4 * $playersRemainingStations[$playerId];
         }
 
         // completed/failed destinations 
@@ -124,24 +141,6 @@ trait StateTrait {
             }
         }
 
-        // Globetrotter
-        $globetrotterWinners = [];
-        $bestCompletedDestinationsCount = null;
-        if ($isGlobetrotterBonusActive) {
-            $completedDestinationsBySize = [];
-            foreach ($completedDestinationsCount as $playerId => $size) {
-                $completedDestinationsBySize[$size] = array_key_exists($size, $completedDestinationsBySize) ?
-                    array_merge($completedDestinationsBySize[$size], [$playerId]):
-                    [$playerId];
-            }
-            $bestCompletedDestinationsCount = max(array_keys($completedDestinationsBySize));
-            $globetrotterWinners = $completedDestinationsBySize[$bestCompletedDestinationsCount];  
-            
-            foreach ($globetrotterWinners as $playerId) {
-                $totalScore[$playerId] += POINTS_FOR_GLOBETROTTER;
-            }
-        }
-
         // we need to send bestScore before all score notifs, because train animations will show score ratio over best score
         $bestScore = max($totalScore);
         self::notifyAllPlayers('bestScore', '', [
@@ -154,10 +153,20 @@ trait StateTrait {
         foreach ($destinationsResults as $playerId => $destinations) {
 
             foreach ($destinations as $destination) {
-                $destinationRoutes = $this->getDestinationRoutes($playerId, $destination);
-                $completed = $destinationRoutes != null;
-                $points = $completed ? $destination->points : -$destination->points;
+                $destinationRoutes = null;
+                $destinationStations = null;
+                $completed = boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
+                if ($completed) {
 
+                    $index = $this->array_find_index($useStationResult[$playerId][1], fn($d) => $d->id == $destination->id);
+                    if ($index !== null) {
+                        $destinationRoutes = $useStationResult[$playerId][2][$index];
+                        $destinationStations = $useStationResult[$playerId][3][$index];
+                    } else {
+                        $destinationRoutes = $this->getDestinationRoutes($playerId, $destination);
+                    }
+                }
+                $points = $completed ? $destination->points : -$destination->points;
 
                 self::notifyAllPlayers('scoreDestination', clienttranslate('${player_name} reveals ${from} to ${to} destination'), [
                     'playerId' => $playerId,
@@ -166,6 +175,7 @@ trait StateTrait {
                     'from' => $this->getCityName($destination->from),
                     'to' => $this->getCityName($destination->to),
                     'destinationRoutes' => $destinationRoutes,
+                    'destinationStations' => $destinationStations,
                 ]);
                 
                 $message = clienttranslate('${player_name} ${gainsloses} ${absdelta} points with ${from} to ${to} destination');
@@ -191,24 +201,6 @@ trait StateTrait {
                     self::incStat($destination->points, 'pointsLostWithUncompletedDestinations');
                     self::incStat($destination->points, 'pointsLostWithUncompletedDestinations', $playerId);
                 }
-            }
-        }
-
-        // Globetrotter
-        if ($isGlobetrotterBonusActive) {
-            foreach ($globetrotterWinners as $playerId) {
-                $points = POINTS_FOR_GLOBETROTTER;
-                $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with Globetrotter : ${destinations} completed destinations'), [
-                    'points' => $points,
-                    'destinations' => $bestCompletedDestinationsCount,
-                ]);
-
-                self::notifyAllPlayers('globetrotterWinner', '', [
-                    'playerId' => $playerId,
-                    'length' => $bestCompletedDestinationsCount,
-                ]);
-
-                $this->setStat(1, 'globetrotterBonus', $playerId);
             }
         }
 
@@ -244,6 +236,24 @@ trait StateTrait {
             }
         }
 
+        // stations
+        foreach ($players as $playerId => $playerDb) {
+            $remainingStations = $playersRemainingStations[$playerId];
+
+            self::notifyAllPlayers('remainingStations', '', [
+                'playerId' => $playerId,
+                'remainingStations' => $remainingStations,
+            ]);
+
+            $points = 4 * $remainingStations;
+            $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with ${remainingStations} remaining station(s)'), [
+                'points' => $points,
+                'remainingStations' => $remainingStations,
+            ]);
+
+            self::setStat($remainingStations, 'unusedStations', $playerId);
+        }
+
         $claimedRoutes = intval(self::getStat('claimedRoutes'));
         if ($claimedRoutes > 0) {
             self::setStat(self::getStat('playedTrainCars') / (float)$claimedRoutes, 'averageClaimedRouteLength');
@@ -258,7 +268,7 @@ trait StateTrait {
                 self::setStat(0, 'averageClaimedRouteLength', $playerId);
             }
 
-            $scoreAux = 1000 * $completedDestinationsCount[$playerId] + $playersLongestPaths[$playerId]->length;
+            $scoreAux = 1000 * $completedDestinationsCount[$playerId] + 100 * $this->getRemainingStations($playerId) + $playersLongestPaths[$playerId]->length;
             self::DbQuery("UPDATE player SET `player_score_aux` = $scoreAux where `player_id` = $playerId");
         }
 

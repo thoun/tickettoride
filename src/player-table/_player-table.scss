@@ -12,5 +12,10 @@
 
     &.left {
         flex-direction: column-reverse;
+        
+        #stations-information-button {
+            top: -32px;
+            right: 0;
+        }
     }
 }
