@@ -30,6 +30,7 @@ require_once('modules/php/train-car-deck.php');
 require_once('modules/php/destination-deck.php');
 require_once('modules/php/debug-util.php');
 require_once('modules/maps/'.MAP.'/settings.php');
+require_once('modules/php/stations.php');
 
 /*
  * Game main class.
@@ -45,6 +46,7 @@ class TicketToRideEurope extends Table {
     use DestinationDeckTrait;
     use DebugUtilTrait;
     use SettingsTrait;
+    use StationTrait;
 
 	function __construct() {
         parent::__construct();
@@ -142,6 +144,11 @@ class TicketToRideEurope extends Table {
         //$this->initStat('player', 'averageClaimedRouteLength', 0); // only computed at the end
         //$this->initStat('table', 'longestPath', 0); // only computed at the end
         //$this->initStat('player', 'longestPath', 0); // only computed at the end
+        // 50+ : stations
+        $this->initStat('table', 'builtStations', 0);
+        $this->initStat('player', 'builtStations', 0);
+        //$this->initStat('table', 'unusedStations', 0); // only computed at the end
+        //$this->initStat('player', 'unusedStations', 0); // only computed at the end
         
         $isGlobetrotterBonusActive = $this->isGlobetrotterBonusActive();
         $isLongestPathBonusActive = $this->isLongestPathBonusActive();
@@ -205,6 +212,7 @@ class TicketToRideEurope extends Table {
         // Gather all information about current game situation (visible by player $currentPlayerId).
 
         $result['claimedRoutes'] = $this->getClaimedRoutes();
+        $result['builtStations'] = $this->getPlacedStations();
         $visibleTrainCards = $this->getVisibleTrainCarCards();
         $spotsCards = [];
         foreach($visibleTrainCards as $visibleTrainCard) {
@@ -223,6 +231,7 @@ class TicketToRideEurope extends Table {
             $player['trainCarsCount'] = intval($this->trainCars->countCardInLocation('hand', $playerId));
             $player['destinationsCount'] = intval($this->destinations->countCardInLocation('hand', $playerId));
             $player['remainingTrainCarsCount'] = $this->getRemainingTrainCarsCount($playerId);
+            $player['remainingStations'] = $this->getRemainingStations($playerId);
 
             if ($isEnd) {
                 $player['completedDestinations'] = $this->getDestinationsFromDb($this->destinations->getCards($this->getCompletedDestinationsIds($playerId)));

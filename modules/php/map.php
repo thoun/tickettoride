@@ -98,6 +98,13 @@ trait MapTrait {
         $claimedRoutes = $this->getClaimedRoutes($playerId);
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
 
+        return $this->getDestinationRoutesWithRoutesIds($destination, $claimedRoutesIds);
+    }
+
+    /**
+     * Indicates if destination is completed (continuous path linking both cities).
+     */
+    public function getDestinationRoutesWithRoutesIds(object $destination, array $claimedRoutesIds) {
         $citiesConnectedToFrom = $this->getAccessibleCitiesFrom(new ConnectedCity($destination->from, []), [$destination->from], $claimedRoutesIds);
 
         $validConnections = array_values(array_filter($citiesConnectedToFrom, fn($connectedCity) => $connectedCity->city == $destination->to));

@@ -74,6 +74,22 @@ trait StateTrait {
             $totalScore[$playerId] = intval($playerDb['score']);
         }
 
+        $playersRemainingStations = [];
+        foreach ($players as $playerId => $playerDb) {
+            $playerStations = $this->getPlacedStations($playerId);
+            $usedStations = count($playerStations);
+            if ($usedStations > 0) {
+                $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
+                $uncompletedDestinations = array_values(array_filter($destinations, fn($destination) => !boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"))));
+                
+                if (count($uncompletedDestinations) > 0) {
+                    $this->useStations($playerId, $playerStations, $uncompletedDestinations);
+                }
+            }
+            $playersRemainingStations[$playerId] = 3 - $usedStations;
+            $totalScore[$playerId] += 4 * $playersRemainingStations[$playerId];
+        }
+
         // completed/failed destinations 
         $destinationsResults = [];
         $completedDestinationsCount = [];
@@ -244,6 +260,24 @@ trait StateTrait {
             }
         }
 
+        // stations
+        foreach ($players as $playerId => $playerDb) {
+            $remainingStations = $playersRemainingStations[$playerId];
+
+            self::notifyAllPlayers('remainingStations', '', [
+                'playerId' => $playerId,
+                'remainingStations' => $remainingStations,
+            ]);
+
+            $points = 4 * $remainingStations;
+            $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with ${remainingStations} remaining station(s)'), [
+                'points' => $points,
+                'remainingStations' => $remainingStations,
+            ]);
+
+            self::setStat($remainingStations, 'unusedStations', $playerId);
+        }
+
         $claimedRoutes = intval(self::getStat('claimedRoutes'));
         if ($claimedRoutes > 0) {
             self::setStat(self::getStat('playedTrainCars') / (float)$claimedRoutes, 'averageClaimedRouteLength');
@@ -258,7 +292,7 @@ trait StateTrait {
                 self::setStat(0, 'averageClaimedRouteLength', $playerId);
             }
 
-            $scoreAux = 1000 * $completedDestinationsCount[$playerId] + $playersLongestPaths[$playerId]->length;
+            $scoreAux = 1000 * $completedDestinationsCount[$playerId] + 100 * $this->getRemainingStations($playerId) + $playersLongestPaths[$playerId]->length;
             self::DbQuery("UPDATE player SET `player_score_aux` = $scoreAux where `player_id` = $playerId");
         }
 

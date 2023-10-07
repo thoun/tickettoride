@@ -44,8 +44,8 @@ class PlayerTable {
         this.playerDestinations.addDestinations(destinations, originStock);
     }
 
-    public markDestinationComplete(destination: Destination, destinationRoutes?: Route[]) {
-        this.playerDestinations.markDestinationComplete(destination, destinationRoutes);
+    public markDestinationComplete(destination: Destination, destinationRoutes?: Route[], destinationStations?: number[]) {
+        this.playerDestinations.markDestinationComplete(destination, destinationRoutes, destinationStations);
     }
     
     public addTrainCars(trainCars: TrainCar[], from?: HTMLElement) {
@@ -67,9 +67,17 @@ class PlayerTable {
     public getPossibleColors(route: Route): number[] {
         return this.playerTrainCars.getPossibleColors(route);
     }
+    
+    public getPossibleColorsForStation(placedStations: number): number[] {
+        return this.playerTrainCars.getPossibleColorsForStation(placedStations);
+    }
 
     public setSelectableTrainCarColors(route: Route | null, possibleColors: number[] | null = null) {
         this.playerTrainCars.setSelectableTrainCarColors(route, possibleColors);
+    }
+
+    public setSelectableTrainCarColorsForStation(city: City | null, placedStations: number) {
+        this.playerTrainCars.setSelectableTrainCarColorsForStation(city, placedStations);
     }
 
     public getSelectedColor(): number | null {

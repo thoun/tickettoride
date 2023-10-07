@@ -96,11 +96,12 @@ class PlayerDestinations {
     /** 
      * Add an animation to mark a destination as complete.
      */ 
-    public markDestinationCompleteAnimation(destination: Destination, destinationRoutes: Route[]) {
+    public markDestinationCompleteAnimation(destination: Destination, destinationRoutes: Route[], destinationStations: number[]) {
         const newDac = new DestinationCompleteAnimation(
             this.game,
             destination, 
             destinationRoutes, 
+            destinationStations,
             `destination-card-${destination.id}`,
             `destination-card-${destination.id}`,
             { 
@@ -117,9 +118,9 @@ class PlayerDestinations {
     /** 
      * Mark a destination as complete.
      */ 
-    public markDestinationComplete(destination: Destination, destinationRoutes?: Route[]) {
+    public markDestinationComplete(destination: Destination, destinationRoutes?: Route[], destinationStations?: number[]) {
         if (destinationRoutes && !(document.visibilityState === 'hidden' || (this.game as any).instantaneousMode)) {
-            this.markDestinationCompleteAnimation(destination, destinationRoutes);
+            this.markDestinationCompleteAnimation(destination, destinationRoutes, destinationStations);
         } else {
             this.markDestinationCompleteNoAnimation(destination);
         }

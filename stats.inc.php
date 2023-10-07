@@ -135,6 +135,18 @@ $commonStats = [
         "name" => totranslate("Longest continuous path"),
         "type" => "int"
     ],
+
+    // 50+ : stations
+    "builtStations" => [
+        "id" => 50,
+        "name" => totranslate("Built stations"),
+        "type" => "int"
+    ],
+    "unusedStations" => [
+        "id" => 51,
+        "name" => totranslate("Built stations"),
+        "type" => "int"
+    ],
 ];
 
 $stats_type = [

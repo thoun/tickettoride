@@ -7,6 +7,7 @@ class PlayerTrainCars {
     public playerId: number;
     private left: boolean = true;
     private route: Route | null = null;
+    private city: City | null = null;
     private selectable: boolean = false;
     private selectedColor: number | null = null;
 
@@ -296,6 +297,36 @@ class PlayerTrainCars {
 
         return possibleColors;
     }
+    
+    /** 
+     * Get the colors a player can use to claim a station.
+     */ 
+    public getPossibleColorsForStation(placedStations: number): number[] {
+        const expectedCards = placedStations + 1;
+        const groups = this.getGroups();
+
+        const locomotiveGroup = groups.find(groupDiv => groupDiv.dataset.type == '0');
+        const locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
+
+        const possibleColors = [];
+
+        groups.forEach(groupDiv => {
+            const count = Number(groupDiv.dataset.count);
+            if (count + locomotives >= expectedCards) {
+                const color = Number(groupDiv.dataset.type);
+                if (color > 0) {
+                    possibleColors.push(color);
+                }
+            } 
+        });
+
+        if (locomotives >= expectedCards) {
+            possibleColors.push(0);
+        }
+
+        return possibleColors;
+    }
+
     /** 
      * Get the colors a player can use to claim a given route.
      */ 
@@ -308,6 +339,28 @@ class PlayerTrainCars {
             if (route) {
                 const color = Number(groupDiv.dataset.type);
                 groupDiv.classList.toggle('disabled', color != 0 && !possibleColors.includes(color));
+            } else {
+                groupDiv.classList.remove('disabled');
+            }
+        });
+    }
+
+    /** 
+     * Get the colors a player can use to claim a given city.
+     */ 
+     setSelectableTrainCarColorsForStation(city: City | null, placedStations: number) {
+        this.city = city;
+
+        const groups = this.getGroups();
+
+        const locomotiveGroup = groups.find(groupDiv => groupDiv.dataset.type == '0');
+        const locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
+
+        groups.forEach(groupDiv => {
+            if (city) {
+                const count = Number(groupDiv.dataset.count);
+                const countWithLocomotives = groupDiv.dataset.type == '0' ? locomotives : count + locomotives;
+                groupDiv.classList.toggle('disabled', countWithLocomotives <= placedStations);
             } else {
                 groupDiv.classList.remove('disabled');
             }
