@@ -62,7 +62,6 @@ trait StateTrait {
     }
 
     function stEndScore() {
-        $isGlobetrotterBonusActive = $this->isGlobetrotterBonusActive();
         $isLongestPathBonusActive = $this->isLongestPathBonusActive();
 
         $sql = "SELECT player_id id, player_score score FROM player ORDER BY player_no ASC";
@@ -140,24 +139,6 @@ trait StateTrait {
             }
         }
 
-        // Globetrotter
-        $globetrotterWinners = [];
-        $bestCompletedDestinationsCount = null;
-        if ($isGlobetrotterBonusActive) {
-            $completedDestinationsBySize = [];
-            foreach ($completedDestinationsCount as $playerId => $size) {
-                $completedDestinationsBySize[$size] = array_key_exists($size, $completedDestinationsBySize) ?
-                    array_merge($completedDestinationsBySize[$size], [$playerId]):
-                    [$playerId];
-            }
-            $bestCompletedDestinationsCount = max(array_keys($completedDestinationsBySize));
-            $globetrotterWinners = $completedDestinationsBySize[$bestCompletedDestinationsCount];  
-            
-            foreach ($globetrotterWinners as $playerId) {
-                $totalScore[$playerId] += POINTS_FOR_GLOBETROTTER;
-            }
-        }
-
         // we need to send bestScore before all score notifs, because train animations will show score ratio over best score
         $bestScore = max($totalScore);
         self::notifyAllPlayers('bestScore', '', [
@@ -207,24 +188,6 @@ trait StateTrait {
                     self::incStat($destination->points, 'pointsLostWithUncompletedDestinations');
                     self::incStat($destination->points, 'pointsLostWithUncompletedDestinations', $playerId);
                 }
-            }
-        }
-
-        // Globetrotter
-        if ($isGlobetrotterBonusActive) {
-            foreach ($globetrotterWinners as $playerId) {
-                $points = POINTS_FOR_GLOBETROTTER;
-                $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with Globetrotter : ${destinations} completed destinations'), [
-                    'points' => $points,
-                    'destinations' => $bestCompletedDestinationsCount,
-                ]);
-
-                self::notifyAllPlayers('globetrotterWinner', '', [
-                    'playerId' => $playerId,
-                    'length' => $bestCompletedDestinationsCount,
-                ]);
-
-                $this->setStat(1, 'globetrotterBonus', $playerId);
             }
         }
 

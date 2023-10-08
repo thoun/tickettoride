@@ -123,7 +123,6 @@ interface TicketToRideGamedatas {
     lastTurn: boolean;
     bestScore: number;
 
-    isGlobetrotterBonusActive: boolean;
     isLongestPathBonusActive: boolean;
     showTurnOrder: boolean;
 }
@@ -159,7 +158,6 @@ interface TicketToRideGame extends Game {
     selectedColorChanged(selectedColor: number | null): void;
     setTooltip(id: string, html: string): void;
     setTooltipToClass(className: string, html: string): void;
-    isGlobetrotterBonusActive(): boolean;
     isLongestPathBonusActive(): boolean;
 }
 
