@@ -617,13 +617,7 @@ class TicketToRide implements TicketToRideGame {
             if (possibleColors.length == 1) {
                 this.askCityClaimConfirmation(city, possibleColors[0]);
             } else if (possibleColors.length > 1) {
-                possibleColors.forEach(color => {
-                    const label = dojo.string.substitute(_("Use ${color}"), {
-                        'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
-                    });
-                    (this as any).addActionButton(`claimCityWithColor_button${color}`, label, () => this.askCityClaimConfirmation(city, color));
-                });
-
+                this.setActionBarChooseColorStation(city, possibleColors);
                 this.playerTable.setSelectableTrainCarColorsForStation(city, 3 - this.stationCounters[this.getPlayerId()].getValue());
             }
         }
@@ -726,6 +720,26 @@ class TicketToRide implements TicketToRideGame {
         (this as any).addActionButton(`confirmRouteClaim-button`, _("Confirm"), () => this.confirmRouteClaim());
         (this as any).addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
         this.startActionTimer(`confirmRouteClaim-button`, ACTION_TIMER_DURATION);
+    }
+    
+    /**
+     * Sets the action bar (title and buttons) for the color station.
+     */
+    private setActionBarChooseColorStation(city: City, possibleColors: number[]) {
+        const confirmationQuestion = _("Choose color for the station on ${city}")
+            .replace('${city}', city.name);
+        this.setChooseActionGamestateDescription(confirmationQuestion);
+
+        document.getElementById(`generalactions`).innerHTML = '';
+
+        possibleColors.forEach(color => {
+            const label = dojo.string.substitute(_("Use ${color}"), {
+                'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
+            });
+            (this as any).addActionButton(`claimRouteWithColor_button${color}`, label, () => this.askCityClaimConfirmation(city, color));
+        });
+
+        (this as any).addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
     }
     
     /**
