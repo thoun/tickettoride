@@ -181,11 +181,6 @@ $stats_type = [
             "name" => totranslate("Longest Continuous Path bonus"),
             "type" => "bool"
         ],
-        "globetrotterBonus" => [
-            "id" => 45,
-            "name" => totranslate("Globetrotter bonus"),
-            "type" => "bool"
-        ],
     ],
 
 ];

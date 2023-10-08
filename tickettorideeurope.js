@@ -1940,16 +1940,12 @@ var EndScore = /** @class */ (function () {
         if (fromReload) {
             var longestPath_1 = Math.max.apply(Math, players.map(function (player) { return player.longestPathLength; }));
             this.setBestScore(bestScore);
-            var maxCompletedDestinations_1 = players.map(function (player) { return player.completedDestinations.length; }).reduce(function (a, b) { return (a > b) ? a : b; }, 0);
             players.forEach(function (player) {
                 if (Number(player.score) == bestScore) {
                     _this.highlightWinnerScore(player.id);
                 }
                 if (_this.game.isLongestPathBonusActive() && player.longestPathLength == longestPath_1) {
                     _this.setLongestPathWinner(player.id, longestPath_1);
-                }
-                if (_this.game.isGlobetrotterBonusActive() && player.completedDestinations.length == maxCompletedDestinations_1) {
-                    _this.setGlobetrotterWinner(player.id, maxCompletedDestinations_1);
                 }
                 _this.updateDestinationsTooltip(player);
             });
@@ -2050,13 +2046,6 @@ var EndScore = /** @class */ (function () {
         }
         var newDac = new RemainingStationsAnimation(this.game, remainingStations, playerColor, {});
         this.game.addAnimation(newDac);
-    };
-    /**
-     * Add Globetrotter badge to the Globetrotter winner(s).
-     */
-    EndScore.prototype.setGlobetrotterWinner = function (playerId, length) {
-        dojo.place("<div id=\"globetrotter-bonus-card-".concat(playerId, "\" class=\"globetrotter bonus-card bonus-card-icon\"></div>"), "bonus-card-icons-".concat(playerId));
-        this.game.setTooltip("globetrotter-bonus-card-".concat(playerId), "\n        <div><strong>".concat(_('Most Completed Tickets'), " : ").concat(length, "</strong></div>\n        <div>").concat(_('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.'), "</div>\n        <div class=\"globetrotter bonus-card\"></div>\n        "));
     };
     /**
      * Add longest path badge to the longest path winner(s).
@@ -2288,9 +2277,6 @@ var TicketToRide = /** @class */ (function () {
     ///////////////////////////////////////////////////
     //// Utility methods
     ///////////////////////////////////////////////////
-    TicketToRide.prototype.isGlobetrotterBonusActive = function () {
-        return this.gamedatas.isGlobetrotterBonusActive;
-    };
     TicketToRide.prototype.isLongestPathBonusActive = function () {
         return this.gamedatas.isLongestPathBonusActive;
     };
@@ -2919,7 +2905,6 @@ var TicketToRide = /** @class */ (function () {
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
-            ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['remainingStations', skipEndOfGameAnimations ? 1 : 1500],
             ['highlightWinnerScore', 1],
         ];
@@ -3084,13 +3069,6 @@ var TicketToRide = /** @class */ (function () {
             (_b = document.getElementById("destination-card-".concat(notif.args.destination.id))) === null || _b === void 0 ? void 0 : _b.classList.add('uncompleted');
         }
         (_c = this.endScore) === null || _c === void 0 ? void 0 : _c.updateDestinationsTooltip(player);
-    };
-    /**
-     * Add Globetrotter badge for end score.
-     */
-    TicketToRide.prototype.notif_globetrotterWinner = function (notif) {
-        var _a;
-        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.setGlobetrotterWinner(notif.args.playerId, notif.args.length);
     };
     /**
      * Animate longest path for end score.
