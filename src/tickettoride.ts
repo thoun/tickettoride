@@ -557,12 +557,7 @@ class TicketToRide implements TicketToRideGame {
                 if (possibleColors.length == 1) {
                     this.askRouteClaimConfirmation(route, possibleColors[0]);
                 } else if (possibleColors.length > 1) {
-                    possibleColors.forEach(color => {
-                        const label = dojo.string.substitute(_("Use ${color}"), {
-                            'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
-                        });
-                        (this as any).addActionButton(`claimRouteWithColor_button${color}`, label, () => this.askRouteClaimConfirmation(route, color));
-                    });
+                    this.setActionBarChooseColor(route, possibleColors);
 
                     this.playerTable.setSelectableTrainCarColors(route, possibleColors);
                 }
@@ -630,6 +625,27 @@ class TicketToRide implements TicketToRideGame {
     }
     
     /**
+     * Sets the action bar (title and buttons) for the color route.
+     */
+    private setActionBarChooseColor(route: Route, possibleColors: number[]) {
+        const confirmationQuestion = _("Choose color for the route from ${from} to ${to}")
+            .replace('${from}', this.getCityName(route.from))
+            .replace('${to}', this.getCityName(route.to));
+        this.setChooseActionGamestateDescription(confirmationQuestion);
+
+        document.getElementById(`generalactions`).innerHTML = '';
+
+        possibleColors.forEach(color => {
+            const label = dojo.string.substitute(_("Use ${color}"), {
+                'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
+            });
+            (this as any).addActionButton(`claimRouteWithColor_button${color}`, label, () => this.askRouteClaimConfirmation(route, color));
+        });
+
+        (this as any).addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
+    }
+    
+    /**
      * Sets the action bar (title and buttons) for Confirm route claim.
      */
     private setActionBarConfirmRouteClaim(route: Route, color: number) {
@@ -670,7 +686,7 @@ class TicketToRide implements TicketToRideGame {
 
         document.getElementById(`generalactions`).innerHTML = '';
         [clickedRoute, otherRoute].forEach(route => {
-            (this as any).addActionButton(`claimDoubleRoute${route.id}-button`, getColor(route.color, 'route'), () => this.clickedRoute(route, false));
+            (this as any).addActionButton(`claimDoubleRoute${route.id}-button`, `<div class="train-car-color icon" data-color="${route.color}"></div> ${getColor(route.color, 'train-car')}`, () => this.clickedRoute(route, false));
         });
         (this as any).addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
     }

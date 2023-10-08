@@ -2261,7 +2261,6 @@ var TicketToRide = /** @class */ (function () {
      * Handle route click.
      */
     TicketToRide.prototype.clickedRoute = function (route, needToCheckDoubleRoute) {
-        var _this = this;
         var _a;
         if (!this.isCurrentPlayerActive()) {
             return;
@@ -2299,12 +2298,7 @@ var TicketToRide = /** @class */ (function () {
                     this.askRouteClaimConfirmation(route, possibleColors[0]);
                 }
                 else if (possibleColors.length > 1) {
-                    possibleColors.forEach(function (color) {
-                        var label = dojo.string.substitute(_("Use ${color}"), {
-                            'color': "<div class=\"train-car-color icon\" data-color=\"".concat(color, "\"></div> ").concat(getColor(color, 'train-car'))
-                        });
-                        _this.addActionButton("claimRouteWithColor_button".concat(color), label, function () { return _this.askRouteClaimConfirmation(route, color); });
-                    });
+                    this.setActionBarChooseColor(route, possibleColors);
                     this.playerTable.setSelectableTrainCarColors(route, possibleColors);
                 }
             }
@@ -2367,6 +2361,24 @@ var TicketToRide = /** @class */ (function () {
         }
     };
     /**
+     * Sets the action bar (title and buttons) for the color route.
+     */
+    TicketToRide.prototype.setActionBarChooseColor = function (route, possibleColors) {
+        var _this = this;
+        var confirmationQuestion = _("Choose color for the route from ${from} to ${to}")
+            .replace('${from}', this.getCityName(route.from))
+            .replace('${to}', this.getCityName(route.to));
+        this.setChooseActionGamestateDescription(confirmationQuestion);
+        document.getElementById("generalactions").innerHTML = '';
+        possibleColors.forEach(function (color) {
+            var label = dojo.string.substitute(_("Use ${color}"), {
+                'color': "<div class=\"train-car-color icon\" data-color=\"".concat(color, "\"></div> ").concat(getColor(color, 'train-car'))
+            });
+            _this.addActionButton("claimRouteWithColor_button".concat(color), label, function () { return _this.askRouteClaimConfirmation(route, color); });
+        });
+        this.addActionButton("cancelRouteClaim-button", _("Cancel"), function () { return _this.cancelRouteClaim(); }, null, null, 'gray');
+    };
+    /**
      * Sets the action bar (title and buttons) for Confirm route claim.
      */
     TicketToRide.prototype.setActionBarConfirmRouteClaim = function (route, color) {
@@ -2406,7 +2418,7 @@ var TicketToRide = /** @class */ (function () {
         this.setChooseActionGamestateDescription(question);
         document.getElementById("generalactions").innerHTML = '';
         [clickedRoute, otherRoute].forEach(function (route) {
-            _this.addActionButton("claimDoubleRoute".concat(route.id, "-button"), getColor(route.color, 'route'), function () { return _this.clickedRoute(route, false); });
+            _this.addActionButton("claimDoubleRoute".concat(route.id, "-button"), "<div class=\"train-car-color icon\" data-color=\"".concat(route.color, "\"></div> ").concat(getColor(route.color, 'train-car')), function () { return _this.clickedRoute(route, false); });
         });
         this.addActionButton("cancelRouteClaim-button", _("Cancel"), function () { return _this.cancelRouteClaim(); }, null, null, 'gray');
     };
