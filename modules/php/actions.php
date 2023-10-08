@@ -146,7 +146,7 @@ trait ActionTrait {
         if ($route->tunnel) {
             $remainingDeckCards = $this->getRemainingTrainCarCardsInDeck(true);
             if ($remainingDeckCards == 0) {
-                self::notifyAllPlayers('log', /* TODO MAPS clienttranslate*/('No train car card in deck or discard, tunnel is free'), []);
+                self::notifyAllPlayers('log', clienttranslate('No train car card in deck or discard, tunnel is free'), []);
             } else {
                 $pickedCardCount = min(3, $remainingDeckCards);
                 $tunnelCards = $this->getTrainCarsFromDb($this->trainCars->pickCardsForLocation($pickedCardCount, 'deck', 'tunnel'));
@@ -161,7 +161,7 @@ trait ActionTrait {
                 ]);
                 
                 // show the revealed cards and log
-                self::notifyAllPlayers($extraCards > 0 ? 'log' : 'freeTunnel', /* TODO MAPS clienttranslate*/('${extraCards} extra cards over the ${pickedCards} train car cards revealed from the deck are needed to claim the route'), [
+                self::notifyAllPlayers($extraCards > 0 ? 'log' : 'freeTunnel', clienttranslate('${extraCards} extra cards over the ${pickedCards} train car cards revealed from the deck are needed to claim the route'), [
                     'pickedCards' => $pickedCardCount,
                     'extraCards' => $extraCards,
                     'tunnelCards' => $tunnelCards,
@@ -254,7 +254,7 @@ trait ActionTrait {
         
         $this->endTunnelAttempt(true);
 
-        self::notifyAllPlayers('log', /* TODO MAPS clienttranslate*/('${player_name} skip tunnel claim'), [
+        self::notifyAllPlayers('log', clienttranslate('${player_name} skip tunnel claim'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
         ]);

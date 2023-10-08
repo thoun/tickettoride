@@ -255,7 +255,6 @@ require_once('stations.php');
         $result['trainCarDeckMaxCount'] = 110;
         $result['destinationDeckMaxCount'] = 30;
 
-        $result['expansion1910'] = $this->getExpansionOption(); // TODO REMOVE
         $result['isGlobetrotterBonusActive'] = $this->isGlobetrotterBonusActive();
         $result['isLongestPathBonusActive'] = $this->isLongestPathBonusActive();
         
