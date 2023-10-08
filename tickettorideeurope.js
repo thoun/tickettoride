@@ -2551,7 +2551,6 @@ var TicketToRide = /** @class */ (function () {
      * Handle city click.
      */
     TicketToRide.prototype.clickedCity = function (city) {
-        var _this = this;
         var _a;
         if (!this.isCurrentPlayerActive()) {
             return;
@@ -2570,12 +2569,7 @@ var TicketToRide = /** @class */ (function () {
                 this.askCityClaimConfirmation(city, possibleColors[0]);
             }
             else if (possibleColors.length > 1) {
-                possibleColors.forEach(function (color) {
-                    var label = dojo.string.substitute(_("Use ${color}"), {
-                        'color': "<div class=\"train-car-color icon\" data-color=\"".concat(color, "\"></div> ").concat(getColor(color, 'train-car'))
-                    });
-                    _this.addActionButton("claimCityWithColor_button".concat(color), label, function () { return _this.askCityClaimConfirmation(city, color); });
-                });
+                this.setActionBarChooseColorStation(city, possibleColors);
                 this.playerTable.setSelectableTrainCarColorsForStation(city, 3 - this.stationCounters[this.getPlayerId()].getValue());
             }
         }
@@ -2671,6 +2665,23 @@ var TicketToRide = /** @class */ (function () {
         this.addActionButton("confirmRouteClaim-button", _("Confirm"), function () { return _this.confirmRouteClaim(); });
         this.addActionButton("cancelRouteClaim-button", _("Cancel"), function () { return _this.cancelRouteClaim(); }, null, null, 'gray');
         this.startActionTimer("confirmRouteClaim-button", ACTION_TIMER_DURATION);
+    };
+    /**
+     * Sets the action bar (title and buttons) for the color station.
+     */
+    TicketToRide.prototype.setActionBarChooseColorStation = function (city, possibleColors) {
+        var _this = this;
+        var confirmationQuestion = _("Choose color for the station on ${city}")
+            .replace('${city}', city.name);
+        this.setChooseActionGamestateDescription(confirmationQuestion);
+        document.getElementById("generalactions").innerHTML = '';
+        possibleColors.forEach(function (color) {
+            var label = dojo.string.substitute(_("Use ${color}"), {
+                'color': "<div class=\"train-car-color icon\" data-color=\"".concat(color, "\"></div> ").concat(getColor(color, 'train-car'))
+            });
+            _this.addActionButton("claimRouteWithColor_button".concat(color), label, function () { return _this.askCityClaimConfirmation(city, color); });
+        });
+        this.addActionButton("cancelRouteClaim-button", _("Cancel"), function () { return _this.cancelRouteClaim(); }, null, null, 'gray');
     };
     /**
      * Sets the action bar (title and buttons) for Confirm city claim.
