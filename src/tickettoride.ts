@@ -266,10 +266,6 @@ class TicketToRide implements TicketToRideGame {
 
 
     ///////////////////////////////////////////////////
-    
-    public isGlobetrotterBonusActive(): boolean {
-        return this.gamedatas.isGlobetrotterBonusActive;
-    }
 
     public isLongestPathBonusActive(): boolean {
         return this.gamedatas.isLongestPathBonusActive;
@@ -988,7 +984,6 @@ class TicketToRide implements TicketToRideGame {
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
-            ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500], // TODO remove for Europe
             ['remainingStations', skipEndOfGameAnimations ? 1 : 1500],
             ['highlightWinnerScore', 1],
         ];
@@ -1165,13 +1160,6 @@ class TicketToRide implements TicketToRideGame {
             document.getElementById(`destination-card-${notif.args.destination.id}`)?.classList.add('uncompleted');
         }
         this.endScore?.updateDestinationsTooltip(player);
-    }
-
-    /** 
-     * Add Globetrotter badge for end score.
-     */ 
-    notif_globetrotterWinner(notif: Notif<NotifBadgeArgs>) {
-        this.endScore?.setGlobetrotterWinner(notif.args.playerId, notif.args.length);
     }
 
     /** 

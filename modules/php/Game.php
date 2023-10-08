@@ -155,14 +155,10 @@ require_once('stations.php');
         //$this->initStat('table', 'unusedStations', 0); // only computed at the end
         //$this->initStat('player', 'unusedStations', 0); // only computed at the end
         
-        $isGlobetrotterBonusActive = $this->isGlobetrotterBonusActive();
         $isLongestPathBonusActive = $this->isLongestPathBonusActive();
 
         if ($isLongestPathBonusActive) {
             $this->initStat('player', 'longestPathBonus', 0);
-        }
-        if ($isGlobetrotterBonusActive) {
-            $this->initStat('player', 'globetrotterBonus', 0);
         }
 
         // setup the initial game situation here
@@ -254,7 +250,6 @@ require_once('stations.php');
         $result['trainCarDeckMaxCount'] = 110;
         $result['destinationDeckMaxCount'] = 30;
 
-        $result['isGlobetrotterBonusActive'] = $this->isGlobetrotterBonusActive();
         $result['isLongestPathBonusActive'] = $this->isLongestPathBonusActive();
         
         $result['showTurnOrder'] = intval($this->getGameStateValue(SHOW_TURN_ORDER)) == 2;

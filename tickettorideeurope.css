@@ -1386,9 +1386,6 @@
   width: 250px;
   height: 161px;
 }
-.bonus-card.globetrotter {
-  background: url("img/bonus-card-globetrotter.png");
-}
 .bonus-card.longest-path {
   background: url("img/bonus-card-longest-path.png");
 }
