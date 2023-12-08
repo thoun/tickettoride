@@ -73,8 +73,10 @@ trait StateTrait {
             $totalScore[$playerId] = intval($playerDb['score']);
         }
 
+        $useStationResult = [];
         $playersRemainingStations = [];
         foreach ($players as $playerId => $playerDb) {
+            $useStationResult[$playerId] = [0, [], [], []];
             $playerStations = $this->getPlacedStations($playerId);
             $usedStations = count($playerStations);
             if ($usedStations > 0) {
@@ -82,7 +84,7 @@ trait StateTrait {
                 $uncompletedDestinations = array_values(array_filter($destinations, fn($destination) => !boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"))));
                 
                 if (count($uncompletedDestinations) > 0) {
-                    $this->useStations($playerId, $playerStations, $uncompletedDestinations);
+                    $useStationResult[$playerId] = $this->useStations($playerId, $playerStations, $uncompletedDestinations);
                 }
             }
             $playersRemainingStations[$playerId] = 3 - $usedStations;
@@ -151,10 +153,20 @@ trait StateTrait {
         foreach ($destinationsResults as $playerId => $destinations) {
 
             foreach ($destinations as $destination) {
-                $destinationRoutes = $this->getDestinationRoutes($playerId, $destination);
-                $completed = $destinationRoutes != null;
-                $points = $completed ? $destination->points : -$destination->points;
+                $destinationRoutes = null;
+                $destinationStations = null;
+                $completed = boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
+                if ($completed) {
 
+                    $index = $this->array_find_index($useStationResult[$playerId][1], fn($d) => $d->id == $destination->id);
+                    if ($index !== null) {
+                        $destinationRoutes = $useStationResult[$playerId][2][$index];
+                        $destinationStations = $useStationResult[$playerId][3][$index];
+                    } else {
+                        $destinationRoutes = $this->getDestinationRoutes($playerId, $destination);
+                    }
+                }
+                $points = $completed ? $destination->points : -$destination->points;
 
                 self::notifyAllPlayers('scoreDestination', clienttranslate('${player_name} reveals ${from} to ${to} destination'), [
                     'playerId' => $playerId,
@@ -163,6 +175,7 @@ trait StateTrait {
                     'from' => $this->getCityName($destination->from),
                     'to' => $this->getCityName($destination->to),
                     'destinationRoutes' => $destinationRoutes,
+                    'destinationStations' => $destinationStations,
                 ]);
                 
                 $message = clienttranslate('${player_name} ${gainsloses} ${absdelta} points with ${from} to ${to} destination');
