@@ -164,6 +164,8 @@ trait StationTrait {
         foreach ($bestCombinationResult[1] as $index => $destination) {
             $this->markCompletedDestination($playerId, $destination, $bestCombinationResult[2][$index], $bestCombinationResult[3][$index]);
         }
+
+        return $bestCombinationResult;
     }
 
     /**
