@@ -123,6 +123,7 @@ trait ArgsTrait {
         }
 
         return [
+            'playerId' => $playerId,
             'tunnelAttempt' => $tunnelAttempt,
             'canPay' => $canPay,
             'colors' => $extraCards == null ? '' : array_map(fn($card) => $card->type, $extraCards), // for title bar

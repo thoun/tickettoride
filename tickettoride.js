@@ -681,8 +681,9 @@ var TtrMap = /** @class */ (function () {
     /**
      * Highlight hovered route (when dragging train cars).
      */
-    TtrMap.prototype.setHoveredRoute = function (route, valid) {
+    TtrMap.prototype.setHoveredRoute = function (route, valid, player) {
         if (valid === void 0) { valid = null; }
+        if (player === void 0) { player = null; }
         this.inMapZoomManager.setHoveredRoute(route);
         if (route) {
             [route.from, route.to].forEach(function (city) {
@@ -691,7 +692,7 @@ var TtrMap = /** @class */ (function () {
                 cityDiv.dataset.valid = valid.toString();
             });
             if (valid) {
-                this.setWagons(route, this.game.getCurrentPlayer(), null, true);
+                this.setWagons(route, player || this.game.getCurrentPlayer(), null, true);
             }
         }
         else {
@@ -1959,7 +1960,7 @@ var TicketToRide = /** @class */ (function () {
     };
     TicketToRide.prototype.onEnteringConfirmTunnel = function (args) {
         var route = this.getMap().routes[args.tunnelAttempt.routeId];
-        this.map.setHoveredRoute(route, true);
+        this.map.setHoveredRoute(route, true, this.gamedatas.players[args.playerId]);
         this.trainCarSelection.showTunnelCards(args.tunnelAttempt.tunnelCards);
     };
     /**

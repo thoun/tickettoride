@@ -183,6 +183,7 @@ interface TunnelAttempt {
 }
 
 interface EnteringConfirmTunnelArgs {
+    playerId: number;
     tunnelAttempt: TunnelAttempt;
     canPay: boolean;
 }

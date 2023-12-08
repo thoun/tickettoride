@@ -529,7 +529,7 @@ class TtrMap {
     /** 
      * Highlight hovered route (when dragging train cars).
      */ 
-    public setHoveredRoute(route: Route | null, valid: boolean | null = null) {
+    public setHoveredRoute(route: Route | null, valid: boolean | null = null, player: TicketToRidePlayer | null = null) {
         this.inMapZoomManager.setHoveredRoute(route);
 
         if (route) {
@@ -541,7 +541,7 @@ class TtrMap {
             });
 
             if (valid) {
-                this.setWagons(route, this.game.getCurrentPlayer(), null, true);
+                this.setWagons(route, player || this.game.getCurrentPlayer(), null, true);
             }
 
         } else {

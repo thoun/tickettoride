@@ -163,7 +163,7 @@ class TicketToRide implements TicketToRideGame {
     
     private onEnteringConfirmTunnel(args: EnteringConfirmTunnelArgs) {
         const route = this.getMap().routes[args.tunnelAttempt.routeId];
-        this.map.setHoveredRoute(route, true);
+        this.map.setHoveredRoute(route, true, this.gamedatas.players[args.playerId]);
         this.trainCarSelection.showTunnelCards(args.tunnelAttempt.tunnelCards);
     }
 
