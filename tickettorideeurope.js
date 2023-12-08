@@ -2555,6 +2555,7 @@ var TicketToRide = /** @class */ (function () {
         if (!this.canClaimCity(city, 0)) {
             return;
         }
+        this.map.setHoveredCity(null);
         document.querySelectorAll("[id^=\"claimRouteWithColor_button\"]").forEach(function (button) { return button.parentElement.removeChild(button); });
         var selectedColor = this.playerTable.getSelectedColor();
         if (selectedColor !== null) {
