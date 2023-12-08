@@ -604,6 +604,8 @@ class TicketToRide implements TicketToRideGame {
         if(!this.canClaimCity(city, 0)) {
             return;
         }
+        
+        this.map.setHoveredCity(null);
 
         document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
         
