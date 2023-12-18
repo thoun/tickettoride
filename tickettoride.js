@@ -2678,7 +2678,7 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.notif_claimedRoute = function (notif) {
         var playerId = notif.args.playerId;
         var route = notif.args.route;
-        this.trainCarCardCounters[playerId].incValue(-route.number);
+        this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
         this.trainCarCounters[playerId].toValue(notif.args.remainingTrainCars);
         this.map.setClaimedRoutes([{
                 playerId: playerId,
