@@ -144,7 +144,7 @@ $commonStats = [
     ],
     "unusedStations" => [
         "id" => 51,
-        "name" => totranslate("Built stations"),
+        "name" => totranslate("Unused stations"),
         "type" => "int"
     ],
 ];
