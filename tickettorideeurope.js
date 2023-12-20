@@ -500,7 +500,6 @@ var TtrMap = /** @class */ (function () {
     TtrMap.prototype.cityDragOver = function (e, city) {
         var cardsColor = Number(this.mapDiv.dataset.dragColor);
         var canClaimCity = this.game.canClaimCity(city, cardsColor);
-        console.log('cityDragOver', city, canClaimCity);
         this.setHoveredCity(city, canClaimCity);
         if (canClaimCity) {
             e.preventDefault();

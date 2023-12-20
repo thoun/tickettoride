@@ -283,7 +283,6 @@ class TtrMap {
 
         let canClaimCity = this.game.canClaimCity(city, cardsColor);
 
-        console.log('cityDragOver', city, canClaimCity);
         this.setHoveredCity(city, canClaimCity);
         if (canClaimCity) {
             e.preventDefault();
