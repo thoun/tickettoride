@@ -1164,6 +1164,24 @@
   background: url("img/destination-done.png");
 }
 
+#stations-information-button {
+  position: absolute;
+  top: 0;
+  right: -32px;
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+  color: #71d904;
+  text-shadow: 1px 1px 4px black;
+  cursor: pointer;
+  pointer-events: all;
+  display: none;
+}
+#stations-information-button.visible {
+  display: unset;
+  animation: last-round-animation 2s 1 forwards ease-in-out;
+}
+
 .player-table-train-cars {
   display: flex;
   justify-content: center;
@@ -1262,6 +1280,10 @@
 }
 .player-table.left {
   flex-direction: column-reverse;
+}
+.player-table.left #stations-information-button {
+  top: -32px;
+  right: 0;
 }
 
 #score {

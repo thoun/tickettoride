@@ -1103,6 +1103,8 @@ class TicketToRide implements TicketToRideGame {
         }], playerId);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
+
+            document.getElementById('stations-information-button').classList.add('visible');
         }
     }
 
