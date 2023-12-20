@@ -23,7 +23,11 @@ class PlayerDestinations {
 
         let html = `
         <div id="player-table-${player.id}-destinations-todo" class="player-table-destinations-column todo"></div>
-        <div id="player-table-${player.id}-destinations-done" class="player-table-destinations-column done"></div>
+        <div id="player-table-${player.id}-destinations-done" class="player-table-destinations-column done">
+            <div id="stations-information-button">
+                <i class="fa fa-info-circle" aria-hidden="true"></i>
+            </div>
+        </div>
         `;
 
         dojo.place(html, `player-table-${player.id}-destinations`);
@@ -35,6 +39,30 @@ class PlayerDestinations {
         
         // highlight the first "to do" destination
         this.activateNextDestination(this.destinationsTodo);
+
+        if (player.remainingStations < 3) {
+            document.getElementById('stations-information-button').classList.add('visible');
+        }
+
+        document.getElementById(`stations-information-button`).addEventListener('click', () => {
+            const stationsInformationsDialog = new ebg.popindialog();
+            stationsInformationsDialog.create( 'stationsInformationsDialog' );
+            stationsInformationsDialog.setTitle( _("Destinations with stations") );
+            stationsInformationsDialog.setMaxWidth( 500 );
+            
+            // Show the dialog
+            stationsInformationsDialog.setContent(`
+                ${_("When the game ends, the stations will automatically be used on the tickets scoring the most points.")}<br>
+                ${_("This means that destinations using stations will not be marked as complete until the end of the game.")}<br><br>
+                <button id="stationsInformationsDialog-close-button" class="bgabutton bgabutton_blue">${_("Close")}</button>
+            `);
+            stationsInformationsDialog.show();
+
+            document.getElementById(`stationsInformationsDialog-close-button`).addEventListener('click', event => {
+                event.preventDefault();
+                stationsInformationsDialog.destroy();
+            });
+        });
     }
         
     /** 

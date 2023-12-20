@@ -1438,7 +1438,7 @@ var PlayerDestinations = /** @class */ (function () {
         /** Destinations in "done" column */
         this.destinationsDone = [];
         this.playerId = Number(player.id);
-        var html = "\n        <div id=\"player-table-".concat(player.id, "-destinations-todo\" class=\"player-table-destinations-column todo\"></div>\n        <div id=\"player-table-").concat(player.id, "-destinations-done\" class=\"player-table-destinations-column done\"></div>\n        ");
+        var html = "\n        <div id=\"player-table-".concat(player.id, "-destinations-todo\" class=\"player-table-destinations-column todo\"></div>\n        <div id=\"player-table-").concat(player.id, "-destinations-done\" class=\"player-table-destinations-column done\">\n            <div id=\"stations-information-button\">\n                <i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i>\n            </div>\n        </div>\n        ");
         dojo.place(html, "player-table-".concat(player.id, "-destinations"));
         this.addDestinations(destinations);
         destinations.filter(function (destination) { return completedDestinations.some(function (d) { return d.id == destination.id; }); }).forEach(function (destination) {
@@ -1446,6 +1446,22 @@ var PlayerDestinations = /** @class */ (function () {
         });
         // highlight the first "to do" destination
         this.activateNextDestination(this.destinationsTodo);
+        if (player.remainingStations < 3) {
+            document.getElementById('stations-information-button').classList.add('visible');
+        }
+        document.getElementById("stations-information-button").addEventListener('click', function () {
+            var stationsInformationsDialog = new ebg.popindialog();
+            stationsInformationsDialog.create('stationsInformationsDialog');
+            stationsInformationsDialog.setTitle(_("Destinations with stations"));
+            stationsInformationsDialog.setMaxWidth(500);
+            // Show the dialog
+            stationsInformationsDialog.setContent("\n                ".concat(_("When the game ends, the stations will automatically be used on the tickets scoring the most points."), "<br>\n                ").concat(_("This means that destinations using stations will not be marked as complete until the end of the game."), "<br><br>\n                <button id=\"stationsInformationsDialog-close-button\" class=\"bgabutton bgabutton_blue\">").concat(_("Close"), "</button>\n            "));
+            stationsInformationsDialog.show();
+            document.getElementById("stationsInformationsDialog-close-button").addEventListener('click', function (event) {
+                event.preventDefault();
+                stationsInformationsDialog.destroy();
+            });
+        });
     }
     /**
      * Add destinations to player's hand.
@@ -3040,6 +3056,7 @@ var TicketToRide = /** @class */ (function () {
             }], playerId);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
+            document.getElementById('stations-information-button').classList.add('visible');
         }
     };
     /**
