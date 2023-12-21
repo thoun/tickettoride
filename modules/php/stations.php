@@ -150,7 +150,7 @@ trait StationTrait {
             )));
         }
         $citiesIds = array_keys($potentialRoutesPerStation);
-        $combinations = $this->getArrayCombinations(array_values($potentialRoutesPerStation));
+        $combinations = $this->getArrayCombinations(array_values(array_filter($potentialRoutesPerStation, fn($routesForStation) => count($routesForStation) > 0)));
 
         // [points of completed objectives, array of completed destinations, array of completed destinations routes, array of completed destinations used stations]
         $bestCombinationResult = [0, [], [], []];
