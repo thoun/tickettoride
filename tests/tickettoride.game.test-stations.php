@@ -57,7 +57,9 @@ class TicketToRideTestDestinationCompleted extends TicketToRideEurope { // this 
     // class tests
     function testDestinationCompletedNo() {
 
-        $result = $this->getDestinationRoutes(1, $this->DESTINATIONS[1][20]);
+        
+
+        $result = $this->useStations(1, $playerStations, $uncompletedDestinations);
 
         $equal = $result == null;
 
