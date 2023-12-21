@@ -33,7 +33,7 @@ Also add one auto-FTP upload extension (for example https://marketplace.visualst
 Make sure ftp-sync.json and node_modules are in .gitignore
 
 # How to start PHP unit test
-go on tests dir and start execute file, for example `php ./tickettoride.game.test-longest-path.php` / `php ./tickettoride.game.test-destination-completed.php`
+go on tests dir and start execute file, for example `php ./tickettoride.game.test-stations.php`
 
 # Points of rules
 If there is a lot of locomotives remaining in a small set of available cards (for example 3 locomotives in 5 visible cards, no card in discard), we attempt 3 times to replace and if there is still 3 locomotives, we log and let them visible (to avoid an infinite loop).
