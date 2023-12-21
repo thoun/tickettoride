@@ -756,7 +756,7 @@ class TicketToRide implements TicketToRideGame {
         this.setChooseActionGamestateDescription(confirmationQuestion);
 
         document.getElementById(`generalactions`).innerHTML = '';
-        (this as any).addActionButton(`confirmCityClaim-button`, _("Confirm"), () => this.confirmStation());
+        (this as any).addActionButton(`confirmCityClaim-button`, _("Confirm station"), () => this.confirmStation());
         (this as any).addActionButton(`cancelCityClaim-button`, _("Cancel"), () => this.cancelStation(), null, null, 'gray');
         this.startActionTimer(`confirmCityClaim-button`, ACTION_TIMER_DURATION);
     }
