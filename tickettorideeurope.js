@@ -2711,7 +2711,7 @@ var TicketToRide = /** @class */ (function () {
             .replace('${colors}', "<div class=\"color-cards\">".concat(colors.join(''), "</div>"));
         this.setChooseActionGamestateDescription(confirmationQuestion);
         document.getElementById("generalactions").innerHTML = '';
-        this.addActionButton("confirmCityClaim-button", _("Confirm"), function () { return _this.confirmStation(); });
+        this.addActionButton("confirmCityClaim-button", _("Confirm station"), function () { return _this.confirmStation(); });
         this.addActionButton("cancelCityClaim-button", _("Cancel"), function () { return _this.cancelStation(); }, null, null, 'gray');
         this.startActionTimer("confirmCityClaim-button", ACTION_TIMER_DURATION);
     };
