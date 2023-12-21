@@ -2,7 +2,7 @@
 define("APP_GAMEMODULE_PATH", "../misc/"); // include path to stubs, which defines "table.game.php" and other classes
 require_once ('../tickettorideeurope.game.php');
 
-class TicketToRideTestDestinationCompleted extends TicketToRideEurope { // this is your game class defined in ggg.game.php
+class TicketToRideTestStations extends TicketToRideEurope { // this is your game class defined in ggg.game.php
     function __construct() {
         // parent::__construct();
         include '../material.inc.php';// this is how this normally included, from constructor
@@ -11,113 +11,148 @@ class TicketToRideTestDestinationCompleted extends TicketToRideEurope { // this 
     function getClaimedRoutes($playerId = null) {
         if ($playerId === 1) {
             $routes = [
-                86, //25 to 28, 
-                50, //10 to 28, 
-                61, //13 to 28, 
-                60, //13 to 15, 
-                37, //7 to 28, 
-                32, //7 to 12,
+                38, //budapest-sarajevo,
             ];
-            return array_map(function($route) use ($playerId) {
-                return new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]);
-            }, $routes);
+            return array_map(fn($route) => new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]), $routes);
         } else if ($playerId === 2) {
             $routes = [
-                86, //25 to 28, 
-                50, //10 to 28, 
-                61, //13 to 28, 
-                60, //13 to 15, 
-                37, //7 to 28, 
-                32, //7 to 12,
-                35, //7 to 23
+                94, //sarajevo-sofia
             ];
-            return array_map(function($route) use ($playerId) {
-                return new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]);
-            }, $routes);
-        } else if ($playerId === 3) {
-            $routes = [
-                48, //9 to 31, 
-                99, //7 to 31
-            ];
-            return array_map(function($route) use ($playerId) {
-                return new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]);
-            }, $routes);
-        } else if ($playerId === 4) {
-            $routes = [
-                50, //10 to 28, 
-                100, //3 to 28
-            ];
-            return array_map(function($route) use ($playerId) {
-                return new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]);
-            }, $routes);
+            return array_map(fn($route) => new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]), $routes);
+        } else if ($playerId === null) {
+            return array_merge(
+                $this->getClaimedRoutes(1),
+                $this->getClaimedRoutes(2),
+            );
         }
         return [];
     }
 
     // class tests
-    function testDestinationCompletedNo() {
+    function testStationCloseSide() {
+        // sarajevo
+        $station = new PlacedBuilding(['city_id' => 35 /* sarajevo*/, 'player_id' => 1, 'building_type' => 1]);  
+        // budapest sofia
+        $destination = new Destination(['id' => 14, 'location' => 'hand', 'location_arg' => 1, 'type' => 1, 'type_arg' => 14], $this->DESTINATIONS);
 
-        
-
-        $result = $this->useStations(1, $playerStations, $uncompletedDestinations);
-
-        $equal = $result == null;
+        $result = $this->useStations(1, [$station], [$destination]);
+        // [
+        //    points of completed objectives, 
+        //    array of completed destinations, 
+        //    array of completed destinations routes, 
+        //    array of completed destinations used stations
+        // ]
+        $equal = 
+            $result[0] == 5 &&
+            count($result[1]) == 1 && $result[1][0]->id == $destination->id &&
+            count($result[2]) == 1 && $result[2][0][0]->id == 38 &&
+            count($result[3]) == 1 && $result[3][0][0] == 35;
+        ;
 
         if ($equal) {
             echo "Test1: PASSED\n";
         } else {
             echo "Test1: FAILED\n";
-            echo "Expected: null, value: not null\n";
+            echo "Expected: 5, value: ".json_encode($result, JSON_PRETTY_PRINT)."\n";
         }
     }
+    function testStationFarSide() {
+        // sofia
+        $station = new PlacedBuilding(['city_id' => 40 /* sofia*/, 'player_id' => 1, 'building_type' => 1]);  
+        // budapest sofia
+        $destination = new Destination(['id' => 14, 'location' => 'hand', 'location_arg' => 1, 'type' => 1, 'type_arg' => 14], $this->DESTINATIONS);
 
-    function testDestinationCompletedYes() {
-
-        $result = $this->getDestinationRoutes(2, $this->DESTINATIONS[1][20]);
-
-        $equal = $result != null;
+        $result = $this->useStations(1, [$station], [$destination]);
+        // [
+        //    points of completed objectives, 
+        //    array of completed destinations, 
+        //    array of completed destinations routes, 
+        //    array of completed destinations used stations
+        // ]
+        $equal = 
+            $result[0] == 5 &&
+            count($result[1]) == 1 && $result[1][0]->id == $destination->id &&
+            count($result[2]) == 1 && $result[2][0][0]->id == 38 &&
+            count($result[3]) == 1 && $result[3][0][0] == 40;
+        ;
 
         if ($equal) {
             echo "Test2: PASSED\n";
         } else {
             echo "Test2: FAILED\n";
-            echo "Expected: not null, value: null\n";
+            echo "Expected: 5, value: ".json_encode($result, JSON_PRETTY_PRINT)."\n";
         }
     }
 
-    function testDestinationCompletedYes2() {
-        $result = $this->getDestinationRoutes(3, $this->DESTINATIONS[1][7]);
+    function testStationBoth() {
+        // sofia
+        $stations = [
+            new PlacedBuilding(['city_id' => 35 /* sarajevo*/, 'player_id' => 1, 'building_type' => 1]),
+            new PlacedBuilding(['city_id' => 40 /* sofia*/, 'player_id' => 1, 'building_type' => 1]),
+        ];
+        // budapest sofia
+        $destination = new Destination(['id' => 14, 'location' => 'hand', 'location_arg' => 1, 'type' => 1, 'type_arg' => 14], $this->DESTINATIONS);
 
-        $equal = $result != null;
+        $result = $this->useStations(1, $stations, [$destination]);
+        // [
+        //    points of completed objectives, 
+        //    array of completed destinations, 
+        //    array of completed destinations routes, 
+        //    array of completed destinations used stations
+        // ]
+        $equal = 
+            $result[0] == 5 &&
+            count($result[1]) == 1 && $result[1][0]->id == $destination->id &&
+            count($result[2]) == 1 && $result[2][0][0]->id == 38 &&
+            count($result[3]) == 1 && in_array($result[3][0][0], [35, 40]);
+        ;
 
         if ($equal) {
             echo "Test3: PASSED\n";
         } else {
             echo "Test3: FAILED\n";
-            echo "Expected: not null, value: null\n";
+            echo "Expected: 5, value: ".json_encode($result, JSON_PRETTY_PRINT)."\n";
         }
     }
 
-    function testDestinationCompletedYes3() {
-        $result = $this->getDestinationRoutes(4, $this->DESTINATIONS[1][3]);
+    function testStationUseless() {
+        // sofia
+        $stations = [
+            new PlacedBuilding(['city_id' => 35 /* sarajevo*/, 'player_id' => 1, 'building_type' => 1]),
+            new PlacedBuilding(['city_id' => 41 /* stockolhm*/, 'player_id' => 1, 'building_type' => 1]),
+        ];
+        // budapest sofia
+        $destination = new Destination(['id' => 14, 'location' => 'hand', 'location_arg' => 1, 'type' => 1, 'type_arg' => 14], $this->DESTINATIONS);
 
-        $equal = $result != null;
+        $result = $this->useStations(1, $stations, [$destination]);
+        // [
+        //    points of completed objectives, 
+        //    array of completed destinations, 
+        //    array of completed destinations routes, 
+        //    array of completed destinations used stations
+        // ]
+        $equal = 
+            $result[0] == 5 &&
+            count($result[1]) == 1 && $result[1][0]->id == $destination->id &&
+            count($result[2]) == 1 && $result[2][0][0]->id == 38 &&
+            count($result[3]) == 1 && $result[3][0][0] == 35;
+        ;
 
         if ($equal) {
             echo "Test4: PASSED\n";
         } else {
             echo "Test4: FAILED\n";
-            echo "Expected: not null, value: null\n";
+            echo "Expected: 5, value: ".json_encode($result, JSON_PRETTY_PRINT)."\n";
         }
     }
 
     function testAll() {
-        $this->testDestinationCompletedNo();
-        $this->testDestinationCompletedYes();
-        $this->testDestinationCompletedYes2();
-        $this->testDestinationCompletedYes3();
+        $this->testStationCloseSide();
+        $this->testStationFarSide();
+        $this->testStationBoth();
+        $this->testStationUseless();
     }
 }
 
-$test1 = new TicketToRideTestDestinationCompleted();
+$test1 = new TicketToRideTestStations();
 $test1->testAll();
