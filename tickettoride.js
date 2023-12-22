@@ -1642,15 +1642,17 @@ var PlayerTrainCars = /** @class */ (function () {
         var locomotiveGroup = groups.find(function (groupDiv) { return groupDiv.dataset.type == '0'; });
         var locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
         var possibleColors = [];
-        groups.forEach(function (groupDiv) {
-            var count = Number(groupDiv.dataset.count);
-            if (count + locomotives >= route.spaces.length) {
-                var color = Number(groupDiv.dataset.type);
-                if (color > 0) {
-                    possibleColors.push(color);
+        if (route.locomotives < route.spaces.length) { // if route is only locomotives, don't ask for color
+            groups.forEach(function (groupDiv) {
+                var count = Number(groupDiv.dataset.count);
+                if (count + locomotives >= route.spaces.length) {
+                    var color = Number(groupDiv.dataset.type);
+                    if (color > 0) {
+                        possibleColors.push(color);
+                    }
                 }
-            }
-        });
+            });
+        }
         if (locomotives >= route.spaces.length) {
             possibleColors.push(0);
         }
