@@ -299,6 +299,12 @@
 
       animation: selectable-road-animation 1s alternate-reverse infinite ease-in-out;
     }
+
+    &.tunnel {
+      &::before {
+        background-image: url('img/road-highlight-tunnel.png');
+      }
+    }
     
     @for $i from 0 through 8 {
       &[data-color="#{$i}"] {

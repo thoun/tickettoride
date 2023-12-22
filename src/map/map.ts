@@ -218,8 +218,8 @@ class TtrMap {
                     title += ` (${/* TODO MAPS _*/("${number} locomotive(s) required").replace('${number}', `${route.locomotives}`)})`;
                 }  
                 
-                dojo.place(`<div id="${destination}-route${route.id}-space${spaceIndex}" class="route-space" 
-                    style="transform: translate(${space.x + shiftX}px, ${space.y + shiftY}px) rotate(${space.angle}deg)"
+                dojo.place(`<div id="${destination}-route${route.id}-space${spaceIndex}" class="route-space ${route.tunnel ? 'tunnel' : ''}" 
+                    style="transform: translate(${space.x + shiftX}px, ${space.y + shiftY}px) rotate(${space.angle}deg);"
                     title="${title}"
                     data-route="${route.id}" data-color="${route.color}"
                 ></div>`, destination);

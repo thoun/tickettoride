@@ -495,6 +495,9 @@
   background-size: 900% 100%;
   animation: selectable-road-animation 1s alternate-reverse infinite ease-in-out;
 }
+.route-space.selectable.tunnel::before {
+  background-image: url("img/road-highlight-tunnel.png");
+}
 .route-space.selectable[data-color="0"]::before {
   background-position: 0% 50%;
 }
