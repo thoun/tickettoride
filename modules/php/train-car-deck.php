@@ -243,8 +243,8 @@ trait TrainCarDeckTrait {
         $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
         if ($remainingTrainCarCardsInDeck == 0) {
             // if there is no hidden card and all remaining visible cards are locomotives, it's impossible to take a second card
-            $tableCards = $this->getVisibleTrainCarCards();
-            return !$this->array_every($tableCards, fn($tableCard) => $tableCard->type == 0); 
+            $tableCards = $this->getVisibleTrainCarCards(true);
+            return count($tableCards) > 0; 
         }
 
         return true;
