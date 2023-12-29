@@ -1172,12 +1172,15 @@ var TrainCarSelection = /** @class */ (function () {
      * Show the 3 cards drawn for the tunnel claim. Clear them if called with empty array.
      */
     TrainCarSelection.prototype.showTunnelCards = function (tunnelCards) {
+        var _this = this;
         if (tunnelCards === null || tunnelCards === void 0 ? void 0 : tunnelCards.length) {
             dojo.place("<div id=\"tunnel-cards\"></div>", 'train-car-deck-hidden-pile');
             tunnelCards.forEach(function (card, index) {
+                var _a;
                 dojo.place("<div id=\"tunnel-card-".concat(index, "\" class=\"train-car-card tunnel-card animated\" data-color=\"").concat(card.type, "\"></div>"), 'tunnel-cards');
                 var element = document.getElementById("tunnel-card-".concat(index));
-                setTimeout(function () { return element.style.transform = "translateY(".concat(55 * (index - 1), "px) scale(0.33)"); });
+                var shift = 75 * (((_a = _this.game.prefs[205]) === null || _a === void 0 ? void 0 : _a.value) == 2 ? -1 : 1);
+                setTimeout(function () { return element.style.transform = "translateY(".concat(105 * (index - 1) + shift, "px) scale(0.6)"); });
             });
         }
         else {

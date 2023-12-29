@@ -208,9 +208,10 @@ class TrainCarSelection {
         if (tunnelCards?.length) {
             dojo.place(`<div id="tunnel-cards"></div>`, 'train-car-deck-hidden-pile');
             tunnelCards.forEach((card, index) => {
-                dojo.place(`<div id="tunnel-card-${index}" class="train-car-card tunnel-card animated" data-color="${card.type}"></div>`, 'tunnel-cards')
+                dojo.place(`<div id="tunnel-card-${index}" class="train-car-card tunnel-card animated" data-color="${card.type}"></div>`, 'tunnel-cards');
                 const element = document.getElementById(`tunnel-card-${index}`);
-                setTimeout(() => element.style.transform = `translateY(${55 * (index - 1)}px) scale(0.33)`);
+                const shift = 75 * ((this.game as any).prefs[205]?.value == 2 ? -1 : 1);
+                setTimeout(() => element.style.transform = `translateY(${105 * (index - 1) + shift}px) scale(0.6)`);
             });
         } else {
             (this.game as any).fadeOutAndDestroy('tunnel-cards');

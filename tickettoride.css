@@ -928,6 +928,10 @@
     transform: scale(1);
   }
 }
+#tunnel-cards {
+  z-index: 2;
+}
+
 #destination-deck {
   position: absolute;
   top: 0;
@@ -1397,6 +1401,7 @@ html, .mode_3d #game_play_area_background {
 }
 .train-car-card.tunnel-card {
   transform: scale(0.1);
+  outline: 8px solid black;
 }
 
 .stockitem {
