@@ -1647,7 +1647,7 @@ var PlayerTrainCars = /** @class */ (function () {
                 var count = Number(groupDiv.dataset.count);
                 if (count + locomotives >= route.spaces.length) {
                     var color = Number(groupDiv.dataset.type);
-                    if (color > 0) {
+                    if (color > 0 && (route.color == 0 || route.color == color)) {
                         possibleColors.push(color);
                     }
                 }
@@ -2287,7 +2287,7 @@ var TicketToRide = /** @class */ (function () {
             return;
         }
         document.querySelectorAll("[id^=\"claimRouteWithColor_button\"]").forEach(function (button) { return button.parentElement.removeChild(button); });
-        if (route.color > 0) {
+        if (route.color > 0 && !route.tunnel) {
             this.askRouteClaimConfirmation(route, route.color);
         }
         else {
@@ -2297,12 +2297,13 @@ var TicketToRide = /** @class */ (function () {
             }
             else {
                 var possibleColors = ((_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.getPossibleColors(route)) || [];
-                if (possibleColors.length == 1) {
-                    this.askRouteClaimConfirmation(route, possibleColors[0]);
+                var possibleColorsWithoutLocomotives = route.tunnel ? possibleColors : possibleColors.filter(function (color) { return color != 0; });
+                if (possibleColorsWithoutLocomotives.length == 1) {
+                    this.askRouteClaimConfirmation(route, possibleColorsWithoutLocomotives[0]);
                 }
-                else if (possibleColors.length > 1) {
-                    this.setActionBarChooseColor(route, possibleColors);
-                    this.playerTable.setSelectableTrainCarColors(route, possibleColors);
+                else if (possibleColorsWithoutLocomotives.length > 1) {
+                    this.setActionBarChooseColor(route, possibleColorsWithoutLocomotives);
+                    this.playerTable.setSelectableTrainCarColors(route, possibleColorsWithoutLocomotives);
                 }
             }
         }

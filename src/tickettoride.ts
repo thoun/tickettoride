@@ -544,7 +544,7 @@ class TicketToRide implements TicketToRideGame {
         }
 
         document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
-        if (route.color > 0) {
+        if (route.color > 0 && !route.tunnel) {
             this.askRouteClaimConfirmation(route, route.color);
         } else {
             const selectedColor = this.playerTable.getSelectedColor();
@@ -553,13 +553,14 @@ class TicketToRide implements TicketToRideGame {
                 this.askRouteClaimConfirmation(route, selectedColor);
             } else {
                 const possibleColors: number[] = this.playerTable?.getPossibleColors(route) || [];
+                const possibleColorsWithoutLocomotives = route.tunnel ? possibleColors : possibleColors.filter(color => color != 0);
 
-                if (possibleColors.length == 1) {
-                    this.askRouteClaimConfirmation(route, possibleColors[0]);
-                } else if (possibleColors.length > 1) {
-                    this.setActionBarChooseColor(route, possibleColors);
+                if (possibleColorsWithoutLocomotives.length == 1) {
+                    this.askRouteClaimConfirmation(route, possibleColorsWithoutLocomotives[0]);
+                } else if (possibleColorsWithoutLocomotives.length > 1) {
+                    this.setActionBarChooseColor(route, possibleColorsWithoutLocomotives);
 
-                    this.playerTable.setSelectableTrainCarColors(route, possibleColors);
+                    this.playerTable.setSelectableTrainCarColors(route, possibleColorsWithoutLocomotives);
                 }
             }
         }

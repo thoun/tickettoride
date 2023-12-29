@@ -283,7 +283,7 @@ class PlayerTrainCars {
                 const count = Number(groupDiv.dataset.count);
                 if (count + locomotives >= route.spaces.length) {
                     const color = Number(groupDiv.dataset.type);
-                    if (color > 0) {
+                    if (color > 0 && (route.color == 0 || route.color == color)) {
                         possibleColors.push(color);
                     }
                 } 
