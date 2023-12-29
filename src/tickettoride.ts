@@ -553,7 +553,10 @@ class TicketToRide implements TicketToRideGame {
                 this.askRouteClaimConfirmation(route, selectedColor);
             } else {
                 const possibleColors: number[] = this.playerTable?.getPossibleColors(route) || [];
-                const possibleColorsWithoutLocomotives = route.tunnel ? possibleColors : possibleColors.filter(color => color != 0);
+                // do not filter for tunnel, or if locomotive is the only possibility
+                const possibleColorsWithoutLocomotives = route.tunnel || possibleColors.length <= 1 ? 
+                    possibleColors : 
+                    possibleColors.filter(color => color != 0);
 
                 if (possibleColorsWithoutLocomotives.length == 1) {
                     this.askRouteClaimConfirmation(route, possibleColorsWithoutLocomotives[0]);

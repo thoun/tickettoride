@@ -2300,7 +2300,10 @@ var TicketToRide = /** @class */ (function () {
             }
             else {
                 var possibleColors = ((_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.getPossibleColors(route)) || [];
-                var possibleColorsWithoutLocomotives = route.tunnel ? possibleColors : possibleColors.filter(function (color) { return color != 0; });
+                // do not filter for tunnel, or if locomotive is the only possibility
+                var possibleColorsWithoutLocomotives = route.tunnel || possibleColors.length <= 1 ?
+                    possibleColors :
+                    possibleColors.filter(function (color) { return color != 0; });
                 if (possibleColorsWithoutLocomotives.length == 1) {
                     this.askRouteClaimConfirmation(route, possibleColorsWithoutLocomotives[0]);
                 }
