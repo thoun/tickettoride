@@ -53,7 +53,7 @@ trait ActionTrait {
         self::incStat($drawNumber, 'collectedHiddenTrainCarCards');
         self::incStat($drawNumber, 'collectedHiddenTrainCarCards', $playerId);
 
-        $this->gamestate->nextState($number == 1 && $this->canTakeASecondCard(null) ? 'drawSecondCard' : 'nextPlayer');
+        $this->gamestate->nextState($drawNumber == 1 && $this->canTakeASecondCard(null) ? 'drawSecondCard' : 'nextPlayer');
     }
   	
     public function drawTableCard(int $id) {
