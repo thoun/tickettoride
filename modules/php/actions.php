@@ -165,7 +165,7 @@ trait ActionTrait {
                 $tunnelCards = $this->getTrainCarsFromDb($this->trainCars->pickCardsForLocation($pickedCardCount, 'deck', 'tunnel'));
                 $extraCards = count(array_filter($tunnelCards, fn($card) => $card->type == 0 || $card->type == $color));
 
-                self::notifyAllPlayers('log', /* TODO MAPS clienttranslate*/('${player_name} tries to build a tunnel from ${from} to ${to} with color ${color}'), [
+                self::notifyAllPlayers('log', clienttranslate('${player_name} tries to build a tunnel from ${from} to ${to} with color ${color}'), [
                     'playerId' => $playerId,
                     'player_name' => $this->getPlayerName($playerId),
                     'from' => $this->getCityName($route->from),
