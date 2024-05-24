@@ -990,6 +990,7 @@ var DestinationSelection = /** @class */ (function () {
     function DestinationSelection(game, map) {
         var _this = this;
         this.game = game;
+        var megaEurope = map.illustration === 2;
         this.destinations = new ebg.stock();
         this.destinations.setSelectionAppearance('class');
         this.destinations.selectionClass = 'selected';
@@ -998,9 +999,12 @@ var DestinationSelection = /** @class */ (function () {
         this.destinations.onItemCreate = function (cardDiv, cardUniqueId) { return setupDestinationCardDiv(game, cardDiv, Number(cardUniqueId)); };
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
-        this.destinations.item_margin = 20;
+        this.destinations.item_margin = megaEurope ? 0 : 20;
         dojo.connect(this.destinations, 'onChangeSelection', this, function () { return _this.selectionChange(); });
         setupDestinationCards(map, this.destinations);
+        if (megaEurope) {
+            $("destination-stock").style.marginTop = '-80px';
+        }
     }
     /**
      * Set visible destination cards.
