@@ -14,7 +14,7 @@ class DestinationSelection {
         private game: TicketToRideGame,
         map: TicketToRideMap,
     ) {
-
+        const megaEurope = map.illustration === 2;
         this.destinations = new ebg.stock() as Stock;
         this.destinations.setSelectionAppearance('class');
         this.destinations.selectionClass = 'selected';
@@ -23,9 +23,13 @@ class DestinationSelection {
         this.destinations.onItemCreate = (cardDiv: HTMLDivElement, cardUniqueId) => setupDestinationCardDiv(game, cardDiv, Number(cardUniqueId));
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
-        this.destinations.item_margin = 20;
+        this.destinations.item_margin = megaEurope ? 0 : 20;
         dojo.connect(this.destinations, 'onChangeSelection', this, () => this.selectionChange());
         setupDestinationCards(map, this.destinations);
+
+        if (megaEurope) {
+            $(`destination-stock`).style.marginTop = '-80px';
+        }
     }
 
     /**
