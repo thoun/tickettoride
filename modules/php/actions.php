@@ -165,6 +165,13 @@ trait ActionTrait {
                 $tunnelCards = $this->getTrainCarsFromDb($this->trainCars->pickCardsForLocation($pickedCardCount, 'deck', 'tunnel'));
                 $extraCards = count(array_filter($tunnelCards, fn($card) => $card->type == 0 || $card->type == $color));
 
+                self::notifyAllPlayers('log', /* TODO MAPS clienttranslate*/('${player_name} tries to build a tunnel from ${from} to ${to} with color ${color}'), [
+                    'playerId' => $playerId,
+                    'player_name' => $this->getPlayerName($playerId),
+                    'from' => $this->getCityName($route->from),
+                    'to' => $this->getCityName($route->to),
+                    'color' => $color,
+                ]);
                 
                 // show the revealed cards and log
                 self::notifyAllPlayers($extraCards > 0 ? 'log' : 'freeTunnel', /* TODO MAPS clienttranslate*/('${extraCards} extra cards over the ${pickedCards} train car cards revealed from the deck are needed to claim the route'), [
@@ -173,7 +180,7 @@ trait ActionTrait {
                     'tunnelCards' => $tunnelCards,
                 ]);
                 
-                if ($extraCards > 0) { // TODO TOCHECK if the player can't afford, do we still ask to hide the fact he can't ?
+                if ($extraCards > 0) { // if the player can't afford, we still ask to hide the fact he can't
                     $this->setGlobalVariable(TUNNEL_ATTEMPT, new TunnelAttempt($routeId, $color, $extraCards, $tunnelCards));
                     $this->gamestate->nextState('tunnel'); 
                     return;
