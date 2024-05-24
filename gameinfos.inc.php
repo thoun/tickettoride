@@ -13,16 +13,7 @@
 $gameinfos = [
 
 // Name of the game in English (will serve as the basis for translation) 
-'game_name' => "Ticket to Ride: Europe",
-
-// Game designer (or game designers, separated by commas)
-'designer' => 'Alan R. Moon',       
-
-// Game artist (or game artists, separated by commas)
-'artist' => 'Cyrille Daujean, Julien Delval',         
-
-// Year of FIRST publication of this game. Can be negative.
-'year' => 2005,                 
+'game_name' => "Ticket to Ride: Europe",            
 
 // Game publisher (use empty string if there is no publisher)
 'publisher' => 'Days of Wonder',                     
@@ -84,19 +75,7 @@ $gameinfos = [
 // Language dependency. If false or not set, there is no language dependency. If true, all players at the table must speak the same language.
 // If an array of shortcode languages such as array( 1 => 'en', 2 => 'fr', 3 => 'it' ) then all players at the table must speak the same language, and this language must be one of the listed languages.
 // NB: the default will be the first language in this list spoken by the player, so you should list them by popularity/preference.
-'language_dependency' => false,
-
-// Complexity of the game, from 0 (extremely simple) to 5 (extremely complex)
-'complexity' => 2,    
-
-// Luck of the game, from 0 (absolutely no luck in this game) to 5 (totally luck driven)
-'luck' => 3,    
-
-// Strategy of the game, from 0 (no strategy can be setup) to 5 (totally based on strategy)
-'strategy' => 3,    
-
-// Diplomacy of the game, from 0 (no interaction in this game) to 5 (totally based on interaction and discussion between players)
-'diplomacy' => 2,    
+'language_dependency' => false, 
 
 // Colors attributed to players
 'player_colors' => ['e3001a', '41a62a', '0056aa', 'ffed00', 'af0ac2'],
@@ -125,23 +104,6 @@ $gameinfos = [
     //  minimum possible value: 740
     'max' => null
 ],
-
-// Game presentation
-// Short game presentation text that will appear on the game description page, structured as an array of paragraphs.
-// Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
-// A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
-'presentation' => [ // description from https://www.daysofwonder.com/tickettoride/en/
-    totranslate("From the craggy hillsides of Edinburgh to the sunlit docks of Constantinople, from the dusty alleys of Pamplona to a windswept station in Berlin, Ticket to Ride Europe takes you on an exciting train adventure through the great cities of turn-of-the-century Europe."),
-],
-
-// Games categories
-//  You can attribute a maximum of FIVE "tags" for your game.
-//  Each tag has a specific ID (ex: 22 for the category "Prototype", 101 for the tag "Science-fiction theme game")
-//  Please see the "Game meta information" entry in the BGA Studio documentation for a full list of available tags:
-//  http://en.doc.boardgamearena.com/Game_meta-information:_gameinfos.inc.php
-//  IMPORTANT: this list should be ORDERED, with the most important tag first.
-//  IMPORTANT: it is mandatory that the FIRST tag is 1, 2, 3 and 4 (= game category)
-'tags' => [2, 11, 20, 102],
 
 
 //////// BGA SANDBOX ONLY PARAMETERS (DO NOT MODIFY)
