@@ -3,7 +3,7 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * TicketToRide implementation : © <Your name here> <Your email address here>
+ * TicketToRideSwitzerland implementation : © <Your name here> <Your email address here>
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -11,7 +11,7 @@
  *
  * stats.inc.php
  *
- * TicketToRide game statistics description
+ * TicketToRideSwitzerland game statistics description
  *
  */
 
@@ -169,11 +169,11 @@ $stats_type = [
             "name" => totranslate("Longest Continuous Path bonus"),
             "type" => "bool"
         ],
-        "globetrotterBonus" => [
+        /*"globetrotterBonus" => [
             "id" => 45,
             "name" => totranslate("Globetrotter bonus"),
             "type" => "bool"
-        ],
+        ],*/
     ],
 
 ];

@@ -2,13 +2,13 @@
  /**
   *------
   * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
-  * TicketToRide implementation : © <Your name here> <Your email address here>
+  * TicketToRideSwitzerland implementation : © <Your name here> <Your email address here>
   * 
   * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
   * See http://en.boardgamearena.com/#!doc/Studio for more information.
   * -----
   * 
-  * tickettoride.game.php
+  * tickettorideswitzerland.game.php
   *
   * This is the main file for your game logic.
   *
@@ -16,7 +16,7 @@
   *
   */
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideSwitzerland;
 
 require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
 
@@ -71,7 +71,7 @@ class Game extends \Table {
 	
     protected function getGameName() {
 		// Used for translations and stuff. Please do not modify.
-        return "tickettoride";
+        return "tickettorideswitzerland";
     }	
 
     /*
@@ -154,7 +154,7 @@ class Game extends \Table {
             $this->initStat('player', 'longestPathBonus', 0);
         }
         if ($isGlobetrotterBonusActive) {
-            $this->initStat('player', 'globetrotterBonus', 0);
+            //$this->initStat('player', 'globetrotterBonus', 0);
         }
 
         // setup the initial game situation here
@@ -244,7 +244,6 @@ class Game extends \Table {
         $result['trainCarDeckMaxCount'] = 110;
         $result['destinationDeckMaxCount'] = 30;
 
-        $result['expansion1910'] = $this->getExpansionOption(); // TODO REMOVE
         $result['isGlobetrotterBonusActive'] = $this->isGlobetrotterBonusActive();
         $result['isLongestPathBonusActive'] = $this->isLongestPathBonusActive();
         
