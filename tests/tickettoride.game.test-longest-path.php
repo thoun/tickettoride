@@ -1,8 +1,8 @@
 <?php
 define("APP_GAMEMODULE_PATH", "../misc/"); // include path to stubs, which defines "table.game.php" and other classes
-require_once ('../tickettoride.game.php');
+require_once ('../tickettorideswitzerland.game.php');
 
-class TicketToRideTestLongestPath extends TicketToRide { // this is your game class defined in ggg.game.php
+class TicketToRideTestLongestPath extends TicketToRideSwitzerland { // this is your game class defined in ggg.game.php
     function __construct() {
         // parent::__construct();
         include '../material.inc.php';// this is how this normally included, from constructor

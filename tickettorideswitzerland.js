@@ -2580,7 +2580,7 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.takeAction = function (action, data) {
         data = data || {};
         data.lock = true;
-        this.ajaxcall("/tickettoride/tickettoride/".concat(action, ".html"), data, this, function () { });
+        this.ajaxcall("/tickettorideswitzerland/tickettorideswitzerland/".concat(action, ".html"), data, this, function () { });
     };
     TicketToRide.prototype.isFastEndScoring = function () {
         var _a;
@@ -2832,5 +2832,5 @@ define([
     "ebg/counter",
     "ebg/stock"
 ], function (dojo, declare) {
-    return declare("bgagame.tickettoride", ebg.core.gamegui, new TicketToRide());
+    return declare("bgagame.tickettorideswitzerland", ebg.core.gamegui, new TicketToRide());
 });
