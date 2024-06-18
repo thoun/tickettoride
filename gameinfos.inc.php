@@ -130,7 +130,7 @@ $gameinfos = [
 // Short game presentation text that will appear on the game description page, structured as an array of paragraphs.
 // Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
 // A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
-'presentation' => [ // description from https://www.daysofwonder.com/tickettoride/en/
+'presentation' => [ // description from https://www.daysofwonder.com/tickettorideswitzerland/en/
     totranslate("Ticket to Ride is a cross-country train adventure where players collect cards of various types of train cars that enable them to claim railway routes connecting cities in various countries around the world."),
 ],
 
