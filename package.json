@@ -1,11 +1,11 @@
 {
-  "name": "tickettoride",
+  "name": "tickettorideswitzerland",
   "version": "1.0.0",
   "description": "",
-  "main": "tickettoride.js",
+  "main": "tickettorideswitzerland.js",
   "scripts": {
     "build:ts": "tsc",
-    "build:scss": "sass --no-source-map src/tickettoride.scss tickettoride.css"
+    "build:scss": "sass --no-source-map src/tickettorideswitzerland.scss tickettorideswitzerland.css"
   },
   "author": "",
   "license": "ISC",

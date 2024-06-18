@@ -208,7 +208,7 @@ trait StateTrait {
                     'length' => $bestCompletedDestinationsCount,
                 ]);
 
-                $this->setStat(1, 'globetrotterBonus', $playerId);
+                //$this->setStat(1, 'globetrotterBonus', $playerId);
             }
         }
 
