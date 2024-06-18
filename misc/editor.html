@@ -1,0 +1,48 @@
+<!--
+README :
+~/studio/tickettoride$ python3 -m http.server
+then choose the map name code and select the tickettoride root folder on the prompt
+-->
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="./editor.css">
+    </head>
+    <body>
+        <div class="fieldsets">
+            <fieldset>
+                <legend>Map</legend>
+                <input type="text" id="map-code" value="usa" /><button type="button" onclick="load()">Select TTR folder</button>
+            </fieldset>
+            <fieldset>
+                <legend>Selected city</legend>
+                Name <input type="text" id="selected-city-name" value="" />
+            </fieldset>
+            <fieldset>
+                <legend>Selected route</legend>
+                From <select id="route-from"></select>
+                To <select id="route-to"></select>
+                Color <select id="route-color"></select>
+                Tunnel <input type="checkbox" id="route-tunnel" />
+                Locomotives <input type="number" id="route-locomotives" />
+            </fieldset>
+        </div>
+
+        <div id="map">
+            <div id="cities"></div>
+            <div id="route-spaces"></div>
+        </div>
+
+        <div class="fieldsets">
+            <fieldset>
+                <legend>Cities export</legend>
+                <textarea id="cities-export"></textarea>
+            </fieldset>
+            <fieldset>
+                <legend>Routes export</legend>
+                <textarea id="routes-export"></textarea>
+            </fieldset>
+        </div>
+
+        <script type="text/javascript" src="./editor.js"></script>
+    </body>
+</html>
