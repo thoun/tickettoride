@@ -59,7 +59,7 @@ function get1912SmallDestinations() {
     107 => new DestinationCard(4, 8, 8), // Barcelona Bruxelles 8
     108 => new DestinationCard(4, 27, 8), // Barcelona  Munchen 8
     109 => new DestinationCard(5, 2, 13), // Berlin  Angora 13
-    110 => new DestinationCard(5, 2, 11), // Berlin  Athina 11
+    110 => new DestinationCard(5, 3, 11), // Berlin  Athina 11
     111 => new DestinationCard(5, 9, 8), // Berlin  Bucuresti 8
     112 => new DestinationCard(5, 26, 12), // Berlin Moska 12
     113 => new DestinationCard(5, 33, 9), // Berlin Roma 9
