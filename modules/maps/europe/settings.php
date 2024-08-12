@@ -54,7 +54,7 @@ trait SettingsTrait {
                     180, // Warszawa	Sevastopol
                 ]);
 
-                foreach ($bigIdsFromBaseIds as $typeArg => $destination) {
+                foreach ($bigIdsFromBaseIds as $typeArg) {
                     $destinationsBig[] = [ 'type' => 2, 'type_arg' => $typeArg, 'nbr' => 1];
                 }
                 foreach($smallIdsExpanded as $typeArg) {
