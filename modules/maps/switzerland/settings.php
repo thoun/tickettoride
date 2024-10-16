@@ -13,7 +13,7 @@ trait SettingsTrait {
 
         $base = getBaseDestinations();
         foreach($base as $typeArg => $destination) {
-            $destinations[] = [ 'type' => 1, 'type_arg' => $typeArg, 'nbr' => 1];
+            $destinations[] = [ 'type' => 1, 'type_arg' => $typeArg, 'nbr' => $typeArg <= 4 ? 2 : 1];
         }
 
         return [

@@ -10,7 +10,7 @@ function getBaseDestinations() {
       4 => new DestinationCard(-4, [-1, -2, -3], [11, 13, 6]), // Italia []
       5 => new DestinationCard(4, [-1, -2, -3, -4], [5, 6, 11, 8]), // Bern []
       6 => new DestinationCard(7, [-1, -2, -3, -4], [12, 6, 3, 5]), // Chur []
-      7 => new DestinationCard(34, [-1, -2, -3, -4], [7, 9, 9, 11]), // Zurich []
+      7 => new DestinationCard(34, [-1, -2, -3, -4], [7, 3, 7, 11]), // Zurich []
       8 => new DestinationCard(17, [-1, -2, -3, -4], [14, 12, 13, 2]), // Lugano []
       9 => new DestinationCard(2, 4, 5), // Basel  Bern  5
       10 => new DestinationCard(2, 5, 10), // Basel Brig  10

@@ -100,14 +100,40 @@ trait MapTrait {
         if (is_array($destination->to)) {
             // multiple destination possibilities, test from the top-most points to the bottom-most points
             foreach ($destination->to as $to) {
-                $routes = $this->getShortestRoutesToLinkCities($claimedRoutes, $destination->from, $to);
+                $routes = $this->getShortestRoutesToLinkCitiesOrCountries($claimedRoutes, $destination->from, $to);
                 if ($routes !== null) {
                     return $routes;
                 }
             }
         } else {
             // simple case, 1 destination
-            return $this->getShortestRoutesToLinkCities($claimedRoutes, $destination->from, $destination->to);
+            return $this->getShortestRoutesToLinkCitiesOrCountries($claimedRoutes, $destination->from, $destination->to);
+        }
+    }
+
+    private function getShortestRoutesToLinkCitiesOrCountries(array $claimedRoutes, int $from, int $to) {
+        $froms = [];
+        $tos = [];
+
+        if ($from < 0) {
+            $froms = array_merge($froms, COUNTRIES_END_POINTS[$from]);
+        } else {
+            $froms[] = $from;
+        }
+
+        if ($to < 0) {
+            $tos = array_merge($tos, COUNTRIES_END_POINTS[$to]);
+        } else {
+            $tos[] = $to;
+        }
+
+        foreach ($froms as $from) {
+            foreach ($tos as $to) {
+                $routes = $this->getShortestRoutesToLinkCities($claimedRoutes, $from, $to);
+                if ($routes !== null) {
+                    return $routes;
+                }
+            }
         }
     }
 
