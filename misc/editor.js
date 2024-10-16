@@ -132,7 +132,7 @@ function parseRoutes(text) {
     let locomotives = null;
 
     lines.forEach((line, index) => {
-        const routeStartMatch = line.match(/(\d+).*?(\d+).*?(\d+).*?(\w+).*\[/);
+        const routeStartMatch = line.match(/(\d+).*?(-?\d+).*?(-?\d+).*?(\w+).*\[/);
         if (routeStartMatch) {
             id = Number(routeStartMatch[1]);
             from = Number(routeStartMatch[2]);
@@ -350,6 +350,13 @@ function eraseAllRoutes() {
 }
 
 const DEFAULT_PX_BETWEEN_SPACES = 69;
+
+function createNewCity() {
+    const cityIdInput = document.getElementById('new-city-id');
+    const cityNameInput = document.getElementById('new-city-name');
+
+    this.addCity(cityIdInput.value, cityNameInput.value, 0, 0);
+}
 
 function createNewRoute() {
     let id = 1;

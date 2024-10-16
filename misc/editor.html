@@ -33,6 +33,12 @@ then choose the map name code and select the tickettoride root folder on the pro
                 <button type="button" onclick="eraseAllRoutes()">Erase all routes</button>
             </fieldset>
             <fieldset>
+                <legend>New City</legend>
+                Id <input type="number" id="new-city-id" value="1" />
+                Name <input type="text" id="new-city-name" value="" />
+                <button type="button" onclick="createNewCity()">Create new city</button>
+            </fieldset>
+            <fieldset>
                 <legend>New route</legend>
                 From <select id="new-route-from"></select>
                 To <select id="new-route-to"></select>
