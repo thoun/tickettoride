@@ -185,19 +185,19 @@ function getRoutes() {
       new RouteSpace(166, 774, -17),
       new RouteSpace(230, 759, -8),
     ]),
-    42 => new Route(1, 11, YELLOW, [
+    42 => new Route(-1, 11, YELLOW, [
       new RouteSpace(53, 981, 100),
     ]),
-    43 => new Route(2, 24, YELLOW, [
+    43 => new Route(-2, 24, YELLOW, [
       new RouteSpace(1027, 40, -29),
     ]),
-    44 => new Route(2, 13, ORANGE, [
+    44 => new Route(-2, 13, ORANGE, [
       new RouteSpace(1194, 68, 61),
     ]),
-    45 => new Route(2, 13, WHITE, [
+    45 => new Route(-2, 13, WHITE, [
       new RouteSpace(1261, 78, -42),
     ]),
-    46 => new Route(2, 28, GRAY, [
+    46 => new Route(-2, 28, GRAY, [
       new RouteSpace(1324, 194, -32),
       new RouteSpace(1378, 160, -31),
     ]),

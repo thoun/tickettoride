@@ -3,15 +3,12 @@
 /**
  * A DestinationCard is the graphic representation of a card (informations on it : from, to and points).
  */
-class DestinationCard {
-    public int $from;
-    public int $to;
-    public int $points;
-  
-    public function __construct(int $from, int $to, int $points) {
-        $this->from = $from;
-        $this->to = $to;
-        $this->points = $points;
+class DestinationCard {  
+    public function __construct(
+        public int $from, 
+        public int|array $to, 
+        public int|array $points
+    ) {
     } 
 }
 

@@ -81,11 +81,16 @@ class DestinationCompleteAnimation extends WagonsAnimation {
     }
     
     private getCardPosition(destination: Destination) {
-        const positions = [destination.from, destination.to].map(cityId => this.game.getMap().cities[cityId]);
+        if (Array.isArray(destination.to)) {
+            const from = this.game.getMap().cities[destination.from];
+            return `left: ${from.x - CARD_WIDTH/2}px; top: ${from.y - CARD_HEIGHT/2}px;`;
+        } else {
+            const positions = [destination.from, destination.to].map(cityId => this.game.getMap().cities[cityId]);
 
-        let x = (positions[0].x + positions[1].x) / 2;
-        let y = (positions[0].y + positions[1].y) / 2;
+            let x = (positions[0].x + positions[1].x) / 2;
+            let y = (positions[0].y + positions[1].y) / 2;
 
-        return `left: ${x - CARD_WIDTH/2}px; top: ${y - CARD_HEIGHT/2}px;`;
+            return `left: ${x - CARD_WIDTH/2}px; top: ${y - CARD_HEIGHT/2}px;`;
+        }
     }
 }

@@ -77,8 +77,8 @@ function setupDestinationCardDiv(game, cardDiv, cardUniqueId) {
     var destination = destinations.find(function (d) { return d.uniqueId == cardUniqueId; });
     cardDiv.title = "".concat(dojo.string.substitute(_('${from} to ${to}'), {
         from: game.getCityName(destination.from),
-        to: game.getCityName(destination.to),
-    }), ", ").concat(destination.points, " ").concat(_('points'));
+        to: Array.isArray(destination.to) ? destination.to.map(function (city) { return game.getCityName(city); }).join(' / ') : game.getCityName(destination.to),
+    }), ", ").concat(Array.isArray(destination.points) ? destination.points.join(' / ') : destination.points, " ").concat(_('points'));
 }
 function getBackgroundInlineStyleForDestination(map, destination) {
     var setTypeArg = Math.floor(destination.type_arg / 100);
@@ -188,10 +188,16 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
     };
     DestinationCompleteAnimation.prototype.getCardPosition = function (destination) {
         var _this = this;
-        var positions = [destination.from, destination.to].map(function (cityId) { return _this.game.getMap().cities[cityId]; });
-        var x = (positions[0].x + positions[1].x) / 2;
-        var y = (positions[0].y + positions[1].y) / 2;
-        return "left: ".concat(x - CARD_WIDTH / 2, "px; top: ").concat(y - CARD_HEIGHT / 2, "px;");
+        if (Array.isArray(destination.to)) {
+            var from = this.game.getMap().cities[destination.from];
+            return "left: ".concat(from.x - CARD_WIDTH / 2, "px; top: ").concat(from.y - CARD_HEIGHT / 2, "px;");
+        }
+        else {
+            var positions = [destination.from, destination.to].map(function (cityId) { return _this.game.getMap().cities[cityId]; });
+            var x = (positions[0].x + positions[1].x) / 2;
+            var y = (positions[0].y + positions[1].y) / 2;
+            return "left: ".concat(x - CARD_WIDTH / 2, "px; top: ").concat(y - CARD_HEIGHT / 2, "px;");
+        }
     };
     return DestinationCompleteAnimation;
 }(WagonsAnimation));
@@ -668,12 +674,12 @@ var TtrMap = /** @class */ (function () {
             if (previousDestination.id === destination.id) {
                 return;
             }
-            [previousDestination.from, previousDestination.to].forEach(function (city) {
+            [previousDestination.from, previousDestination.to].filter(function (city) { return city > 0; }).forEach(function (city) {
                 return document.getElementById("city".concat(city)).dataset.selectedDestination = 'false';
             });
         }
         if (destination) {
-            [destination.from, destination.to].forEach(function (city) {
+            [destination.from, destination.to].filter(function (city) { return city > 0; }).forEach(function (city) {
                 return document.getElementById("city".concat(city)).dataset.selectedDestination = 'true';
             });
         }
@@ -686,7 +692,7 @@ var TtrMap = /** @class */ (function () {
         if (player === void 0) { player = null; }
         this.inMapZoomManager.setHoveredRoute(route);
         if (route) {
-            [route.from, route.to].forEach(function (city) {
+            [route.from, route.to].filter(function (city) { return city > 0; }).forEach(function (city) {
                 var cityDiv = document.getElementById("city".concat(city));
                 cityDiv.dataset.hovered = 'true';
                 cityDiv.dataset.valid = valid.toString();
@@ -696,7 +702,7 @@ var TtrMap = /** @class */ (function () {
             }
         }
         else {
-            Object.values(this.map.routes).forEach(function (r) { return [r.from, r.to].forEach(function (city) {
+            Object.values(this.map.routes).forEach(function (r) { return [r.from, r.to].filter(function (city) { return city > 0; }).forEach(function (city) {
                 return document.getElementById("city".concat(city)).dataset.hovered = 'false';
             }); });
             // remove phantom wagons
@@ -707,7 +713,7 @@ var TtrMap = /** @class */ (function () {
      * Highlight cities of selectable destination.
      */
     TtrMap.prototype.setSelectableDestination = function (destination, visible) {
-        [destination.from, destination.to].forEach(function (city) {
+        [destination.from, destination.to].filter(function (city) { return city > 0; }).forEach(function (city) {
             document.getElementById("city".concat(city)).dataset.selectable = '' + visible;
         });
     };
@@ -715,7 +721,7 @@ var TtrMap = /** @class */ (function () {
      * Highlight cities of selected destination.
      */
     TtrMap.prototype.setSelectedDestination = function (destination, visible) {
-        [destination.from, destination.to].forEach(function (city) {
+        [destination.from, destination.to].filter(function (city) { return city > 0; }).forEach(function (city) {
             document.getElementById("city".concat(city)).dataset.selected = '' + visible;
         });
     };
@@ -726,7 +732,7 @@ var TtrMap = /** @class */ (function () {
         this.mapDiv.querySelectorAll(".city[data-to-connect]").forEach(function (city) { return city.dataset.toConnect = 'false'; });
         var cities = [];
         destinations.forEach(function (destination) { return cities.push(destination.from, destination.to); });
-        cities.forEach(function (city) { return document.getElementById("city".concat(city)).dataset.toConnect = 'true'; });
+        cities.filter(function (city) { return city > 0; }).forEach(function (city) { return document.getElementById("city".concat(city)).dataset.toConnect = 'true'; });
     };
     /**
      * Highlight destination (on destination mouse over).
@@ -744,7 +750,7 @@ var TtrMap = /** @class */ (function () {
         else {
             cities = [shadow.dataset.from, shadow.dataset.to];
         }
-        cities.forEach(function (city) { return document.getElementById("city".concat(city)).dataset.highlight = visible; });
+        cities.filter(function (city) { return Number(city) > 0; }).forEach(function (city) { return document.getElementById("city".concat(city)).dataset.highlight = visible; });
     };
     /**
      * Create the crosshair target when drag starts over the drag overlay.
