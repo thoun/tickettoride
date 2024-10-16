@@ -30,24 +30,24 @@ trait DebugUtilTrait {
         self::DbQuery("update `traincar` set card_location='hand', card_location_arg=2343492 WHERE `card_type` LIKE '0'");
     }
 
-    function debugSetDestinationInHand($cardType, $playerId) {
+    function debug_SetDestinationInHand(int $cardType, int $playerId) {
         $card = $this->getDestinationFromDb(array_values($this->destinations->getCardsOfType(1, $cardType))[0]);
         $this->destinations->moveCard($card->id, 'hand', $playerId);
         return $card;
     }
 
     // SELECT card_location, count(*)  FROM `traincar` GROUP BY card_location
-    function debugEmptyHand() {
+    function debug_EmptyHand() {
         $this->trainCars->moveAllCardsInLocation('hand', 'void');
     }
-    function debugEmptyDeck() {
+    function debug_EmptyDeck() {
         $this->trainCars->moveAllCardsInLocation('deck', 'void');
     }
-    function debugEmptyDiscard() {
+    function debug_EmptyDiscard() {
         $this->trainCars->moveAllCardsInLocation('discard', 'void');
     }
     
-    function debugAlmostEmptyDeck() {
+    function debug_AlmostEmptyDeck() {
         $moveNumber = $this->getRemainingTrainCarCardsInDeck(true) - 1;
         $this->trainCars->pickCardsForLocation($moveNumber, 'deck', 'void');
     }
@@ -58,16 +58,16 @@ trait DebugUtilTrait {
         $this->trainCars->moveAllCardsInLocation('discard', 'void');
     }
 
-    function debugEmptyDestinationDeck() {
+    function debug_EmptyDestinationDeck() {
         $this->destinations->moveAllCardsInLocation('deck', 'void');
     }
     
-    function debugAlmostEmptyDestinationDeck() {
+    function debug_AlmostEmptyDestinationDeck() {
         $moveNumber = $this->getRemainingDestinationCardsInDeck() - 1;
         $this->destinations->pickCardsForLocation($moveNumber, 'deck', 'discard');
     }
 
-    function debugClaimRoute($playerId, $routeId) {
+    function debug_ClaimRoute(int $playerId, int $routeId) {
         self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
 
         $route = $this->ROUTES[$routeId];
@@ -87,7 +87,7 @@ trait DebugUtilTrait {
         ]);
     }
 
-    function debugClaimAllRoutes($playerId, $ratio = 0.1) {
+    function debug_ClaimAllRoutes($playerId, $ratio = 0.1) {
         foreach($this->ROUTES as $id => $route) {
             if ((bga_rand(0, count($this->ROUTES)-1) / (float)count($this->ROUTES)) < $ratio) {
                 $this->debugClaimRoute($playerId, $id);
@@ -95,26 +95,26 @@ trait DebugUtilTrait {
         }
     }
 
-    function debugClaimRoutes($playerId, $routesIds) {
+    function debug_ClaimRoutes($playerId, $routesIds) {
         foreach($routesIds as $routeId) {
             $this->debugClaimRoute($playerId, $routeId);
         }
     }
 
-    function debugSetRemainingTrainCarDeck(int $remaining) {
+    function debug_SetRemainingTrainCarDeck(int $remaining) {
         $moveNumber = $this->getRemainingTrainCarCardsInDeck() - $remaining;
         $this->trainCars->pickCardsForLocation($moveNumber, 'deck', 'discard');
     }
 
-    function debugSetLastTurn() {
+    function debug_SetLastTurn() {
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = ".TRAIN_CARS_NUMBER_TO_START_LAST_TURN);
     }
-    function debugNoTrainCar() {
+    function debug_NoTrainCar() {
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = 0");
     }
 
     // select all 3 destinations for each player
-    function debugStart() {
+    function debug_Start() {
         $playersIds = $this->getPlayersIds();
         foreach ($playersIds as $playerId) {
             $destinations = $this->getPickedDestinationCards($playerId);
@@ -124,36 +124,6 @@ trait DebugUtilTrait {
 
         $this->gamestate->jumpToState(ST_PLAYER_CHOOSE_ACTION);
     }
-
-    public function debugReplacePlayersIds() {
-        if ($this->getBgaEnvironment() != 'studio') { 
-            return;
-        } 
-
-		// These are the id's from the BGAtable I need to debug.
-        // SELECT JSON_ARRAYAGG(`player_id`) FROM `player`
-		//$ids = [90574255, 93146640];
-        $ids = array_map(fn($dbPlayer) => intval($dbPlayer['player_id']), array_values($this->getCollectionFromDb('select player_id from player order by player_no')));
-
-		// Id of the first player in BGA Studio
-		$sid = 2343492;
-		
-		foreach ($ids as $id) {
-			// basic tables
-			$this->DbQuery("UPDATE player SET player_id=$sid WHERE player_id = $id" );
-			$this->DbQuery("UPDATE global SET global_value=$sid WHERE global_value = $id" );
-			$this->DbQuery("UPDATE stats SET stats_player_id=$sid WHERE stats_player_id = $id" );
-
-			// 'other' game specific tables. example:
-			// tables specific to your schema that use player_ids
-			$this->DbQuery("UPDATE traincar SET card_location_arg=$sid WHERE card_location_arg = $id" );
-			$this->DbQuery("UPDATE destination SET card_location_arg=$sid WHERE card_location_arg = $id" );
-			$this->DbQuery("UPDATE destination SET card_location='pick$sid' WHERE card_location = 'pick$id'" );
-			$this->DbQuery("UPDATE claimed_routes SET player_id=$sid WHERE player_id = $id" );
-            
-			++$sid;
-		}
-	}
 
     function debug($debugData) {
         if ($this->getBgaEnvironment() != 'studio') { 
