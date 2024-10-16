@@ -27,6 +27,22 @@ then choose the map name code and select the tickettoride root folder on the pro
                 Locomotives <input type="number" id="route-locomotives" />
             </fieldset>
         </div>
+        <div class="fieldsets">
+            <fieldset>
+                <legend>New map</legend>
+                <button type="button" onclick="eraseAllRoutes()">Erase all routes</button>
+            </fieldset>
+            <fieldset>
+                <legend>New route</legend>
+                From <select id="new-route-from"></select>
+                To <select id="new-route-to"></select>
+                Color <select id="new-route-color"></select>
+                Tunnel <input type="checkbox" id="new-route-tunnel" />
+                Number of spaces <input type="number" id="new-route-spaces" value="1" />
+                Locomotives <input type="number" id="new-route-locomotives" value="0" />
+                <button type="button" onclick="createNewRoute()">Create new route</button>
+            </fieldset>
+        </div>
 
         <div id="map">
             <div id="cities"></div>

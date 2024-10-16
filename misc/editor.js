@@ -4,7 +4,10 @@ let MAP = localStorage.getItem('BGA_TTR_EDITOR_MAP') ?? 'usa';
 let selectedCity = null;
 let selectedSpace = null;
 
-COLORS.forEach(color => addOptionToSelect(color, color, 'route-color'));
+COLORS.forEach(color => {
+    addOptionToSelect(color, color, 'route-color');
+    addOptionToSelect(color, color, 'new-route-color');
+});
 
 async function getFileContent(dirHandle, fileName) {
     const fileHandle = await dirHandle.getFileHandle(fileName);
@@ -86,9 +89,9 @@ async function load() {
 }
 
 function parseCities(text) {
-    const matches = text.match(/(\d+).*'(.*)'.*(\d+).*(\d+)/g);
+    const matches = text.match(/(-?\d+).*'(.*)'.*(\d+).*(\d+)/g);
     matches?.forEach(lineMatch => {
-        const match = lineMatch.match(/(\d+).*'(.*)'.*?(\d+).*?(\d+)/);
+        const match = lineMatch.match(/(-?\d+).*'(.*)'.*?(\d+).*?(\d+)/);
         if (match) {
             const id = Number(match[1]);
             const city = match[2];
@@ -140,15 +143,16 @@ function parseRoutes(text) {
             locomotives = null;
         } else {
 
-            const routeSpaceMatch = line.match(/(\d+).*?(\d+).*?(\d+)/);
+            const routeSpaceMatch = line.match(/(\d+).*?(\d+).*?(-?\d+)/);
             if (routeSpaceMatch) {
                 routes.push(routeSpaceMatch.slice(1,4).map(Number));
-            } else {
+            } else if (id !== null) {
                 const routeEndMatch = line.match(/\][, ]*(\w+)?[, ]*(\d+)?/);
                 if (routeEndMatch) {
                     tunnel = routeEndMatch[1] === 'true';
                     locomotives = routeEndMatch[2] ? Number(routeEndMatch[2]) : 0;
                     addRoute(id, from, to, color, routes, tunnel, locomotives);
+                    id = null; // end of current route
                 }
             }
         }
@@ -162,6 +166,7 @@ function addOptionToSelect(id, name, selectId) {
 }
 
 function addCity(id, name, x, y) {
+    console.warn('addRoute', id, name, x, y);
     document.getElementById('cities').insertAdjacentHTML('beforeend', 
         `<div id="city-${id}" class="city" data-id="${id}" data-name="${name}" data-x="${x}" data-y="${y}" style="--x: ${x}px; --y: ${y}px;">${name}</div>`
     )
@@ -173,11 +178,13 @@ function addCity(id, name, x, y) {
     });
 
     addOptionToSelect(id, name, 'route-from');
+    addOptionToSelect(id, name, 'new-route-from');
     addOptionToSelect(id, name, 'route-to');
+    addOptionToSelect(id, name, 'new-route-to');
 }
 
-function addRoute(id, from, to, color, routes, tunnel, locomotives) {
-    routes.forEach((space, index) => {
+function addRoute(id, from, to, color, spaces, tunnel, locomotives) {
+    spaces.forEach((space, index) => {
         document.getElementById('route-spaces').insertAdjacentHTML('beforeend', 
             `<div id="route-spaces-route${id}-space${index}" class="route-space ${tunnel ? 'tunnel' : ''} ${index < locomotives ? 'locomotive'  :''}" data-x="${space[0]}" data-y="${space[1]}" data-a="${space[2]}" style="--x: ${space[0]}px; --y: ${space[1]}px; --a: ${space[2]}deg;" data-tunnel="${tunnel ? 'true' : 'false'}" data-locomotives="${locomotives}" data-route-id="${id}" data-space-index="${index}" data-from="${from}" data-to="${to}" data-color="${color}">${color}</div>`
         );
@@ -336,4 +343,54 @@ function updateRoutesExport() {
         }
     }
     document.getElementById('routes-export').value = php;
+}
+
+function eraseAllRoutes() {
+    document.querySelectorAll(`.route-space`).forEach(elem => elem?.remove());
+}
+
+const DEFAULT_PX_BETWEEN_SPACES = 69;
+
+function createNewRoute() {
+    let id = 1;
+    for (; id <= 200; id++) {
+        const spaces = getSpacesOfRoute(id);
+        if (!spaces.length) {
+            break;
+        }
+    }
+
+    const selectedRouteFromInput = document.getElementById('new-route-from');
+    const fromDiv = document.getElementById(`city-${selectedRouteFromInput.value}`);
+    const fromX = Number(fromDiv.dataset.x);
+    const fromY = Number(fromDiv.dataset.y);
+
+    const selectedRouteToInput = document.getElementById('new-route-to');
+    const toDiv = document.getElementById(`city-${selectedRouteToInput.value}`);
+    const toX = Number(toDiv.dataset.x);
+    const toY = Number(toDiv.dataset.y);
+
+    const selectedRouteColorInput = document.getElementById('new-route-color');
+
+    const selectedRouteTunnelInput = document.getElementById('new-route-tunnel');
+
+    const selectedRouteSpacesInput = document.getElementById('new-route-spaces');
+
+    const selectedRouteLocomotivesInput = document.getElementById('new-route-locomotives');
+
+    const angle = Math.floor(Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI);
+    const routeCenterX = (toX + fromX) / 2;
+    const routeCenterY = (toY + fromY) / 2;
+
+    const centerIndex = (selectedRouteSpacesInput.value - 1) / 2;
+    const routes = [];
+    for (i = 0; i < selectedRouteSpacesInput.value; i++) {
+        const distance = (i - centerIndex) * DEFAULT_PX_BETWEEN_SPACES;
+        const x = Math.round(Math.cos(angle * Math.PI / 180) * distance + routeCenterX);
+        const y = Math.round(Math.sin(angle * Math.PI / 180) * distance + routeCenterY);
+        routes.push([x, y, angle]);
+    }
+
+    addRoute(id, selectedRouteFromInput.value, selectedRouteToInput.value, selectedRouteColorInput.value, routes, selectedRouteTunnelInput.checked, selectedRouteLocomotivesInput.value);    
+    this.updateRoutesExport();
 }

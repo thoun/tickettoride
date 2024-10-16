@@ -48,6 +48,13 @@
     outline: 5px dashed purple;
 }
 
+.route-space.tunnel.selected {
+    outline: 5px dashed red;
+}
+
 .route-space.locomotive {
     outline: 5px dashed white;
+}
+.route-space.locomotive.selected {
+    outline: 5px dashed gold;
 }
