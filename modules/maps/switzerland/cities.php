@@ -7,10 +7,10 @@ require_once(__DIR__.'/../../php/objects/city.php');
  */
 function getCities() {
   return [
-    -4 => new City('Italia', 0, 0),
-    -3 => new City('Österreich', 0, 0),
-    -2 => new City('Deutschland', 0, 0),
-    -1 => new City('France', 0, 0),
+    -4 => new City('Italia', 1440, 960),
+    -3 => new City('Österreich', 1540, 400),
+    -2 => new City('Deutschland', 1470, 60),
+    -1 => new City('France', 250, 150),
     1 => new City('Baden', 859, 216),
     2 => new City('Basel', 620, 178),
     3 => new City('Bellinzona', 1182, 928),

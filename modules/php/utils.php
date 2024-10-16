@@ -197,7 +197,7 @@ trait UtilTrait {
                         'player_name' => $this->getPlayerName($playerId),
                         'destination' => $destination,
                         'from' => $this->getCityName($destination->from),
-                        'to' => $this->getCityName($destination->to),
+                        'to' => is_array($destination->to) ? implode(' / ', array_map(fn($to) => $this->getCityName($to), $destination->to)) : $this->getCityName($destination->to),
                         'you' => clienttranslate('You'),
                         'i18n' => ['you'],
                         'destinationRoutes' => $destinationRoutes,
