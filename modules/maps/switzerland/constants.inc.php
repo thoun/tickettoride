@@ -15,7 +15,7 @@ const UNUSED_INITIAL_DESTINATIONS_GO_TO_DECK_BOTTOM = false; // Indicates if unp
 const UNUSED_ADDITIONAL_DESTINATIONS_GO_TO_DECK_BOTTOM = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
 const POINTS_FOR_LONGEST_PATH = 10; // points for maximum longest countinuous path (null means disabled)
 const POINTS_FOR_GLOBETROTTER = null; // points for maximum completed destinations (null means disabled)
-const MINIMUM_PLAYER_FOR_DOUBLE_ROUTES = 4; // 4 means 2-3 players cant use double routes
+const MINIMUM_PLAYER_FOR_DOUBLE_ROUTES = 3; // 4 means 2-3 players cant use double routes
 const NUMBER_OF_LOCOMOTIVE_CARDS = 14;
 const NUMBER_OF_COLORED_CARDS = 12;
 

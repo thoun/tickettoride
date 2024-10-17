@@ -518,7 +518,7 @@ var TtrMap = /** @class */ (function () {
                         var spaceDiv = document.getElementById("route-spaces-route".concat(otherRoute_1.id, "-space").concat(spaceIndex));
                         if (spaceDiv) {
                             spaceDiv.classList.add('forbidden');
-                            _this.game.setTooltip(spaceDiv.id, "<strong><span style=\"color: darkred\">".concat(_('Important Note:'), "</span> \n                            ").concat(_('In 2 or 3 player games, only one of the Double-Routes can be used.'), "</strong>"));
+                            _this.game.setTooltip(spaceDiv.id, "<strong><span style=\"color: darkred\">".concat(_('Important Note:'), "</span> \n                            ").concat(_('In 2 player games, only one of the Double-Routes can be used.'), "</strong>"));
                         }
                     });
                 }
@@ -2133,7 +2133,7 @@ var TicketToRide = /** @class */ (function () {
         return (_b = (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.getValue()) !== null && _b !== void 0 ? _b : Number(this.gamedatas.players[playerId].score);
     };
     TicketToRide.prototype.isDoubleRouteForbidden = function () {
-        return Object.values(this.gamedatas.players).length <= 3;
+        return Object.values(this.gamedatas.players).length <= 2;
     };
     TicketToRide.prototype.getMap = function () {
         return this.gamedatas.map;
