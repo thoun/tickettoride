@@ -1,0 +1,191 @@
+{
+    "table": {
+        "turnsNumber": {
+            "id": 10,
+            "name": "Number of turns",
+            "type": "int"
+        },
+        "pointsWithClaimedRoutes": {
+            "id": 11,
+            "name": "Points with claimed routes",
+            "type": "int"
+        },
+        "pointsWithDestinations": {
+            "id": 12,
+            "name": "Points with destinations",
+            "type": "int"
+        },
+        "pointsWithCompletedDestinations": {
+            "id": 13,
+            "name": "Points with completed destinations",
+            "type": "int"
+        },
+        "pointsLostWithUncompletedDestinations": {
+            "id": 14,
+            "name": "Points lost with uncompleted destinations",
+            "type": "int"
+        },
+        "collectedTrainCarCards": {
+            "id": 20,
+            "name": "Collected train car cards",
+            "type": "int"
+        },
+        "collectedHiddenTrainCarCards": {
+            "id": 21,
+            "name": "Collected train car cards (hidden)",
+            "type": "int"
+        },
+        "collectedVisibleTrainCarCards": {
+            "id": 22,
+            "name": "Collected train car cards (visible)",
+            "type": "int"
+        },
+        "collectedVisibleLocomotives": {
+            "id": 23,
+            "name": "Collected visible locomotives",
+            "type": "int"
+        },
+        "drawDestinationsAction": {
+            "id": 30,
+            "name": "Draw destination action",
+            "type": "int"
+        },
+        "completedDestinations": {
+            "id": 31,
+            "name": "Completed destinations",
+            "type": "int"
+        },
+        "uncompletedDestinations": {
+            "id": 32,
+            "name": "Uncompleted destinations",
+            "type": "int"
+        },
+        "claimedRoutes": {
+            "id": 40,
+            "name": "Claimed routes",
+            "type": "int"
+        },
+        "playedTrainCars": {
+            "id": 41,
+            "name": "Played train cars",
+            "type": "int"
+        },
+        "averageClaimedRouteLength": {
+            "id": 42,
+            "name": "Average claimed route length",
+            "type": "float"
+        },
+        "longestPath": {
+            "id": 43,
+            "name": "Longest continuous path",
+            "type": "int"
+        },
+        "visibleCardsReplaced": {
+            "id": 24,
+            "name": "Visible cards replaced (three locomotives)",
+            "type": "int"
+        }
+    },
+    "player": {
+        "turnsNumber": {
+            "id": 10,
+            "name": "Number of turns",
+            "type": "int"
+        },
+        "pointsWithClaimedRoutes": {
+            "id": 11,
+            "name": "Points with claimed routes",
+            "type": "int"
+        },
+        "pointsWithDestinations": {
+            "id": 12,
+            "name": "Points with destinations",
+            "type": "int"
+        },
+        "pointsWithCompletedDestinations": {
+            "id": 13,
+            "name": "Points with completed destinations",
+            "type": "int"
+        },
+        "pointsLostWithUncompletedDestinations": {
+            "id": 14,
+            "name": "Points lost with uncompleted destinations",
+            "type": "int"
+        },
+        "collectedTrainCarCards": {
+            "id": 20,
+            "name": "Collected train car cards",
+            "type": "int"
+        },
+        "collectedHiddenTrainCarCards": {
+            "id": 21,
+            "name": "Collected train car cards (hidden)",
+            "type": "int"
+        },
+        "collectedVisibleTrainCarCards": {
+            "id": 22,
+            "name": "Collected train car cards (visible)",
+            "type": "int"
+        },
+        "collectedVisibleLocomotives": {
+            "id": 23,
+            "name": "Collected visible locomotives",
+            "type": "int"
+        },
+        "drawDestinationsAction": {
+            "id": 30,
+            "name": "Draw destination action",
+            "type": "int"
+        },
+        "completedDestinations": {
+            "id": 31,
+            "name": "Completed destinations",
+            "type": "int"
+        },
+        "uncompletedDestinations": {
+            "id": 32,
+            "name": "Uncompleted destinations",
+            "type": "int"
+        },
+        "claimedRoutes": {
+            "id": 40,
+            "name": "Claimed routes",
+            "type": "int"
+        },
+        "playedTrainCars": {
+            "id": 41,
+            "name": "Played train cars",
+            "type": "int"
+        },
+        "averageClaimedRouteLength": {
+            "id": 42,
+            "name": "Average claimed route length",
+            "type": "float"
+        },
+        "longestPath": {
+            "id": 43,
+            "name": "Longest continuous path",
+            "type": "int"
+        },
+        "keptInitialDestinationCards": {
+            "id": 33,
+            "name": "Kept initial destination cards",
+            "type": "int"
+        },
+        "keptAdditionalDestinationCards": {
+            "id": 34,
+            "name": "Kept additional destination cards",
+            "type": "int"
+        },
+        "longestPathBonus": {
+            "id": 44,
+            "name": "Longest Continuous Path bonus",
+            "type": "bool"
+        },
+        "globetrotterBonus": {
+            "id": 45,
+            "name": "Globetrotter bonus",
+            "type": "bool"
+        }
+    }
+}

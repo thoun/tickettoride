@@ -1,0 +1,125 @@
+{
+    "206": {
+        "name": "Ask for confirmation when taking new destinations",
+        "needReload": false,
+        "values": {
+            "1": {
+                "name": "Enabled"
+            },
+            "2": {
+                "name": "Disabled"
+            }
+        },
+        "default": 1
+    },
+    "201": {
+        "name": "Show buttons for hidden cards selection",
+        "needReload": false,
+        "values": {
+            "1": {
+                "name": "Enabled"
+            },
+            "2": {
+                "name": "Disabled"
+            }
+        },
+        "default": 2
+    },
+    "209": {
+        "name": "Ask wanted color for double routes",
+        "needReload": false,
+        "values": {
+            "1": {
+                "name": "Enabled"
+            },
+            "2": {
+                "name": "Disabled"
+            }
+        },
+        "default": 1
+    },
+    "202": {
+        "name": "Confirm route claim",
+        "needReload": false,
+        "values": {
+            "1": {
+                "name": "Enabled"
+            },
+            "2": {
+                "name": "Enabled for touch device only"
+            },
+            "3": {
+                "name": "Disabled"
+            }
+        },
+        "default": 2
+    },
+    "207": {
+        "name": "Countdown timer for Confirm button",
+        "needReload": false,
+        "values": {
+            "1": {
+                "name": "Enabled"
+            },
+            "2": {
+                "name": "Disabled"
+            }
+        },
+        "default": 1
+    },
+    "203": {
+        "name": "Train car outline",
+        "needReload": false,
+        "values": {
+            "1": {
+                "name": "Enabled"
+            },
+            "2": {
+                "name": "Automatic"
+            },
+            "3": {
+                "name": "Disabled"
+            }
+        },
+        "default": 2
+    },
+    "204": {
+        "name": "Show color-blind indications",
+        "needReload": false,
+        "values": {
+            "1": {
+                "name": "Enabled"
+            },
+            "2": {
+                "name": "Disabled"
+            }
+        },
+        "default": 2
+    },
+    "205": {
+        "name": "Deck placement",
+        "needReload": false,
+        "values": {
+            "1": {
+                "name": "Train cards top, Destination tickets bottom"
+            },
+            "2": {
+                "name": "Destination tickets top, Train cards bottom"
+            }
+        },
+        "default": 1
+    },
+    "208": {
+        "name": "End of game animations",
+        "needReload": true,
+        "values": {
+            "1": {
+                "name": "Enabled"
+            },
+            "2": {
+                "name": "Disabled"
+            }
+        },
+        "default": 1
+    }
+}
