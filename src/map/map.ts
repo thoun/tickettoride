@@ -334,7 +334,7 @@ class TtrMap {
                         if (spaceDiv) {
                             spaceDiv.classList.add('forbidden');
                             this.game.setTooltip(spaceDiv.id, `<strong><span style="color: darkred">${_('Important Note:')}</span> 
-                            ${_('In 2 or 3 player games, only one of the Double-Routes can be used.')}</strong>`);
+                            ${_('In 2 player games, only one of the Double-Routes can be used.')}</strong>`);
                         }
                     });
                 }
