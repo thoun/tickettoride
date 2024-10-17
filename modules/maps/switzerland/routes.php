@@ -387,7 +387,10 @@ function getRoutes() {
       new RouteSpace(317, 1081, -49),
       new RouteSpace(360, 1032, -48),
     ], true),
-
+    88 => new Route(14, 20, ORANGE, [
+      new RouteSpace(323, 457, 35),
+    ], true),
+    
   ];
 }
 
