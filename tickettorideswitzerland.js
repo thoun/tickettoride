@@ -411,7 +411,7 @@ var TtrMap = /** @class */ (function () {
                     to: _this.game.getCityName(route.to),
                 }), ", ").concat(route.spaces.length, " ").concat(getColor(route.color, 'route'));
                 if (route.tunnel) {
-                    title += " (".concat(/* TODO MAPS _*/ ("Tunnel"), ")");
+                    title += " (".concat(_("Tunnel"), ")");
                 }
                 if (route.locomotives) {
                     title += " (".concat(/* TODO MAPS _*/ ("${number} locomotive(s) required").replace('${number}', "".concat(route.locomotives)), ")");
@@ -2045,9 +2045,9 @@ var TicketToRide = /** @class */ (function () {
                     break;
                 case 'confirmTunnel':
                     var confirmTunnelArgs = args;
-                    var confirmLabel = /* TODO MAPS _*/ ("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : " (".concat(/* TODO MAPS _*/ ("You don't have enough cards"), ")"));
+                    var confirmLabel = _("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : " (".concat(_("You don't have enough cards"), ")"));
                     this.addActionButton('claimTunnel_button', confirmLabel, function () { return _this.claimTunnel(); });
-                    this.addActionButton('skipTunnel_button', /* TODO MAPS _*/ ("Skip tunnel claim"), function () { return _this.skipTunnel(); }, null, null, 'gray');
+                    this.addActionButton('skipTunnel_button', _("Skip tunnel claim"), function () { return _this.skipTunnel(); }, null, null, 'gray');
                     if (!confirmTunnelArgs.canPay) {
                         dojo.addClass('claimTunnel_button', 'disabled');
                     }

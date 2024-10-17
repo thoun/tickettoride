@@ -1,31 +1,4 @@
 {
-    "101": {
-        "name": "1910 Expansion",
-        "values": [
-            {
-                "name": "Disabled"
-            },
-            {
-                "name": "1910",
-                "description": "New tickets. Globetrotter - Most Completed Tickets bonus card instead of Longest Route Bonus card",
-                "tmdisplay": "1910 Expansion : 1910",
-                "nobeginner": true
-            },
-            {
-                "name": "The Mega Game",
-                "description": "All tickets, both bonus cards, more tickets when choosing",
-                "tmdisplay": "1910 Expansion : The Mega Game",
-                "nobeginner": true
-            },
-            {
-                "name": "The Big Cities",
-                "description": "Tickets with Big Cities",
-                "tmdisplay": "1910 Expansion : The Big Cities",
-                "nobeginner": true
-            }
-        ],
-        "default": 0
-    },
     "110": {
         "name": "Turn order",
         "values": {

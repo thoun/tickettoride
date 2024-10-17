@@ -5,11 +5,11 @@ const INIT_GAME_STATE_LABELS = [
 ];
 
 const INITIAL_TRAIN_CAR_CARDS_IN_HAND = 4; // Number of train car cards in hand, for each player, at the beginning of the game.
-const VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS = false; // Says if it is possible to take only one visible locomotive. // TODO MAPS
-const CAN_ONLY_USE_LOCOMOTIVES_IN_TUNNELS = true; // Says locomotives are reserved to tunnels. // TODO MAPS
+const VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS = false; // Says if it is possible to take only one visible locomotive.
+const CAN_ONLY_USE_LOCOMOTIVES_IN_TUNNELS = true; // Says locomotives are reserved to tunnels.
 const RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES = 3; // Resets visible cards when 3 locomotives are visible (null means disabled)
 const TRAIN_CARS_NUMBER_TO_START_LAST_TURN = 2; // 2 means 0, 1, or 2 will start last turn
-const TRAIN_CARS_PER_PLAYER = 45;
+const TRAIN_CARS_PER_PLAYER = 40;
 const ADDITIONAL_DESTINATION_MINIMUM_KEPT = 1; // Minimum number of destinations cards to keep at pick destination action.
 const UNUSED_INITIAL_DESTINATIONS_GO_TO_DECK_BOTTOM = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
 const UNUSED_ADDITIONAL_DESTINATIONS_GO_TO_DECK_BOTTOM = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.

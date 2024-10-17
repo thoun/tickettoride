@@ -238,9 +238,9 @@ class TicketToRide implements TicketToRideGame {
                     break;  
                 case 'confirmTunnel':
                     const confirmTunnelArgs = args as EnteringConfirmTunnelArgs;
-                    const confirmLabel = /* TODO MAPS _*/("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : ` (${/* TODO MAPS _*/("You don't have enough cards")})`);
+                    const confirmLabel = _("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : ` (${_("You don't have enough cards")})`);
                     (this as any).addActionButton('claimTunnel_button', confirmLabel, () => this.claimTunnel());
-                    (this as any).addActionButton('skipTunnel_button', /* TODO MAPS _*/("Skip tunnel claim"), () => this.skipTunnel(), null, null, 'gray');
+                    (this as any).addActionButton('skipTunnel_button', _("Skip tunnel claim"), () => this.skipTunnel(), null, null, 'gray');
                     if (!confirmTunnelArgs.canPay) {
                         dojo.addClass('claimTunnel_button', 'disabled');
                     }
