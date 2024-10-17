@@ -93,7 +93,11 @@ $playerActionsGameStates = [
         "descriptionmyturn" => clienttranslate('${you} must choose destination tickets (minimum ${minimum})'),
         "type" => "private",
         "args" => "argPrivateChooseInitialDestinations",
-        "possibleactions" => [ "chooseInitialDestinations" ],
+        "possibleactions" => [
+            "chooseInitialDestinations",
+
+            "actChooseInitialDestinations",
+        ],
         "transitions" => [],
     ],
 
@@ -111,6 +115,12 @@ $playerActionsGameStates = [
             "claimRoute",
             "drawDestinations",
             "pass",
+
+            "actDrawDeckCards",
+            "actDrawTableCard",
+            "actClaimRoute",
+            "actDrawDestinations",
+            "actPass",
         ],
         "transitions" => [
             "drawSecondCard" => ST_PLAYER_DRAW_SECOND_CARD,
@@ -129,6 +139,9 @@ $playerActionsGameStates = [
         "possibleactions" => [ 
             "drawSecondDeckCard",
             "drawSecondTableCard",
+
+            "actDrawSecondDeckCard",
+            "actDrawSecondTableCard",
         ],
         "transitions" => [
             "nextPlayer" => ST_NEXT_PLAYER,
@@ -141,7 +154,11 @@ $playerActionsGameStates = [
         "descriptionmyturn" => clienttranslate('${you} must choose destination tickets (minimum ${minimum})'),
         "type" => "activeplayer",
         "args" => "argChooseAdditionalDestinations",
-        "possibleactions" => [ "chooseAdditionalDestinations" ],
+        "possibleactions" => [
+            "chooseAdditionalDestinations",
+
+            "actChooseAdditionalDestinations",
+        ],
         "transitions" => [
             "nextPlayer" => ST_NEXT_PLAYER,
         ],
@@ -153,7 +170,13 @@ $playerActionsGameStates = [
         "descriptionmyturn" => /*TODO MAPS clienttranslate*/('${you} must confirm tunnel claim using ${extraCards} extra card(s) ${colors}'),
         "type" => "activeplayer",
         "args" => "argConfirmTunnel",
-        "possibleactions" => [ "claimTunnel", "skipTunnel" ],
+        "possibleactions" => [
+            "claimTunnel",
+            "skipTunnel",
+
+            "actClaimTunnel",
+            "actSkipTunnel",
+        ],
         "transitions" => [
             "nextPlayer" => ST_NEXT_PLAYER,
         ],

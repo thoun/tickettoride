@@ -2475,11 +2475,8 @@ var TicketToRide = /** @class */ (function () {
      * Apply destination selection (initial objectives).
      */
     TicketToRide.prototype.chooseInitialDestinations = function () {
-        if (!this.checkAction('chooseInitialDestinations')) {
-            return;
-        }
         var destinationsIds = this.destinationSelection.getSelectedDestinationsIds();
-        this.takeAction('chooseInitialDestinations', {
+        this.bgaPerformAction('actChooseInitialDestinations', {
             destinationsIds: destinationsIds.join(',')
         });
     };
@@ -2489,28 +2486,22 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.drawDestinations = function () {
         var _this = this;
         var _a;
-        if (!this.checkAction('drawDestinations')) {
-            return;
-        }
         var confirmation = ((_a = this.prefs[206]) === null || _a === void 0 ? void 0 : _a.value) !== 2;
         if (confirmation && this.gamedatas.gamestate.args.maxDestinationsPick) {
             this.confirmationDialog(_('Are you sure you want to take new destinations?'), function () {
-                _this.takeAction('drawDestinations');
+                _this.bgaPerformAction('actDrawDestinations');
             });
         }
         else {
-            this.takeAction('drawDestinations');
+            this.bgaPerformAction('actDrawDestinations');
         }
     };
     /**
      * Apply destination selection (additional objectives).
      */
     TicketToRide.prototype.chooseAdditionalDestinations = function () {
-        if (!this.checkAction('chooseAdditionalDestinations')) {
-            return;
-        }
         var destinationsIds = this.destinationSelection.getSelectedDestinationsIds();
-        this.takeAction('chooseAdditionalDestinations', {
+        this.bgaPerformAction('actChooseAdditionalDestinations', {
             destinationsIds: destinationsIds.join(',')
         });
     };
@@ -2518,11 +2509,8 @@ var TicketToRide = /** @class */ (function () {
      * Pick hidden train car(s).
      */
     TicketToRide.prototype.onHiddenTrainCarDeckClick = function (number) {
-        var action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'drawSecondDeckCard' : 'drawDeckCards';
-        if (!this.checkAction(action)) {
-            return;
-        }
-        this.takeAction(action, {
+        var action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'actDrawSecondDeckCard' : 'actDrawDeckCards';
+        this.bgaPerformAction(action, {
             number: number
         });
     };
@@ -2530,11 +2518,8 @@ var TicketToRide = /** @class */ (function () {
      * Pick visible train car.
      */
     TicketToRide.prototype.onVisibleTrainCarCardClick = function (id) {
-        var action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'drawSecondTableCard' : 'drawTableCard';
-        if (!this.checkAction(action)) {
-            return;
-        }
-        this.takeAction(action, {
+        var action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'actDrawSecondTableCard' : 'actDrawTableCard';
+        this.bgaPerformAction(action, {
             id: id
         });
     };
@@ -2542,10 +2527,7 @@ var TicketToRide = /** @class */ (function () {
      * Claim a route.
      */
     TicketToRide.prototype.claimRoute = function (routeId, color) {
-        if (!this.checkAction('claimRoute')) {
-            return;
-        }
-        this.takeAction('claimRoute', {
+        this.bgaPerformAction('actClaimRoute', {
             routeId: routeId,
             color: color
         });
@@ -2554,33 +2536,19 @@ var TicketToRide = /** @class */ (function () {
      * Pass (in case of no possible action).
      */
     TicketToRide.prototype.pass = function () {
-        if (!this.checkAction('pass')) {
-            return;
-        }
-        this.takeAction('pass');
+        this.bgaPerformAction('actPass');
     };
     /**
      * Claim a tunnel (confirm paying extra cost).
      */
     TicketToRide.prototype.claimTunnel = function () {
-        if (!this.checkAction('claimTunnel')) {
-            return;
-        }
-        this.takeAction('claimTunnel');
+        this.bgaPerformAction('actClaimTunnel');
     };
     /**
      * Skip a tunnel (deny paying extra cost).
      */
     TicketToRide.prototype.skipTunnel = function () {
-        if (!this.checkAction('skipTunnel')) {
-            return;
-        }
-        this.takeAction('skipTunnel');
-    };
-    TicketToRide.prototype.takeAction = function (action, data) {
-        data = data || {};
-        data.lock = true;
-        this.ajaxcall("/tickettoride/tickettoride/".concat(action, ".html"), data, this, function () { });
+        this.bgaPerformAction('actSkipTunnel');
     };
     TicketToRide.prototype.isFastEndScoring = function () {
         var _a;

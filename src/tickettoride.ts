@@ -741,13 +741,9 @@ class TicketToRide implements TicketToRideGame {
      * Apply destination selection (initial objectives).
      */ 
     public chooseInitialDestinations() {
-        if(!(this as any).checkAction('chooseInitialDestinations')) {
-            return;
-        }
-
         const destinationsIds = this.destinationSelection.getSelectedDestinationsIds();
 
-        this.takeAction('chooseInitialDestinations', {
+        (this as any).bgaPerformAction('actChooseInitialDestinations', {
             destinationsIds: destinationsIds.join(',')
         });
     }
@@ -756,18 +752,14 @@ class TicketToRide implements TicketToRideGame {
      * Pick destinations.
      */ 
     public drawDestinations() {
-        if(!(this as any).checkAction('drawDestinations')) {
-            return;
-        }
-
         const confirmation = (this as any).prefs[206]?.value !== 2;
 
         if (confirmation && this.gamedatas.gamestate.args.maxDestinationsPick) {
             (this as any).confirmationDialog( _('Are you sure you want to take new destinations?'), () => {
-                this.takeAction('drawDestinations');
+                (this as any).bgaPerformAction('actDrawDestinations');
             }); 
         } else {
-            this.takeAction('drawDestinations');
+            (this as any).bgaPerformAction('actDrawDestinations');
         }
     }
 
@@ -775,13 +767,9 @@ class TicketToRide implements TicketToRideGame {
      * Apply destination selection (additional objectives).
      */ 
     public chooseAdditionalDestinations() {
-        if(!(this as any).checkAction('chooseAdditionalDestinations')) {
-            return;
-        }
-
         const destinationsIds = this.destinationSelection.getSelectedDestinationsIds();
 
-        this.takeAction('chooseAdditionalDestinations', {
+        (this as any).bgaPerformAction('actChooseAdditionalDestinations', {
             destinationsIds: destinationsIds.join(',')
         });
     }
@@ -790,13 +778,9 @@ class TicketToRide implements TicketToRideGame {
      * Pick hidden train car(s).
      */ 
     public onHiddenTrainCarDeckClick(number: number) {
-        const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'drawSecondDeckCard' : 'drawDeckCards';
+        const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'actDrawSecondDeckCard' : 'actDrawDeckCards';
         
-        if(!(this as any).checkAction(action)) {
-            return;
-        }
-
-        this.takeAction(action, {
+        (this as any).bgaPerformAction(action, {
             number
         });
     }
@@ -805,13 +789,9 @@ class TicketToRide implements TicketToRideGame {
      * Pick visible train car.
      */ 
     public onVisibleTrainCarCardClick(id: number) {
-        const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'drawSecondTableCard' : 'drawTableCard';
+        const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'actDrawSecondTableCard' : 'actDrawTableCard';
 
-        if(!(this as any).checkAction(action)) {
-            return;
-        }
-
-        this.takeAction(action, {
+        (this as any).bgaPerformAction(action, {
             id
         });
     }
@@ -820,11 +800,7 @@ class TicketToRide implements TicketToRideGame {
      * Claim a route.
      */ 
     public claimRoute(routeId: number, color: number) {
-        if(!(this as any).checkAction('claimRoute')) {
-            return;
-        }
-
-        this.takeAction('claimRoute', {
+        (this as any).bgaPerformAction('actClaimRoute', {
             routeId,
             color
         });
@@ -834,39 +810,21 @@ class TicketToRide implements TicketToRideGame {
      * Pass (in case of no possible action).
      */ 
     public pass() {
-        if(!(this as any).checkAction('pass')) {
-            return;
-        }
-
-        this.takeAction('pass');
+        (this as any).bgaPerformAction('actPass');
     }
 
     /** 
      * Claim a tunnel (confirm paying extra cost).
      */ 
     public claimTunnel() {
-        if(!(this as any).checkAction('claimTunnel')) {
-            return;
-        }
-
-        this.takeAction('claimTunnel');
+        (this as any).bgaPerformAction('actClaimTunnel');
     }
 
     /** 
      * Skip a tunnel (deny paying extra cost).
      */ 
     public skipTunnel() {
-        if(!(this as any).checkAction('skipTunnel')) {
-            return;
-        }
-
-        this.takeAction('skipTunnel');
-    }
-
-    public takeAction(action: string, data?: any) {
-        data = data || {};
-        data.lock = true;
-        (this as any).ajaxcall(`/tickettoride/tickettoride/${action}.html`, data, this, () => {});
+        (this as any).bgaPerformAction('actSkipTunnel');
     }
 
     private isFastEndScoring() {

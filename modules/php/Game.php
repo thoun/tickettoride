@@ -16,35 +16,39 @@
   *
   */
 
+namespace Bga\Games\TicketToRide;
 
 require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
 
-require_once('modules/php/constants.inc.php');
-require_once('modules/maps/'.MAP.'/constants.inc.php');
-require_once('modules/php/utils.php');
-require_once('modules/php/states.php');
-require_once('modules/php/args.php');
-require_once('modules/php/actions.php');
-require_once('modules/php/map.php');
-require_once('modules/php/train-car-deck.php');
-require_once('modules/php/destination-deck.php');
-require_once('modules/php/debug-util.php');
-require_once('modules/maps/'.MAP.'/settings.php');
+require_once('constants.inc.php');
+require_once(__DIR__.'/../maps/'.MAP.'/constants.inc.php');
+require_once('utils.php');
+require_once('states.php');
+require_once('args.php');
+require_once('actions.php');
+require_once('map.php');
+require_once('train-car-deck.php');
+require_once('destination-deck.php');
+require_once('debug-util.php');
+require_once(__DIR__.'/../maps/'.MAP.'/settings.php');
 
 /*
  * Game main class.
  * For readability, main sections (util, action, state, args) have been splited into Traits with the section name on modules/php directory.
  */
-class TicketToRide extends Table {
-    use UtilTrait;
-    use ActionTrait;
-    use StateTrait;
-    use ArgsTrait;
-    use MapTrait;
-    use TrainCarDeckTrait;
-    use DestinationDeckTrait;
-    use DebugUtilTrait;
-    use SettingsTrait;
+class Game extends \Table {
+    use \UtilTrait;
+    use \ActionTrait;
+    use \StateTrait;
+    use \ArgsTrait;
+    use \MapTrait;
+    use \TrainCarDeckTrait;
+    use \DestinationDeckTrait;
+    use \DebugUtilTrait;
+    use \SettingsTrait;
+
+    private $destinations;
+    private $trainCars;
 
 	function __construct() {
         parent::__construct();
@@ -294,7 +298,7 @@ class TicketToRide extends Table {
         you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message. 
     */
 
-    function zombieTurn($state, $active_player) {
+    function zombieTurn($state, $active_player): void {
     	$statename = $state['name'];
     	
         if ($state['type'] === "activeplayer") {
@@ -314,7 +318,7 @@ class TicketToRide extends Table {
             return;
         }
 
-        throw new feException("Zombie mode not supported at this game state: ".$statename);
+        throw new \feException("Zombie mode not supported at this game state: ".$statename);
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:

@@ -1,5 +1,7 @@
 <?php
 
+use Bga\GameFramework\Actions\Types\IntArrayParam;
+
 require_once(__DIR__.'/objects/tunnel-attempt.php');
 
 trait ActionTrait {
@@ -16,11 +18,15 @@ trait ActionTrait {
     public function chooseInitialDestinations(array $ids) {
         self::checkAction('chooseInitialDestinations'); 
         
+        $this->actChooseInitialDestinations($ids);
+    }
+    
+    public function actChooseInitialDestinations(#[IntArrayParam] array $destinationsIds) {
         $playerId = intval(self::getCurrentPlayerId());
 
-        $this->keepInitialDestinationCards($playerId, $ids);
+        $this->keepInitialDestinationCards($playerId, $destinationsIds);
 
-        self::incStat(count($ids), 'keptInitialDestinationCards', $playerId);
+        self::incStat(count($destinationsIds), 'keptInitialDestinationCards', $playerId);
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
         self::giveExtraTime($playerId);
@@ -29,14 +35,19 @@ trait ActionTrait {
     public function chooseAdditionalDestinations(array $ids) {
         self::checkAction('chooseAdditionalDestinations'); 
         
+        $this->actChooseAdditionalDestinations($ids);
+    }
+    
+    public function actChooseAdditionalDestinations(#[IntArrayParam] array $destinationsIds) {
+        
         $playerId = intval(self::getActivePlayerId());
 
-        $this->keepAdditionalDestinationCards($playerId, $ids);
+        $this->keepAdditionalDestinationCards($playerId, $destinationsIds);
 
         // player may have already completed picked destinations
         $this->checkCompletedDestinations($playerId);
 
-        self::incStat(count($ids), 'keptAdditionalDestinationCards', $playerId);
+        self::incStat(count($destinationsIds), 'keptAdditionalDestinationCards', $playerId);
         
         $this->gamestate->nextState('nextPlayer');
     }
@@ -44,6 +55,10 @@ trait ActionTrait {
     public function drawDeckCards(int $number) {        
         self::checkAction('drawDeckCards'); 
         
+        $this->actDrawDeckCards($number);
+    }
+    
+    public function actDrawDeckCards(int $number) {        
         $playerId = intval(self::getActivePlayerId());
 
         $drawNumber = $this->drawTrainCarCardsFromDeck($playerId, $number);
@@ -59,6 +74,10 @@ trait ActionTrait {
     public function drawTableCard(int $id) {
         self::checkAction('drawTableCard'); 
         
+        $this->actDrawTableCard($id);
+    }
+    
+    public function actDrawTableCard(int $id) {           
         $playerId = intval(self::getActivePlayerId());
 
         $card = $this->drawTrainCarCardsFromTable($playerId, $id);
@@ -78,6 +97,10 @@ trait ActionTrait {
     public function drawSecondDeckCard() {
         self::checkAction('drawSecondDeckCard'); 
         
+        $this->actDrawSecondDeckCard();
+    }
+    
+    public function actDrawSecondDeckCard() {
         $playerId = intval(self::getActivePlayerId());
 
         $this->drawTrainCarCardsFromDeck($playerId, 1, true);
@@ -93,6 +116,10 @@ trait ActionTrait {
     public function drawSecondTableCard(int $id) {
         self::checkAction('drawSecondTableCard'); 
         
+        $this->actDrawSecondTableCard($id);
+    }
+    
+    public function actDrawSecondTableCard(int $id) {
         $playerId = intval(self::getActivePlayerId());
 
         $card = $this->drawTrainCarCardsFromTable($playerId, $id, true);
@@ -112,6 +139,10 @@ trait ActionTrait {
     public function drawDestinations() {
         self::checkAction('drawDestinations');
         
+        $this->actDrawDestinations();
+    }
+    
+    public function actDrawDestinations() {
         $playerId = intval(self::getActivePlayerId());
 
         $remainingDestinationsCardsInDeck = $this->getRemainingDestinationCardsInDeck();
@@ -130,6 +161,10 @@ trait ActionTrait {
     public function claimRoute(int $routeId, int $color) {
         self::checkAction('claimRoute');
         
+        $this->actClaimRoute($routeId, $color);
+    }
+    
+    public function actClaimRoute(int $routeId, int $color) {
         $playerId = intval(self::getActivePlayerId());
 
         $route = $this->ROUTES[$routeId];
@@ -244,6 +279,10 @@ trait ActionTrait {
     function pass() {
         self::checkAction('pass');
         
+        $this->actPass();
+    }
+    
+    public function actPass() {
         $args = $this->argChooseAction();
 
         if (!$args['canPass']) {
@@ -256,6 +295,10 @@ trait ActionTrait {
     public function claimTunnel() {
         self::checkAction('claimTunnel');
         
+        $this->actClaimTunnel();
+    }
+    
+    public function actClaimTunnel() {
         $playerId = intval(self::getActivePlayerId());
 
         $tunnelAttempt = $this->getGlobalVariable(TUNNEL_ATTEMPT);
@@ -269,6 +312,10 @@ trait ActionTrait {
     public function skipTunnel() {
         self::checkAction('skipTunnel');
         
+        $this->actSkipTunnel();
+    }
+    
+    public function actSkipTunnel() {
         $playerId = intval(self::getActivePlayerId());
         
         $this->endTunnelAttempt(true);
