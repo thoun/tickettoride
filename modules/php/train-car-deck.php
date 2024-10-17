@@ -234,8 +234,8 @@ trait TrainCarDeckTrait {
         }
     }
 
-    private function canTakeASecondCard(/*int | null*/ $firstCardType) { // null if unknown/hidden
-        if ($firstCardType === 0) {
+    private function canTakeASecondCard(?int $firstCardType) { // null if unknown/hidden
+        if ($firstCardType === 0 && VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS) {
             // if the player chose a locomotive
             return false;
         }
