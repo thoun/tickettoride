@@ -13,7 +13,7 @@
 $gameinfos = [
 
 // Name of the game in English (will serve as the basis for translation) 
-'game_name' => "Ticket to Ride",          
+'game_name' => "Ticket to Ride Switzerland",          
 
 // Game publisher (use empty string if there is no publisher)
 'publisher' => 'Days of Wonder',                     
