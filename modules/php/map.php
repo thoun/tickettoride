@@ -135,7 +135,7 @@ trait MapTrait {
      * If player cannot pay, returns null.
      * If player can pay return cards to pay for the route.
      */
-    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, /*int|null*/ $color = null, int $extraCardsCost = 0) {
+    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0): ?array {
         $cardCost = $route->number + $extraCardsCost;
 
         if ($remainingTrainCars < $route->number) {
@@ -157,10 +157,15 @@ trait MapTrait {
         if (count($locomotiveCards) < $route->locomotives) {
             return null;
         }
+
+        $forbidLocomotiveAsJoker = CAN_ONLY_USE_LOCOMOTIVES_IN_TUNNELS && !$route->tunnel;
         
         if ($color === 0) {
             // the user wants to pay with locomotives
             if (count($locomotiveCards) >= $cardCost) {
+                if ($forbidLocomotiveAsJoker) {
+                    return null;
+                }
                 // enough locomotive cards
                 return array_slice($locomotiveCards, 0, $cardCost); 
             }
@@ -177,7 +182,7 @@ trait MapTrait {
                     $colorCardCount = min($cardCost - $locomotiveCardsCount, count($colorCards));
                 }
                 // we complete with locomotives if needed
-                if ($locomotiveCardsCount + $colorCardCount < $cardCost) {
+                if ($locomotiveCardsCount + $colorCardCount < $cardCost && !$forbidLocomotiveAsJoker) {
                     $locomotiveCardsCount += min($cardCost - ($locomotiveCardsCount + $colorCardCount), count($locomotiveCards) - $locomotiveCardsCount);
                 }
 
