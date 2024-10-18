@@ -30,7 +30,11 @@ class DestinationCompleteAnimation extends WagonsAnimation {
             <div id="animated-destination-card-${this.destination.id}" class="destination-card" style="${this.getCardPosition(this.destination)}${getBackgroundInlineStyleForDestination(this.game.getMap(), this.destination)}"></div>
             `, 'map');
 
+            const noMask = Array.isArray(this.destination.to);
             const card = document.getElementById(`animated-destination-card-${this.destination.id}`);
+            if (noMask) {
+                card.classList.add('no-mask');
+            }
             this.actions.start?.(this.destination);
             const cardBR = card.getBoundingClientRect();
             
@@ -45,14 +49,17 @@ class DestinationCompleteAnimation extends WagonsAnimation {
                 card.classList.add('animated');
                 card.style.transform = ``;
 
-                this.markComplete(card, cardBR, resolve);
+                this.markComplete(card, cardBR, resolve, noMask);
             }, 100);
         });
     }
     
-    private markComplete(card: HTMLElement, cardBR: DOMRect, resolve: any) {
+    private markComplete(card: HTMLElement, cardBR: DOMRect, resolve: any, noMask: boolean) {
         
         setTimeout(() => {
+            if (noMask) {
+                card.classList.add('no-mask');
+            }
             card.classList.add(this.state);
             this.actions.change?.(this.destination);
 

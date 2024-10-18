@@ -5,7 +5,7 @@
   "main": "tickettorideswitzerland.js",
   "scripts": {
     "build:ts": "tsc",
-    "build:scss": "sass --no-source-map src/tickettorideswitzerland.scss tickettorideswitzerland.css"
+    "build:scss": "sass --no-source-map src/tickettoride.scss tickettorideswitzerland.css"
   },
   "author": "",
   "license": "ISC",
