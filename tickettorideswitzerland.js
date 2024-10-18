@@ -147,7 +147,11 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
             var _a, _b;
             var fromBR = document.getElementById(_this.fromId).getBoundingClientRect();
             dojo.place("\n            <div id=\"animated-destination-card-".concat(_this.destination.id, "\" class=\"destination-card\" style=\"").concat(_this.getCardPosition(_this.destination)).concat(getBackgroundInlineStyleForDestination(_this.game.getMap(), _this.destination), "\"></div>\n            "), 'map');
+            var noMask = Array.isArray(_this.destination.to);
             var card = document.getElementById("animated-destination-card-".concat(_this.destination.id));
+            if (noMask) {
+                card.classList.add('no-mask');
+            }
             (_b = (_a = _this.actions).start) === null || _b === void 0 ? void 0 : _b.call(_a, _this.destination);
             var cardBR = card.getBoundingClientRect();
             var x = (fromBR.x - cardBR.x) / _this.zoom;
@@ -158,14 +162,17 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
             setTimeout(function () {
                 card.classList.add('animated');
                 card.style.transform = "";
-                _this.markComplete(card, cardBR, resolve);
+                _this.markComplete(card, cardBR, resolve, noMask);
             }, 100);
         });
     };
-    DestinationCompleteAnimation.prototype.markComplete = function (card, cardBR, resolve) {
+    DestinationCompleteAnimation.prototype.markComplete = function (card, cardBR, resolve, noMask) {
         var _this = this;
         setTimeout(function () {
             var _a, _b;
+            if (noMask) {
+                card.classList.add('no-mask');
+            }
             card.classList.add(_this.state);
             (_b = (_a = _this.actions).change) === null || _b === void 0 ? void 0 : _b.call(_a, _this.destination);
             setTimeout(function () {
@@ -1326,7 +1333,11 @@ var PlayerDestinations = /** @class */ (function () {
             this.destinationsTodo.splice(index, 1);
         }
         this.destinationsDone.push(destination);
-        document.getElementById("player-table-".concat(this.playerId, "-destinations-done")).appendChild(document.getElementById("destination-card-".concat(destination.id)));
+        var card = document.getElementById("destination-card-".concat(destination.id));
+        document.getElementById("player-table-".concat(this.playerId, "-destinations-done")).appendChild(card);
+        if (Array.isArray(destination.to)) {
+            card.classList.add('no-mask');
+        }
         this.destinationColumnsUpdated();
     };
     /**
