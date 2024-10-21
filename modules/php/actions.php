@@ -15,12 +15,6 @@ trait ActionTrait {
         (note: each method below must match an input method in nicodemus.action.php)
     */
     
-    public function chooseInitialDestinations(array $ids) {
-        self::checkAction('chooseInitialDestinations'); 
-        
-        $this->actChooseInitialDestinations($ids);
-    }
-    
     public function actChooseInitialDestinations(#[IntArrayParam] array $destinationsIds) {
         $playerId = intval(self::getCurrentPlayerId());
 
@@ -30,12 +24,6 @@ trait ActionTrait {
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
         self::giveExtraTime($playerId);
-    }
-    
-    public function chooseAdditionalDestinations(array $ids) {
-        self::checkAction('chooseAdditionalDestinations'); 
-        
-        $this->actChooseAdditionalDestinations($ids);
     }
     
     public function actChooseAdditionalDestinations(#[IntArrayParam] array $destinationsIds) {
@@ -51,12 +39,6 @@ trait ActionTrait {
         
         $this->gamestate->nextState('nextPlayer');
     }
-  	
-    public function drawDeckCards(int $number) {        
-        self::checkAction('drawDeckCards'); 
-        
-        $this->actDrawDeckCards($number);
-    }
     
     public function actDrawDeckCards(int $number) {        
         $playerId = intval(self::getActivePlayerId());
@@ -69,12 +51,6 @@ trait ActionTrait {
         self::incStat($drawNumber, 'collectedHiddenTrainCarCards', $playerId);
 
         $this->gamestate->nextState($drawNumber == 1 && $this->canTakeASecondCard(null) ? 'drawSecondCard' : 'nextPlayer');
-    }
-  	
-    public function drawTableCard(int $id) {
-        self::checkAction('drawTableCard'); 
-        
-        $this->actDrawTableCard($id);
     }
     
     public function actDrawTableCard(int $id) {           
@@ -93,12 +69,6 @@ trait ActionTrait {
 
         $this->gamestate->nextState($this->canTakeASecondCard($card->type) ? 'drawSecondCard' : 'nextPlayer');
     }
-  	
-    public function drawSecondDeckCard() {
-        self::checkAction('drawSecondDeckCard'); 
-        
-        $this->actDrawSecondDeckCard();
-    }
     
     public function actDrawSecondDeckCard() {
         $playerId = intval(self::getActivePlayerId());
@@ -111,12 +81,6 @@ trait ActionTrait {
         self::incStat(1, 'collectedHiddenTrainCarCards', $playerId);
 
         $this->gamestate->nextState('nextPlayer'); 
-    }
-  	
-    public function drawSecondTableCard(int $id) {
-        self::checkAction('drawSecondTableCard'); 
-        
-        $this->actDrawSecondTableCard($id);
     }
     
     public function actDrawSecondTableCard(int $id) {
@@ -135,12 +99,6 @@ trait ActionTrait {
 
         $this->gamestate->nextState('nextPlayer'); 
     }
-  	
-    public function drawDestinations() {
-        self::checkAction('drawDestinations');
-        
-        $this->actDrawDestinations();
-    }
     
     public function actDrawDestinations() {
         $playerId = intval(self::getActivePlayerId());
@@ -156,12 +114,6 @@ trait ActionTrait {
         self::incStat(1, 'drawDestinationsAction', $playerId);
 
         $this->gamestate->nextState('drawDestinations'); 
-    }
-  	
-    public function claimRoute(int $routeId, int $color) {
-        self::checkAction('claimRoute');
-        
-        $this->actClaimRoute($routeId, $color);
     }
     
     public function actClaimRoute(int $routeId, int $color) {
@@ -275,12 +227,6 @@ trait ActionTrait {
 
         $this->gamestate->nextState('nextPlayer'); 
     }
-
-    function pass() {
-        self::checkAction('pass');
-        
-        $this->actPass();
-    }
     
     public function actPass() {
         $args = $this->argChooseAction();
@@ -290,12 +236,6 @@ trait ActionTrait {
         }
 
         $this->gamestate->nextState('nextPlayer'); 
-    }
-  	
-    public function claimTunnel() {
-        self::checkAction('claimTunnel');
-        
-        $this->actClaimTunnel();
     }
     
     public function actClaimTunnel() {
@@ -307,12 +247,6 @@ trait ActionTrait {
 
         $this->applyClaimRoute($playerId, $tunnelAttempt->routeId, $tunnelAttempt->color, $tunnelAttempt->extraCards);
         // applyClaimRoute handles the call to nextState
-    }
-  	
-    public function skipTunnel() {
-        self::checkAction('skipTunnel');
-        
-        $this->actSkipTunnel();
     }
     
     public function actSkipTunnel() {

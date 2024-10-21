@@ -47,8 +47,8 @@ class Game extends \Table {
     use \DebugUtilTrait;
     use \SettingsTrait;
 
-    private $destinations;
-    private $trainCars;
+    private \Deck $destinations;
+    private \Deck $trainCars;
 
 	function __construct() {
         parent::__construct();
