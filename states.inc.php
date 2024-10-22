@@ -115,6 +115,7 @@ $playerActionsGameStates = [
             "actDrawDeckCards",
             "actDrawTableCard",
             "actClaimRoute",
+            "actBuildStation",
             "actDrawDestinations",
             "actPass",
         ],

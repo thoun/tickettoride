@@ -83,6 +83,14 @@ trait StationTrait {
     public function buildStation(int $cityId, int $color) {
         self::checkAction('buildStation');
         
+        $this->actBuildStation($cityId, $color);
+    }
+  	
+    /**
+     * Build a station on a city with seleced color
+     */
+    public function actBuildStation(int $cityId, int $color) {
+        
         $playerId = intval(self::getActivePlayerId());
 
         $remainingStations = $this->getRemainingStations($playerId);

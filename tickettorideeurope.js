@@ -2872,10 +2872,7 @@ var TicketToRide = /** @class */ (function () {
      * Claim a city.
      */
     TicketToRide.prototype.buildStation = function (cityId, color) {
-        if (!this.checkAction('buildStation')) {
-            return;
-        }
-        this.takeAction('buildStation', {
+        this.bgaPerformAction('actBuildStation', {
             cityId: cityId,
             color: color
         });
