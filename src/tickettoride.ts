@@ -932,11 +932,7 @@ class TicketToRide implements TicketToRideGame {
      * Claim a city.
      */ 
     public buildStation(cityId: number, color: number) {
-        if(!(this as any).checkAction('buildStation')) {
-            return;
-        }
-
-        this.takeAction('buildStation', {
+        (this as any).bgaPerformAction('actBuildStation', {
             cityId,
             color
         });
