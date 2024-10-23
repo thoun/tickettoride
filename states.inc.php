@@ -94,8 +94,6 @@ $playerActionsGameStates = [
         "type" => "private",
         "args" => "argPrivateChooseInitialDestinations",
         "possibleactions" => [
-            "chooseInitialDestinations",
-
             "actChooseInitialDestinations",
         ],
         "transitions" => [],
@@ -109,13 +107,7 @@ $playerActionsGameStates = [
         "descriptionmyturnNoTrainCarsCards" => clienttranslate('${you} must claim a route or draw destination tickets'),
         "type" => "activeplayer",
         "args" => "argChooseAction",
-        "possibleactions" => [ 
-            "drawDeckCards",
-            "drawTableCard",
-            "claimRoute",
-            "drawDestinations",
-            "pass",
-
+        "possibleactions" => [
             "actDrawDeckCards",
             "actDrawTableCard",
             "actClaimRoute",
@@ -136,10 +128,7 @@ $playerActionsGameStates = [
         "descriptionmyturn" => clienttranslate('${you} must draw a train car card'),
         "type" => "activeplayer",
         "args" => "argDrawSecondCard",
-        "possibleactions" => [ 
-            "drawSecondDeckCard",
-            "drawSecondTableCard",
-
+        "possibleactions" => [
             "actDrawSecondDeckCard",
             "actDrawSecondTableCard",
         ],
@@ -155,8 +144,6 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argChooseAdditionalDestinations",
         "possibleactions" => [
-            "chooseAdditionalDestinations",
-
             "actChooseAdditionalDestinations",
         ],
         "transitions" => [
@@ -171,9 +158,6 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argConfirmTunnel",
         "possibleactions" => [
-            "claimTunnel",
-            "skipTunnel",
-
             "actClaimTunnel",
             "actSkipTunnel",
         ],
