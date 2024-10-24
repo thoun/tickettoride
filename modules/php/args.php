@@ -110,7 +110,7 @@ trait ArgsTrait {
 
         $tunnelAttempt = $this->getGlobalVariable(TUNNEL_ATTEMPT);
 
-        $route = $this->ROUTES[$tunnelAttempt->routeId];
+        $route = $this->getAllRoutes()[$tunnelAttempt->routeId];
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);        
         $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
         $tunnelCost = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, $tunnelAttempt->extraCards);

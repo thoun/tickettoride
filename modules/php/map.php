@@ -255,8 +255,7 @@ trait MapTrait {
 
     //  Returns a LongestPath object.
     private function getLongestPathFromRouteId(int $fromRouteId, array $claimedRoutesIds) {
-        $fromRoute = $this->ROUTES[$fromRouteId];
-        $fromRoute->id = $fromRouteId;
+        $fromRoute = $this->getAllRoutes()[$fromRouteId];
 
         $pathFrom = $this->getLongestPathFromCity($fromRoute->from, [$fromRoute->id], $claimedRoutesIds);
         $pathTo = $this->getLongestPathFromCity($fromRoute->to, [$fromRoute->id], $claimedRoutesIds);

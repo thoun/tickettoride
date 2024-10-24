@@ -119,7 +119,7 @@ trait ActionTrait {
     public function actClaimRoute(int $routeId, int $color) {
         $playerId = intval(self::getActivePlayerId());
 
-        $route = $this->ROUTES[$routeId];
+        $route = $this->getAllRoutes()[$routeId];
 
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
         if ($remainingTrainCars < $route->number) {
@@ -182,7 +182,7 @@ trait ActionTrait {
     }
 
     function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0) {
-        $route = $this->ROUTES[$routeId];
+        $route = $this->getAllRoutes()[$routeId];
         $cardCost = $route->number + $extraCardCost;
         
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);

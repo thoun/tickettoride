@@ -191,7 +191,7 @@ class Game extends \Table {
             'map' => [
                 'code' => MAP,
                 'cities' => $this->CITIES,
-                'routes' => $this->ROUTES,
+                'routes' => $this->getAllRoutes(),
                 'destinations' => $this->DESTINATIONS,
                 'bigCities' => $this->getBigCities(),
                 'illustration' => $this->getExpansionOption(),
