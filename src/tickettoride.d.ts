@@ -80,6 +80,7 @@ interface TicketToRideMap {
     bigCities: BigCity[];
     preloadImages: string[];
     illustration: number;
+    canOnlyUseLocomotivesInTunnels: boolean;
 }
 
 /**

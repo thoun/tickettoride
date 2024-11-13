@@ -196,6 +196,7 @@ class Game extends \Table {
                 'bigCities' => $this->getBigCities(),
                 'illustration' => $this->getExpansionOption(),
                 'preloadImages' => $this->getPreloadImages(),
+                'canOnlyUseLocomotivesInTunnels' => CAN_ONLY_USE_LOCOMOTIVES_IN_TUNNELS,
             ],
         ];
     

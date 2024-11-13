@@ -1643,12 +1643,13 @@ var PlayerTrainCars = /** @class */ (function () {
     PlayerTrainCars.prototype.getPossibleColors = function (route) {
         var groups = this.getGroups();
         var locomotiveGroup = groups.find(function (groupDiv) { return groupDiv.dataset.type == '0'; });
-        var locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
+        var canUseLocomotives = route.tunnel || !this.game.gamedatas.map.canOnlyUseLocomotivesInTunnels;
+        var locomotives = canUseLocomotives && locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
         var possibleColors = [];
         if (route.locomotives < route.spaces.length) { // if route is only locomotives, don't ask for color
             groups.forEach(function (groupDiv) {
                 var count = Number(groupDiv.dataset.count);
-                if (count + locomotives >= route.spaces.length) {
+                if (count + (canUseLocomotives ? locomotives : 0) >= route.spaces.length) {
                     var color = Number(groupDiv.dataset.type);
                     if (color > 0 && (route.color == 0 || route.color == color)) {
                         possibleColors.push(color);
@@ -1656,7 +1657,7 @@ var PlayerTrainCars = /** @class */ (function () {
                 }
             });
         }
-        if (locomotives >= route.spaces.length) {
+        if (canUseLocomotives && locomotives >= route.spaces.length) {
             possibleColors.push(0);
         }
         return possibleColors;
@@ -1667,10 +1668,12 @@ var PlayerTrainCars = /** @class */ (function () {
     PlayerTrainCars.prototype.setSelectableTrainCarColors = function (route, possibleColors) {
         this.route = route;
         var groups = this.getGroups();
+        var canUseLocomotives = route ? (route.tunnel || !this.game.gamedatas.map.canOnlyUseLocomotivesInTunnels) : true;
         groups.forEach(function (groupDiv) {
             if (route) {
                 var color = Number(groupDiv.dataset.type);
-                groupDiv.classList.toggle('disabled', color != 0 && !possibleColors.includes(color));
+                var validColor = possibleColors.includes(color) || (color == 0 && canUseLocomotives);
+                groupDiv.classList.toggle('disabled', !validColor);
             }
             else {
                 groupDiv.classList.remove('disabled');
