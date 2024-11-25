@@ -2,6 +2,13 @@
 
 namespace Bga\Games\TicketToRide;
 
+
+function debug(...$debugData) {
+    if (Game::getBgaEnvironment() != 'studio') { 
+        return;
+    }die('debug data : '.json_encode($debugData));
+}
+
 trait DebugUtilTrait {
 
 //////////////////////////////////////////////////////////////////////////////
@@ -72,8 +79,8 @@ trait DebugUtilTrait {
     function debug_ClaimRoute(int $playerId, int $routeId) {
         self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
 
-        $route = $this->map->routes[$routeId];
-        $points = $this->map->routePoints[$route->number];
+        $route = $this->getMap()->routes[$routeId];
+        $points = $this->getMap()->routePoints[$route->number];
 
         self::notifyAllPlayers('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
             'playerId' => $playerId,
@@ -90,8 +97,8 @@ trait DebugUtilTrait {
     }
 
     function debug_ClaimAllRoutes($playerId, $ratio = 0.1) {
-        foreach($this->map->routes as $id => $route) {
-            if ((bga_rand(0, count($this->map->routes)-1) / (float)count($this->map->routes)) < $ratio) {
+        foreach($this->getMap()->routes as $id => $route) {
+            if ((bga_rand(0, count($this->getMap()->routes)-1) / (float)count($this->getMap()->routes)) < $ratio) {
                 $this->debugClaimRoute($playerId, $id);
             }
         }
@@ -109,7 +116,7 @@ trait DebugUtilTrait {
     }
 
     function debug_SetLastTurn() {
-        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = ".$this->map->trainCarsNumberToStartLastTurn);
+        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = ".$this->getMap()->trainCarsNumberToStartLastTurn);
     }
     function debug_NoTrainCar() {
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = 0");

@@ -10,7 +10,9 @@ trait DestinationDeckTrait {
      * Create destination cards.
      */
     public function createDestinations() {
-        $destinations = $this->map->getDestinationToGenerate($this->getExpansionOption());
+        $expansionOption = $this->getExpansionOption();
+        $destinations = $this->getMap()->getDestinationToGenerate($expansionOption);
+        //debug($this->getMap()->code, $expansionOption, $destinations);
 
         foreach($destinations as $deck => $cards) {
             $this->destinations->createCards($cards, $deck);
@@ -22,7 +24,8 @@ trait DestinationDeckTrait {
      * Pick destination cards for beginning choice.
      */
     public function pickInitialDestinationCards(int $playerId) {
-        $pick = $this->map->getInitialDestinationPick($this->getExpansionOption());
+        $expansionOption = $this->getExpansionOption();
+        $pick = $this->getMap()->getInitialDestinationPick($expansionOption);
 
         $cards = [];
         foreach ($pick as $deck => $number) {
@@ -37,14 +40,14 @@ trait DestinationDeckTrait {
      * Unused destination cards are set back on the deck or discarded.
      */
     public function keepInitialDestinationCards(int $playerId, array $ids) {
-		$this->keepDestinationCards($playerId, $ids, $this->map->getInitialDestinationMinimumKept($this->getExpansionOption()), $this->map->unusedInitialDestinationsGoToDeckBottom);
+		$this->keepDestinationCards($playerId, $ids, $this->getMap()->getInitialDestinationMinimumKept($this->getExpansionOption()), $this->getMap()->unusedInitialDestinationsGoToDeckBottom);
     }	
 	
     /**
      * Pick destination cards for pick destination action.
      */
     public function pickAdditionalDestinationCards(int $playerId) {
-		return $this->pickDestinationCards($playerId, $this->map->getAdditionalDestinationCardNumber($this->getExpansionOption()));
+		return $this->pickDestinationCards($playerId, $this->getMap()->getAdditionalDestinationCardNumber($this->getExpansionOption()));
     }	
 
     /**
@@ -52,7 +55,7 @@ trait DestinationDeckTrait {
      * Unused destination cards are set back on the deck or discarded.
      */
     public function keepAdditionalDestinationCards(int $playerId, array $ids) {
-		$this->keepDestinationCards($playerId, $ids, $this->map->additionalDestinationMinimumKept, $this->map->unusedAdditionalDestinationsGoToDeckBottom);
+		$this->keepDestinationCards($playerId, $ids, $this->getMap()->additionalDestinationMinimumKept, $this->getMap()->unusedAdditionalDestinationsGoToDeckBottom);
     }
 
     /**

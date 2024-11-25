@@ -3,11 +3,11 @@
 /**
  * A DestinationCard is the graphic representation of a card (informations on it : from, to and points).
  */
-class DestinationCard {
-    public function __construct(        
-        public int $from,
-        public int $to,
-        public int $points,
+class DestinationCard {  
+    public function __construct(
+        public int $from, 
+        public int|array $to, 
+        public int|array $points
     ) {
     } 
 }
@@ -33,6 +33,7 @@ class Destination extends DestinationCard {
         $this->type = intval($dbCard['type']);
         $this->type_arg = intval($dbCard['type_arg']);
 
+        //die('kson is '.json_encode([$this->type, $this->type_arg, $mapDestinations]));
         $destinationCard = $mapDestinations[$this->type][$this->type_arg];
         $this->from = $destinationCard->from;
         $this->to = $destinationCard->to;

@@ -197,7 +197,7 @@ trait ActionTrait {
         self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
 
         // update score
-        $points = $this->map->routePoints[$route->number];
+        $points = $this->getMap()->routePoints[$route->number];
         $this->incScore($playerId, $points);
 
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $route->number WHERE player_id = $playerId");

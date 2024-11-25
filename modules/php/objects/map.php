@@ -19,8 +19,6 @@ class Map {
     public ?int $pointsForLongestPath = 10; // points for maximum longest countinuous path (null means disabled)
     public ?int $pointsForGlobetrotter = 15; // points for maximum completed destinations (null means disabled)
     public int $minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
-/*
-const NUMBER_OF_COLORED_CARDS = 12;*/
 
     public function __construct(
         public array $cities,
@@ -52,7 +50,7 @@ const NUMBER_OF_COLORED_CARDS = 12;*/
      * Return if Longest Path bonus card is used for the game.
      */
     function isLongestPathBonusActive(int $expansionValue): bool {
-        return false;
+        return true;
     }
     
     /**
@@ -82,6 +80,17 @@ const NUMBER_OF_COLORED_CARDS = 12;*/
 
     function getPreloadImages(int $expansionValue): array {
         return ['destinations-1-0.jpg'];
+    }
+    
+    /**
+     * List the destination tickets that will be used for the game.
+     */
+    function getDestinationToGenerate(int $expansionValue): array {
+        $destinations = [];
+
+        return [
+            'deck' => $destinations
+        ];
     }
 }
 ?>

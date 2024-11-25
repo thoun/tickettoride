@@ -3,7 +3,7 @@
 const EXPANSION1912 = 'EXPANSION1912';
 
 const INIT_GAME_STATE_LABELS = [
-    EXPANSION1912 => 101, // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
+    EXPANSION1912 => 101, // 0 => base game, 1 => extended, 2 => mega game, 3 => big cities
 ];
 
 const INITIAL_TRAIN_CAR_CARDS_IN_HAND = 4; // Number of train car cards in hand, for each player, at the beginning of the game.
@@ -21,44 +21,4 @@ const MINIMUM_PLAYER_FOR_DOUBLE_ROUTES = 4; // 4 means 2-3 players cant use doub
 const NUMBER_OF_LOCOMOTIVE_CARDS = 14;
 const NUMBER_OF_COLORED_CARDS = 12;
 
-const BIG_CITIES = [
-    2, // Angora',
-    3, // Athina',
-    5, // Berlin',
-    23, // London',
-    24, // Madrid',
-    26, // Moskva',
-    30, // Paris',
-    33, // Roma',
-    44, // Wien',
-];
 
-
-function getMapOptions() {
-    return [    
-        /* TODO1912 101 => [ // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
-            'name' => totranslate('1912 Expansion'),
-            'values' => [
-                0 => [
-                    'name' => totranslate('Disabled'),
-                ],
-                1 => [
-                    'name' => totranslate('1912'),
-                    'description' => totranslate('New tickets. Globetrotter - Most Completed Tickets bonus card instead of Longest Route Bonus card'),
-                    'tmdisplay' => totranslate('1912 Expansion : 1912'),
-                ],
-                2 => [
-                    'name' => totranslate('The Mega Game'),
-                    'description' => totranslate('All tickets, both bonus cards, more tickets when choosing'),
-                    'tmdisplay' => totranslate('1912 Expansion : The Mega Game'),
-                ],
-                3 => [
-                    'name' => totranslate('The Big Cities'),
-                    'description' => totranslate('Tickets with Big Cities'),
-                    'tmdisplay' => totranslate('1912 Expansion : The Big Cities'),
-                ],
-            ],
-            'default' => 0,
-        ],*/
-    ];
-} 

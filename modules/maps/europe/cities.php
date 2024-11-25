@@ -48,7 +48,7 @@ function getCities() {
     38 => new City('Smyrna', 1315, 1094),
     39 => new City('Sochi', 1702, 790),
     40 => new City('Sofia', 1197, 850),
-    41 => new City('Stockolm', 987, 22),
+    41 => new City('Stockholm', 987, 22),
     42 => new City('Venezia', 784, 711),
     43 => new City('Warszawa', 1140, 354),
     44 => new City('Wien', 954, 572),

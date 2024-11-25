@@ -5,7 +5,6 @@ require_once(__DIR__.'/../../php/objects/map.php');
 require_once(__DIR__.'/cities.php');
 require_once(__DIR__.'/routes.php');
 require_once(__DIR__.'/destinations.php');
-require_once(__DIR__.'/settings.php');
 
 class UsaMap extends Map {
     public function __construct() {

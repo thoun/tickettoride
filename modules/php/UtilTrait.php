@@ -2,6 +2,8 @@
 
 namespace Bga\Games\TicketToRide;
 
+use Map;
+
 require_once(__DIR__.'/objects/train-car.php');
 require_once(__DIR__.'/objects/destination.php');
 require_once(__DIR__.'/objects/route.php');
@@ -82,17 +84,29 @@ trait UtilTrait {
     }
 
     function getExpansionOption() {
-        return $this->map->hasExpansion ? $this->getOptionValue(EXPANSION_OPTION) : 0;
+        return $this->getMap()->hasExpansion ? $this->getOptionValue(EXPANSION_OPTION) : 0;
     }
 
-    function getMapCode() {
-        $mapOption = intval($this->getUniqueValueFromDB("SELECT `global_value` FROM `global` where `global_id` = ".MAP_OPTION));
+    function getMapCode(): string {
+        $mapOption = (int)$this->getUniqueValueFromDB("SELECT `global_value` FROM `global` where `global_id` = ".MAP_OPTION);
         return match ($mapOption) {
             1 => 'usa',
             2 => 'europe',
             3 => 'switzerland',
             default => 'usa',
         };
+    }
+
+    function getMap(): Map {
+        if (!isset($this->map)) {
+            $mapCode = $this->getMapCode();
+
+            require_once(__DIR__.'/../maps/'.$mapCode.'/map.php');
+
+            $this->map = getMap();
+            $this->map->code = $mapCode;
+        }
+        return $this->map;
     }
 
     /**
@@ -122,7 +136,7 @@ trait UtilTrait {
         if (!$dbObject || !array_key_exists('id', $dbObject)) {
             throw new \BgaSystemException("Destination doesn't exists ".json_encode($dbObject));
         }
-        return new \Destination($dbObject, $this->map->destinations);
+        return new \Destination($dbObject, $this->getMap()->destinations);
     }
 
     /**
@@ -227,6 +241,6 @@ trait UtilTrait {
     }
 
     function getCityName(string $id) {
-        return $this->map->cities[$id]->name;
+        return $this->getMap()->cities[$id]->name;
     }
 }
