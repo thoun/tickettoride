@@ -1,5 +1,7 @@
 <?php
 
+namespace Bga\Games\TicketToRide;
+
 require_once(__DIR__.'/objects/train-car.php');
 
 trait TrainCarDeckTrait {
@@ -46,11 +48,11 @@ trait TrainCarDeckTrait {
      */
     public function drawTrainCarCardsFromDeck(int $playerId, int $number, bool $isSecondCard = false) {
         if ($number != 1 && $number != 2) {
-            throw new BgaUserException("You must take one or two cards.");
+            throw new \BgaUserException("You must take one or two cards.");
         }
         
         if ($number == 2 && $isSecondCard) {
-            throw new BgaUserException("You must take one card.");
+            throw new \BgaUserException("You must take one card.");
         }
 
         $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
@@ -60,7 +62,7 @@ trait TrainCarDeckTrait {
         }
 
         if ($number > $remainingTrainCarCardsInDeck) {
-            throw new BgaUserException(self::_("You can't take train car cards because the deck is empty"));
+            throw new \BgaUserException(self::_("You can't take train car cards because the deck is empty"));
         }
 
         $cards = $this->getTrainCarsFromDb($this->trainCars->pickCards($number, 'deck', $playerId));
@@ -95,11 +97,11 @@ trait TrainCarDeckTrait {
         $card = $this->getTrainCarFromDb($this->trainCars->getCard($id));
 
         if ($card->location != 'table') {
-            throw new BgaUserException("You can't take this visible card.");
+            throw new \BgaUserException("You can't take this visible card.");
         }
 
         if ($isSecondCard && $card->type == 0 && $this->map->visibleLocomotivesCountsAsTwoCards) {
-            throw new BgaUserException("You can't take a locomotive as a second card.");
+            throw new \BgaUserException("You can't take a locomotive as a second card.");
         }
 
         $spot = $card->location_arg;

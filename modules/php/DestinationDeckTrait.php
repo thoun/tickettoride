@@ -1,5 +1,7 @@
 <?php
 
+namespace Bga\Games\TicketToRide;
+
 require_once(__DIR__.'/objects/destination.php');
 
 trait DestinationDeckTrait {
@@ -87,11 +89,11 @@ trait DestinationDeckTrait {
      */
     private function keepDestinationCards(int $playerId, array $ids, int $minimum, bool $toDeckBottom) {
         if (count($ids) < $minimum) {
-            throw new BgaUserException("You must keep at least $minimum cards.");
+            throw new \BgaUserException("You must keep at least $minimum cards.");
         }
 
         if (count($ids) > 0 && $this->getUniqueIntValueFromDB("SELECT count(*) FROM destination WHERE `card_location` != 'pick$playerId' AND `card_id` in (".implode(', ', $ids).")") > 0) {
-            throw new BgaUserException("Selected cards are not available.");
+            throw new \BgaUserException("Selected cards are not available.");
         }
 
         $this->destinations->moveCards($ids, 'hand', $playerId);

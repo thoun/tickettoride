@@ -24,28 +24,27 @@ require_once('constants.inc.php');
 require_once(__DIR__.'/objects/map.php');
 require_once(__DIR__.'/objects/route.php');
 require_once(__DIR__.'/objects/destination.php');
-require_once('utils.php');
-require_once('states.php');
-require_once('args.php');
-require_once('actions.php');
-require_once('map.php');
-require_once('train-car-deck.php');
-require_once('destination-deck.php');
-require_once('debug-util.php');
+
+
+function debug($debugData) {
+    if (Game::getBgaEnvironment() != 'studio') { 
+        return;
+    }die('debug data : '.json_encode($debugData));
+}
 
 /*
  * Game main class.
  * For readability, main sections (util, action, state, args) have been splited into Traits with the section name on modules/php directory.
  */
 class Game extends \Table {
-    use \UtilTrait;
-    use \ActionTrait;
-    use \StateTrait;
-    use \ArgsTrait;
-    use \MapTrait;
-    use \TrainCarDeckTrait;
-    use \DestinationDeckTrait;
-    use \DebugUtilTrait;
+    use UtilTrait;
+    use ActionTrait;
+    use StateTrait;
+    use ArgsTrait;
+    use MapTrait;
+    use TrainCarDeckTrait;
+    use DestinationDeckTrait;
+    use DebugUtilTrait;
 
     private \Deck $destinations;
     private \Deck $trainCars;
@@ -57,11 +56,6 @@ class Game extends \Table {
         
         $this->initGameStateLabels(array_merge([
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
-
-            // options
-            MAP_OPTION => 102,
-            EXPANSION_OPTION => 101,
-            SHOW_TURN_ORDER => 110, // last turn is the id of the player starting last turn, 0 if it's not last turn
         ]));
 
         $mapCode = $this->getMapCode();
@@ -262,7 +256,7 @@ class Game extends \Table {
         $result['isGlobetrotterBonusActive'] = $this->map->isGlobetrotterBonusActive($expansionOption);
         $result['isLongestPathBonusActive'] = $this->map->isLongestPathBonusActive($expansionOption);
         
-        $result['showTurnOrder'] = intval($this->getGameStateValue(SHOW_TURN_ORDER)) == 2;
+        $result['showTurnOrder'] = $this->getOptionValue(SHOW_TURN_ORDER_OPTION) == 2;
         
         if ($isEnd) {
             $result['bestScore'] = max(array_map(fn($player) => intval($player['score']), $result['players']));

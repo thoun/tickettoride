@@ -1,5 +1,7 @@
 <?php
 
+namespace Bga\Games\TicketToRide;
+
 require_once(__DIR__.'/objects/train-car.php');
 require_once(__DIR__.'/objects/destination.php');
 require_once(__DIR__.'/objects/route.php');
@@ -75,12 +77,16 @@ trait UtilTrait {
         $this->DbQuery("DELETE FROM `global_variables` where `name` = '$name'");
     }
 
+    public function getOptionValue(int $optionId): int {
+        return (int)($this->gamestate->table_globals[$optionId]);
+    }
+
     function getExpansionOption() {
-        return $this->map->hasExpansion ? intval($this->getGameStateValue(EXPANSION_OPTION)) : 0;
+        return $this->map->hasExpansion ? $this->getOptionValue(EXPANSION_OPTION) : 0;
     }
 
     function getMapCode() {
-        $mapOption = $this->getGameStateValue(MAP_OPTION);
+        $mapOption = intval($this->getUniqueValueFromDB("SELECT `global_value` FROM `global` where `global_id` = ".MAP_OPTION));
         return match ($mapOption) {
             1 => 'usa',
             2 => 'europe',
@@ -97,9 +103,9 @@ trait UtilTrait {
             return null;
         }
         if (!$dbObject || !array_key_exists('id', $dbObject)) {
-            throw new BgaSystemException("Train car doesn't exists ".json_encode($dbObject));
+            throw new \BgaSystemException("Train car doesn't exists ".json_encode($dbObject));
         }
-        return new TrainCar($dbObject);
+        return new \TrainCar($dbObject);
     }
 
     /**
@@ -114,9 +120,9 @@ trait UtilTrait {
      */    
     function getDestinationFromDb($dbObject) {
         if (!$dbObject || !array_key_exists('id', $dbObject)) {
-            throw new BgaSystemException("Destination doesn't exists ".json_encode($dbObject));
+            throw new \BgaSystemException("Destination doesn't exists ".json_encode($dbObject));
         }
-        return new Destination($dbObject, $this->map->destinations);
+        return new \Destination($dbObject, $this->map->destinations);
     }
 
     /**
@@ -146,7 +152,7 @@ trait UtilTrait {
             $sql .= "WHERE player_id = $playerId ";
         }
         $dbResults = self::getCollectionFromDB($sql);
-        return array_map(fn($dbResult) => new ClaimedRoute($dbResult), array_values($dbResults));
+        return array_map(fn($dbResult) => new \ClaimedRoute($dbResult), array_values($dbResults));
     }
 
     function getPlayersIds() {

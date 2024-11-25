@@ -1,5 +1,7 @@
 <?php
 
+namespace Bga\Games\TicketToRide;
+
 use Bga\GameFramework\Actions\Types\IntArrayParam;
 
 require_once(__DIR__.'/objects/tunnel-attempt.php');
@@ -105,7 +107,7 @@ trait ActionTrait {
 
         $remainingDestinationsCardsInDeck = $this->getRemainingDestinationCardsInDeck();
         if ($remainingDestinationsCardsInDeck == 0) {
-            throw new BgaUserException(self::_("You can't take new Destination cards because the deck is empty"));
+            throw new \BgaUserException(self::_("You can't take new Destination cards because the deck is empty"));
         }
 
         $this->pickAdditionalDestinationCards($playerId);
@@ -128,19 +130,19 @@ trait ActionTrait {
         }
 
         if ($this->getUniqueIntValueFromDB( "SELECT count(*) FROM `claimed_routes` WHERE `route_id` = $routeId") > 0) {
-            throw new BgaUserException("Route is already claimed.");
+            throw new \BgaUserException("Route is already claimed.");
         }
         
         $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
         $colorAndLocomotiveCards = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color);
         
         if ($colorAndLocomotiveCards == null || count($colorAndLocomotiveCards) < $route->number) {
-            throw new BgaUserException("Not enough cards to claim the route.");
+            throw new \BgaUserException("Not enough cards to claim the route.");
         }
 
         $possibleRoutes = $this->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
         if (!$this->array_some($possibleRoutes, fn($possibleRoute) => $possibleRoute->id == $routeId)) {
-            throw new BgaUserException("You can't claim this route");
+            throw new \BgaUserException("You can't claim this route");
         }
 
         if ($route->tunnel) {
@@ -168,7 +170,7 @@ trait ActionTrait {
                 ]);
                 
                 if ($extraCards > 0) { // if the player can't afford, we still ask to hide the fact he can't
-                    $this->setGlobalVariable(TUNNEL_ATTEMPT, new TunnelAttempt($routeId, $color, $extraCards, $tunnelCards));
+                    $this->setGlobalVariable(TUNNEL_ATTEMPT, new \TunnelAttempt($routeId, $color, $extraCards, $tunnelCards));
                     $this->gamestate->nextState('tunnel'); 
                     return;
                 } else {
@@ -232,7 +234,7 @@ trait ActionTrait {
         $args = $this->argChooseAction();
 
         if (!$args['canPass']) {
-            throw new BgaUserException("You cannot pass");
+            throw new \BgaUserException("You cannot pass");
         }
 
         $this->gamestate->nextState('nextPlayer'); 

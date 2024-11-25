@@ -1,5 +1,7 @@
 <?php
 
+namespace Bga\Games\TicketToRide;
+
 require_once(__DIR__.'/objects/route.php');
 
 class ConnectedCity {

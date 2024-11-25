@@ -1,5 +1,7 @@
 <?php
 
+namespace Bga\Games\TicketToRide;
+
 trait DebugUtilTrait {
 
 //////////////////////////////////////////////////////////////////////////////
@@ -123,11 +125,5 @@ trait DebugUtilTrait {
         }
 
         $this->gamestate->jumpToState(ST_PLAYER_CHOOSE_ACTION);
-    }
-
-    function debug($debugData) {
-        if ($this->getBgaEnvironment() != 'studio') { 
-            return;
-        }die('debug data : '.json_encode($debugData));
     }
 }
