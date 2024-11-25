@@ -121,13 +121,13 @@ trait MapTrait {
     }
 
     public function getAllRoutes() {
-        $allRoutes = $this->ROUTES;
+        $allRoutes = $this->map->routes;
         array_walk($allRoutes, function(&$route, $id) { $route->id = $id; });
         return $allRoutes;
     }
     
     private function isDoubleRouteAllowed() {
-        return $this->getPlayerCount() >= MINIMUM_PLAYER_FOR_DOUBLE_ROUTES;
+        return $this->getPlayerCount() >= $this->map->minimumPlayerForDoubleRoutes;
     }
 
     /**
@@ -158,7 +158,7 @@ trait MapTrait {
             return null;
         }
 
-        $forbidLocomotiveAsJoker = CAN_ONLY_USE_LOCOMOTIVES_IN_TUNNELS && !$route->tunnel;
+        $forbidLocomotiveAsJoker = $this->map->canOnlyUseLocomotivesInTunnels && !$route->tunnel;
         
         if ($color === 0) {
             // the user wants to pay with locomotives

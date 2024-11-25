@@ -75,6 +75,20 @@ trait UtilTrait {
         $this->DbQuery("DELETE FROM `global_variables` where `name` = '$name'");
     }
 
+    function getExpansionOption() {
+        return $this->map->hasExpansion ? intval($this->getGameStateValue(EXPANSION_OPTION)) : 0;
+    }
+
+    function getMapCode() {
+        $mapOption = $this->getGameStateValue(MAP_OPTION);
+        return match ($mapOption) {
+            1 => 'usa',
+            2 => 'europe',
+            3 => 'switzerland',
+            default => 'usa',
+        };
+    }
+
     /**
      * Transforms a TrainCar Db object to TrainCar class.
      */
@@ -102,7 +116,7 @@ trait UtilTrait {
         if (!$dbObject || !array_key_exists('id', $dbObject)) {
             throw new BgaSystemException("Destination doesn't exists ".json_encode($dbObject));
         }
-        return new Destination($dbObject, $this->DESTINATIONS);
+        return new Destination($dbObject, $this->map->destinations);
     }
 
     /**
@@ -110,10 +124,6 @@ trait UtilTrait {
      */    
     function getDestinationsFromDb(array $dbObjects) {
         return array_map(fn($dbObject) => $this->getDestinationFromDb($dbObject), array_values($dbObjects));
-    }
-
-    function getInitialTrainCarsNumber() {
-        return TRAIN_CARS_PER_PLAYER;
     }
 
     function getLowestTrainCarsCount() {
@@ -211,6 +221,6 @@ trait UtilTrait {
     }
 
     function getCityName(string $id) {
-        return $this->CITIES[$id]->name;
+        return $this->map->cities[$id]->name;
     }
 }

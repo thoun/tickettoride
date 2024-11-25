@@ -8,7 +8,7 @@ trait DestinationDeckTrait {
      * Create destination cards.
      */
     public function createDestinations() {
-        $destinations = $this->getDestinationToGenerate();
+        $destinations = $this->map->getDestinationToGenerate($this->getExpansionOption());
 
         foreach($destinations as $deck => $cards) {
             $this->destinations->createCards($cards, $deck);
@@ -20,7 +20,7 @@ trait DestinationDeckTrait {
      * Pick destination cards for beginning choice.
      */
     public function pickInitialDestinationCards(int $playerId) {
-        $pick = $this->getInitialDestinationPick();
+        $pick = $this->map->getInitialDestinationPick($this->getExpansionOption());
 
         $cards = [];
         foreach ($pick as $deck => $number) {
@@ -35,14 +35,14 @@ trait DestinationDeckTrait {
      * Unused destination cards are set back on the deck or discarded.
      */
     public function keepInitialDestinationCards(int $playerId, array $ids) {
-		$this->keepDestinationCards($playerId, $ids, $this->getInitialDestinationMinimumKept(), UNUSED_INITIAL_DESTINATIONS_GO_TO_DECK_BOTTOM);
+		$this->keepDestinationCards($playerId, $ids, $this->map->getInitialDestinationMinimumKept($this->getExpansionOption()), $this->map->unusedInitialDestinationsGoToDeckBottom);
     }	
 	
     /**
      * Pick destination cards for pick destination action.
      */
     public function pickAdditionalDestinationCards(int $playerId) {
-		return $this->pickDestinationCards($playerId, $this->getAdditionalDestinationCardNumber());
+		return $this->pickDestinationCards($playerId, $this->map->getAdditionalDestinationCardNumber($this->getExpansionOption()));
     }	
 
     /**
@@ -50,7 +50,7 @@ trait DestinationDeckTrait {
      * Unused destination cards are set back on the deck or discarded.
      */
     public function keepAdditionalDestinationCards(int $playerId, array $ids) {
-		$this->keepDestinationCards($playerId, $ids, ADDITIONAL_DESTINATION_MINIMUM_KEPT, UNUSED_ADDITIONAL_DESTINATIONS_GO_TO_DECK_BOTTOM);
+		$this->keepDestinationCards($playerId, $ids, $this->map->additionalDestinationMinimumKept, $this->map->unusedAdditionalDestinationsGoToDeckBottom);
     }
 
     /**

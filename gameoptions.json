@@ -1,4 +1,25 @@
 {
+    
+    "102": {
+        "name": "Map",
+        "values": {
+            "1": {
+                "name": "USA",
+                "tmdisplay": "USA"
+            },
+            "2": {
+                "name": "Europe",
+                "tmdisplay": "Europe"
+            },
+            "3": {
+                "name": "Switzerland",
+                "tmdisplay": "Switzerland"
+            }
+        },
+        "default": 1,
+        "level": "major"
+    },
+    
     "101": {
         "name": "1910 Expansion",
         "values": [
@@ -26,6 +47,7 @@
         ],
         "default": 0
     },
+    
     "110": {
         "name": "Turn order",
         "values": {

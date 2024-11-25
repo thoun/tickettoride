@@ -70,8 +70,8 @@ trait DebugUtilTrait {
     function debug_ClaimRoute(int $playerId, int $routeId) {
         self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
 
-        $route = $this->ROUTES[$routeId];
-        $points = $this->ROUTE_POINTS[$route->number];
+        $route = $this->map->routes[$routeId];
+        $points = $this->map->routePoints[$route->number];
 
         self::notifyAllPlayers('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
             'playerId' => $playerId,
@@ -88,8 +88,8 @@ trait DebugUtilTrait {
     }
 
     function debug_ClaimAllRoutes($playerId, $ratio = 0.1) {
-        foreach($this->ROUTES as $id => $route) {
-            if ((bga_rand(0, count($this->ROUTES)-1) / (float)count($this->ROUTES)) < $ratio) {
+        foreach($this->map->routes as $id => $route) {
+            if ((bga_rand(0, count($this->map->routes)-1) / (float)count($this->map->routes)) < $ratio) {
                 $this->debugClaimRoute($playerId, $id);
             }
         }
@@ -107,7 +107,7 @@ trait DebugUtilTrait {
     }
 
     function debug_SetLastTurn() {
-        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = ".TRAIN_CARS_NUMBER_TO_START_LAST_TURN);
+        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = ".$this->map->trainCarsNumberToStartLastTurn);
     }
     function debug_NoTrainCar() {
         self::DbQuery("UPDATE player SET `player_remaining_train_cars` = 0");

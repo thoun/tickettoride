@@ -57,7 +57,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
     // class tests
     function testDestinationCompletedNo() {
 
-        $result = $this->getDestinationRoutes(1, $this->DESTINATIONS[1][20]);
+        $result = $this->getDestinationRoutes(1, $this->map->destinations[1][20]);
 
         $equal = $result == null;
 
@@ -71,7 +71,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
 
     function testDestinationCompletedYes() {
 
-        $result = $this->getDestinationRoutes(2, $this->DESTINATIONS[1][20]);
+        $result = $this->getDestinationRoutes(2, $this->map->destinations[1][20]);
 
         $equal = $result != null;
 
@@ -84,7 +84,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
     }
 
     function testDestinationCompletedYes2() {
-        $result = $this->getDestinationRoutes(3, $this->DESTINATIONS[1][7]);
+        $result = $this->getDestinationRoutes(3, $this->map->destinations[1][7]);
 
         $equal = $result != null;
 
@@ -97,7 +97,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
     }
 
     function testDestinationCompletedYes3() {
-        $result = $this->getDestinationRoutes(4, $this->DESTINATIONS[1][3]);
+        $result = $this->getDestinationRoutes(4, $this->map->destinations[1][3]);
 
         $equal = $result != null;
 

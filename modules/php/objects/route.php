@@ -1,16 +1,13 @@
 <?php
 
 class RouteSpace {
-    public int $x;
-    public int $y;
-    public int $angle;
-    public bool $top = false;
 
-    public function __construct(int $x, int $y, int $angle, bool $top = false) {
-        $this->x = $x;
-        $this->y = $y;
-        $this->angle = $angle;
-        $this->top = $top;
+    public function __construct(        
+        public int $x,
+        public int $y,
+        public int $angle,
+        public bool $top = false,
+    ) {
     }
 }
 
@@ -24,22 +21,17 @@ class RouteSpace {
  */
 class Route {
     public int $id;
-    public int $from;
-    public int $to;
     public int $number;
-    public int $color;
-    public bool $tunnel;
-    public int $locomotives;
-    public array $spaces;
 
-    public function __construct(int $from, int $to, int $color, array $spaces = [], bool $tunnel = false, int $locomotives = 0) {
-        $this->from = $from;
-        $this->to = $to;
+    public function __construct(
+        public int $from, 
+        public int $to, 
+        public int $color, 
+        public array $spaces = [], 
+        public bool $tunnel = false, 
+        public int $locomotives = 0,
+    ) {
         $this->number = count($spaces);
-        $this->color = $color;
-        $this->spaces = $spaces;
-        $this->tunnel = $tunnel;
-        $this->locomotives = $locomotives;
     } 
 }
 

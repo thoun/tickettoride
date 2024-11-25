@@ -44,13 +44,13 @@ trait StateTrait {
         } else {
             if ($lastTurn == 0) {
                 // check if last turn is started    
-                if ($this->getLowestTrainCarsCount() <= TRAIN_CARS_NUMBER_TO_START_LAST_TURN) {
+                if ($this->getLowestTrainCarsCount() <= $this->map->trainCarsNumberToStartLastTurn) {
                     self::setGameStateValue(LAST_TURN, $playerId);
 
                     self::notifyAllPlayers('lastTurn', clienttranslate('${player_name} has ${number} train cars or less, starting final turn !'), [
                         'playerId' => $playerId,
                         'player_name' => $this->getPlayerName($playerId),
-                        'number' => TRAIN_CARS_NUMBER_TO_START_LAST_TURN,
+                        'number' => $this->map->trainCarsNumberToStartLastTurn,
                     ]);
                 }
             }
@@ -62,8 +62,9 @@ trait StateTrait {
     }
 
     function stEndScore() {
-        $isGlobetrotterBonusActive = $this->isGlobetrotterBonusActive();
-        $isLongestPathBonusActive = $this->isLongestPathBonusActive();
+        $expansionOption = $this->getExpansionOption();
+        $isGlobetrotterBonusActive = $this->map->isGlobetrotterBonusActive($expansionOption);
+        $isLongestPathBonusActive = $this->map->isLongestPathBonusActive($expansionOption);
 
         $sql = "SELECT player_id id, player_score score FROM player ORDER BY player_no ASC";
         $players = self::getCollectionFromDb($sql);
@@ -120,7 +121,7 @@ trait StateTrait {
             $longestPathWinners = $longestPathBySize[$bestLongestPath];  
             
             foreach ($longestPathWinners as $playerId) {
-                $totalScore[$playerId] += POINTS_FOR_LONGEST_PATH;
+                $totalScore[$playerId] += $this->map->pointsForLongestPath;
             }
         }
 
@@ -138,7 +139,7 @@ trait StateTrait {
             $globetrotterWinners = $completedDestinationsBySize[$bestCompletedDestinationsCount];  
             
             foreach ($globetrotterWinners as $playerId) {
-                $totalScore[$playerId] += POINTS_FOR_GLOBETROTTER;
+                $totalScore[$playerId] += $this->map->pointsForGlobetrotter;
             }
         }
 
@@ -197,7 +198,7 @@ trait StateTrait {
         // Globetrotter
         if ($isGlobetrotterBonusActive) {
             foreach ($globetrotterWinners as $playerId) {
-                $points = POINTS_FOR_GLOBETROTTER;
+                $points = $this->map->pointsForGlobetrotter;
                 $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with Globetrotter : ${destinations} completed destinations'), [
                     'points' => $points,
                     'destinations' => $bestCompletedDestinationsCount,
@@ -229,7 +230,7 @@ trait StateTrait {
              
             self::setStat($bestLongestPath, 'longestPath');
             foreach ($longestPathWinners as $playerId) {
-                $points = POINTS_FOR_LONGEST_PATH;
+                $points = $this->map->pointsForLongestPath;
                 $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with longest continuous path : ${trainCars} train cars'), [
                     'points' => $points,
                     'trainCars' => $bestLongestPath,

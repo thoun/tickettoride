@@ -1,6 +1,7 @@
 <?php
 
-const MAP = 'usa';
+const MAP_OPTION = 'MAP_OPTION';
+const EXPANSION_OPTION = 'EXPANSION_OPTION';
 
 /* 
  * Colors 

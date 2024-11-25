@@ -9,7 +9,7 @@ trait TrainCarDeckTrait {
      */
     public function createTrainCars() {
         for ($color = 0; $color <= 8; $color++) {
-            $trainCars[] = [ 'type' => $color, 'type_arg' => null, 'nbr' => ($color == 0 ? NUMBER_OF_LOCOMOTIVE_CARDS : NUMBER_OF_COLORED_CARDS)];
+            $trainCars[] = [ 'type' => $color, 'type_arg' => null, 'nbr' => ($color == 0 ? $this->map->numberOfLocomotiveCards : $this->map->numberOfColoredCards)];
         }
         $this->trainCars->createCards($trainCars, 'deck');
         $this->trainCars->shuffle('deck');
@@ -23,7 +23,7 @@ trait TrainCarDeckTrait {
      */
     public function giveInitialTrainCarCards(array $playersIds) {
 		foreach ($playersIds as $playerId) {
-            $this->trainCars->pickCards(INITIAL_TRAIN_CAR_CARDS_IN_HAND, 'deck', $playerId);
+            $this->trainCars->pickCards($this->map->initialTrainCarCardsInHand, 'deck', $playerId);
         }
     }
 
@@ -34,7 +34,7 @@ trait TrainCarDeckTrait {
     public function getVisibleTrainCarCards(bool $limitToSelectableOnSecondPick = false) {
         $cards = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('table'));
 
-        if ($limitToSelectableOnSecondPick && VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS) {
+        if ($limitToSelectableOnSecondPick && $this->map->visibleLocomotivesCountsAsTwoCards) {
             $cards = array_values(array_filter($cards, fn($card) => $card->type != 0));
         }
 
@@ -98,7 +98,7 @@ trait TrainCarDeckTrait {
             throw new BgaUserException("You can't take this visible card.");
         }
 
-        if ($isSecondCard && $card->type == 0 && VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS) {
+        if ($isSecondCard && $card->type == 0 && $this->map->visibleLocomotivesCountsAsTwoCards) {
             throw new BgaUserException("You can't take a locomotive as a second card.");
         }
 
@@ -143,13 +143,13 @@ trait TrainCarDeckTrait {
      * reset visible cards if there is 3 or more locomotives
      */
     private function checkTooMuchLocomotives(int $attempts = 0) {
-        if (RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES === null) {
+        if ($this->map->resetVisibleCardsWithLocomotives === null) {
             return;
         }
 
         $cards = $this->getVisibleTrainCarCards();
         $locomotives = count(array_filter($cards, fn($card) => $card->type == 0));
-        if ($locomotives >= RESET_VISIBLE_CARDS_WITH_LOCOMOTIVES && $this->getRemainingTrainCarCardsInDeck(true) > 0) {
+        if ($locomotives >= $this->map->resetVisibleCardsWithLocomotives && $this->getRemainingTrainCarCardsInDeck(true) > 0) {
             if ($attempts >= 3) {
                 $this->notifyAllPlayers('log', clienttranslate('Three locomotives have been revealed multiples times in a row, they will stay visible'), []);
             } else {
@@ -235,7 +235,7 @@ trait TrainCarDeckTrait {
     }
 
     private function canTakeASecondCard(?int $firstCardType) { // null if unknown/hidden
-        if ($firstCardType === 0 && VISIBLE_LOCOMOTIVES_COUNTS_AS_TWO_CARDS) {
+        if ($firstCardType === 0 && $this->map->visibleLocomotivesCountsAsTwoCards) {
             // if the player chose a locomotive
             return false;
         }

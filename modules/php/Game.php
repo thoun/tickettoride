@@ -21,7 +21,9 @@ namespace Bga\Games\TicketToRide;
 require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
 
 require_once('constants.inc.php');
-require_once(__DIR__.'/../maps/'.MAP.'/constants.inc.php');
+require_once(__DIR__.'/objects/map.php');
+require_once(__DIR__.'/objects/route.php');
+require_once(__DIR__.'/objects/destination.php');
 require_once('utils.php');
 require_once('states.php');
 require_once('args.php');
@@ -30,7 +32,6 @@ require_once('map.php');
 require_once('train-car-deck.php');
 require_once('destination-deck.php');
 require_once('debug-util.php');
-require_once(__DIR__.'/../maps/'.MAP.'/settings.php');
 
 /*
  * Game main class.
@@ -45,10 +46,11 @@ class Game extends \Table {
     use \TrainCarDeckTrait;
     use \DestinationDeckTrait;
     use \DebugUtilTrait;
-    use \SettingsTrait;
 
     private \Deck $destinations;
     private \Deck $trainCars;
+
+    public \Map $map;
 
 	function __construct() {
         parent::__construct();
@@ -57,8 +59,17 @@ class Game extends \Table {
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
 
             // options
+            MAP_OPTION => 102,
+            EXPANSION_OPTION => 101,
             SHOW_TURN_ORDER => 110, // last turn is the id of the player starting last turn, 0 if it's not last turn
-        ], INIT_GAME_STATE_LABELS));
+        ]));
+
+        $mapCode = $this->getMapCode();
+
+        require_once(__DIR__.'/../maps/'.$mapCode.'/map.php');
+
+        $this->map = getMap();
+        $this->map->code = $mapCode;
         
         $this->destinations = $this->getNew("module.common.deck");
         $this->destinations->init("destination");
@@ -94,7 +105,7 @@ class Game extends \Table {
         $values = [];
         foreach ($players as $playerId => $player) {
             $color = array_shift( $default_colors );
-            $values[] = "('".$playerId."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."', ".$this->getInitialTrainCarsNumber().")";
+            $values[] = "('".$playerId."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."', ".$this->map->trainCarsPerPlayer.")";
         }
         $sql .= implode(',', $values);
         $this->DbQuery($sql);
@@ -147,8 +158,9 @@ class Game extends \Table {
         //$this->initStat('table', 'longestPath', 0); // only computed at the end
         //$this->initStat('player', 'longestPath', 0); // only computed at the end
         
-        $isGlobetrotterBonusActive = $this->isGlobetrotterBonusActive();
-        $isLongestPathBonusActive = $this->isLongestPathBonusActive();
+        $expansionOption = $this->getExpansionOption();
+        $isGlobetrotterBonusActive = $this->map->isGlobetrotterBonusActive($expansionOption);
+        $isLongestPathBonusActive = $this->map->isLongestPathBonusActive($expansionOption);
 
         if ($isLongestPathBonusActive) {
             $this->initStat('player', 'longestPathBonus', 0);
@@ -187,16 +199,18 @@ class Game extends \Table {
         $stateName = $this->gamestate->state()['name']; 
         $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
 
+        $expansionOption = $this->getExpansionOption();
+
         $result = [
             'map' => [
-                'code' => MAP,
-                'cities' => $this->CITIES,
+                'code' => $this->map->code,
+                'cities' => $this->map->cities,
                 'routes' => $this->getAllRoutes(),
-                'destinations' => $this->DESTINATIONS,
-                'bigCities' => $this->getBigCities(),
-                'illustration' => $this->getExpansionOption(),
-                'preloadImages' => $this->getPreloadImages(),
-                'canOnlyUseLocomotivesInTunnels' => CAN_ONLY_USE_LOCOMOTIVES_IN_TUNNELS,
+                'destinations' => $this->map->destinations,
+                'bigCities' => $this->map->getBigCities($expansionOption),
+                'illustration' => $expansionOption,
+                'preloadImages' => $this->map->getPreloadImages($expansionOption),
+                'canOnlyUseLocomotivesInTunnels' => $this->map->canOnlyUseLocomotivesInTunnels,
             ],
         ];
     
@@ -242,12 +256,11 @@ class Game extends \Table {
         // deck counters
         $result['trainCarDeckCount'] = $this->getRemainingTrainCarCardsInDeck();
         $result['destinationDeckCount'] = $this->getRemainingDestinationCardsInDeck();
-        $result['trainCarDeckMaxCount'] = 110;
-        $result['destinationDeckMaxCount'] = 30;
+        $result['trainCarDeckMaxCount'] = intval($this->getUniqueValueFromDB("select count(*) from `traincar`"));
+        $result['destinationDeckMaxCount'] = intval($this->getUniqueValueFromDB("select count(*) from `destination`"));          
 
-        $result['expansion1910'] = $this->getExpansionOption(); // TODO REMOVE
-        $result['isGlobetrotterBonusActive'] = $this->isGlobetrotterBonusActive();
-        $result['isLongestPathBonusActive'] = $this->isLongestPathBonusActive();
+        $result['isGlobetrotterBonusActive'] = $this->map->isGlobetrotterBonusActive($expansionOption);
+        $result['isLongestPathBonusActive'] = $this->map->isLongestPathBonusActive($expansionOption);
         
         $result['showTurnOrder'] = intval($this->getGameStateValue(SHOW_TURN_ORDER)) == 2;
         
@@ -279,7 +292,7 @@ class Game extends \Table {
         }
 
         // ratio of remaining train cars (based on player with lowest count)
-        return 100 * (TRAIN_CARS_PER_PLAYER - $this->getLowestTrainCarsCount()) / TRAIN_CARS_PER_PLAYER;
+        return 100 * ($this->map->trainCarsPerPlayer - $this->getLowestTrainCarsCount()) / $this->map->trainCarsPerPlayer;
     }
 
 //////////////////////////////////////////////////////////////////////////////

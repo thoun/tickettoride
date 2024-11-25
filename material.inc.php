@@ -18,38 +18,3 @@
  * are available everywhere in your game logic code.
  *
  */
-
-require_once(__DIR__.'/modules/php/objects/route.php');
-require_once(__DIR__.'/modules/php/objects/destination.php');
-
-require_once(__DIR__.'/modules/maps/'.MAP.'/constants.inc.php');
-require_once(__DIR__.'/modules/maps/'.MAP.'/cities.php');
-require_once(__DIR__.'/modules/maps/'.MAP.'/routes.php');
-require_once(__DIR__.'/modules/maps/'.MAP.'/destinations.php');
-
-$this->CITIES = getCities();
-
-/**
- * Route on the map. 
- * For double routes, there is 2 instances of Route.
- * For cities (from/to), it's always low id to high id.
- */
-$this->ROUTES = getRoutes();
-
-/**
- * List of DestinationCard.
- */
-$this->DESTINATIONS = getAllDestinations();
-
-/**
- * Points scored for claimed routes.
- */
-$this->ROUTE_POINTS = [
-  1 => 1,
-  2 => 2,
-  3 => 4,
-  4 => 7,
-  5 => 10,
-  6 => 15,
-  8 => 21,
-];
