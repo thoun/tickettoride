@@ -213,6 +213,10 @@ trait UtilTrait {
         return array_map(fn($dbResult) => intval($dbResult['card_id']), array_values($dbResults));
     }
 
+    function getLogTo($destination) {
+        return is_array($destination->to) ? implode(' / ', array_map(fn($to) => $this->getCityName($to), $destination->to)) : $this->getCityName($destination->to);
+    }
+
     function checkCompletedDestinations(int $playerId) {
         $handDestinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
         $alreadyCompleted = $this->getCompletedDestinationsIds($playerId);
@@ -228,7 +232,7 @@ trait UtilTrait {
                         'player_name' => $this->getPlayerName($playerId),
                         'destination' => $destination,
                         'from' => $this->getCityName($destination->from),
-                        'to' => $this->getCityName($destination->to),
+                        'to' => $this->getLogTo($destination),
                         'you' => clienttranslate('You'),
                         'i18n' => ['you'],
                         'destinationRoutes' => $destinationRoutes,

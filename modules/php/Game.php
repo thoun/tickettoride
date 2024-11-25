@@ -192,6 +192,7 @@ class Game extends \Table {
                 'illustration' => $expansionOption,
                 'preloadImages' => $this->getMap()->getPreloadImages($expansionOption),
                 'canOnlyUseLocomotivesInTunnels' => $this->getMap()->canOnlyUseLocomotivesInTunnels,
+                'minimumPlayerForDoubleRoutes' => $this->getMap()->minimumPlayerForDoubleRoutes,
             ],
         ];
     

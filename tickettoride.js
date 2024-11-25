@@ -77,8 +77,8 @@ function setupDestinationCardDiv(game, cardDiv, cardUniqueId) {
     var destination = destinations.find(function (d) { return d.uniqueId == cardUniqueId; });
     cardDiv.title = "".concat(dojo.string.substitute(_('${from} to ${to}'), {
         from: game.getCityName(destination.from),
-        to: game.getCityName(destination.to),
-    }), ", ").concat(destination.points, " ").concat(_('points'));
+        to: Array.isArray(destination.to) ? destination.to.map(function (city) { return game.getCityName(city); }).join(' / ') : game.getCityName(destination.to),
+    }), ", ").concat(Array.isArray(destination.points) ? destination.points.join(' / ') : destination.points, " ").concat(_('points'));
 }
 function getBackgroundInlineStyleForDestination(map, destination) {
     var setTypeArg = Math.floor(destination.type_arg / 100);
@@ -147,7 +147,11 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
             var _a, _b;
             var fromBR = document.getElementById(_this.fromId).getBoundingClientRect();
             dojo.place("\n            <div id=\"animated-destination-card-".concat(_this.destination.id, "\" class=\"destination-card\" style=\"").concat(_this.getCardPosition(_this.destination)).concat(getBackgroundInlineStyleForDestination(_this.game.getMap(), _this.destination), "\"></div>\n            "), 'map');
+            var noMask = Array.isArray(_this.destination.to);
             var card = document.getElementById("animated-destination-card-".concat(_this.destination.id));
+            if (noMask) {
+                card.classList.add('no-mask');
+            }
             (_b = (_a = _this.actions).start) === null || _b === void 0 ? void 0 : _b.call(_a, _this.destination);
             var cardBR = card.getBoundingClientRect();
             var x = (fromBR.x - cardBR.x) / _this.zoom;
@@ -158,14 +162,17 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
             setTimeout(function () {
                 card.classList.add('animated');
                 card.style.transform = "";
-                _this.markComplete(card, cardBR, resolve);
+                _this.markComplete(card, cardBR, resolve, noMask);
             }, 100);
         });
     };
-    DestinationCompleteAnimation.prototype.markComplete = function (card, cardBR, resolve) {
+    DestinationCompleteAnimation.prototype.markComplete = function (card, cardBR, resolve, noMask) {
         var _this = this;
         setTimeout(function () {
             var _a, _b;
+            if (noMask) {
+                card.classList.add('no-mask');
+            }
             card.classList.add(_this.state);
             (_b = (_a = _this.actions).change) === null || _b === void 0 ? void 0 : _b.call(_a, _this.destination);
             setTimeout(function () {
@@ -188,10 +195,16 @@ var DestinationCompleteAnimation = /** @class */ (function (_super) {
     };
     DestinationCompleteAnimation.prototype.getCardPosition = function (destination) {
         var _this = this;
-        var positions = [destination.from, destination.to].map(function (cityId) { return _this.game.getMap().cities[cityId]; });
-        var x = (positions[0].x + positions[1].x) / 2;
-        var y = (positions[0].y + positions[1].y) / 2;
-        return "left: ".concat(x - CARD_WIDTH / 2, "px; top: ").concat(y - CARD_HEIGHT / 2, "px;");
+        if (Array.isArray(destination.to)) {
+            var from = this.game.getMap().cities[destination.from];
+            return "left: ".concat(from.x - CARD_WIDTH / 2, "px; top: ").concat(from.y - CARD_HEIGHT / 2, "px;");
+        }
+        else {
+            var positions = [destination.from, destination.to].map(function (cityId) { return _this.game.getMap().cities[cityId]; });
+            var x = (positions[0].x + positions[1].x) / 2;
+            var y = (positions[0].y + positions[1].y) / 2;
+            return "left: ".concat(x - CARD_WIDTH / 2, "px; top: ").concat(y - CARD_HEIGHT / 2, "px;");
+        }
     };
     return DestinationCompleteAnimation;
 }(WagonsAnimation));
@@ -512,7 +525,9 @@ var TtrMap = /** @class */ (function () {
                         var spaceDiv = document.getElementById("route-spaces-route".concat(otherRoute_1.id, "-space").concat(spaceIndex));
                         if (spaceDiv) {
                             spaceDiv.classList.add('forbidden');
-                            _this.game.setTooltip(spaceDiv.id, "<strong><span style=\"color: darkred\">".concat(_('Important Note:'), "</span> \n                            ").concat(_('In 2 or 3 player games, only one of the Double-Routes can be used.'), "</strong>"));
+                            _this.game.setTooltip(spaceDiv.id, "<strong><span style=\"color: darkred\">".concat(_('Important Note:'), "</span> \n                            ").concat(_this.game.gamedatas.map.minimumPlayerForDoubleRoutes <= 3 ?
+                                _('In 2 player games, only one of the Double-Routes can be used.') :
+                                _('In 2 or 3 player games, only one of the Double-Routes can be used.'), "</strong>"));
                         }
                     });
                 }
@@ -668,12 +683,12 @@ var TtrMap = /** @class */ (function () {
             if (previousDestination.id === destination.id) {
                 return;
             }
-            [previousDestination.from, previousDestination.to].forEach(function (city) {
+            [previousDestination.from, previousDestination.to].filter(function (city) { return city > 0; }).forEach(function (city) {
                 return document.getElementById("city".concat(city)).dataset.selectedDestination = 'false';
             });
         }
         if (destination) {
-            [destination.from, destination.to].forEach(function (city) {
+            [destination.from, destination.to].filter(function (city) { return city > 0; }).forEach(function (city) {
                 return document.getElementById("city".concat(city)).dataset.selectedDestination = 'true';
             });
         }
@@ -686,7 +701,7 @@ var TtrMap = /** @class */ (function () {
         if (player === void 0) { player = null; }
         this.inMapZoomManager.setHoveredRoute(route);
         if (route) {
-            [route.from, route.to].forEach(function (city) {
+            [route.from, route.to].filter(function (city) { return city > 0; }).forEach(function (city) {
                 var cityDiv = document.getElementById("city".concat(city));
                 cityDiv.dataset.hovered = 'true';
                 cityDiv.dataset.valid = valid.toString();
@@ -696,7 +711,7 @@ var TtrMap = /** @class */ (function () {
             }
         }
         else {
-            Object.values(this.map.routes).forEach(function (r) { return [r.from, r.to].forEach(function (city) {
+            Object.values(this.map.routes).forEach(function (r) { return [r.from, r.to].filter(function (city) { return city > 0; }).forEach(function (city) {
                 return document.getElementById("city".concat(city)).dataset.hovered = 'false';
             }); });
             // remove phantom wagons
@@ -707,7 +722,7 @@ var TtrMap = /** @class */ (function () {
      * Highlight cities of selectable destination.
      */
     TtrMap.prototype.setSelectableDestination = function (destination, visible) {
-        [destination.from, destination.to].forEach(function (city) {
+        [destination.from, destination.to].filter(function (city) { return city > 0; }).forEach(function (city) {
             document.getElementById("city".concat(city)).dataset.selectable = '' + visible;
         });
     };
@@ -715,7 +730,7 @@ var TtrMap = /** @class */ (function () {
      * Highlight cities of selected destination.
      */
     TtrMap.prototype.setSelectedDestination = function (destination, visible) {
-        [destination.from, destination.to].forEach(function (city) {
+        [destination.from, destination.to].filter(function (city) { return city > 0; }).forEach(function (city) {
             document.getElementById("city".concat(city)).dataset.selected = '' + visible;
         });
     };
@@ -726,7 +741,7 @@ var TtrMap = /** @class */ (function () {
         this.mapDiv.querySelectorAll(".city[data-to-connect]").forEach(function (city) { return city.dataset.toConnect = 'false'; });
         var cities = [];
         destinations.forEach(function (destination) { return cities.push(destination.from, destination.to); });
-        cities.forEach(function (city) { return document.getElementById("city".concat(city)).dataset.toConnect = 'true'; });
+        cities.filter(function (city) { return city > 0; }).forEach(function (city) { return document.getElementById("city".concat(city)).dataset.toConnect = 'true'; });
     };
     /**
      * Highlight destination (on destination mouse over).
@@ -744,7 +759,7 @@ var TtrMap = /** @class */ (function () {
         else {
             cities = [shadow.dataset.from, shadow.dataset.to];
         }
-        cities.forEach(function (city) { return document.getElementById("city".concat(city)).dataset.highlight = visible; });
+        cities.filter(function (city) { return Number(city) > 0; }).forEach(function (city) { return document.getElementById("city".concat(city)).dataset.highlight = visible; });
     };
     /**
      * Create the crosshair target when drag starts over the drag overlay.
@@ -1320,7 +1335,11 @@ var PlayerDestinations = /** @class */ (function () {
             this.destinationsTodo.splice(index, 1);
         }
         this.destinationsDone.push(destination);
-        document.getElementById("player-table-".concat(this.playerId, "-destinations-done")).appendChild(document.getElementById("destination-card-".concat(destination.id)));
+        var card = document.getElementById("destination-card-".concat(destination.id));
+        document.getElementById("player-table-".concat(this.playerId, "-destinations-done")).appendChild(card);
+        if (Array.isArray(destination.to)) {
+            card.classList.add('no-mask');
+        }
         this.destinationColumnsUpdated();
     };
     /**
@@ -2130,7 +2149,7 @@ var TicketToRide = /** @class */ (function () {
         return (_b = (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.getValue()) !== null && _b !== void 0 ? _b : Number(this.gamedatas.players[playerId].score);
     };
     TicketToRide.prototype.isDoubleRouteForbidden = function () {
-        return Object.values(this.gamedatas.players).length <= 3;
+        return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForDoubleRoutes;
     };
     TicketToRide.prototype.getMap = function () {
         return this.gamedatas.map;

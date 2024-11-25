@@ -340,7 +340,7 @@ class TicketToRide implements TicketToRideGame {
     }
 
     public isDoubleRouteForbidden(): boolean {
-        return Object.values(this.gamedatas.players).length <= 3;
+        return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForDoubleRoutes;
     }
 
     public getMap(): TicketToRideMap {

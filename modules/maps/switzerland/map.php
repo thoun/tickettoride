@@ -41,6 +41,13 @@ class SwitzerlandMap extends Map {
         $this->unusedAdditionalDestinationsGoToDeckBottom = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
         $this->minimumPlayerForDoubleRoutes = 3; // 4 means 2-3 players cant use double routes
+
+        $this->countriesEndPoints = [
+            -1 => [ 1001, 1002, 1003, 1004 ],
+            -2 => [ 2001, 2002, 2003, 2004, 2005 ],
+            -3 => [ 3001, 3002, 3003 ],
+            -4 => [ 4001, 4002, 4003, 4004, 4005 ],
+        ];
     }
     
     /**

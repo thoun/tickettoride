@@ -30,7 +30,11 @@ class DestinationCompleteAnimation extends WagonsAnimation {
             <div id="animated-destination-card-${this.destination.id}" class="destination-card" style="${this.getCardPosition(this.destination)}${getBackgroundInlineStyleForDestination(this.game.getMap(), this.destination)}"></div>
             `, 'map');
 
+            const noMask = Array.isArray(this.destination.to);
             const card = document.getElementById(`animated-destination-card-${this.destination.id}`);
+            if (noMask) {
+                card.classList.add('no-mask');
+            }
             this.actions.start?.(this.destination);
             const cardBR = card.getBoundingClientRect();
             
@@ -45,14 +49,17 @@ class DestinationCompleteAnimation extends WagonsAnimation {
                 card.classList.add('animated');
                 card.style.transform = ``;
 
-                this.markComplete(card, cardBR, resolve);
+                this.markComplete(card, cardBR, resolve, noMask);
             }, 100);
         });
     }
     
-    private markComplete(card: HTMLElement, cardBR: DOMRect, resolve: any) {
+    private markComplete(card: HTMLElement, cardBR: DOMRect, resolve: any, noMask: boolean) {
         
         setTimeout(() => {
+            if (noMask) {
+                card.classList.add('no-mask');
+            }
             card.classList.add(this.state);
             this.actions.change?.(this.destination);
 
@@ -81,11 +88,16 @@ class DestinationCompleteAnimation extends WagonsAnimation {
     }
     
     private getCardPosition(destination: Destination) {
-        const positions = [destination.from, destination.to].map(cityId => this.game.getMap().cities[cityId]);
+        if (Array.isArray(destination.to)) {
+            const from = this.game.getMap().cities[destination.from];
+            return `left: ${from.x - CARD_WIDTH/2}px; top: ${from.y - CARD_HEIGHT/2}px;`;
+        } else {
+            const positions = [destination.from, destination.to].map(cityId => this.game.getMap().cities[cityId]);
 
-        let x = (positions[0].x + positions[1].x) / 2;
-        let y = (positions[0].y + positions[1].y) / 2;
+            let x = (positions[0].x + positions[1].x) / 2;
+            let y = (positions[0].y + positions[1].y) / 2;
 
-        return `left: ${x - CARD_WIDTH/2}px; top: ${y - CARD_HEIGHT/2}px;`;
+            return `left: ${x - CARD_WIDTH/2}px; top: ${y - CARD_HEIGHT/2}px;`;
+        }
     }
 }

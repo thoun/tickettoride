@@ -4,6 +4,7 @@ class Map {
     public string $code;
     public ?int $expansion = null;
     public ?array $bigCities = null;
+    public array $countriesEndPoints = [];
 
     public int $numberOfLocomotiveCards = 14;
     public int $numberOfColoredCards = 12;

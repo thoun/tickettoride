@@ -81,6 +81,7 @@ interface TicketToRideMap {
     preloadImages: string[];
     illustration: number;
     canOnlyUseLocomotivesInTunnels: boolean;
+    minimumPlayerForDoubleRoutes: number;
 }
 
 /**

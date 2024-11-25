@@ -1033,7 +1033,7 @@
   bottom: 0;
   background: url("img/destination-todo.png");
 }
-.destination-card:not(.icon).completed {
+.destination-card:not(.icon).completed:not(.no-mask) {
   mask: url("img/destination-done-mask.png") no-repeat center/contain;
   -webkit-mask: url("img/destination-done-mask.png") no-repeat center/contain;
 }
@@ -1046,8 +1046,11 @@
   bottom: 0;
   background: url("img/destination-done.png");
 }
+.destination-card:not(.icon).completed.no-mask::after {
+  background: url("img/destination-done-no-mask.png");
+}
 
-.done .destination-card:not(.icon) {
+.done .destination-card:not(.icon):not(.no-mask) {
   mask: url("img/destination-done-mask.png") no-repeat center/contain;
   -webkit-mask: url("img/destination-done-mask.png") no-repeat center/contain;
 }
@@ -1059,6 +1062,9 @@
   right: 0;
   bottom: 0;
   background: url("img/destination-done.png");
+}
+.done .destination-card:not(.icon).no-mask::after {
+  background: url("img/destination-done-no-mask.png");
 }
 
 .player-table-train-cars {

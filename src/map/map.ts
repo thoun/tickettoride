@@ -334,7 +334,10 @@ class TtrMap {
                         if (spaceDiv) {
                             spaceDiv.classList.add('forbidden');
                             this.game.setTooltip(spaceDiv.id, `<strong><span style="color: darkred">${_('Important Note:')}</span> 
-                            ${_('In 2 or 3 player games, only one of the Double-Routes can be used.')}</strong>`);
+                            ${ (this.game as any).gamedatas.map.minimumPlayerForDoubleRoutes <= 3 ?
+                                _('In 2 player games, only one of the Double-Routes can be used.') :
+                                _('In 2 or 3 player games, only one of the Double-Routes can be used.')
+                            }</strong>`);
                         }
                     });
                 }
@@ -514,13 +517,13 @@ class TtrMap {
                 return;
             }
 
-            [previousDestination.from, previousDestination.to].forEach(city => 
+            [previousDestination.from, previousDestination.to].filter(city => city > 0).forEach(city => 
                 document.getElementById(`city${city}`).dataset.selectedDestination = 'false'
             );
         }
 
         if (destination) {
-            [destination.from, destination.to].forEach(city => 
+            [destination.from, destination.to].filter(city => city > 0).forEach(city => 
                 document.getElementById(`city${city}`).dataset.selectedDestination = 'true'
             );
         }
@@ -534,7 +537,7 @@ class TtrMap {
 
         if (route) {
 
-            [route.from, route.to].forEach(city => {
+            [route.from, route.to].filter(city => city > 0).forEach(city => {
                 const cityDiv = document.getElementById(`city${city}`);
                 cityDiv.dataset.hovered = 'true';
                 cityDiv.dataset.valid = valid.toString();
@@ -546,7 +549,7 @@ class TtrMap {
 
         } else {
 
-            Object.values(this.map.routes).forEach(r => [r.from, r.to].forEach(city => 
+            Object.values(this.map.routes).forEach(r => [r.from, r.to].filter(city => city > 0).forEach(city => 
                 document.getElementById(`city${city}`).dataset.hovered = 'false'
             ));
 
@@ -559,7 +562,7 @@ class TtrMap {
      * Highlight cities of selectable destination.
      */ 
     public setSelectableDestination(destination: Destination, visible: boolean): void {
-        [destination.from, destination.to].forEach(city => {
+        [destination.from, destination.to].filter(city => city > 0).forEach(city => {
             document.getElementById(`city${city}`).dataset.selectable = ''+visible;
         });
     }
@@ -568,7 +571,7 @@ class TtrMap {
      * Highlight cities of selected destination.
      */ 
     public setSelectedDestination(destination: Destination, visible: boolean): void {
-        [destination.from, destination.to].forEach(city => {
+        [destination.from, destination.to].filter(city => city > 0).forEach(city => {
             document.getElementById(`city${city}`).dataset.selected = ''+visible;
         });
     }
@@ -580,7 +583,7 @@ class TtrMap {
         this.mapDiv.querySelectorAll(`.city[data-to-connect]`).forEach((city: HTMLElement) => city.dataset.toConnect = 'false');
         const cities = [];
         destinations.forEach(destination => cities.push(destination.from, destination.to));
-        cities.forEach(city => document.getElementById(`city${city}`).dataset.toConnect = 'true');
+        cities.filter(city => city > 0).forEach(city => document.getElementById(`city${city}`).dataset.toConnect = 'true');
     }
 
     /** 
@@ -599,7 +602,7 @@ class TtrMap {
         } else {
             cities = [shadow.dataset.from, shadow.dataset.to];
         }
-        cities.forEach(city => document.getElementById(`city${city}`).dataset.highlight = visible);
+        cities.filter(city => Number(city) > 0).forEach(city => document.getElementById(`city${city}`).dataset.highlight = visible);
     }
 
     /** 

@@ -98,11 +98,53 @@ trait MapTrait {
      */
     public function getDestinationRoutes(int $playerId, object $destination) {
         $claimedRoutes = $this->getClaimedRoutes($playerId);
+
+        if (is_array($destination->to)) {
+            // multiple destination possibilities, test from the top-most points to the bottom-most points
+            foreach ($destination->to as $to) {
+                $routes = $this->getShortestRoutesToLinkCitiesOrCountries($claimedRoutes, $destination->from, $to);
+                if ($routes !== null) {
+                    return $routes;
+                }
+            }
+        } else {
+            // simple case, 1 destination
+            return $this->getShortestRoutesToLinkCitiesOrCountries($claimedRoutes, $destination->from, $destination->to);
+        }
+    }
+
+    private function getShortestRoutesToLinkCitiesOrCountries(array $claimedRoutes, int $from, int $to) {
+        $froms = [];
+        $tos = [];
+
+        if ($from < 0) {
+            $froms = array_merge($froms, $this->getMap()->countriesEndPoints[$from]);
+        } else {
+            $froms[] = $from;
+        }
+
+        if ($to < 0) {
+            $tos = array_merge($tos, $this->getMap()->countriesEndPoints[$to]);
+        } else {
+            $tos[] = $to;
+        }
+
+        foreach ($froms as $from) {
+            foreach ($tos as $to) {
+                $routes = $this->getShortestRoutesToLinkCities($claimedRoutes, $from, $to);
+                if ($routes !== null) {
+                    return $routes;
+                }
+            }
+        }
+    }
+
+    private function getShortestRoutesToLinkCities(array $claimedRoutes, int $from, int $to): array | null {
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
 
-        $citiesConnectedToFrom = $this->getAccessibleCitiesFrom(new ConnectedCity($destination->from, []), [$destination->from], $claimedRoutesIds);
+        $citiesConnectedToFrom = $this->getAccessibleCitiesFrom(new ConnectedCity($from, []), [$from], $claimedRoutesIds);
 
-        $validConnections = array_values(array_filter($citiesConnectedToFrom, fn($connectedCity) => $connectedCity->city == $destination->to));
+        $validConnections = array_values(array_filter($citiesConnectedToFrom, fn($connectedCity) => $connectedCity->city == $to));
         $count = count($validConnections);
 
         if ($count == 0) {

@@ -80,16 +80,44 @@ trait StateTrait {
         // completed/failed destinations 
         $destinationsResults = [];
         $completedDestinationsCount = [];
+
+        $routeByCompletedDestination = [];
+        $pointsByDestination = [];
+
         foreach ($players as $playerId => $playerDb) {
             $completedDestinationsCount[$playerId] = 0;
             $uncompletedDestinations = [];
             $completedDestinations = [];
+            $claimedRoutes = $this->getClaimedRoutes($playerId);
 
             $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
 
             foreach ($destinations as &$destination) {
                 $completed = boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
-                $totalScore[$playerId] += $completed ? $destination->points : -$destination->points;
+                
+                $points = 0;
+                if (is_array($destination->to)) {
+                    if ($completed) {
+                        foreach ($destination->to as $index => $to) {
+                            if ($destination->points[$index] > $points) {
+                                $route = $this->getShortestRoutesToLinkCitiesOrCountries($claimedRoutes, $destination->from, $to);
+                                if ($route !== null) {
+                                    $points = $destination->points[$index];
+                                    $routeByCompletedDestination[$destination->id] = $route;
+                                }
+                            }
+                        }
+                    } else {
+                        $points = -min($destination->points);
+                    }
+                    $totalScore[$playerId] += $points;
+                } else {
+                    $points = $completed ? $destination->points : -$destination->points;
+                }
+
+                $totalScore[$playerId] += $points;
+                $pointsByDestination[$destination->id] = $points;
+
                 if ($completed) {
                     $completedDestinationsCount[$playerId]++;
                     $completedDestinations[] = $destination;
@@ -157,26 +185,25 @@ trait StateTrait {
         foreach ($destinationsResults as $playerId => $destinations) {
 
             foreach ($destinations as $destination) {
-                $destinationRoutes = $this->getDestinationRoutes($playerId, $destination);
+                $destinationRoutes = array_key_exists($destination->id, $routeByCompletedDestination) ? $routeByCompletedDestination[$destination->id] : $this->getDestinationRoutes($playerId, $destination);
                 $completed = $destinationRoutes != null;
-                $points = $completed ? $destination->points : -$destination->points;
-
+                $points = $pointsByDestination[$destination->id];
 
                 self::notifyAllPlayers('scoreDestination', clienttranslate('${player_name} reveals ${from} to ${to} destination'), [
                     'playerId' => $playerId,
                     'player_name' => $this->getPlayerName($playerId),
                     'destination' => $destination,
                     'from' => $this->getCityName($destination->from),
-                    'to' => $this->getCityName($destination->to),
+                    'to' => $this->getLogTo($destination),
                     'destinationRoutes' => $destinationRoutes,
                 ]);
                 
                 $message = clienttranslate('${player_name} ${gainsloses} ${absdelta} points with ${from} to ${to} destination');
                 $this->incScore($playerId, $points, $message, [
-                    'delta' => $destination->points,
-                    'absdelta' => abs($destination->points),
+                    'delta' => $points,
+                    'absdelta' => abs($points),
                     'from' => $this->getCityName($destination->from),
-                    'to' => $this->getCityName($destination->to),
+                    'to' => $this->getLogTo($destination),
                     'i18n' => ['gainsloses'],
                     'gainsloses' => $completed ? clienttranslate('gains') : clienttranslate('loses'),
                 ]);
@@ -185,14 +212,14 @@ trait StateTrait {
                 self::incStat($points, 'pointsWithDestinations', $playerId);
                 if ($completed) {      
                     // stats for completed destinations are set as soon as they are completed              
-                    self::incStat($destination->points, 'pointsWithCompletedDestinations');
-                    self::incStat($destination->points, 'pointsWithCompletedDestinations', $playerId);
+                    self::incStat($points, 'pointsWithCompletedDestinations');
+                    self::incStat($points, 'pointsWithCompletedDestinations', $playerId);
                 } else {
                     // stats for uncompleted destinations can only be set at the end
                     self::incStat(1, 'uncompletedDestinations');
                     self::incStat(1, 'uncompletedDestinations', $playerId);
-                    self::incStat($destination->points, 'pointsLostWithUncompletedDestinations');
-                    self::incStat($destination->points, 'pointsLostWithUncompletedDestinations', $playerId);
+                    self::incStat($points, 'pointsLostWithUncompletedDestinations');
+                    self::incStat($points, 'pointsLostWithUncompletedDestinations', $playerId);
                 }
             }
         }

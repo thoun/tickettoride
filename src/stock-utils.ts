@@ -53,8 +53,8 @@ class DestinationCard {
         public type: number,
         public typeArg: number,
         public from: number,
-        public to: number,
-        public points: number,
+        public to: number | number[],
+        public points: number | number[],
     ) {
         this.uniqueId = 1000 * type + typeArg;
         this.setTypeArg = Math.floor(typeArg / 100);
@@ -74,8 +74,8 @@ function setupDestinationCardDiv(game: TicketToRideGame, cardDiv: HTMLDivElement
     const destination = destinations.find(d => d.uniqueId == cardUniqueId);
     cardDiv.title = `${dojo.string.substitute(_('${from} to ${to}'), {
         from: game.getCityName(destination.from), 
-        to: game.getCityName(destination.to),
-    })}, ${destination.points} ${_('points')}`;
+        to: Array.isArray(destination.to) ? destination.to.map(city => game.getCityName(city)).join(' / ') : game.getCityName(destination.to),
+    })}, ${Array.isArray(destination.points) ? destination.points.join(' / ') : destination.points} ${_('points')}`;
 }
 
 function getBackgroundInlineStyleForDestination(map: TicketToRideMap, destination: Destination) {

@@ -2,13 +2,6 @@
 
 require_once(__DIR__.'/../../php/objects/city.php');
 
-const COUNTRIES_END_POINTS = [
-  -1 => [ 1001, 1002, 1003, 1004 ],
-  -2 => [ 2001, 2002, 2003, 2004, 2005 ],
-  -3 => [ 3001, 3002, 3003 ],
-  -4 => [ 4001, 4002, 4003, 4004, 4005 ],
-];
-
 /**
  * Cities in the map (by alphabetical order).
  */

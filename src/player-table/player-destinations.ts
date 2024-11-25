@@ -89,7 +89,11 @@ class PlayerDestinations {
         }
         this.destinationsDone.push(destination);
 
-        document.getElementById(`player-table-${this.playerId}-destinations-done`).appendChild(document.getElementById(`destination-card-${destination.id}`));
+        const card = document.getElementById(`destination-card-${destination.id}`);
+        document.getElementById(`player-table-${this.playerId}-destinations-done`).appendChild(card);
+        if (Array.isArray(destination.to)) {
+            card.classList.add('no-mask');
+        }
         this.destinationColumnsUpdated();
     }
 
