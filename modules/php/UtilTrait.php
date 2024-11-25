@@ -84,7 +84,8 @@ trait UtilTrait {
     }
 
     function getExpansionOption() {
-        return $this->getMap()->hasExpansion ? $this->getOptionValue(EXPANSION_OPTION) : 0;
+        $expansion = $this->getMap()->expansion;
+        return $expansion !== null ? $this->getOptionValue($expansion) : 0;
     }
 
     function getMapCode(): string {

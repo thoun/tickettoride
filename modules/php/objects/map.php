@@ -2,7 +2,7 @@
 
 class Map {
     public string $code;
-    public ?bool $hasExpansion = false;
+    public ?int $expansion = null;
     public ?array $bigCities = null;
 
     public int $numberOfLocomotiveCards = 14;

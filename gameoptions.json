@@ -1,6 +1,6 @@
 {
     
-    "102": {
+    "150": {
         "name": "Map",
         "values": {
             "1": {
@@ -41,7 +41,14 @@
                 "nobeginner": true
             }
         ],
-        "default": 0
+        "default": 0,
+        "displaycondition": [
+            {
+                "type": "otheroption",
+                "id": 150,
+                "value": 1
+            }
+        ]
     },
     
     "110": {

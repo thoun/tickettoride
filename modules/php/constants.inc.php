@@ -4,8 +4,9 @@
  * Table options
  */
 
-const MAP_OPTION = 102;
-const EXPANSION_OPTION = 101;
+const MAP_OPTION = 150;
+const EXPANSION1910_OPTION = 101;
+const EXPANSION1912_OPTION = 102;
 const SHOW_TURN_ORDER_OPTION = 110;
 
 /* 
