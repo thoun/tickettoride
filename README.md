@@ -40,6 +40,3 @@ If there is a lot of locomotives remaining in a small set of available cards (fo
 In case the player cannot pick destination cards nor train car cards, and cannot claim a route, we let him pass.
 What if he can only construct ? Does he have to ? -> probably yes, no issue here
 What if he can only pick destinations ? Does he have to ? -> asked, can be a negative move for the player
-
-# About other maps
-Some code is already prepared in case of new maps. search "TODO MAPS" to activate them if you duplicate this project to create a new map

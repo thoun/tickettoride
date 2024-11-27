@@ -212,10 +212,10 @@ class TtrMap {
                     to: this.game.getCityName(route.to),
                 })}, ${(route.spaces as any).length} ${getColor(route.color, 'route')}`;
                 if (route.tunnel) {
-                    title += ` (${/* TODO MAPS _*/("Tunnel")})`;
+                    title += ` (${_("Tunnel")})`;
                 }
                 if (route.locomotives) {
-                    title += ` (${/* TODO MAPS _*/("${number} locomotive(s) required").replace('${number}', `${route.locomotives}`)})`;
+                    title += ` (${_("${number} locomotive(s) required").replace('${number}', `${route.locomotives}`)})`;
                 }  
                 
                 dojo.place(`<div id="${destination}-route${route.id}-space${spaceIndex}" class="route-space ${route.tunnel ? 'tunnel' : ''}" 

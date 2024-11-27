@@ -1,6 +1,6 @@
 {
     
-    "150": {
+"150": {
         "name": "Map",
         "values": {
             "1": {
@@ -15,13 +15,18 @@
         "default": 1,
         "level": "major",
         "startcondition": {
-        "3": [
-            {
-            "type": "maxplayers",
-            "value": 3,
-            "message": "Switzerland is for 3 players maximum."
-            }
-        ]
+            "3": [
+                {
+                "type": "maxplayers",
+                "value": 3,
+                "message": "Switzerland is for 3 players maximum."
+                },
+                {
+                    "type": "minplayers",
+                    "value": 99,
+                    "message": "Available soon"
+                }
+            ]
         }
     },
     

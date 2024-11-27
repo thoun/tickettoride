@@ -153,8 +153,8 @@ $playerActionsGameStates = [
 
     ST_PLAYER_CONFIRM_TUNNEL => [
         "name" => "confirmTunnel",
-        "description" => /*TODO MAPS clienttranslate*/('${actplayer} must confirm tunnel claim using ${extraCards} extra card(s) ${colors}'),
-        "descriptionmyturn" => /*TODO MAPS clienttranslate*/('${you} must confirm tunnel claim using ${extraCards} extra card(s) ${colors}'),
+        "description" => clienttranslate('${actplayer} must confirm tunnel claim using ${extraCards} extra card(s) ${colors}'),
+        "descriptionmyturn" => clienttranslate('${you} must confirm tunnel claim using ${extraCards} extra card(s) ${colors}'),
         "type" => "activeplayer",
         "args" => "argConfirmTunnel",
         "possibleactions" => [
