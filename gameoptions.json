@@ -13,21 +13,7 @@
             }
         },
         "default": 1,
-        "level": "major",
-        "startcondition": {
-            "3": [
-                {
-                "type": "maxplayers",
-                "value": 3,
-                "message": "Switzerland is for 3 players maximum."
-                },
-                {
-                    "type": "minplayers",
-                    "value": 99,
-                    "message": "Available soon"
-                }
-            ]
-        }
+        "level": "major"
     },
     
     "101": {
