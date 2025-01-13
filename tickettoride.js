@@ -1927,6 +1927,9 @@ var TicketToRide = /** @class */ (function () {
         this.setupNotifications();
         this.setupPreferences();
         this.onScreenWidthChange = function () { return _this.map.setAutoZoom(); };
+        if (this.gamedatas.map.multilingualPdfRulesUrl || this.gamedatas.map.rulesDifferences) {
+            this.statusBar.addActionButton(_('Rules differences between USA and current map'), function () { return _this.createRulesPopin(); }, { id: 'rules-differences-btn', destination: document.getElementById("player_boards") });
+        }
         log("Ending game setup");
     };
     ///////////////////////////////////////////////////
@@ -2813,6 +2816,33 @@ var TicketToRide = /** @class */ (function () {
             console.error(log, args, "Exception thrown", e.stack);
         }
         return this.inherited(arguments);
+    };
+    TicketToRide.prototype.createRulesPopin = function () {
+        var _this = this;
+        var url = this.gamedatas.map.multilingualPdfRulesUrl;
+        //`https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2023/09/720114-T2RMC2-Rules_switzerland-ML-2017.pdf`; // TODO
+        var html = "\n        <div id=\"popin_showMapRulebook_container\" class=\"tickettoride_popin_container\">\n            <div id=\"popin_showMapRulebook_underlay\" class=\"tickettoride_popin_underlay\"></div>\n                <div id=\"popin_showMapRulebook_wrapper\" class=\"tickettoride_popin_wrapper\">\n                <div id=\"popin_showMapRulebook\" class=\"tickettoride_popin\">\n                    <a id=\"popin_showMapRulebook_close\" class=\"closeicon\"><i class=\"fa fa-times fa-2x\" aria-hidden=\"true\"></i></a>\n                                \n                    <h2>".concat(_('Rules differences'), "</h2>\n                    <div id=\"playermat-container-modal\">\n                        ").concat(this.gamedatas.map.rulesDifferences ? "\n                            <ul>\n                                ".concat(this.gamedatas.map.rulesDifferences.map(function (line) { return "<li>".concat(_(line), "</li>"); }).join(''), "\n                            </ul>\n                        ") : '', "\n                    \n                        ").concat(url ? "\n                        <p class=\"block-buttons\">\n                            ".concat(_('Multilingual rulebook:'), "\n                            <button id=\"show-rulebook\" style=\"width: auto;\" class=\"bgabutton bgabutton_blue\">").concat(_('Show rulebook'), "</button>\n                            <a href=\"").concat(url, "\" target=\"_blank\" class=\"bgabutton bgabutton_blue\">").concat(_('Open rulebook in a new tab'), "</a>\n                        </p>\n                        <div id=\"rulebook-iframe\"></div>\n                        ") : '', "\n                    </div>\n                </div>\n            </div>\n        </div>");
+        dojo.place(html, $(document.body));
+        document.getElementById("popin_showMapRulebook_close").addEventListener("click", function () { return _this.closePopin(); });
+        document.getElementById("popin_showMapRulebook_underlay").addEventListener("click", function () { return _this.closePopin(); });
+        if (url) {
+            document.getElementById("show-rulebook").addEventListener("click", function () { return _this.viewRulebook(url); });
+        }
+    };
+    TicketToRide.prototype.viewRulebook = function (url) {
+        var rulebookContainer = document.getElementById("rulebook-iframe");
+        var show = rulebookContainer.innerHTML === '';
+        if (show) {
+            var html = "<iframe src=\"".concat(url, "\" style=\"width: 100%; height: 60vh\"></iframe>");
+            rulebookContainer.innerHTML = html;
+        }
+        else {
+            rulebookContainer.innerHTML = '';
+        }
+        document.getElementById("show-rulebook").innerHTML = show ? _('Hide rulebook') : _('Show rulebook');
+    };
+    TicketToRide.prototype.closePopin = function () {
+        document.getElementById('popin_showMapRulebook_container').remove();
     };
     return TicketToRide;
 }());

@@ -99,6 +99,14 @@ class TicketToRide implements TicketToRideGame {
 
         (this as any).onScreenWidthChange = () => this.map.setAutoZoom();
 
+        if (this.gamedatas.map.multilingualPdfRulesUrl || this.gamedatas.map.rulesDifferences) {
+            (this as any).statusBar.addActionButton(
+                _('Rules differences between USA and current map'), 
+                () => this.createRulesPopin(), 
+                { id: 'rules-differences-btn', destination: document.getElementById(`player_boards`) }
+            );
+        }
+
         log("Ending game setup");
     }
 
@@ -1083,5 +1091,62 @@ class TicketToRide implements TicketToRideGame {
             console.error(log,args,"Exception thrown", e.stack);
         }
         return (this as any).inherited(arguments);
+    }
+
+    private createRulesPopin()  {
+        const url = this.gamedatas.map.multilingualPdfRulesUrl;
+        //`https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2023/09/720114-T2RMC2-Rules_switzerland-ML-2017.pdf`; // TODO
+
+        let html = `
+        <div id="popin_showMapRulebook_container" class="tickettoride_popin_container">
+            <div id="popin_showMapRulebook_underlay" class="tickettoride_popin_underlay"></div>
+                <div id="popin_showMapRulebook_wrapper" class="tickettoride_popin_wrapper">
+                <div id="popin_showMapRulebook" class="tickettoride_popin">
+                    <a id="popin_showMapRulebook_close" class="closeicon"><i class="fa fa-times fa-2x" aria-hidden="true"></i></a>
+                                
+                    <h2>${_('Rules differences')}</h2>
+                    <div id="playermat-container-modal">
+                        ${this.gamedatas.map.rulesDifferences ? `
+                            <ul>
+                                ${this.gamedatas.map.rulesDifferences.map(line => `<li>${_(line)}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    
+                        ${url ? `
+                        <p class="block-buttons">
+                            ${_('Multilingual rulebook:')}
+                            <button id="show-rulebook" style="width: auto;" class="bgabutton bgabutton_blue">${_('Show rulebook')}</button>
+                            <a href="${url}" target="_blank" class="bgabutton bgabutton_blue">${_('Open rulebook in a new tab')}</a>
+                        </p>
+                        <div id="rulebook-iframe"></div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        dojo.place(html, $(document.body));
+
+        document.getElementById(`popin_showMapRulebook_close`).addEventListener(`click`, () => this.closePopin());
+        document.getElementById(`popin_showMapRulebook_underlay`).addEventListener(`click`, () => this.closePopin());
+
+        if (url) {
+            document.getElementById(`show-rulebook`).addEventListener(`click`, () => this.viewRulebook(url));
+        }
+    }
+
+    private viewRulebook(url: string) {
+        const rulebookContainer = document.getElementById(`rulebook-iframe`);
+        const show = rulebookContainer.innerHTML === '';
+        if (show) {
+            const html = `<iframe src="${url}" style="width: 100%; height: 60vh"></iframe>`;
+            rulebookContainer.innerHTML = html;
+        } else {
+            rulebookContainer.innerHTML = '';
+        }
+        document.getElementById(`show-rulebook`).innerHTML = show ? _('Hide rulebook') : _('Show rulebook');
+    }
+
+    private closePopin() {
+        document.getElementById('popin_showMapRulebook_container').remove();
     }
 }

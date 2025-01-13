@@ -20,6 +20,8 @@ class Map {
     public ?int $pointsForLongestPath = 10; // points for maximum longest countinuous path (null means disabled)
     public ?int $pointsForGlobetrotter = 15; // points for maximum completed destinations (null means disabled)
     public int $minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
+    public ?string $multilingualPdfRulesUrl = null; // PDF rules URL to display when it's not the base game
+    public ?array $rulesDifferences = null; // text summary of rules differences to display when it's not the base game
 
     public function __construct(
         public array $cities,
