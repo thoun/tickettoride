@@ -26,7 +26,7 @@ function getCities() {
     16 => new City('Erzurum', 1669, 1010),
     17 => new City('Essen', 679, 343),
     18 => new City('Frankfurt', 653, 466),
-    19 => new City('Kharov', 1640, 540),
+    19 => new City('Kharkov', 1640, 540),
     20 => new City('Kobenhavn', 805, 158),
     21 => new City('Kyiv', 1405, 447),
     22 => new City('Lisboa', 32, 1007),
