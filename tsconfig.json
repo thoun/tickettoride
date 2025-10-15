@@ -8,9 +8,7 @@
       "outFile": "tickettoride.js"
     },
     "files": [
-        "src/framework.d.ts",
-        "src/stock.d.ts",
-        "src/counter.d.ts",
+        "bga-framework.d.ts",
         "src/tickettoride.d.ts",
         "src/slide-utils.ts",
         "src/stock-utils.ts",

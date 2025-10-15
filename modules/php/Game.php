@@ -18,7 +18,10 @@
 
 namespace Bga\Games\TicketToRide;
 
-require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
+use Bga\GameFramework\Components\Deck;
+use Bga\GameFramework\Table;
+
+require_once('framework-prototype/Helpers/Arrays.php');
 
 require_once('constants.inc.php');
 require_once(__DIR__.'/objects/map.php');
@@ -29,7 +32,7 @@ require_once(__DIR__.'/objects/destination.php');
  * Game main class.
  * For readability, main sections (util, action, state, args) have been splited into Traits with the section name on modules/php directory.
  */
-class Game extends \Table {
+class Game extends Table {
     use UtilTrait;
     use ActionTrait;
     use StateTrait;
@@ -39,8 +42,8 @@ class Game extends \Table {
     use DestinationDeckTrait;
     use DebugUtilTrait;
 
-    private \Deck $destinations;
-    private \Deck $trainCars;
+    public Deck $destinations;
+    public Deck $trainCars;
 
     public \Map $map;
 
@@ -51,19 +54,12 @@ class Game extends \Table {
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
         ]));
         
-        $this->destinations = $this->getNew("module.common.deck");
-        $this->destinations->init("destination");
+        $this->destinations = $this->deckFactory->createDeck('destination');
 		
-        $this->trainCars = $this->getNew("module.common.deck");
-        $this->trainCars->init("traincar"); 
+        $this->trainCars = $this->deckFactory->createDeck('traincar');
         $this->trainCars->autoreshuffle = true;
         $this->trainCars->autoreshuffle_trigger = ['obj' => $this, 'method' => 'trainCarDeckAutoReshuffle'];
 	}
-	
-    protected function getGameName() {
-		// Used for translations and stuff. Please do not modify.
-        return "tickettoride";
-    }	
 
     /*
         setupNewGame:
@@ -160,9 +156,7 @@ class Game extends \Table {
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
-        // TODO TEMP card to test
-        $this->debugSetup();
-
+        return \ST_DEAL_INITIAL_DESTINATIONS;
         /************ End of the game initialization *****/
     }
 
@@ -175,8 +169,8 @@ class Game extends \Table {
         _ when the game starts
         _ when a player refreshes the game page (F5)
     */
-    protected function getAllDatas() {
-        $stateName = $this->gamestate->state()['name']; 
+    protected function getAllDatas(): array {
+        $stateName = $this->gamestate->getCurrentMainState()->name; 
         $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
 
         $expansionOption = $this->getExpansionOption();
@@ -269,7 +263,7 @@ class Game extends \Table {
         (see states.inc.php)
     */
     function getGameProgression() {
-        $stateName = $this->gamestate->state()['name']; 
+        $stateName = $this->gamestate->getCurrentMainState()->name; 
         if ($stateName === 'endScore' || $stateName === 'gameEnd') {
             // game is over
             return 100;

@@ -35,7 +35,7 @@ class PlayerTrainCars {
                 let html = `
                 <div id="train-car-card-${trainCar.id}" class="train-car-card" data-color="${trainCar.type}"></div>
                 `;
-                dojo.place(html, groupTrainCarCards);
+                groupTrainCarCards.insertAdjacentHTML('beforeend', html);
                 card = document.getElementById(`train-car-card-${trainCar.id}`);
             } else {
                 groupTrainCarCards.appendChild(card);
@@ -274,15 +274,14 @@ class PlayerTrainCars {
         const groups = this.getGroups();
 
         const locomotiveGroup = groups.find(groupDiv => groupDiv.dataset.type == '0');
-        const canUseLocomotives = route.tunnel || !(this.game as any).gamedatas.map.canOnlyUseLocomotivesInTunnels;
-        const locomotives = canUseLocomotives && locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
+        const locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
 
         const possibleColors = [];
 
         if (route.locomotives < route.spaces.length) { // if route is only locomotives, don't ask for color
             groups.forEach(groupDiv => {
                 const count = Number(groupDiv.dataset.count);
-                if (count + (canUseLocomotives ? locomotives : 0) >= route.spaces.length) {
+                if (count + locomotives >= route.spaces.length) {
                     const color = Number(groupDiv.dataset.type);
                     if (color > 0 && (route.color == 0 || route.color == color)) {
                         possibleColors.push(color);
@@ -291,7 +290,7 @@ class PlayerTrainCars {
             });
         }
 
-        if (canUseLocomotives && locomotives >= route.spaces.length) {
+        if (locomotives >= route.spaces.length) {
             possibleColors.push(0);
         }
 
@@ -304,13 +303,11 @@ class PlayerTrainCars {
         this.route = route;
 
         const groups = this.getGroups();
-        const canUseLocomotives = route ? (route.tunnel || !(this.game as any).gamedatas.map.canOnlyUseLocomotivesInTunnels) : true;
 
         groups.forEach(groupDiv => {
             if (route) {
                 const color = Number(groupDiv.dataset.type);
-                const validColor = possibleColors.includes(color) || (color == 0 && canUseLocomotives);
-                groupDiv.classList.toggle('disabled', !validColor);
+                groupDiv.classList.toggle('disabled', color != 0 && !possibleColors.includes(color));
             } else {
                 groupDiv.classList.remove('disabled');
             }

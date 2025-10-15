@@ -1458,7 +1458,7 @@ var PlayerTrainCars = /** @class */ (function () {
             var groupTrainCarCards = group.getElementsByClassName('train-car-cards')[0];
             if (!card) {
                 var html = "\n                <div id=\"train-car-card-".concat(trainCar.id, "\" class=\"train-car-card\" data-color=\"").concat(trainCar.type, "\"></div>\n                ");
-                dojo.place(html, groupTrainCarCards);
+                groupTrainCarCards.insertAdjacentHTML('beforeend', html);
                 card = document.getElementById("train-car-card-".concat(trainCar.id));
             }
             else {
@@ -1662,13 +1662,12 @@ var PlayerTrainCars = /** @class */ (function () {
     PlayerTrainCars.prototype.getPossibleColors = function (route) {
         var groups = this.getGroups();
         var locomotiveGroup = groups.find(function (groupDiv) { return groupDiv.dataset.type == '0'; });
-        var canUseLocomotives = route.tunnel || !this.game.gamedatas.map.canOnlyUseLocomotivesInTunnels;
-        var locomotives = canUseLocomotives && locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
+        var locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
         var possibleColors = [];
         if (route.locomotives < route.spaces.length) { // if route is only locomotives, don't ask for color
             groups.forEach(function (groupDiv) {
                 var count = Number(groupDiv.dataset.count);
-                if (count + (canUseLocomotives ? locomotives : 0) >= route.spaces.length) {
+                if (count + locomotives >= route.spaces.length) {
                     var color = Number(groupDiv.dataset.type);
                     if (color > 0 && (route.color == 0 || route.color == color)) {
                         possibleColors.push(color);
@@ -1676,7 +1675,7 @@ var PlayerTrainCars = /** @class */ (function () {
                 }
             });
         }
-        if (canUseLocomotives && locomotives >= route.spaces.length) {
+        if (locomotives >= route.spaces.length) {
             possibleColors.push(0);
         }
         return possibleColors;
@@ -1687,12 +1686,10 @@ var PlayerTrainCars = /** @class */ (function () {
     PlayerTrainCars.prototype.setSelectableTrainCarColors = function (route, possibleColors) {
         this.route = route;
         var groups = this.getGroups();
-        var canUseLocomotives = route ? (route.tunnel || !this.game.gamedatas.map.canOnlyUseLocomotivesInTunnels) : true;
         groups.forEach(function (groupDiv) {
             if (route) {
                 var color = Number(groupDiv.dataset.type);
-                var validColor = possibleColors.includes(color) || (color == 0 && canUseLocomotives);
-                groupDiv.classList.toggle('disabled', !validColor);
+                groupDiv.classList.toggle('disabled', color != 0 && !possibleColors.includes(color));
             }
             else {
                 groupDiv.classList.remove('disabled');
@@ -1869,17 +1866,25 @@ var SCORE_MS = 1500;
 var isDebug = window.location.host == 'studio.boardgamearena.com';
 var log = isDebug ? console.log.bind(window.console) : function () { };
 var ACTION_TIMER_DURATION = 8;
-var TicketToRide = /** @class */ (function () {
+// @ts-ignore
+GameGui = (function () {
+    function GameGui() { }
+    return GameGui;
+})();
+var TicketToRide = /** @class */ (function (_super) {
+    __extends(TicketToRide, _super);
     function TicketToRide() {
-        this.playerTable = null;
-        this.trainCarCounters = [];
-        this.trainCarCardCounters = [];
-        this.destinationCardCounters = [];
-        this.animations = [];
-        this.isTouch = window.matchMedia('(hover: none)').matches;
-        this.routeToConfirm = null;
-        this.actionTimerId = null;
-        this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
+        var _this = _super.call(this) || this;
+        _this.playerTable = null;
+        _this.trainCarCounters = [];
+        _this.trainCarCardCounters = [];
+        _this.destinationCardCounters = [];
+        _this.animations = [];
+        _this.isTouch = window.matchMedia('(hover: none)').matches;
+        _this.routeToConfirm = null;
+        _this.actionTimerId = null;
+        _this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
+        return _this;
     }
     /*
         setup:
@@ -1900,7 +1905,7 @@ var TicketToRide = /** @class */ (function () {
         Object.entries(map.routes).forEach(function (entry) { return entry[1].id = Number(entry[0]); });
         Object.entries(map.destinations).forEach(function (typeEntry) { return Object.entries(typeEntry[1]).forEach(function (entry) { return entry[1].id = Number(entry[0]); }); });
         document.getElementById("score").insertAdjacentHTML("beforebegin", "<link rel=\"stylesheet\" type=\"text/css\" href=\"".concat(g_gamethemeurl, "img/").concat(map.code, "/map.css\"/>"));
-        /*(this as any).ensureSpecificGameImageLoading([
+        /*this.ensureSpecificGameImageLoading([
             `${map.code}/map.jpg`,
             ...map.preloadImages.map(filename => `${map.code}/${filename}`)
         ]);*/
@@ -1925,7 +1930,6 @@ var TicketToRide = /** @class */ (function () {
             this.onEnteringEndScore(true);
         }
         this.setupNotifications();
-        this.setupPreferences();
         this.onScreenWidthChange = function () { return _this.map.setAutoZoom(); };
         if (this.gamedatas.map.multilingualPdfRulesUrl || this.gamedatas.map.rulesDifferences) {
             this.statusBar.addActionButton(_('Rules differences between USA and current map'), function () { return _this.createRulesPopin(); }, { id: 'rules-differences-btn', destination: document.getElementById("player_boards") });
@@ -1974,7 +1978,11 @@ var TicketToRide = /** @class */ (function () {
      */
     TicketToRide.prototype.onEnteringChooseAction = function (args) {
         var _a, _b;
-        this.setGamestateDescription(args.canTakeTrainCarCards ? '' : 'NoTrainCarsCards');
+        if (!args.canTakeTrainCarCards) {
+            this.statusBar.setTitle(this.isCurrentPlayerActive() ?
+                _('${you} must claim a route or draw destination tickets') :
+                _('${actplayer} must claim a route or draw destination tickets'), args);
+        }
         var currentPlayerActive = this.isCurrentPlayerActive();
         this.trainCarSelection.setSelectableTopDeck(currentPlayerActive, args.maxHiddenCardsPick);
         this.map.setSelectableRoutes(currentPlayerActive, args.possibleRoutes);
@@ -2089,38 +2097,11 @@ var TicketToRide = /** @class */ (function () {
     TicketToRide.prototype.setTooltipToClass = function (className, html) {
         this.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
     };
-    TicketToRide.prototype.setGamestateDescription = function (property) {
-        if (property === void 0) { property = ''; }
-        var originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-        this.gamedatas.gamestate.description = originalState['description' + property];
-        this.gamedatas.gamestate.descriptionmyturn = originalState['descriptionmyturn' + property];
-        this.updatePageTitle();
-    };
     /**
      * Handle user preferences changes.
      */
-    TicketToRide.prototype.setupPreferences = function () {
-        var _this = this;
-        // Extract the ID and value from the UI control
-        var onchange = function (e) {
-            var match = e.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
-            if (!match) {
-                return;
-            }
-            var prefId = +match[1];
-            var prefValue = +e.target.value;
-            _this.prefs[prefId].value = prefValue;
-            _this.onPreferenceChange(prefId, prefValue);
-        };
-        // Call onPreferenceChange() when any value changes
-        dojo.query(".preference_control").connect("onchange", onchange);
-        // Call onPreferenceChange() now
-        dojo.forEach(dojo.query("#ingame_menu_content .preference_control"), function (el) { return onchange({ target: el }); });
-    };
-    /**
-     * Handle user preferences changes.
-     */
-    TicketToRide.prototype.onPreferenceChange = function (prefId, prefValue) {
+    // @ts-ignore
+    TicketToRide.prototype.onGameUserPreferenceChanged = function (prefId, prefValue) {
         var _a;
         switch (prefId) {
             case 201: // 1 = buttons, 2 = double click to pick 2 cards
@@ -2141,8 +2122,7 @@ var TicketToRide = /** @class */ (function () {
         }
     };
     TicketToRide.prototype.isColorBlindMode = function () {
-        var _a;
-        return Number((_a = this.prefs[204]) === null || _a === void 0 ? void 0 : _a.value) === 1;
+        return this.getGameUserPreference(204) === 1;
     };
     TicketToRide.prototype.getPlayerId = function () {
         return Number(this.player_id);
@@ -2188,7 +2168,7 @@ var TicketToRide = /** @class */ (function () {
                 _this.completedDestinationsCounter.create("completed-destinations-counter-".concat(player.id));
                 _this.completedDestinationsCounter.setValue(gamedatas.completedDestinations.length);
             }
-            if (gamedatas.showTurnOrder && gamedatas.gamestate.id < 30) { // don't show turn order if game is already started (refresh or TB game)
+            if (gamedatas.showTurnOrder && Number(gamedatas.gamestate.id) < 30) { // don't show turn order if game is already started (refresh or TB game)
                 dojo.place("<div class=\"player-turn-order\">".concat(_('Player ${number}').replace('${number}', "<strong>".concat(player.playerNo, "</strong>")), "</div>"), "player_board_".concat(player.id));
             }
         });
@@ -2344,11 +2324,10 @@ var TicketToRide = /** @class */ (function () {
      */
     TicketToRide.prototype.startActionTimer = function (buttonId, time) {
         var _this = this;
-        var _a;
         if (this.actionTimerId) {
             window.clearInterval(this.actionTimerId);
         }
-        if (Number((_a = this.prefs[207]) === null || _a === void 0 ? void 0 : _a.value) == 2) {
+        if (this.getGameUserPreference(207) == 2) {
             return false;
         }
         var button = document.getElementById(buttonId);
@@ -2435,16 +2414,14 @@ var TicketToRide = /** @class */ (function () {
      * Check if player should be asked for a route claim confirmation.
      */
     TicketToRide.prototype.confirmRouteClaimActive = function () {
-        var _a;
-        var preferenceValue = Number((_a = this.prefs[202]) === null || _a === void 0 ? void 0 : _a.value);
+        var preferenceValue = this.getGameUserPreference(202);
         return preferenceValue === 1 || (preferenceValue === 2 && this.isTouch);
     };
     /**
      * Check if player should be asked for the color he wants when he clicks on a double route.
      */
     TicketToRide.prototype.askDoubleRouteActive = function () {
-        var _a;
-        var preferenceValue = Number((_a = this.prefs[209]) === null || _a === void 0 ? void 0 : _a.value);
+        var preferenceValue = this.getGameUserPreference(209);
         return preferenceValue === 1;
     };
     TicketToRide.prototype.setActionBarAskDoubleRoad = function (clickedRoute, otherRoute) {
@@ -2510,8 +2487,7 @@ var TicketToRide = /** @class */ (function () {
      */
     TicketToRide.prototype.drawDestinations = function () {
         var _this = this;
-        var _a;
-        var confirmation = ((_a = this.prefs[206]) === null || _a === void 0 ? void 0 : _a.value) !== 2;
+        var confirmation = this.getGameUserPreference(206) !== 2;
         if (confirmation && this.gamedatas.gamestate.args.maxDestinationsPick) {
             this.confirmationDialog(_('Are you sure you want to take new destinations?'), function () {
                 _this.bgaPerformAction('actDrawDestinations');
@@ -2576,8 +2552,7 @@ var TicketToRide = /** @class */ (function () {
         this.bgaPerformAction('actSkipTunnel');
     };
     TicketToRide.prototype.isFastEndScoring = function () {
-        var _a;
-        return Number((_a = this.prefs[208]) === null || _a === void 0 ? void 0 : _a.value) == 2;
+        return this.getGameUserPreference(208) == 2;
     };
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
@@ -2822,7 +2797,7 @@ var TicketToRide = /** @class */ (function () {
         var url = this.gamedatas.map.multilingualPdfRulesUrl;
         //`https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2023/09/720114-T2RMC2-Rules_switzerland-ML-2017.pdf`; // TODO
         var html = "\n        <div id=\"popin_showMapRulebook_container\" class=\"tickettoride_popin_container\">\n            <div id=\"popin_showMapRulebook_underlay\" class=\"tickettoride_popin_underlay\"></div>\n                <div id=\"popin_showMapRulebook_wrapper\" class=\"tickettoride_popin_wrapper\">\n                <div id=\"popin_showMapRulebook\" class=\"tickettoride_popin\">\n                    <a id=\"popin_showMapRulebook_close\" class=\"closeicon\"><i class=\"fa fa-times fa-2x\" aria-hidden=\"true\"></i></a>\n                                \n                    <h2>".concat(_('Rules differences'), "</h2>\n                    <div id=\"playermat-container-modal\">\n                        ").concat(this.gamedatas.map.rulesDifferences ? "\n                            <ul>\n                                ".concat(this.gamedatas.map.rulesDifferences.map(function (line) { return "<li>".concat(_(line), "</li>"); }).join(''), "\n                            </ul>\n                        ") : '', "\n                    \n                        ").concat(url ? "\n                        <p class=\"block-buttons\">\n                            ".concat(_('Multilingual rulebook:'), "\n                            <button id=\"show-rulebook\" style=\"width: auto;\" class=\"bgabutton bgabutton_blue\">").concat(_('Show rulebook'), "</button>\n                            <a href=\"").concat(url, "\" target=\"_blank\" class=\"bgabutton bgabutton_blue\">").concat(_('Open rulebook in a new tab'), "</a>\n                        </p>\n                        <div id=\"rulebook-iframe\"></div>\n                        ") : '', "\n                    </div>\n                </div>\n            </div>\n        </div>");
-        dojo.place(html, $(document.body));
+        document.body.insertAdjacentHTML('beforeend', html);
         document.getElementById("popin_showMapRulebook_close").addEventListener("click", function () { return _this.closePopin(); });
         document.getElementById("popin_showMapRulebook_underlay").addEventListener("click", function () { return _this.closePopin(); });
         if (url) {
@@ -2845,7 +2820,7 @@ var TicketToRide = /** @class */ (function () {
         document.getElementById('popin_showMapRulebook_container').remove();
     };
     return TicketToRide;
-}());
+}(GameGui));
 define([
     "dojo", "dojo/_base/declare",
     "ebg/core/gamegui",

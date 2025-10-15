@@ -113,7 +113,7 @@ trait MapTrait {
         }
     }
 
-    private function getShortestRoutesToLinkCitiesOrCountries(array $claimedRoutes, int $from, int $to) {
+    public function getShortestRoutesToLinkCitiesOrCountries(array $claimedRoutes, int $from, int $to) {
         $froms = [];
         $tos = [];
 

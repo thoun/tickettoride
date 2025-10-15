@@ -236,7 +236,7 @@ trait TrainCarDeckTrait {
         }
     }
 
-    private function canTakeASecondCard(?int $firstCardType) { // null if unknown/hidden
+    public function canTakeASecondCard(?int $firstCardType) { // null if unknown/hidden
         if ($firstCardType === 0 && $this->getMap()->visibleLocomotivesCountsAsTwoCards) {
             // if the player chose a locomotive
             return false;

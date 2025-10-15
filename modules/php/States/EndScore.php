@@ -1,47 +1,31 @@
 <?php
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRide\States;
 
-trait StateTrait {
+use Bga\GameFramework\Actions\Types\IntArrayParam;
+use Bga\GameFramework\States\GameState;
+use Bga\GameFramework\States\PossibleAction;
+use Bga\GameFramework\StateType;
+use Bga\GameFrameworkPrototype\Helpers\Arrays;
+use Bga\Games\TicketToRide\Game;
 
-//////////////////////////////////////////////////////////////////////////////
-//////////// Game state actions
-////////////
-
-    /*
-        Here, you can create methods defined as "game state actions" (see "action" property in states.inc.php).
-        The action method of state X is called everytime the current game state is set to X.
-    */
-
-    function stDealInitialDestinations() {
-        $playersIds = $this->getPlayersIds();
-
-        foreach($playersIds as $playerId) {
-            $this->pickInitialDestinationCards($playerId);
-        }
-        
-        $this->gamestate->nextState('');
+class EndScore extends GameState {
+    public function __construct(protected Game $game)
+    {
+        parent::__construct($game,
+            id: ST_END_SCORE,
+            type: StateType::GAME,
+            name: 'endScore',
+        );
     }
 
-    function stChooseInitialDestinationsOld() { 
-        $this->gamestate->setAllPlayersMultiactive();
-    }
-
-    function stChooseInitialDestinations() { 
-        $this->gamestate->setAllPlayersMultiactive();
-        $this->gamestate->initializePrivateStateForAllActivePlayers(); 
-    }
-
-    function stNextPlayer() {
-    }
-
-    function stEndScore() {
-        $expansionOption = $this->getExpansionOption();
-        $isGlobetrotterBonusActive = $this->getMap()->isGlobetrotterBonusActive($expansionOption);
-        $isLongestPathBonusActive = $this->getMap()->isLongestPathBonusActive($expansionOption);
+    function onEnteringState() {
+        $expansionOption = $this->game->getExpansionOption();
+        $isGlobetrotterBonusActive = $this->game->getMap()->isGlobetrotterBonusActive($expansionOption);
+        $isLongestPathBonusActive = $this->game->getMap()->isLongestPathBonusActive($expansionOption);
 
         $sql = "SELECT player_id id, player_score score FROM player ORDER BY player_no ASC";
-        $players = self::getCollectionFromDb($sql);
+        $players = $this->game->getCollectionFromDb($sql);
 
         // points gained during the game : claimed routes
         $totalScore = [];
@@ -60,19 +44,19 @@ trait StateTrait {
             $completedDestinationsCount[$playerId] = 0;
             $uncompletedDestinations = [];
             $completedDestinations = [];
-            $claimedRoutes = $this->getClaimedRoutes($playerId);
+            $claimedRoutes = $this->game->getClaimedRoutes($playerId);
 
-            $destinations = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
+            $destinations = $this->game->getDestinationsFromDb($this->game->destinations->getCardsInLocation('hand', $playerId));
 
             foreach ($destinations as &$destination) {
-                $completed = boolval(self::getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
+                $completed = boolval($this->game->getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
                 
                 $points = 0;
                 if (is_array($destination->to)) {
                     if ($completed) {
                         foreach ($destination->to as $index => $to) {
                             if ($destination->points[$index] > $points) {
-                                $route = $this->getShortestRoutesToLinkCitiesOrCountries($claimedRoutes, $destination->from, $to);
+                                $route = $this->game->getShortestRoutesToLinkCitiesOrCountries($claimedRoutes, $destination->from, $to);
                                 if ($route !== null) {
                                     $points = $destination->points[$index];
                                     $routeByCompletedDestination[$destination->id] = $route;
@@ -108,7 +92,7 @@ trait StateTrait {
         $bestLongestPath = null;
 
         foreach ($players as $playerId => $playerDb) {
-            $longestPath = $this->getLongestPath($playerId);
+            $longestPath = $this->game->getLongestPath($playerId);
             $playersLongestPaths[$playerId] = $longestPath;
         }
 
@@ -123,7 +107,7 @@ trait StateTrait {
             $longestPathWinners = $longestPathBySize[$bestLongestPath];  
             
             foreach ($longestPathWinners as $playerId) {
-                $totalScore[$playerId] += $this->getMap()->pointsForLongestPath;
+                $totalScore[$playerId] += $this->game->getMap()->pointsForLongestPath;
             }
         }
 
@@ -141,13 +125,13 @@ trait StateTrait {
             $globetrotterWinners = $completedDestinationsBySize[$bestCompletedDestinationsCount];  
             
             foreach ($globetrotterWinners as $playerId) {
-                $totalScore[$playerId] += $this->getMap()->pointsForGlobetrotter;
+                $totalScore[$playerId] += $this->game->getMap()->pointsForGlobetrotter;
             }
         }
 
         // we need to send bestScore before all score notifs, because train animations will show score ratio over best score
         $bestScore = max($totalScore);
-        self::notifyAllPlayers('bestScore', '', [
+        $this->notify->all('bestScore', '', [
             'bestScore' => $bestScore,
         ]);
 
@@ -157,41 +141,41 @@ trait StateTrait {
         foreach ($destinationsResults as $playerId => $destinations) {
 
             foreach ($destinations as $destination) {
-                $destinationRoutes = array_key_exists($destination->id, $routeByCompletedDestination) ? $routeByCompletedDestination[$destination->id] : $this->getDestinationRoutes($playerId, $destination);
+                $destinationRoutes = array_key_exists($destination->id, $routeByCompletedDestination) ? $routeByCompletedDestination[$destination->id] : $this->game->getDestinationRoutes($playerId, $destination);
                 $completed = $destinationRoutes != null;
                 $points = $pointsByDestination[$destination->id];
 
-                self::notifyAllPlayers('scoreDestination', clienttranslate('${player_name} reveals ${from} to ${to} destination'), [
+                $this->notify->all('scoreDestination', clienttranslate('${player_name} reveals ${from} to ${to} destination'), [
                     'playerId' => $playerId,
-                    'player_name' => $this->getPlayerName($playerId),
+                    'player_name' => $this->game->getPlayerNameById($playerId),
                     'destination' => $destination,
-                    'from' => $this->getCityName($destination->from),
-                    'to' => $this->getLogTo($destination),
+                    'from' => $this->game->getCityName($destination->from),
+                    'to' => $this->game->getLogTo($destination),
                     'destinationRoutes' => $destinationRoutes,
                 ]);
                 
                 $message = clienttranslate('${player_name} ${gainsloses} ${absdelta} points with ${from} to ${to} destination');
-                $this->incScore($playerId, $points, $message, [
+                $this->game->incScore($playerId, $points, $message, [
                     'delta' => $points,
                     'absdelta' => abs($points),
-                    'from' => $this->getCityName($destination->from),
-                    'to' => $this->getLogTo($destination),
+                    'from' => $this->game->getCityName($destination->from),
+                    'to' => $this->game->getLogTo($destination),
                     'i18n' => ['gainsloses'],
                     'gainsloses' => $completed ? clienttranslate('gains') : clienttranslate('loses'),
                 ]);
 
-                self::incStat($points, 'pointsWithDestinations');
-                self::incStat($points, 'pointsWithDestinations', $playerId);
+                $this->game->incStat($points, 'pointsWithDestinations');
+                $this->game->incStat($points, 'pointsWithDestinations', $playerId);
                 if ($completed) {      
                     // stats for completed destinations are set as soon as they are completed              
-                    self::incStat($points, 'pointsWithCompletedDestinations');
-                    self::incStat($points, 'pointsWithCompletedDestinations', $playerId);
+                    $this->game->incStat($points, 'pointsWithCompletedDestinations');
+                    $this->game->incStat($points, 'pointsWithCompletedDestinations', $playerId);
                 } else {
                     // stats for uncompleted destinations can only be set at the end
-                    self::incStat(1, 'uncompletedDestinations');
-                    self::incStat(1, 'uncompletedDestinations', $playerId);
-                    self::incStat($points, 'pointsLostWithUncompletedDestinations');
-                    self::incStat($points, 'pointsLostWithUncompletedDestinations', $playerId);
+                    $this->game->incStat(1, 'uncompletedDestinations');
+                    $this->game->incStat(1, 'uncompletedDestinations', $playerId);
+                    $this->game->incStat($points, 'pointsLostWithUncompletedDestinations');
+                    $this->game->incStat($points, 'pointsLostWithUncompletedDestinations', $playerId);
                 }
             }
         }
@@ -199,18 +183,18 @@ trait StateTrait {
         // Globetrotter
         if ($isGlobetrotterBonusActive) {
             foreach ($globetrotterWinners as $playerId) {
-                $points = $this->getMap()->pointsForGlobetrotter;
-                $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with Globetrotter : ${destinations} completed destinations'), [
+                $points = $this->game->getMap()->pointsForGlobetrotter;
+                $this->game->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with Globetrotter : ${destinations} completed destinations'), [
                     'points' => $points,
                     'destinations' => $bestCompletedDestinationsCount,
                 ]);
 
-                self::notifyAllPlayers('globetrotterWinner', '', [
+                $this->notify->all('globetrotterWinner', '', [
                     'playerId' => $playerId,
                     'length' => $bestCompletedDestinationsCount,
                 ]);
 
-                $this->setStat(1, 'globetrotterBonus', $playerId);
+                $this->game->setStat(1, 'globetrotterBonus', $playerId);
             }
         }
 
@@ -219,60 +203,60 @@ trait StateTrait {
             foreach ($players as $playerId => $playerDb) {
                 $longestPath = $playersLongestPaths[$playerId];
 
-                self::notifyAllPlayers('longestPath', clienttranslate('${player_name} longest continuous path is ${length} train-cars long'), [
+                $this->notify->all('longestPath', clienttranslate('${player_name} longest continuous path is ${length} train-cars long'), [
                     'playerId' => $playerId,
-                    'player_name' => $this->getPlayerName($playerId),
+                    'player_name' => $this->game->getPlayerNameById($playerId),
                     'length' => $longestPath->length,
                     'routes' => $longestPath->routes,
                 ]);
 
-                self::setStat($longestPath->length, 'longestPath', $playerId);
+                $this->game->setStat($longestPath->length, 'longestPath', $playerId);
             }
              
-            self::setStat($bestLongestPath, 'longestPath');
+            $this->game->setStat($bestLongestPath, 'longestPath');
             foreach ($longestPathWinners as $playerId) {
-                $points = $this->getMap()->pointsForLongestPath;
-                $this->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with longest continuous path : ${trainCars} train cars'), [
+                $points = $this->game->getMap()->pointsForLongestPath;
+                $this->game->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with longest continuous path : ${trainCars} train cars'), [
                     'points' => $points,
                     'trainCars' => $bestLongestPath,
                 ]);
 
-                self::notifyAllPlayers('longestPathWinner', '', [
+                $this->notify->all('longestPathWinner', '', [
                     'playerId' => $playerId,
                     'length' => $bestLongestPath,
                 ]);
 
-                $this->setStat(1, 'longestPathBonus', $playerId);
+                $this->game->setStat(1, 'longestPathBonus', $playerId);
             }
         }
 
-        $claimedRoutes = intval(self::getStat('claimedRoutes'));
+        $claimedRoutes = intval($this->game->getStat('claimedRoutes'));
         if ($claimedRoutes > 0) {
-            self::setStat(self::getStat('playedTrainCars') / (float)$claimedRoutes, 'averageClaimedRouteLength');
+            $this->game->setStat($this->game->getStat('playedTrainCars') / (float)$claimedRoutes, 'averageClaimedRouteLength');
         } else {
-            self::setStat(0, 'averageClaimedRouteLength'); 
+            $this->game->setStat(0, 'averageClaimedRouteLength'); 
         }
         foreach ($players as $playerId => $playerDb) {
-            $claimedRoutes = intval(self::getStat('claimedRoutes', $playerId));
+            $claimedRoutes = intval($this->game->getStat('claimedRoutes', $playerId));
             if ($claimedRoutes > 0) {
-                self::setStat(self::getStat('playedTrainCars', $playerId) / (float)$claimedRoutes, 'averageClaimedRouteLength', $playerId);
+                $this->game->setStat($this->game->getStat('playedTrainCars', $playerId) / (float)$claimedRoutes, 'averageClaimedRouteLength', $playerId);
             } else {
-                self::setStat(0, 'averageClaimedRouteLength', $playerId);
+                $this->game->setStat(0, 'averageClaimedRouteLength', $playerId);
             }
 
             $scoreAux = 1000 * $completedDestinationsCount[$playerId] + $playersLongestPaths[$playerId]->length;
-            self::DbQuery("UPDATE player SET `player_score_aux` = $scoreAux where `player_id` = $playerId");
+            $this->game->DbQuery("UPDATE player SET `player_score_aux` = $scoreAux where `player_id` = $playerId");
         }
 
         // highlight winner(s)
         foreach ($totalScore as $playerId => $playerScore) {
             if ($playerScore == $bestScore) {
-                self::notifyAllPlayers('highlightWinnerScore', '', [
+                $this->notify->all('highlightWinnerScore', '', [
                     'playerId' => $playerId,
                 ]);
             }
         }
 
-        $this->gamestate->nextState('endGame');
+        return ST_END_GAME;
     }
 }
