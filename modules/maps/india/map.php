@@ -28,7 +28,7 @@ class SwitzerlandMap extends Map {
                 2 => 2,
                 3 => 4,
                 4 => 7,
-                5 => 10,
+                //5 => 10,
                 6 => 15,
                 8 => 21,
             ]
