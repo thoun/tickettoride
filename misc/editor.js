@@ -1,4 +1,5 @@
 const COLORS = ['GRAY', 'PINK', 'WHITE', 'BLUE', 'YELLOW', 'ORANGE', 'BLACK', 'RED', 'GREEN'];
+const VERTICAL_MAPS = ['india'];
 
 let MAP = localStorage.getItem('BGA_TTR_EDITOR_MAP') ?? 'usa';
 let selectedCity = null;
@@ -21,7 +22,11 @@ document.getElementById('map-code').value = MAP;
 async function load() {
     MAP = (document.getElementById('map-code')).value;
     localStorage.setItem('BGA_TTR_EDITOR_MAP', MAP);
-    (document.getElementById('map')).style.backgroundImage = `url('../img/${MAP}/map.jpg')`;
+    const mapDiv = document.getElementById('map');
+    mapDiv.style.backgroundImage = `url('../img/${MAP}/map.jpg')`;
+    if (VERTICAL_MAPS.includes(MAP)) {
+        mapDiv.classList.add('vertical');
+    }
     const root = await (window).showDirectoryPicker();
     const modulesHandle = await root.getDirectoryHandle('modules');
     const mapsHandle = await modulesHandle.getDirectoryHandle('maps');

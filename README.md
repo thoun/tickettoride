@@ -40,3 +40,7 @@ If there is a lot of locomotives remaining in a small set of available cards (fo
 In case the player cannot pick destination cards nor train car cards, and cannot claim a route, we let him pass.
 What if he can only construct ? Does he have to ? -> probably yes, no issue here
 What if he can only pick destinations ? Does he have to ? -> asked, can be a negative move for the player
+
+Can you complete the file modules/maps/india/routes.php with all the routes represented as colored rectangles on img/india/map.jpg ?
+Each colored rectangle is a RouteSpace, and multiple RouteSpace are forming a Route from one city to another.
+The cities id, name and coordinates are noted in modules/maps/india/cities.php

@@ -10,6 +10,11 @@
     transform-origin: top left;
 }
 
+#map.vertical {
+    width: 1125px;
+    height: 1744px;
+}
+
 .city {
   display: inline-block;
   width: 60px;
