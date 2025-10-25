@@ -20,6 +20,7 @@ namespace Bga\Games\TicketToRide;
 
 use Bga\GameFramework\Components\Deck;
 use Bga\GameFramework\Table;
+use Bga\Games\TicketToRide\States\DealInitialDestinations;
 
 require_once('framework-prototype/Helpers/Arrays.php');
 
@@ -156,7 +157,8 @@ class Game extends Table {
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
-        return \ST_DEAL_INITIAL_DESTINATIONS;
+        return DealInitialDestinations::class;
+
         /************ End of the game initialization *****/
     }
 

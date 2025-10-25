@@ -1,18 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Bga\Games\TicketToRide\States;
 
+use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\StateType;
 use Bga\Games\TicketToRide\Game;
 
-class NextPlayer extends \Bga\GameFramework\States\GameState
-{
-
-    function __construct(
-        protected Game $game,
-    ) {
+class NextPlayer extends GameState {
+    public function __construct(protected Game $game)
+    {
         parent::__construct($game,
             id: ST_NEXT_PLAYER,
             type: StateType::GAME,
@@ -28,9 +24,8 @@ class NextPlayer extends \Bga\GameFramework\States\GameState
 
         // check if it was last action from player who started last turn
         if ($lastTurn == $activePlayerId) {
-            return \ST_END_SCORE;
+           return EndScore::class;
         }
-        
         if ($lastTurn == 0) {
             // check if last turn is started    
             if ($this->game->getLowestTrainCarsCount() <= $this->game->getMap()->trainCarsNumberToStartLastTurn) {
@@ -46,6 +41,6 @@ class NextPlayer extends \Bga\GameFramework\States\GameState
 
         $playerId = $this->game->activeNextPlayer();
         $this->game->giveExtraTime($playerId);
-        return \ST_PLAYER_CHOOSE_ACTION;
+        return ChooseAction::class;
     }
 }
