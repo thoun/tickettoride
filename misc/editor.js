@@ -171,7 +171,6 @@ function addOptionToSelect(id, name, selectId) {
 }
 
 function addCity(id, name, x, y) {
-    console.warn('addRoute', id, name, x, y);
     document.getElementById('cities').insertAdjacentHTML('beforeend', 
         `<div id="city-${id}" class="city" data-id="${id}" data-name="${name}" data-x="${x}" data-y="${y}" style="--x: ${x}px; --y: ${y}px;">${name}</div>`
     )
@@ -203,7 +202,7 @@ function addRoute(id, from, to, color, spaces, tunnel, locomotives) {
 }
 
 function unselectCity() {
-    selectedCity?.classList.remove('selected');
+    document.querySelectorAll('.city.selected').forEach(elem => elem.classList.remove('selected'));
     selectedCity = null;
     document.getElementById('selected-city-name').value = '';
 }
@@ -216,6 +215,7 @@ function unselectSpace() {
     document.getElementById('route-color').value = '';
     document.getElementById('route-tunnel').checked = false;
     document.getElementById('route-locomotives').value = '';
+    document.querySelectorAll('.selected-other-route').forEach(elem => elem.classList.remove('selected-other-route'));
 }
 
 function cityClick(elem) {
@@ -243,6 +243,10 @@ function spaceClick(elem) {
         document.getElementById('route-color').value = elem.dataset.color;
         document.getElementById('route-tunnel').checked = elem.dataset.tunnel === 'true';
         document.getElementById('route-locomotives').value = elem.dataset.locomotives;
+
+        getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).filter(oe => oe != elem).forEach(oe => oe.classList.add('selected-other-route'));
+        document.getElementById(`city-${elem.dataset.from}`).classList.add('selected');
+        document.getElementById(`city-${elem.dataset.to}`).classList.add('selected');
     }
 }
 
