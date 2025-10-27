@@ -9,7 +9,7 @@ require_once(__DIR__.'/../../php/objects/route.php');
  */
 function getRoutes() {
   return [
-        1 => new Route(1, 7, PINK, [
+    1 => new Route(1, 7, PINK, [
       new RouteSpace(479, 698, -87),
     ]),
     2 => new Route(1, 7, RED, [
@@ -25,306 +25,359 @@ function getRoutes() {
     5 => new Route(1, 19, WHITE, [
       new RouteSpace(415, 637, 15),
     ]),
-    7 => new Route(1, 23, GREEN, [
+    6 => new Route(1, 23, GREEN, [
       new RouteSpace(522, 648, 0),
       new RouteSpace(581, 648, 1),
     ]),
-    8 => new Route(1, 26, GRAY, [
+    7 => new Route(1, 26, GRAY, [
       new RouteSpace(509, 598, -55),
       new RouteSpace(559, 565, -17),
     ]),
-    // TOCHECK
-    9 => new Route(2, 9, WHITE, [
+    8 => new Route(2, 9, WHITE, [
       new RouteSpace(232, 816, 73),
       new RouteSpace(234, 879, -77),
       new RouteSpace(232, 941, 82),
     ]),
-    10 => new Route(2, 21, PINK, [
+    9 => new Route(2, 21, PINK, [
       new RouteSpace(211, 707, -85),
       new RouteSpace(216, 647, -85),
       new RouteSpace(221, 589, -85),
     ]),
-    11 => new Route(2, 21, BLACK, [
+    10 => new Route(2, 21, BLACK, [
       new RouteSpace(231, 707, -85),
       new RouteSpace(236, 647, -85),
       new RouteSpace(241, 589, -85),
     ]),
-    12 => new Route(2, 24, YELLOW, [
+    11 => new Route(2, 24, YELLOW, [
       new RouteSpace(265, 776, 15),
       new RouteSpace(315, 813, 57),
     ]),
-    13 => new Route(2, 36, GREEN, [
+    12 => new Route(2, 36, GREEN, [
       new RouteSpace(265, 738, -30),
     ]),
-    14 => new Route(3, 4, ORANGE, [
+    13 => new Route(3, 4, ORANGE, [
       new RouteSpace(510, 340, 49),
-      new RouteSpace(544, 393, 70),
+      new RouteSpace(543, 394, 70),
     ]),
-    15 => new Route(3, 6, WHITE, [
+    14 => new Route(3, 6, WHITE, [
       new RouteSpace(409, 292, -1),
       new RouteSpace(350, 293, -1),
     ]),
-    16 => new Route(3, 6, YELLOW, [
+    15 => new Route(3, 6, YELLOW, [
       new RouteSpace(412, 312, 0),
       new RouteSpace(351, 313, 0),
     ]),
-    17 => new Route(3, 13, GRAY, [
+    16 => new Route(3, 13, GRAY, [
       new RouteSpace(454, 356, -84),
       new RouteSpace(448, 416, -84),
     ]),
-    18 => new Route(3, 13, GRAY, [
+    17 => new Route(3, 13, GRAY, [
       new RouteSpace(474, 357, -84),
       new RouteSpace(469, 419, -86),
     ]),
-    19 => new Route(3, 25, BLACK, [
+    18 => new Route(3, 25, BLACK, [
       new RouteSpace(445, 253, 50),
       new RouteSpace(401, 212, 41),
       new RouteSpace(351, 176, 30),
       new RouteSpace(293, 150, 20),
     ]),
-    20 => new Route(4, 13, WHITE, [
+    19 => new Route(4, 13, WHITE, [
       new RouteSpace(509, 461, -13),
     ]),
-    21 => new Route(4, 26, GRAY, [
+    20 => new Route(4, 26, GRAY, [
       new RouteSpace(589, 500, 65),
     ]),
-    22 => new Route(4, 31, GREEN, [
-      new RouteSpace(677, 491, 30),
-      new RouteSpace(717, 518, 38),
-      new RouteSpace(739, 537, 40),
+    21 => new Route(4, 31, GREEN, [
+      new RouteSpace(621, 467, 21),
+      new RouteSpace(677, 492, 29),
+      new RouteSpace(728, 526, 40),
+      new RouteSpace(772, 571, 48),
     ]),
-    23 => new Route(5, 16, BLUE, [
+    22 => new Route(5, 16, BLUE, [
       new RouteSpace(537, 1126, -23),
       new RouteSpace(482, 1150, -23),
     ]),
-    24 => new Route(5, 16, PINK, [
-      new RouteSpace(467, 1135, -14),
-    ]),
-    25 => new Route(5, 17, GREEN, [
+    23 => new Route(5, 17, GREEN, [
       new RouteSpace(572, 1049, 86),
       new RouteSpace(566, 990, 85),
     ]),
-    26 => new Route(5, 17, YELLOW, [
+    24 => new Route(5, 17, YELLOW, [
       new RouteSpace(590, 1046, 84),
       new RouteSpace(585, 987, 84),
     ]),
-    27 => new Route(5, 27, RED, [
+    25 => new Route(5, 27, RED, [
       new RouteSpace(591, 1158, 84),
     ]),
-    28 => new Route(5, 39, ORANGE, [
-      new RouteSpace(714, 1057, -21),
+    26 => new Route(5, 39, ORANGE, [
+      new RouteSpace(704, 1062, -25),
+      new RouteSpace(646, 1091, -27),
     ]),
-    29 => new Route(6, 13, BLUE, [
+    27 => new Route(5, 39, BLACK, [
+      new RouteSpace(694, 1045, -26),
+      new RouteSpace(638, 1073, -28),
+    ]),
+    28 => new Route(6, 13, BLUE, [
       new RouteSpace(323, 353, 60),
       new RouteSpace(361, 402, 44),
       new RouteSpace(408, 442, 38),
     ]),
-    30 => new Route(6, 21, GREEN, [
+    29 => new Route(6, 21, GREEN, [
       new RouteSpace(279, 362, -76),
       new RouteSpace(267, 420, -75),
       new RouteSpace(253, 478, -78),
     ]),
-    31 => new Route(6, 25, GRAY, [
+    30 => new Route(6, 25, GRAY, [
       new RouteSpace(265, 253, 72),
       new RouteSpace(247, 197, 71),
     ]),
+    31 => new Route(6, 25, GRAY, [
+      new RouteSpace(286, 249, 72),
+      new RouteSpace(266, 189, 71),
+    ]),
     32 => new Route(6, 37, PINK, [
-      new RouteSpace(263, 334, -51),
-      new RouteSpace(243, 357, -51),
-      new RouteSpace(225, 379, -52),
-      new RouteSpace(206, 402, -53),
+      new RouteSpace(253, 345, -51),
+      new RouteSpace(216, 392, -53),
     ]),
     33 => new Route(7, 8, GRAY, [
       new RouteSpace(523, 738, 0),
-      new RouteSpace(554, 747, -15),
-      new RouteSpace(583, 756, 0),
+      new RouteSpace(583, 738, 0),
     ]),
-    34 => new Route(7, 8, PINK, [
-      new RouteSpace(524, 773, 0),
+    34 => new Route(7, 8, GRAY, [
+      new RouteSpace(523, 759, 0),
+      new RouteSpace(583, 759, 0),
     ]),
     35 => new Route(7, 24, BLUE, [
       new RouteSpace(399, 834, -17),
+      new RouteSpace(446, 796, -64),
     ]),
-    36 => new Route(8, 23, PINK, [
-      new RouteSpace(654, 698, -85),
+    36 => new Route(7, 36, BLACK, [
+      new RouteSpace(364, 721, 14),
+      new RouteSpace(424, 736, 16),
     ]),
-    37 => new Route(8, 24, ORANGE, [
-      new RouteSpace(576, 824, 34),
-      new RouteSpace(516, 811, -10),
-    ]),
-    38 => new Route(8, 35, RED, [
-      new RouteSpace(639, 803, -80),
-    ]),
-    39 => new Route(9, 29, PINK, [
-      new RouteSpace(304, 999, -5),
-    ]),
-    40 => new Route(9, 30, GREEN, [
-      new RouteSpace(245, 1054, 81),
-    ]),
-    41 => new Route(9, 33, BLUE, [
-      new RouteSpace(293, 1026, 31),
-    ]),
-    42 => new Route(9, 33, PINK, [
-      new RouteSpace(281, 1063, 5),
-    ]),
-    43 => new Route(9, 33, WHITE, [
-      new RouteSpace(290, 1051, 5),
-    ]),
-    44 => new Route(9, 38, PINK, [
-      new RouteSpace(320, 1021, -7),
-    ]),
-    45 => new Route(10, 14, GRAY, [
-      new RouteSpace(948, 732, -71),
-      new RouteSpace(930, 724, -70),
-      new RouteSpace(951, 669, -70),
-      new RouteSpace(969, 674, -72),
-    ]),
-    46 => new Route(10, 31, PINK, [
-      new RouteSpace(884, 721, 53),
-      new RouteSpace(847, 670, 53),
-      new RouteSpace(854, 646, 27),
-    ]),
-    47 => new Route(10, 31, YELLOW, [
+    37 => new Route(8, 10, YELLOW, [
+      new RouteSpace(696, 732, -23),
+      new RouteSpace(754, 715, -11),
+      new RouteSpace(815, 719, 18),
       new RouteSpace(869, 745, 34),
     ]),
-    48 => new Route(10, 35, BLUE, [
-      new RouteSpace(798, 809, -15),
+    38 => new Route(8, 23, WHITE, [
+      new RouteSpace(635, 696, -85),
+    ]),
+    39 => new Route(8, 23, PINK, [
+      new RouteSpace(655, 698, -85),
+    ]),
+    40 => new Route(8, 35, BLACK, [
+      new RouteSpace(619, 803, -80),
+    ]),
+    41 => new Route(8, 35, RED, [
+      new RouteSpace(639, 803, -80),
+    ]),
+    42 => new Route(9, 11, GRAY, [
+      new RouteSpace(212, 1058, 107),
+      new RouteSpace(197, 1121, 96),
+      new RouteSpace(200, 1185, 82),
+      new RouteSpace(214, 1248, 73),
+      new RouteSpace(244, 1306, 53),
+      new RouteSpace(291, 1352, 37),
+    ], locomotives: 2),
+    43 => new Route(9, 22, GRAY, [
+      new RouteSpace(30, 672, 83),
+      new RouteSpace(42, 734, 75),
+      new RouteSpace(65, 797, 69),
+      new RouteSpace(95, 854, 62),
+      new RouteSpace(131, 908, 53),
+      new RouteSpace(172, 959, 51),
+    ], locomotives: 2),
+    44 => new Route(9, 22, GRAY, [
+      new RouteSpace(49, 666, 82),
+      new RouteSpace(61, 727, 75),
+      new RouteSpace(84, 789, 69),
+      new RouteSpace(112, 845, 61),
+      new RouteSpace(150, 898, 53),
+      new RouteSpace(192, 950, 51),
+    ], locomotives: 2),
+    45 => new Route(9, 29, PINK, [
+      new RouteSpace(294, 977, -20),
+    ]),
+    46 => new Route(9, 30, GREEN, [
+      new RouteSpace(245, 1054, 81),
+    ]),
+    47 => new Route(9, 33, BLUE, [
+      new RouteSpace(293, 1026, 31),
+    ]),
+    48 => new Route(10, 12, GRAY, [
+      new RouteSpace(972, 794, 8),
+      new RouteSpace(1035, 785, -28),
+    ], locomotives: 1),
+    49 => new Route(10, 12, GRAY, [
+      new RouteSpace(974, 816, 8),
+      new RouteSpace(1038, 806, -28),
+    ], locomotives: 1),
+    50 => new Route(10, 14, GRAY, [
+      new RouteSpace(951, 669, -70),
+      new RouteSpace(930, 724, -70),
+    ]),
+    51 => new Route(10, 14, GRAY, [
+      new RouteSpace(948, 732, -71),
+      new RouteSpace(969, 674, -72),
+    ]),
+    52 => new Route(10, 27, GRAY, [
+      new RouteSpace(926, 850, 90),
+      new RouteSpace(917, 916, 104),
+      new RouteSpace(897, 975, 116),
+      new RouteSpace(860, 1031, 128),
+      new RouteSpace(818, 1079, 132),
+      new RouteSpace(772, 1124, 137),
+      new RouteSpace(722, 1163, 144),
+      new RouteSpace(667, 1199, 151),
+    ], locomotives: 2),
+    53 => new Route(10, 31, PINK, [
+      new RouteSpace(884, 721, 53),
+      new RouteSpace(847, 670, 53),
+    ]),
+    54 => new Route(10, 35, BLUE, [
+      new RouteSpace(678, 841, -15),
       new RouteSpace(738, 824, -14),
+      new RouteSpace(798, 809, -15),
+      new RouteSpace(858, 794, -15),
     ]),
-    49 => new Route(10, 39, RED, [
-      new RouteSpace(879, 879, -64),
-      new RouteSpace(866, 905, -64),
-      new RouteSpace(848, 933, -51),
-      new RouteSpace(830, 956, -49),
+    55 => new Route(10, 39, RED, [
+      new RouteSpace(895, 836, -70),
+      new RouteSpace(872, 893, -63),
+      new RouteSpace(840, 943, -52),
+      new RouteSpace(796, 991, -45),
     ]),
-    50 => new Route(11, 15, BLUE, [
+    56 => new Route(11, 15, BLUE, [
       new RouteSpace(406, 1386, 5),
       new RouteSpace(466, 1391, 5),
       new RouteSpace(525, 1397, 4),
     ]),
-    51 => new Route(11, 15, RED, [
+    57 => new Route(11, 15, RED, [
       new RouteSpace(408, 1368, 5),
       new RouteSpace(467, 1373, 5),
       new RouteSpace(527, 1378, 5),
     ]),
-    52 => new Route(11, 16, PINK, [
-      new RouteSpace(376, 1283, 15),
-    ]),
-    53 => new Route(11, 27, PINK, [
-      new RouteSpace(437, 1291, 0),
-      new RouteSpace(498, 1279, -24),
-    ]),
-    54 => new Route(11, 28, WHITE, [
+    58 => new Route(11, 28, WHITE, [
       new RouteSpace(345, 1318, 77),
     ]),
-    55 => new Route(11, 28, YELLOW, [
+    59 => new Route(11, 28, YELLOW, [
       new RouteSpace(327, 1323, 76),
     ]),
-    56 => new Route(11, 34, GRAY, [
+    60 => new Route(11, 34, GRAY, [
+      new RouteSpace(336, 1437, 79),
+      new RouteSpace(356, 1502, 63),
+    ]),
+    61 => new Route(11, 34, GRAY, [
       new RouteSpace(356, 1433, 83),
-      new RouteSpace(367, 1492, 48),
+      new RouteSpace(377, 1494, 62),
     ]),
-    57 => new Route(12, 14, PINK, [
-      new RouteSpace(1000, 674, 57),
-    ]),
-    58 => new Route(12, 14, WHITE, [
+    62 => new Route(12, 14, WHITE, [
       new RouteSpace(1052, 704, 57),
       new RouteSpace(1012, 657, 44),
     ]),
-    59 => new Route(12, 20, GRAY, [
+    63 => new Route(12, 20, GRAY, [
       new RouteSpace(1094, 694, -80),
       new RouteSpace(1101, 633, 89),
       new RouteSpace(1099, 573, 87),
     ]),
-    60 => new Route(13, 19, PINK, [
-      new RouteSpace(420, 499, -38),
-      new RouteSpace(397, 517, -40),
+    64 => new Route(13, 19, PINK, [
+      new RouteSpace(410, 508, -38),
       new RouteSpace(374, 560, -76),
     ]),
-    61 => new Route(13, 26, YELLOW, [
-      new RouteSpace(506, 500, 25),
-      new RouteSpace(559, 525, 25),
+    65 => new Route(13, 26, YELLOW, [
+      new RouteSpace(505, 499, 25),
+      new RouteSpace(561, 525, 25),
     ]),
-    62 => new Route(14, 20, PINK, [
-      new RouteSpace(1072, 574, -37),
+    66 => new Route(14, 20, GRAY, [
+      new RouteSpace(1047, 542, -37),
+      new RouteSpace(998, 579, -37),
     ]),
-    63 => new Route(14, 31, BLUE, [
+    67 => new Route(14, 20, GRAY, [
+      new RouteSpace(1059, 558, -37),
+      new RouteSpace(1010, 596, -37),
+    ]),
+    68 => new Route(14, 31, BLUE, [
       new RouteSpace(916, 607, 1),
       new RouteSpace(857, 606, 1),
     ]),
-    64 => new Route(14, 31, RED, [
+    69 => new Route(14, 31, RED, [
       new RouteSpace(916, 626, 1),
+      new RouteSpace(857, 626, 1),
     ]),
-    65 => new Route(15, 27, GREEN, [
+    70 => new Route(15, 27, GREEN, [
       new RouteSpace(598, 1332, -86),
       new RouteSpace(602, 1273, -85),
     ]),
-    66 => new Route(15, 27, ORANGE, [
-      new RouteSpace(566, 1396, 86),
+    71 => new Route(15, 27, ORANGE, [
       new RouteSpace(580, 1332, -84),
       new RouteSpace(583, 1272, -85),
     ]),
-    67 => new Route(16, 27, PINK, [
-      new RouteSpace(550, 1248, -36),
+    72 => new Route(15, 34, GRAY, [
+      new RouteSpace(569, 1448, 112),
+      new RouteSpace(540, 1502, 126),
+      new RouteSpace(505, 1548, 132),
+      new RouteSpace(460, 1568, 41),
     ]),
-    68 => new Route(16, 27, WHITE, [
+    73 => new Route(16, 27, WHITE, [
       new RouteSpace(483, 1188, 14),
       new RouteSpace(543, 1201, 11),
     ]),
-    69 => new Route(16, 30, PINK, [
-      new RouteSpace(355, 1126, 27),
+    74 => new Route(16, 28, GRAY, [
+      new RouteSpace(421, 1217, -69),
+      new RouteSpace(374, 1258, -10),
     ]),
-    70 => new Route(16, 30, RED, [
+    75 => new Route(16, 30, RED, [
       new RouteSpace(370, 1154, 18),
       new RouteSpace(311, 1135, 17),
     ]),
-    71 => new Route(16, 38, PINK, [
+    76 => new Route(16, 38, PINK, [
       new RouteSpace(446, 1118, -81),
     ]),
-    72 => new Route(17, 29, PINK, [
+    77 => new Route(16, 38, BLACK, [
+      new RouteSpace(426, 1118, -81),
+    ]),
+    78 => new Route(17, 29, PINK, [
       new RouteSpace(515, 945, -15),
       new RouteSpace(456, 958, -8),
       new RouteSpace(393, 959, 6),
     ]),
-    73 => new Route(17, 29, WHITE, [
-      new RouteSpace(420, 930, 1),
+    79 => new Route(17, 39, GRAY, [
+      new RouteSpace(528, 978, -46),
+      new RouteSpace(485, 1023, -45),
     ]),
-    74 => new Route(17, 39, WHITE, [
-      new RouteSpace(617, 938, 1),
-      new RouteSpace(658, 1012, 3),
-    ]),
-    75 => new Route(18, 25, RED, [
+    // TOCHECK
+    80 => new Route(18, 25, RED, [
       new RouteSpace(152, 293, -62),
       new RouteSpace(180, 242, -61),
       new RouteSpace(209, 188, -62),
     ]),
-    76 => new Route(18, 32, ORANGE, [
+    82 => new Route(18, 32, ORANGE, [
       new RouteSpace(94, 287, 76),
       new RouteSpace(89, 224, 94),
       new RouteSpace(96, 165, -76),
     ]),
-    77 => new Route(18, 32, YELLOW, [
+    83 => new Route(18, 32, YELLOW, [
       new RouteSpace(115, 288, 75),
       new RouteSpace(107, 224, 90),
       new RouteSpace(114, 164, -78),
     ]),
-    78 => new Route(18, 37, BLUE, [
+    84 => new Route(18, 37, BLUE, [
       new RouteSpace(157, 383, 59),
     ]),
-    79 => new Route(18, 37, GREEN, [
+    85 => new Route(18, 37, GREEN, [
       new RouteSpace(139, 394, 59),
     ]),
-    80 => new Route(19, 21, WHITE, [
+    86 => new Route(19, 21, WHITE, [
       new RouteSpace(297, 615, 1),
     ]),
-    81 => new Route(19, 36, YELLOW, [
+    87 => new Route(19, 36, YELLOW, [
       new RouteSpace(335, 645, -66),
     ]),
-    82 => new Route(21, 22, ORANGE, [
+    88 => new Route(21, 22, ORANGE, [
       new RouteSpace(138, 588, -23),
       new RouteSpace(76, 603, -8),
     ]),
-    83 => new Route(23, 26, BLUE, [
+    89 => new Route(23, 26, BLUE, [
       new RouteSpace(623, 602, 71),
     ]),
     84 => new Route(23, 31, GRAY, [
@@ -339,6 +392,12 @@ function getRoutes() {
     86 => new Route(24, 29, RED, [
       new RouteSpace(346, 905, -85),
     ]),
+    87 => new Route(24, 35, ORANGE, [
+      new RouteSpace(506, 824, 34),
+      new RouteSpace(556, 811, -10),
+      new RouteSpace(576, 824, 34),
+      new RouteSpace(516, 811, -10),
+    ]),
     87 => new Route(25, 32, GREEN, [
       new RouteSpace(181, 133, 14),
     ]),
@@ -347,6 +406,11 @@ function getRoutes() {
     ]),
     89 => new Route(26, 31, WHITE, [
       new RouteSpace(680, 551, 2),
+    ]),
+    90 => new Route(27, 28, PINK, [
+      new RouteSpace(376, 1283, 15),
+      new RouteSpace(437, 1291, 0),
+      new RouteSpace(498, 1279, -24),
     ]),
     90 => new Route(27, 39, YELLOW, [
       new RouteSpace(637, 1188, -38),
