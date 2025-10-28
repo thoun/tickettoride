@@ -77,6 +77,7 @@ interface TicketToRideMap {
     minimumPlayerForDoubleRoutes: number;
     multilingualPdfRulesUrl?: string;
     rulesDifferences?: string[];
+    vertical: boolean;
 }
 
 /**

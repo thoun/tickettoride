@@ -164,6 +164,33 @@ trait MapTrait {
         }
     }
 
+    public function getDistinctRoutesCount(int $playerId, object $destination): int {
+        $claimedRoutes = $this->getClaimedRoutes($playerId);
+
+        $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
+
+        $citiesConnectedToFrom = $this->getAccessibleCitiesFrom(new ConnectedCity($destination->from, []), [$destination->from], $claimedRoutesIds);
+
+        $validConnections = array_values(array_filter($citiesConnectedToFrom, fn($connectedCity) => $connectedCity->city == $destination->to));
+
+        if (count($validConnections) < 2) {
+            return count($validConnections);
+        }
+
+        foreach ($validConnections as $index1 => $validConnection1) {
+            foreach ($validConnections as $index2 => $validConnection2) {
+                if ($index1 != $index2) {
+                    $allDifferent = array_all($validConnection1->routes, fn($route1) => array_all($validConnection2->routes, fn($route2) => $route1->id != $route2->id));
+                    if ($allDifferent) {
+                        return 2;
+                    }
+                }
+            }
+        }
+
+        return 1;
+    }
+
     public function getAllRoutes() {
         $allRoutes = $this->getMap()->routes;
         array_walk($allRoutes, function(&$route, $id) { $route->id = $id; });

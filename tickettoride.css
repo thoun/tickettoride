@@ -912,6 +912,11 @@
   transition: transform 0.5s;
 }
 
+.vertical-map .animated-destination-card {
+  width: 161px;
+  height: 250px;
+}
+
 .highlight-locomotive {
   filter: unset !important;
   animation: locomotives-animation 1s 1 forwards ease-in-out;
@@ -1048,6 +1053,11 @@
 }
 .destination-card:not(.icon).completed.no-mask::after {
   background: url("img/destination-done-no-mask.png");
+}
+
+.vertical-map .destination-card:not(.icon) {
+  width: 161px;
+  height: 250px;
 }
 
 .done .destination-card:not(.icon):not(.no-mask) {

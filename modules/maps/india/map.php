@@ -6,7 +6,7 @@ require_once(__DIR__.'/cities.php');
 require_once(__DIR__.'/routes.php');
 require_once(__DIR__.'/destinations.php');
 
-class SwitzerlandMap extends Map {
+class IndiaMap extends Map {
     public function __construct() {
         parent::__construct(
             getCities(),
@@ -34,30 +34,30 @@ class SwitzerlandMap extends Map {
             ]
         );
 
-        $this->visibleLocomotivesCountsAsTwoCards = false; // Says if it is possible to take only one visible locomotive.
-        $this->canOnlyUseLocomotivesInTunnels = true; // Says locomotives are reserved to tunnels.
-        $this->trainCarsPerPlayer = 40; // trains car tokens per player at the beginning of the game
-        $this->unusedInitialDestinationsGoToDeckBottom = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
-        $this->unusedAdditionalDestinationsGoToDeckBottom = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
+        $this->visibleLocomotivesCountsAsTwoCards = true; // Says if it is possible to take only one visible locomotive.
+        $this->canOnlyUseLocomotivesInTunnels = false; // Says locomotives are reserved to tunnels.
+        $this->trainCarsPerPlayer = 45; // trains car tokens per player at the beginning of the game
+        $this->unusedInitialDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
+        $this->unusedAdditionalDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
-        $this->minimumPlayerForDoubleRoutes = 3; // 4 means 2-3 players cant use double routes
+        $this->minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
 
-        $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2023/09/720114-T2RMC2-Rules_switzerland-ML-2017.pdf';
+        $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/production-asmodeees/uploads/2023/06/Reglas_TTR_India-1.pdf';
         $this->rulesDifferences = [
-            clienttranslate('All players start with 40 trains instead of 45 trains.'),
-            clienttranslate('Locomotives count as a simple card, so you can take 2 visible locomotives in one turn'),
-            clienttranslate('Locomotives can only be used for tunnels'),
-            clienttranslate('Some tickets link to multiple destinations. If you complete at least one, you\'ll score the highest completed one. If you don\'t complete any, you will lose the lowest.'),
-            clienttranslate('You can only play 3 players maximum. Double routes are only available at 3 players.'),
-            clienttranslate('Game start: Deal 5 tickets and keep at least 2.'),
-            clienttranslate('All unselected tickets will be discarded from the deck.'),
+            clienttranslate('You can only play 4 players maximum. Double routes are only available at 4 players.'),
+            clienttranslate('Ferries: To claim a Ferry route, a player must play a Locomotive card for each Locomotive symbol on the route.'),
+            clienttranslate('Mandala: Any Ticket whose 2 Destination Cities are linked via at least 2 distinct continuous paths of its owner’s plastic trains qualifies for a Grand Tour bonus.'),
         ];
 
-        $this->countriesEndPoints = [
-            -1 => [ 1001, 1002, 1003, 1004 ],
-            -2 => [ 2001, 2002, 2003, 2004, 2005 ],
-            -3 => [ 3001, 3002, 3003 ],
-            -4 => [ 4001, 4002, 4003, 4004, 4005 ],
+        $this->vertical = true;
+        
+        $this->mandalaPoints = [
+            0 => 0,
+            1 => 5,
+            2 => 10,
+            3 => 20,
+            4 => 30,
+            5 => 40,
         ];
     }
     
@@ -65,7 +65,7 @@ class SwitzerlandMap extends Map {
      * Return the number of destinations cards shown at the beginning, for each deck.
      */
     function getInitialDestinationPick(int $expansionValue): array {
-        return ['deck' => 5];
+        return ['deck' => 4];
     }
 
     function getPreloadImages(int $expansionValue): array {
@@ -80,7 +80,7 @@ class SwitzerlandMap extends Map {
 
         $base = getBaseDestinations();
         foreach($base as $typeArg => $destination) {
-            $destinations[] = [ 'type' => 1, 'type_arg' => $typeArg, 'nbr' => $typeArg <= 4 ? 2 : 1];
+            $destinations[] = [ 'type' => 1, 'type_arg' => $typeArg, 'nbr' => 1];
         }
 
         return [
@@ -90,7 +90,7 @@ class SwitzerlandMap extends Map {
 }
 
 function getMap() {
-    return new SwitzerlandMap();
+    return new IndiaMap();
 }
 
 ?>

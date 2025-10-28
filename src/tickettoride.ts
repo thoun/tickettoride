@@ -113,6 +113,10 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
             );
         }
 
+        if (this.gamedatas.map.vertical) {
+            document.body.classList.add('vertical-map');
+        }
+
         log("Ending game setup");
     }
 

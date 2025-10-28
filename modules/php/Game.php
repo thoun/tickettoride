@@ -191,6 +191,7 @@ class Game extends Table {
                 'minimumPlayerForDoubleRoutes' => $this->getMap()->minimumPlayerForDoubleRoutes,
                 'multilingualPdfRulesUrl' => $this->getMap()->multilingualPdfRulesUrl,
                 'rulesDifferences' => $this->getMap()->rulesDifferences,
+                'vertical' => $this->getMap()->vertical,
             ],
         ];
     

@@ -23,6 +23,7 @@ class EndScore extends GameState {
         $expansionOption = $this->game->getExpansionOption();
         $isGlobetrotterBonusActive = $this->game->getMap()->isGlobetrotterBonusActive($expansionOption);
         $isLongestPathBonusActive = $this->game->getMap()->isLongestPathBonusActive($expansionOption);
+        $mandalaPoints = $this->game->getMap()->mandalaPoints;
 
         $sql = "SELECT player_id id, player_score score FROM player ORDER BY player_no ASC";
         $players = $this->game->getCollectionFromDb($sql);
@@ -126,6 +127,27 @@ class EndScore extends GameState {
             
             foreach ($globetrotterWinners as $playerId) {
                 $totalScore[$playerId] += $this->game->getMap()->pointsForGlobetrotter;
+            }
+        }
+
+        $mandalaResults = [];
+        // Mandala
+        if ($mandalaPoints !== null) {
+            foreach ($destinationsResults as $playerId => $destinations) {
+                $playerMandalas = [];
+                $completedDestinations = array_values(array_filter($destinations, fn($destination) => (array_key_exists($destination->id, $routeByCompletedDestination) ? $routeByCompletedDestination[$destination->id] : $this->game->getDestinationRoutes($playerId, $destination)) != null));
+                foreach ($completedDestinations as $destination) {
+                    $distinctRoutesCount = $this->game->getDistinctRoutesCount($playerId, $destination);
+                    if ($distinctRoutesCount >= 2) {
+                        $playerMandalas[] = $destination;
+                    }
+                }
+                $mandalaResults[$playerId] = $playerMandalas;
+                $completedMandalas = min(
+                    max(array_keys($mandalaPoints)),
+                    count($playerMandalas),
+                );
+                $totalScore[$playerId] += $mandalaPoints[$completedMandalas];
             }
         }
 
@@ -246,6 +268,33 @@ class EndScore extends GameState {
 
             $scoreAux = 1000 * $completedDestinationsCount[$playerId] + $playersLongestPaths[$playerId]->length;
             $this->game->DbQuery("UPDATE player SET `player_score_aux` = $scoreAux where `player_id` = $playerId");
+        }
+        // Mandala
+        if ($mandalaPoints !== null) {
+            foreach ($mandalaResults as $playerId => $playerMandalas) {
+
+                foreach ($playerMandalas as $destination) {
+                    $this->notify->all('scoreDestinationMandala', clienttranslate('${player_name} made a Mandala from ${from} to ${to}'), [
+                        'playerId' => $playerId,
+                        'player_name' => $this->game->getPlayerNameById($playerId),
+                        'destination' => $destination,
+                        'from' => $this->game->getCityName($destination->from),
+                        'to' => $this->game->getLogTo($destination),
+                    ]);
+                }
+
+                $completedMandalas = min(
+                    max(array_keys($mandalaPoints)),
+                    count($playerMandalas),
+                );
+                $points =  $mandalaPoints[$completedMandalas];                
+                
+                $message = clienttranslate('${player_name} gains ${delta} points for ${number} completed Mandala(s)');
+                $this->game->incScore($playerId, $points, $message, [
+                    'delta' => $points,
+                    'number' => count($playerMandalas),
+                ]);
+            }
         }
 
         // highlight winner(s)

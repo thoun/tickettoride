@@ -22,6 +22,8 @@ class Map {
     public int $minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
     public ?string $multilingualPdfRulesUrl = null; // PDF rules URL to display when it's not the base game
     public ?array $rulesDifferences = null; // text summary of rules differences to display when it's not the base game
+    public bool $vertical = false;
+    public ?array $mandalaPoints = null;
 
     public function __construct(
         public array $cities,

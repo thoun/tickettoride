@@ -146,6 +146,11 @@
     transition: transform 0.5s;
 }
 
+.vertical-map .animated-destination-card {
+    width: 161px; 
+    height: 250px; 
+}
+
 .highlight-locomotive {
     filter: unset !important; // we ignore disabled effect during 3 locomotives animation
     animation: locomotives-animation 1s 1 forwards ease-in-out;

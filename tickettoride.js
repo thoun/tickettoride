@@ -1934,6 +1934,9 @@ var TicketToRide = /** @class */ (function (_super) {
         if (this.gamedatas.map.multilingualPdfRulesUrl || this.gamedatas.map.rulesDifferences) {
             this.statusBar.addActionButton(_('Rules differences between USA and current map'), function () { return _this.createRulesPopin(); }, { id: 'rules-differences-btn', destination: document.getElementById("player_boards") });
         }
+        if (this.gamedatas.map.vertical) {
+            document.body.classList.add('vertical-map');
+        }
         log("Ending game setup");
     };
     ///////////////////////////////////////////////////
