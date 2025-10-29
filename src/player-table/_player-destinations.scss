@@ -85,6 +85,23 @@
 .vertical-map .destination-card:not(.icon) {
     width: 161px; 
     height: 250px; 
+
+    &.uncompleted {
+        &::after {
+            background: url('img/destination-todo-vertical.png');
+        }  
+    }
+    
+    &.completed {
+        &:not(.no-mask) {
+            mask: url('img/destination-done-mask-vertical.png') no-repeat center / contain;
+            -webkit-mask: url('img/destination-done-mask-vertical.png') no-repeat center / contain;  
+        }
+
+        &::after {
+            background: url('img/destination-done-vertical.png');
+        }
+    }
 }
 
 .done {
@@ -106,6 +123,19 @@
 
         &.no-mask::after {
             background: url('img/destination-done-no-mask.png');
+        }  
+    }
+}
+
+.vertical-map .done {
+    .destination-card:not(.icon) {
+        &:not(.no-mask) {
+            mask: url('img/destination-done-mask-vertical.png') no-repeat center / contain;
+            -webkit-mask: url('img/destination-done-mask-vertical.png') no-repeat center / contain;  
+        }
+
+        &::after {
+            background: url('img/destination-done-vertical.png');
         }  
     }
 }

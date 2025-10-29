@@ -14,12 +14,14 @@ class DestinationSelection {
         private game: TicketToRideGame,
         map: TicketToRideMap,
     ) {
+        const DESTINATION_CARD_WIDTH = map.vertical ? CARD_HEIGHT : CARD_WIDTH;
+        const DESTINATION_CARD_HEIGHT = map.vertical ? CARD_WIDTH : CARD_HEIGHT;
 
         this.destinations = new ebg.stock() as Stock;
         this.destinations.setSelectionAppearance('class');
         this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
-        this.destinations.create(game, $(`destination-stock`), CARD_WIDTH, CARD_HEIGHT);
+        this.destinations.create(game, $(`destination-stock`), DESTINATION_CARD_WIDTH, DESTINATION_CARD_HEIGHT);
         this.destinations.onItemCreate = (cardDiv: HTMLDivElement, cardUniqueId) => setupDestinationCardDiv(game, cardDiv, Number(cardUniqueId));
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;

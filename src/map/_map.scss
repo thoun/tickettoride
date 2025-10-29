@@ -168,6 +168,11 @@
     transform-origin: top left;
 }
 
+.vertical-map #map {
+    width: 1125px;
+    height: 1744px;
+}
+
 /*.point-marker {
     position: absolute;
     top: 0;

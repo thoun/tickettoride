@@ -35,6 +35,15 @@
   }
 }
 
+.vertical-map #destination-stock {
+  .stockitem {
+
+    &.selected::after {
+      background: url('img/destination-selected-vertical.png');
+    }
+  }
+}
+
 #visible-train-cards-mini {
   position: absolute;
   bottom: 0;

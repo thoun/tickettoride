@@ -254,13 +254,11 @@ var LongestPathAnimation = /** @class */ (function (_super) {
 var DRAG_AUTO_ZOOM_DELAY = 2000;
 var SIDES = ['left', 'right', 'top', 'bottom'];
 var CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
-var MAP_WIDTH = 1744;
-var MAP_HEIGHT = 1125;
+var HORIZONTAL_MAP_WIDTH = 1744;
+var HORIZONTAL_MAP_HEIGHT = 1125;
 var DECK_WIDTH = 250;
 var PLAYER_WIDTH = 305;
 var PLAYER_HEIGHT = 257; // avg height (4 destination cards)
-var BOTTOM_RATIO = (MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT + PLAYER_HEIGHT);
-var LEFT_RATIO = (PLAYER_WIDTH + MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT);
 /**
  * Manager for in-map zoom.
  */
@@ -644,6 +642,12 @@ var TtrMap = /** @class */ (function () {
         }
         return true;
     };
+    TtrMap.prototype.getMapWidth = function () {
+        return this.map.vertical ? HORIZONTAL_MAP_HEIGHT : HORIZONTAL_MAP_WIDTH;
+    };
+    TtrMap.prototype.getMapHeight = function () {
+        return this.map.vertical ? HORIZONTAL_MAP_WIDTH : HORIZONTAL_MAP_HEIGHT;
+    };
     /**
      * Set map size, depending on available screen size.
      * Player table will be placed left or bottom, depending on window ratio.
@@ -654,6 +658,10 @@ var TtrMap = /** @class */ (function () {
             setTimeout(function () { return _this.setAutoZoom(); }, 200);
             return;
         }
+        var MAP_WIDTH = this.getMapWidth();
+        var MAP_HEIGHT = this.getMapHeight();
+        var BOTTOM_RATIO = (MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT + PLAYER_HEIGHT);
+        var LEFT_RATIO = (PLAYER_WIDTH + MAP_WIDTH + DECK_WIDTH) / MAP_HEIGHT;
         var screenRatio = document.getElementById('game_play_area').clientWidth / (window.innerHeight - 80);
         var leftDistance = Math.abs(LEFT_RATIO - screenRatio);
         var bottomDistance = Math.abs(BOTTOM_RATIO - screenRatio);
@@ -844,11 +852,13 @@ var DestinationSelection = /** @class */ (function () {
     function DestinationSelection(game, map) {
         var _this = this;
         this.game = game;
+        var DESTINATION_CARD_WIDTH = map.vertical ? CARD_HEIGHT : CARD_WIDTH;
+        var DESTINATION_CARD_HEIGHT = map.vertical ? CARD_WIDTH : CARD_HEIGHT;
         this.destinations = new ebg.stock();
         this.destinations.setSelectionAppearance('class');
         this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
-        this.destinations.create(game, $("destination-stock"), CARD_WIDTH, CARD_HEIGHT);
+        this.destinations.create(game, $("destination-stock"), DESTINATION_CARD_WIDTH, DESTINATION_CARD_HEIGHT);
         this.destinations.onItemCreate = function (cardDiv, cardUniqueId) { return setupDestinationCardDiv(game, cardDiv, Number(cardUniqueId)); };
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;

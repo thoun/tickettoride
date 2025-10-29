@@ -3,14 +3,11 @@ const DRAG_AUTO_ZOOM_DELAY = 2000;
 const SIDES = ['left', 'right', 'top', 'bottom'];
 const CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 
-const MAP_WIDTH = 1744;
-const MAP_HEIGHT = 1125;
+const HORIZONTAL_MAP_WIDTH = 1744;
+const HORIZONTAL_MAP_HEIGHT = 1125;
 const DECK_WIDTH = 250;
 const PLAYER_WIDTH = 305;
 const PLAYER_HEIGHT = 257; // avg height (4 destination cards)
-
-const BOTTOM_RATIO = (MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT + PLAYER_HEIGHT);
-const LEFT_RATIO = (PLAYER_WIDTH + MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT);
 
 /** 
  * Manager for in-map zoom.
@@ -471,6 +468,13 @@ class TtrMap {
         return true;
     }
 
+    private getMapWidth() {
+        return this.map.vertical ? HORIZONTAL_MAP_HEIGHT : HORIZONTAL_MAP_WIDTH;
+    }
+    private getMapHeight() {
+        return this.map.vertical ? HORIZONTAL_MAP_WIDTH : HORIZONTAL_MAP_HEIGHT;
+    }
+
     /** 
      * Set map size, depending on available screen size.
      * Player table will be placed left or bottom, depending on window ratio.
@@ -481,6 +485,10 @@ class TtrMap {
             setTimeout(() => this.setAutoZoom(), 200);
             return;
         }
+        const MAP_WIDTH = this.getMapWidth();
+        const MAP_HEIGHT = this.getMapHeight();
+        const BOTTOM_RATIO = (MAP_WIDTH + DECK_WIDTH) / (MAP_HEIGHT + PLAYER_HEIGHT);
+        const LEFT_RATIO = (PLAYER_WIDTH + MAP_WIDTH + DECK_WIDTH) / MAP_HEIGHT;
 
         const screenRatio = document.getElementById('game_play_area').clientWidth / (window.innerHeight - 80);
         const leftDistance = Math.abs(LEFT_RATIO - screenRatio);

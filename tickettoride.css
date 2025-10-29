@@ -374,6 +374,11 @@
   transform-origin: top left;
 }
 
+.vertical-map #map {
+  width: 1125px;
+  height: 1744px;
+}
+
 /*.point-marker {
     position: absolute;
     top: 0;
@@ -969,6 +974,10 @@
   border-radius: 6px;
 }
 
+.vertical-map #destination-stock .stockitem.selected::after {
+  background: url("img/destination-selected-vertical.png");
+}
+
 #visible-train-cards-mini {
   position: absolute;
   bottom: 0;
@@ -1059,6 +1068,16 @@
   width: 161px;
   height: 250px;
 }
+.vertical-map .destination-card:not(.icon).uncompleted::after {
+  background: url("img/destination-todo-vertical.png");
+}
+.vertical-map .destination-card:not(.icon).completed:not(.no-mask) {
+  mask: url("img/destination-done-mask-vertical.png") no-repeat center/contain;
+  -webkit-mask: url("img/destination-done-mask-vertical.png") no-repeat center/contain;
+}
+.vertical-map .destination-card:not(.icon).completed::after {
+  background: url("img/destination-done-vertical.png");
+}
 
 .done .destination-card:not(.icon):not(.no-mask) {
   mask: url("img/destination-done-mask.png") no-repeat center/contain;
@@ -1075,6 +1094,14 @@
 }
 .done .destination-card:not(.icon).no-mask::after {
   background: url("img/destination-done-no-mask.png");
+}
+
+.vertical-map .done .destination-card:not(.icon):not(.no-mask) {
+  mask: url("img/destination-done-mask-vertical.png") no-repeat center/contain;
+  -webkit-mask: url("img/destination-done-mask-vertical.png") no-repeat center/contain;
+}
+.vertical-map .done .destination-card:not(.icon)::after {
+  background: url("img/destination-done-vertical.png");
 }
 
 .player-table-train-cars {
