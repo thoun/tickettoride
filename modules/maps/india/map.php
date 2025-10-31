@@ -46,7 +46,7 @@ class IndiaMap extends Map {
         $this->rulesDifferences = [
             clienttranslate('You can only play 4 players maximum. Double routes are only available at 4 players.'),
             clienttranslate('Ferries: To claim a Ferry route, a player must play a Locomotive card for each Locomotive symbol on the route.'),
-            clienttranslate('Mandala: Any Ticket whose 2 Destination Cities are linked via at least 2 distinct continuous paths of its owner’s plastic trains qualifies for a Grand Tour bonus.'),
+            clienttranslate('Grand Tour bonus (Mandala): Any Ticket whose 2 Destination Cities are linked via at least 2 distinct continuous paths of its owner’s plastic trains qualifies for a Grand Tour bonus.'),
         ];
 
         $this->vertical = true;

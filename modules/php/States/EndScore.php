@@ -274,7 +274,7 @@ class EndScore extends GameState {
             foreach ($mandalaResults as $playerId => $playerMandalas) {
 
                 foreach ($playerMandalas as $destination) {
-                    $this->notify->all('scoreDestinationMandala', clienttranslate('${player_name} made a Mandala from ${from} to ${to}'), [
+                    $this->notify->all('scoreDestinationGrandTour', clienttranslate('${player_name} gets a Grand Tour bonus from ${from} to ${to}'), [
                         'playerId' => $playerId,
                         'player_name' => $this->game->getPlayerNameById($playerId),
                         'destination' => $destination,
@@ -289,7 +289,7 @@ class EndScore extends GameState {
                 );
                 $points =  $mandalaPoints[$completedMandalas];                
                 
-                $message = clienttranslate('${player_name} gains ${delta} points for ${number} completed Mandala(s)');
+                $message = clienttranslate('${player_name} gains ${delta} points for ${number} completed Grand Tour(s)');
                 $this->game->incScore($playerId, $points, $message, [
                     'delta' => $points,
                     'number' => count($playerMandalas),
