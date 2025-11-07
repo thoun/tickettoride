@@ -16,7 +16,7 @@ namespace Bga\GameFramework {
         public function __construct(public string $message = '', public array $args = []) {}
     }
 }
-namespace Bga\Games\TicketToRide {
+namespace Bga\Games\TicketToRideMaps {
     class Game {
         public object $bga;
         public object $notify;
@@ -110,16 +110,16 @@ namespace {
         if (!$condition) { throw new \RuntimeException($message); }
     }
     $map = new \NorthernLightsMap();
-    $game = new \Bga\Games\TicketToRide\Game($map);
+    $game = new \Bga\Games\TicketToRideMaps\Game($map);
     $scoreBonus = function(array $selectedCards, array $players) use ($map, $game): array {
         $game->bga->globals->selectedBonusCards = $selectedCards;
         return $map->getBonusCardScores($game, $players);
     };
     $base = ['hand' => [], 'routes' => [], 'completedDestinations' => [], 'remainingTrains' => 0, 'longestPathLength' => 0];
-    $ticket = fn($from, $to, $points) => new \Bga\Games\TicketToRide\Objects\DestinationCard($from, $to, $points);
+    $ticket = fn($from, $to, $points) => new \Bga\Games\TicketToRideMaps\Objects\DestinationCard($from, $to, $points);
     $route = function($from, $to, $length, $ferry = false) {
-        return new \Bga\Games\TicketToRide\Objects\Route($from, $to, GRAY,
-            array_fill(0, $length, new \Bga\Games\TicketToRide\Objects\RouteSpace(0, 0, 0)), locomotives: $ferry ? 1 : 0);
+        return new \Bga\Games\TicketToRideMaps\Objects\Route($from, $to, GRAY,
+            array_fill(0, $length, new \Bga\Games\TicketToRideMaps\Objects\RouteSpace(0, 0, 0)), locomotives: $ferry ? 1 : 0);
     };
     $examples = [
         0 => ['hand' => [(object)['type' => 0], (object)['type' => 3], (object)['type' => 3]]],
@@ -167,8 +167,8 @@ namespace {
     check(array_column($results, 'points', 'playerId') === [2 => 12] && count($results) === 2, 'Arctic boundary classification is incorrect');
     check($scoreBonus([], [1 => $base]) === [], 'Unselected cards must not score');
 
-    $game = new \Bga\Games\TicketToRide\Game($map);
-    $state = new \Bga\Games\TicketToRide\States\EndScore($game);
+    $game = new \Bga\Games\TicketToRideMaps\Game($map);
+    $state = new \Bga\Games\TicketToRideMaps\States\EndScore($game);
     check($state->onEnteringState() === ST_END_GAME, 'End scoring failed to finish');
     check($game->scores === [1 => 124, 2 => 117], 'Selected bonuses not added exactly once');
     check($game->notify->events[0]['type'] === 'bestScore' && $game->notify->events[0]['args']['bestScore'] === 124, 'Best score must include bonuses before score notifications');
@@ -203,8 +203,8 @@ namespace {
         }
     }
     $map->useBonusCards = false;
-    $game = new \Bga\Games\TicketToRide\Game($map);
-    (new \Bga\Games\TicketToRide\States\EndScore($game))->onEnteringState();
+    $game = new \Bga\Games\TicketToRideMaps\Game($map);
+    (new \Bga\Games\TicketToRideMaps\States\EndScore($game))->onEnteringState();
     check($game->scores === [1 => 100, 2 => 100] && $game->bga->playerScoreAux->values === [1 => 7, 2 => 11], 'Disabled bonus cards changed ordinary scoring');
     echo "Northern Lights bonus scoring passed.\n";
 }

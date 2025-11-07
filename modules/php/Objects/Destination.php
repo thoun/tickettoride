@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide\Objects;
+namespace Bga\Games\TicketToRideMaps\Objects;
 
 /**
  * A Destination is a physical card. It contains informations from matching DestinationCard, with technical informations like id and location.

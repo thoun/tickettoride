@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide\Objects;
+namespace Bga\Games\TicketToRideMaps\Objects;
 
 /**
  * When a player asks to place a tunnel route, we store corresponding informations, the time needed to ask if he wants to pay the extra cards.

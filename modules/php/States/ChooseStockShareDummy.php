@@ -1,9 +1,9 @@
 <?php
 
-namespace Bga\Games\TicketToRide\States;
+namespace Bga\Games\TicketToRideMaps\States;
 
 use Bga\GameFramework\States\PossibleAction;
-use Bga\Games\TicketToRide\Game;
+use Bga\Games\TicketToRideMaps\Game;
 
 class ChooseStockShareDummy extends ChooseStockShare {
     public function __construct(Game $game) {

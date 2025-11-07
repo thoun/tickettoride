@@ -1,7 +1,7 @@
 <?php
 
-use Bga\Games\TicketToRide\Objects\Route;
-use Bga\Games\TicketToRide\Objects\RouteSpace;
+use Bga\Games\TicketToRideMaps\Objects\Route;
+use Bga\Games\TicketToRideMaps\Objects\RouteSpace;
 
 /**
  * Route on the map.

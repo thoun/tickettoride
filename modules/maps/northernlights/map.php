@@ -1,7 +1,7 @@
 <?php
 
-use Bga\Games\TicketToRide\Game;
-use Bga\Games\TicketToRide\Objects\Map;
+use Bga\Games\TicketToRideMaps\Game;
+use Bga\Games\TicketToRideMaps\Objects\Map;
 use Bga\GameFramework\NotificationMessage;
 
 require_once(__DIR__.'/cities.php');
