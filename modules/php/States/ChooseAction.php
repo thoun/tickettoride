@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide\States;
+namespace Bga\Games\TicketToRideMaps\States;
 
 use Bga\GameFramework\Actions\Types\IntArrayParam;
 use Bga\GameFramework\States\GameState;
@@ -8,7 +8,7 @@ use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\UserException;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
-use Bga\Games\TicketToRide\Game;
+use Bga\Games\TicketToRideMaps\Game;
 
 class ChooseAction extends GameState {
     public function __construct(protected Game $game)

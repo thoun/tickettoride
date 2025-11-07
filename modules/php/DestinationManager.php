@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideMaps;
 
 use Bga\GameFramework\Components\Deck;
 use Bga\GameFramework\SystemException;

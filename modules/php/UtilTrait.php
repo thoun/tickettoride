@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideMaps;
 
 use Bga\GameFramework\Table;
 use Map;

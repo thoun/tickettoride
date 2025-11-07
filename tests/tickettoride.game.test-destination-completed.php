@@ -1,8 +1,8 @@
 <?php
 define("APP_GAMEMODULE_PATH", "../misc/"); // include path to stubs, which defines "table.game.php" and other classes
-require_once ('../tickettoride.game.php');
+require_once ('../tickettoridemaps.game.php');
 
-class TicketToRideTestDestinationCompleted extends TicketToRide { // this is your game class defined in ggg.game.php
+class TicketToRideMapsTestDestinationCompleted extends TicketToRideMaps { // this is your game class defined in ggg.game.php
     function __construct() {
         // parent::__construct();
         include '../material.inc.php';// this is how this normally included, from constructor
@@ -57,7 +57,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
     // class tests
     function testDestinationCompletedNo() {
 
-        $result = $this->getDestinationRoutes(1, $this->getMap()->destinations[1][20]);
+        $result = $this->getDestinationRoutes(1, $this->DESTINATIONS[1][20]);
 
         $equal = $result == null;
 
@@ -71,7 +71,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
 
     function testDestinationCompletedYes() {
 
-        $result = $this->getDestinationRoutes(2, $this->getMap()->destinations[1][20]);
+        $result = $this->getDestinationRoutes(2, $this->DESTINATIONS[1][20]);
 
         $equal = $result != null;
 
@@ -84,7 +84,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
     }
 
     function testDestinationCompletedYes2() {
-        $result = $this->getDestinationRoutes(3, $this->getMap()->destinations[1][7]);
+        $result = $this->getDestinationRoutes(3, $this->DESTINATIONS[1][7]);
 
         $equal = $result != null;
 
@@ -97,7 +97,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
     }
 
     function testDestinationCompletedYes3() {
-        $result = $this->getDestinationRoutes(4, $this->getMap()->destinations[1][3]);
+        $result = $this->getDestinationRoutes(4, $this->DESTINATIONS[1][3]);
 
         $equal = $result != null;
 
@@ -117,5 +117,5 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
     }
 }
 
-$test1 = new TicketToRideTestDestinationCompleted();
+$test1 = new TicketToRideMapsTestDestinationCompleted();
 $test1->testAll();
