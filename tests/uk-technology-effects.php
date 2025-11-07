@@ -7,8 +7,8 @@ namespace Bga\GameFramework\Components {
     }
 }
 
-namespace Bga\Games\TicketToRide {
-    use Bga\Games\TicketToRide\Objects\Map;
+namespace Bga\Games\TicketToRideMaps {
+    use Bga\Games\TicketToRideMaps\Objects\Map;
 
     class Game {
         public object $bga;
@@ -50,11 +50,11 @@ namespace Bga\Games\TicketToRide {
 }
 
 namespace {
-    use Bga\Games\TicketToRide\Game;
-    use Bga\Games\TicketToRide\MapManager;
-    use Bga\Games\TicketToRide\Objects\Map;
-    use Bga\Games\TicketToRide\Objects\Route;
-    use Bga\Games\TicketToRide\Objects\RouteSpace;
+    use Bga\Games\TicketToRideMaps\Game;
+    use Bga\Games\TicketToRideMaps\MapManager;
+    use Bga\Games\TicketToRideMaps\Objects\Map;
+    use Bga\Games\TicketToRideMaps\Objects\Route;
+    use Bga\Games\TicketToRideMaps\Objects\RouteSpace;
 
     function clienttranslate(string $text): string { return $text; }
 
@@ -82,7 +82,7 @@ namespace {
         }
         if (!$advancedTechnologies) {
             $setupGame->trainCarManager->trainCars->deckCount = 1;
-            $setupManager = (new \ReflectionClass(\Bga\Games\TicketToRide\TrainCarManager::class))->newInstanceWithoutConstructor();
+            $setupManager = (new \ReflectionClass(\Bga\Games\TicketToRideMaps\TrainCarManager::class))->newInstanceWithoutConstructor();
             (new \ReflectionProperty($setupManager, 'game'))->setValue($setupManager, $setupGame);
             $setupManager->trainCars = $setupGame->trainCarManager->trainCars;
             $setupManager->trainCarDeckAutoReshuffle();
@@ -164,7 +164,7 @@ namespace {
     }
 
     $game = new Game($uk, []);
-    $manager = (new \ReflectionClass(\Bga\Games\TicketToRide\TrainCarManager::class))->newInstanceWithoutConstructor();
+    $manager = (new \ReflectionClass(\Bga\Games\TicketToRideMaps\TrainCarManager::class))->newInstanceWithoutConstructor();
     (new \ReflectionProperty($manager, 'game'))->setValue($manager, $game);
     $manager->trainCars = new \Bga\GameFramework\Components\Deck();
     $manager->trainCarDeckAutoReshuffle();

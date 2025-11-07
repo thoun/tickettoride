@@ -50,7 +50,7 @@ namespace {
     require_once __DIR__.'/../modules/php/constants.inc.php';
     require_once __DIR__.'/../modules/php/States/ChooseAction.php';
 
-    class AutoPickChooseAction extends \Bga\Games\TicketToRide\States\ChooseAction {
+    class AutoPickChooseAction extends \Bga\Games\TicketToRideMaps\States\ChooseAction {
         public function getArgs(int $activePlayerId): array {
             return ['maxHiddenCardsPick' => min($this->game->maxDraw, $this->game->trainCarManager->deck)];
         }
@@ -69,11 +69,11 @@ namespace {
         [8, 4, 20, 3, false, [3], 8],
         [8, 4, 20, 2, true, [2], 8],
     ] as [$target, $hand, $deck, $maximum, $trackPieces, $draws, $remainingTarget]) {
-        $game = new \Bga\Games\TicketToRide\Game($target, $hand, $deck, $maximum, $trackPieces);
+        $game = new \Bga\Games\TicketToRideMaps\Game($target, $hand, $deck, $maximum, $trackPieces);
         $next = (new AutoPickChooseAction($game))->onEnteringState(42);
         $expectedNext = !$draws ? null : ($trackPieces
-            ? \Bga\Games\TicketToRide\States\PlaceTrackPiece::class
-            : \Bga\Games\TicketToRide\States\NextPlayer::class);
+            ? \Bga\Games\TicketToRideMaps\States\PlaceTrackPiece::class
+            : \Bga\Games\TicketToRideMaps\States\NextPlayer::class);
         if ($game->trainCarManager->draws !== $draws || $game->autoPickTrainCarCards->value !== $remainingTarget || $next !== $expectedNext) {
             throw new \RuntimeException('Unexpected auto-pick result for '.json_encode([$target, $hand, $deck, $maximum, $trackPieces]));
         }

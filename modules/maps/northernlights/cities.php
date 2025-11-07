@@ -1,6 +1,6 @@
 <?php
 
-use Bga\Games\TicketToRide\Objects\City;
+use Bga\Games\TicketToRideMaps\Objects\City;
 
 const NORTHERNLIGHTS_COUNTRY_DENMARK = 1;
 const NORTHERNLIGHTS_COUNTRY_ESTONIA = 2;

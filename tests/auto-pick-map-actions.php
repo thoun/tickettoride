@@ -37,9 +37,9 @@ namespace {
     require_once __DIR__.'/../modules/php/Objects/Map.php';
     require_once __DIR__.'/../modules/php/States/PlaceTrackPiece.php';
 
-    use Bga\Games\TicketToRide\Game;
-    use Bga\Games\TicketToRide\Objects\Map;
-    use Bga\Games\TicketToRide\States\PlaceTrackPiece;
+    use Bga\Games\TicketToRideMaps\Game;
+    use Bga\Games\TicketToRideMaps\Objects\Map;
+    use Bga\Games\TicketToRideMaps\States\PlaceTrackPiece;
     use Bga\GameFramework\Components\Counters\PlayerCounter;
 
     function check(bool $condition, string $message): void {
@@ -72,7 +72,7 @@ namespace {
         [7 => (object)['id' => 7, 'from' => 1, 'to' => 2, 'number' => 2, 'color' => TRACKBED]],
         [],
     );
-    $game->mapManager = new \Bga\Games\TicketToRide\MapManager($game);
+    $game->mapManager = new \Bga\Games\TicketToRideMaps\MapManager($game);
     $state = new TestTrackPiece($game);
     foreach ([[8, RED], [7, BLUE]] as [$routeId, $color]) {
         try {

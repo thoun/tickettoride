@@ -46,11 +46,11 @@ namespace {
     require_once __DIR__.'/../modules/php/MapManager.php';
     require_once __DIR__.'/../modules/php/States/ChooseAction.php';
 
-    use Bga\Games\TicketToRide\Game;
-    use Bga\Games\TicketToRide\Objects\Map;
-    use Bga\Games\TicketToRide\Objects\Route;
-    use Bga\Games\TicketToRide\Objects\RouteSpace;
-    use Bga\Games\TicketToRide\States\ChooseAction;
+    use Bga\Games\TicketToRideMaps\Game;
+    use Bga\Games\TicketToRideMaps\Objects\Map;
+    use Bga\Games\TicketToRideMaps\Objects\Route;
+    use Bga\Games\TicketToRideMaps\Objects\RouteSpace;
+    use Bga\Games\TicketToRideMaps\States\ChooseAction;
 
     class ZombieChooseAction extends ChooseAction {
         public ?array $claim = null;

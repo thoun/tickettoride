@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide {
+namespace Bga\Games\TicketToRideMaps {
     class Game {
         public object $bga;
         public function __construct() {
@@ -25,7 +25,7 @@ namespace {
 
     $map = new \NorthernLightsMap();
     for ($i = 0; $i < 100; $i++) {
-        $game = new \Bga\Games\TicketToRide\Game();
+        $game = new \Bga\Games\TicketToRideMaps\Game();
         $map->setup($game);
         $selection = $map->getMapSpecificData($game)['bonusCards'];
         if (count($selection) !== 4 || count(array_unique($selection)) !== 4

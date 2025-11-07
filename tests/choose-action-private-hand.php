@@ -8,7 +8,7 @@ namespace Bga\GameFramework\States {
 namespace Bga\GameFramework {
     class StateType { const ACTIVE_PLAYER = 1; }
 }
-namespace Bga\Games\TicketToRide {
+namespace Bga\Games\TicketToRideMaps {
     class Game {
         public object $legendaryCharacterManager;
         public object $trainCarManager;
@@ -48,14 +48,14 @@ namespace {
     require_once __DIR__.'/../modules/php/States/ChooseAction.php';
 
     $hand = [(object)['id' => 1, 'type' => RED], (object)['id' => 2, 'type' => RED]];
-    $game = new \Bga\Games\TicketToRide\Game(new \NorthernLightsMap(), $hand);
-    $args = (new \Bga\Games\TicketToRide\States\ChooseAction($game))->getArgs(42);
+    $game = new \Bga\Games\TicketToRideMaps\Game(new \NorthernLightsMap(), $hand);
+    $args = (new \Bga\Games\TicketToRideMaps\States\ChooseAction($game))->getArgs(42);
     if (($args['_private'][42]['trainCarsHand'] ?? null) !== $hand || array_keys($args['_private']) !== [42]
         || array_key_exists('trainCarsHand', $args)) {
         throw new \RuntimeException('Northern Lights must provide the popin hand only to the active player.');
     }
-    $game = new \Bga\Games\TicketToRide\Game(new \Bga\Games\TicketToRide\Objects\Map([], [], []), $hand);
-    $args = (new \Bga\Games\TicketToRide\States\ChooseAction($game))->getArgs(42);
+    $game = new \Bga\Games\TicketToRideMaps\Game(new \Bga\Games\TicketToRideMaps\Objects\Map([], [], []), $hand);
+    $args = (new \Bga\Games\TicketToRideMaps\States\ChooseAction($game))->getArgs(42);
     if (isset($args['_private'][42]['trainCarsHand'])) {
         throw new \RuntimeException('Maps without custom payment rules changed their state payload.');
     }

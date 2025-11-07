@@ -186,6 +186,11 @@
             "id": 45,
             "name": "Globetrotter bonus",
             "type": "bool"
+        },
+        "mandalaPoints": {
+            "id": 104,
+            "name": "Mandala points",
+            "type": "int"
         }
     }
 }
