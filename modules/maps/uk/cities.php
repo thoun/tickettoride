@@ -1,6 +1,6 @@
 <?php
 
-use Bga\Games\TicketToRide\Objects\City;
+use Bga\Games\TicketToRideMaps\Objects\City;
 
 require_once(__DIR__.'/countries.php');
 

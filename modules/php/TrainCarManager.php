@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideMaps;
 
 use Bga\GameFramework\Components\Deck;
 use Bga\GameFramework\SystemException;
-use Bga\Games\TicketToRide\Objects\TrainCar;
+use Bga\Games\TicketToRideMaps\Objects\TrainCar;
 
 class TrainCarManager {
 
