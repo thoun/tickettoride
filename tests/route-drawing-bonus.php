@@ -32,7 +32,7 @@ namespace Bga\GameFramework\Components {
     }
 }
 
-namespace Bga\Games\TicketToRide {
+namespace Bga\Games\TicketToRideMaps {
     class Game {
         public object $deckFactory;
         public object $notify;
@@ -74,8 +74,8 @@ namespace {
         [[], [], 3, []],
     ] as [$deckCards, $discardCards, $bonus, $expected]) {
         $deck = new \Bga\GameFramework\Components\Deck($deckCards, $discardCards);
-        $game = new \Bga\Games\TicketToRide\Game($deck);
-        $manager = new \Bga\Games\TicketToRide\TrainCarManager($game);
+        $game = new \Bga\Games\TicketToRideMaps\Game($deck);
+        $manager = new \Bga\Games\TicketToRideMaps\TrainCarManager($game);
         check($manager->drawBonusTrainCarCardsFromDeck(7, $bonus) === count($expected), 'Wrong bonus count');
         check($deck->locations['hand'] === $expected, 'Bonus must draw from the top of the deck');
         check($deck->locations['table'] === [99], 'Bonus must leave visible cards alone');
@@ -93,8 +93,8 @@ namespace {
         }
     }
 
-    $game = new \Bga\Games\TicketToRide\Game(new \Bga\GameFramework\Components\Deck([1, 2, 3], []));
-    $manager = new \Bga\Games\TicketToRide\TrainCarManager($game);
+    $game = new \Bga\Games\TicketToRideMaps\Game(new \Bga\GameFramework\Components\Deck([1, 2, 3], []));
+    $manager = new \Bga\Games\TicketToRideMaps\TrainCarManager($game);
     foreach ([[3, false], [2, true]] as [$number, $second]) {
         try {
             $manager->drawTrainCarCardsFromDeck(7, $number, $second);

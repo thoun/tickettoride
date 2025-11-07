@@ -13,7 +13,7 @@
 $gameinfos = [
 
 // Name of the game in English (will serve as the basis for translation) 
-'game_name' => "Ticket to Ride",          
+'game_name' => "Ticket to Ride Maps",          
 
 // Game publisher (use empty string if there is no publisher)
 'publisher' => 'Days of Wonder',                     
@@ -25,7 +25,7 @@ $gameinfos = [
 'publisher_bgg_id' => 1027,
 
 // Board game geek ID of the game
-'bgg_id' => 9209,
+'bgg_id' => 0,
 
 
 // Players configuration that can be played (ex: 2 to 4 players)
@@ -98,4 +98,8 @@ $gameinfos = [
 ],
 
 'exception_on_warning' => true,
+
+    'take_translation_from' => 'tickettoride',
+
+
 ];

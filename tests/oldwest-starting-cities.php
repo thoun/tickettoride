@@ -78,10 +78,10 @@ namespace {
     require_once __DIR__.'/../modules/php/States/PrivateChooseInitialDestinations.php';
     require_once __DIR__.'/../modules/php/States/ChooseStartingCity.php';
 
-    use Bga\Games\TicketToRide\Game;
-    use Bga\Games\TicketToRide\States\ChooseAction;
-    use Bga\Games\TicketToRide\States\ChooseStartingCity;
-    use Bga\Games\TicketToRide\States\PrivateChooseInitialDestinations;
+    use Bga\Games\TicketToRideMaps\Game;
+    use Bga\Games\TicketToRideMaps\States\ChooseAction;
+    use Bga\Games\TicketToRideMaps\States\ChooseStartingCity;
+    use Bga\Games\TicketToRideMaps\States\PrivateChooseInitialDestinations;
 
     function check(bool $condition, string $message): void {
         if (!$condition) { throw new \RuntimeException($message); }
@@ -121,13 +121,13 @@ namespace {
             ]], 'Placement notification must update every client');
         }
         check($game->activeIndex === 0, 'First player must take the first normal turn');
-        $reloaded = new \Bga\Games\TicketToRide\BuildingManager($game);
+        $reloaded = new \Bga\Games\TicketToRideMaps\BuildingManager($game);
         check(count($reloaded->getPlacedCityMarkers()) === $count, 'Markers must survive reload');
         check($reloaded->getPlacedStations() === [], 'City markers must not act as stations');
         foreach ($game->buildings as $row) { check($row['building_type'] === CITY_MARKER, 'Incorrect building type'); }
     }
 
-    $baseGame = new Game(new \Bga\Games\TicketToRide\Objects\Map([], [], []), [81, 17]);
+    $baseGame = new Game(new \Bga\Games\TicketToRideMaps\Objects\Map([], [], []), [81, 17]);
     check((new PrivateChooseInitialDestinations($baseGame))->endChooseInitialDestination() === ChooseAction::class, 'Other maps must skip city selection');
     check($baseGame->activeIndex === 0 && $baseGame->buildingManager->getRemainingCityMarkers(81) === null, 'Other maps must keep their setup');
     rejects(fn() => $baseGame->buildingManager->placeStartingCityMarker(81, 1));

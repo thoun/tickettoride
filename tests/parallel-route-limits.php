@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide {
+namespace Bga\Games\TicketToRideMaps {
     class Game {
         public array $claims = [];
         public function __construct(private object $map, private int $playerCount) {}
@@ -17,21 +17,21 @@ namespace {
     require_once __DIR__.'/../modules/php/Objects/RouteSpace.php';
     require_once __DIR__.'/../modules/php/MapManager.php';
 
-    $route = fn($from, $to) => new \Bga\Games\TicketToRide\Objects\Route($from, $to, RED,
-        [new \Bga\Games\TicketToRide\Objects\RouteSpace(0, 0, 0)]);
+    $route = fn($from, $to) => new \Bga\Games\TicketToRideMaps\Objects\Route($from, $to, RED,
+        [new \Bga\Games\TicketToRideMaps\Objects\RouteSpace(0, 0, 0)]);
     $claim = fn($id, $owner) => (object)['routeId' => $id, 'playerId' => $owner];
     $hand = [(object)['id' => 1, 'type' => RED]];
     foreach ([[2 => 1, 3 => 1, 4 => 2, 5 => 2], [2 => 1, 3 => 2, 4 => 2, 5 => 2]] as $doubleLimits) {
       foreach ([[2 => 1, 3 => 1, 4 => 3, 5 => 3], [2 => 1, 3 => 2, 4 => 3, 5 => 3]] as $limits) {
         foreach ($limits as $players => $maximum) {
-            $map = new \Bga\Games\TicketToRide\Objects\Map([], [
+            $map = new \Bga\Games\TicketToRideMaps\Objects\Map([], [
                 1 => $route(1, 2), 2 => $route(1, 2), 3 => $route(1, 2),
                 4 => $route(3, 4), 5 => $route(3, 4), 6 => $route(5, 6),
             ], []);
             $map->maximumPlayerForTripleRoutes = $limits;
             $map->maximumPlayerForDoubleRoutes = $doubleLimits;
-            $game = new \Bga\Games\TicketToRide\Game($map, $players);
-            $manager = new \Bga\Games\TicketToRide\MapManager($game);
+            $game = new \Bga\Games\TicketToRideMaps\Game($map, $players);
+            $manager = new \Bga\Games\TicketToRideMaps\MapManager($game);
             $available = fn($playerId = 99) => array_map(fn($route) => $route->id, $manager->claimableRoutes($playerId, $hand, 40));
             for ($taken = 0; $taken <= 3; $taken++) {
                 $game->claims = [];

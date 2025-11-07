@@ -1,9 +1,9 @@
 <?php
 
-use Bga\Games\TicketToRide\Objects\Map;
-use Bga\Games\TicketToRide\Objects\Route;
-use Bga\Games\TicketToRide\Game;
-use Bga\Games\TicketToRide\States\MoveAlvin;
+use Bga\Games\TicketToRideMaps\Objects\Map;
+use Bga\Games\TicketToRideMaps\Objects\Route;
+use Bga\Games\TicketToRideMaps\Game;
+use Bga\Games\TicketToRideMaps\States\MoveAlvin;
 
 require_once(__DIR__.'/cities.php');
 require_once(__DIR__.'/routes.php');

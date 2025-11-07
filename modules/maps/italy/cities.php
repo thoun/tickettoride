@@ -1,6 +1,6 @@
 <?php
 
-use Bga\Games\TicketToRide\Objects\City;
+use Bga\Games\TicketToRideMaps\Objects\City;
 
 const ITALY_REGION_ABRUZZO = 1;
 const ITALY_REGION_CALABRIA = 2;

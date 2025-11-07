@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideMaps;
 
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
 use Bga\GameFramework\UserException;
-use Bga\Games\TicketToRide\Objects\City;
-use Bga\Games\TicketToRide\Objects\Destination;
-use Bga\Games\TicketToRide\Objects\PlacedBuilding;
-use Bga\Games\TicketToRide\Objects\Route;
-use Bga\Games\TicketToRide\Objects\TrainCar;
+use Bga\Games\TicketToRideMaps\Objects\City;
+use Bga\Games\TicketToRideMaps\Objects\Destination;
+use Bga\Games\TicketToRideMaps\Objects\PlacedBuilding;
+use Bga\Games\TicketToRideMaps\Objects\Route;
+use Bga\Games\TicketToRideMaps\Objects\TrainCar;
 
 class BuildingManager {
     protected \Bga\GameFramework\Bga $bga;
