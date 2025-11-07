@@ -2,13 +2,13 @@
  /**
   *------
   * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
-  * TicketToRide implementation : © <Your name here> <Your email address here>
+  * TicketToRideMaps implementation : © <Your name here> <Your email address here>
   * 
   * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
   * See http://en.boardgamearena.com/#!doc/Studio for more information.
   * -----
   * 
-  * tickettoride.game.php
+  * tickettoridemaps.game.php
   *
   * This is the main file for your game logic.
   *
@@ -16,7 +16,7 @@
   *
   */
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideMaps;
 
 require_once('framework-prototype/Helpers/Arrays.php');
 
@@ -24,10 +24,10 @@ require_once('constants.inc.php');
 require_once(__DIR__.'/MapManager.php');
 
 use Bga\GameFramework\Table;
-use Bga\Games\TicketToRide\Objects\ClaimedRoute;
-use Bga\Games\TicketToRide\Objects\Destination;
-use Bga\Games\TicketToRide\Objects\Map;
-use Bga\Games\TicketToRide\States\DealInitialDestinations;
+use Bga\Games\TicketToRideMaps\Objects\ClaimedRoute;
+use Bga\Games\TicketToRideMaps\Objects\Destination;
+use Bga\Games\TicketToRideMaps\Objects\Map;
+use Bga\Games\TicketToRideMaps\States\DealInitialDestinations;
 
 const MAP_LIST = [
     1 => 'usa',
@@ -175,6 +175,11 @@ class Game extends Table {
     protected function getAllDatas(): array {
         $stateName = $this->gamestate->getCurrentMainState()->name; 
         $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
+
+        if ($stateName === 'endScore') {
+            // should never be the case, so we jump to endScore
+            $this->gamestate->jumpToState(99);
+        }
 
         $expansionOption = $this->getExpansionOption();
         //var_dump($this->map);

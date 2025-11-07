@@ -1,12 +1,12 @@
 {
-  "name": "tickettoride",
+  "name": "tickettoridemaps",
   "version": "1.0.0",
   "description": "",
-  "main": "tickettoride.js",
+  "main": "tickettoridemaps.js",
   "scripts": {
     "build:ts": "rollup -c",
     "watch:ts": "rollup -c -w",
-    "build:scss": "sass --no-source-map src/tickettoride.scss tickettoride.css"
+    "build:scss": "sass --no-source-map src/tickettoride.scss tickettoridemaps.css"
   },
   "author": "",
   "license": "ISC",

@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide\Objects;
+namespace Bga\Games\TicketToRideMaps\Objects;
 
 class Map {
     public const LOCOMOTIVE_TUNNEL = 0b01;
