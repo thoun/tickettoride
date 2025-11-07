@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide\Objects;
+namespace Bga\Games\TicketToRideMaps\Objects;
 
 class PlacedBuilding {
     public int $cityId;

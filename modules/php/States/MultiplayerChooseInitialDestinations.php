@@ -1,10 +1,10 @@
 <?php
 
-namespace Bga\Games\TicketToRide\States;
+namespace Bga\Games\TicketToRideMaps\States;
 
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\StateType;
-use Bga\Games\TicketToRide\Game;
+use Bga\Games\TicketToRideMaps\Game;
 
 class MultiplayerChooseInitialDestinations extends GameState {
     public function __construct(protected Game $game)
