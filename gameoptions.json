@@ -1,30 +1,47 @@
 {
-    "101": {
-        "name": "1910 Expansion",
-        "values": [
-            {
-                "name": "Disabled"
+    
+"150": {
+        "name": "Map",
+        "values": {
+            "3": {
+                "name": "Switzerland",
+                "tmdisplay": "Switzerland"
             },
-            {
-                "name": "1910",
-                "description": "New tickets. Globetrotter - Most Completed Tickets bonus card instead of Longest Route Bonus card",
-                "tmdisplay": "1910 Expansion : 1910",
-                "nobeginner": true
+            "4": {
+                "name": "India",
+                "tmdisplay": "India"
             },
-            {
-                "name": "The Mega Game",
-                "description": "All tickets, both bonus cards, more tickets when choosing",
-                "tmdisplay": "1910 Expansion : The Mega Game",
-                "nobeginner": true
-            },
-            {
-                "name": "The Big Cities",
-                "description": "Tickets with Big Cities",
-                "tmdisplay": "1910 Expansion : The Big Cities",
-                "nobeginner": true
+            "5": {
+                "name": "Nordic Countries",
+                "tmdisplay": "Nordic Countries",
+                "alpha": true
             }
-        ],
-        "default": 0
+        },
+        "default": 4,
+        "level": "major",
+        "startcondition": {
+            "3": [
+                {
+                "type": "maxplayers",
+                "value": 3,
+                "message": "Switzerland is for 3 players maximum."
+                }
+            ],
+            "4": [
+                {
+                "type": "maxplayers",
+                "value": 4,
+                "message": "India is for 4 players maximum."
+                }
+            ],
+            "5": [
+                {
+                "type": "maxplayers",
+                "value": 3,
+                "message": "Nordic Countries is for 3 players maximum."
+                }
+            ]
+        }
     },
     
     "110": {
