@@ -5,7 +5,7 @@
     "module": "none",
     "lib": ["dom", "esnext"],  
     "sourceMap": false,
-    "outFile": "tickettoride.js"
+    "outFile": "tickettoridemaps.js"
   },
   "files": [
     "bga-framework.d.ts",
