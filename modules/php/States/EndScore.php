@@ -2,11 +2,8 @@
 
 namespace Bga\Games\TicketToRide\States;
 
-use Bga\GameFramework\Actions\Types\IntArrayParam;
 use Bga\GameFramework\States\GameState;
-use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\StateType;
-use Bga\GameFrameworkPrototype\Helpers\Arrays;
 use Bga\Games\TicketToRide\Game;
 
 class EndScore extends GameState {

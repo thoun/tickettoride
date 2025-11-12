@@ -687,6 +687,27 @@ declare class GameGui<G = Gamedatas> {
       iconClass?: string;
       score?: number;
   }): void;
+
+  /**
+   * Display a banner to tell the players it's the last turn.
+   * 
+   * @param {string} message the message to display. It should be translated, so surrounded by `_()`. If unset: "This is the last turn!"
+   * @param {Object} args (optional) the args to replace in the message.
+   */
+  addLastTurnBanner(message?: string, args?: any): void;
+
+  /**
+   * Remove the last turn banner (for example if the player cancelled a move triggering the last turn).
+   */
+  removeLastTurnBanner(): void;
+
+  /**
+   * Display a banner to tell the players what win condition was reached (for games with multiple win conditions).
+   * 
+   * @param {string} message the message to display. It should be translated, so surrounded by `_()`.
+   * @param {Object} args (optional) the args to replace in the message.
+   */
+  addWinConditionBanner(message: string, args?: any): void;
 }
 
 declare interface Notif<T = any> {
