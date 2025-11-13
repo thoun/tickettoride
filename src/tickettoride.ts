@@ -194,10 +194,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Show score board.
      */ 
     private onEnteringEndScore(fromReload: boolean = false) {
-        const lastTurnBar = document.getElementById('last-round');
-        if (lastTurnBar) {
-            lastTurnBar.style.display = 'none';
-        }
+        this.removeLastTurnBanner();
 
         document.getElementById('score').style.display = 'flex';
 
@@ -985,9 +982,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Show last turn banner.
      */ 
     notif_lastTurn(animate: boolean = true) {
-        dojo.place(`<div id="last-round">
-            <span class="last-round-text ${animate ? 'animate' : ''}">${_("This is the final round!")}</span>
-        </div>`, 'page-title');
+        this.addLastTurnBanner(_("This is the final round!"));
     }
     
     /** 

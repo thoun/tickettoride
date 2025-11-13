@@ -2019,10 +2019,7 @@ var TicketToRide = /** @class */ (function (_super) {
      */
     TicketToRide.prototype.onEnteringEndScore = function (fromReload) {
         if (fromReload === void 0) { fromReload = false; }
-        var lastTurnBar = document.getElementById('last-round');
-        if (lastTurnBar) {
-            lastTurnBar.style.display = 'none';
-        }
+        this.removeLastTurnBanner();
         document.getElementById('score').style.display = 'flex';
         this.endScore = new EndScore(this, Object.values(this.gamedatas.players), fromReload, this.gamedatas.bestScore);
     };
@@ -2719,7 +2716,7 @@ var TicketToRide = /** @class */ (function (_super) {
      */
     TicketToRide.prototype.notif_lastTurn = function (animate) {
         if (animate === void 0) { animate = true; }
-        dojo.place("<div id=\"last-round\">\n            <span class=\"last-round-text ".concat(animate ? 'animate' : '', "\">").concat(_("This is the final round!"), "</span>\n        </div>"), 'page-title');
+        this.addLastTurnBanner(_("This is the final round!"));
     };
     /**
      * Save best score for end score animations.
