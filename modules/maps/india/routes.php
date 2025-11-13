@@ -341,7 +341,7 @@ function getRoutes() {
       new RouteSpace(456, 958, -8),
       new RouteSpace(393, 959, 6),
     ]),
-    79 => new Route(17, 39, GRAY, [
+    79 => new Route(17, 38, GRAY, [
       new RouteSpace(528, 978, -46),
       new RouteSpace(485, 1023, -45),
     ]),
