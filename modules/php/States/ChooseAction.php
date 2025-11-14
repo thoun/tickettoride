@@ -183,7 +183,7 @@ class ChooseAction extends GameState {
     }
 
     function zombie(int $playerId, array $args) {
-        if (!$args['canPass']) {
+        if ($args['canPass']) {
             return $this->actPass($args);
         }
 

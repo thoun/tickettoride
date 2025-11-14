@@ -133,4 +133,19 @@ trait DebugUtilTrait {
 
         $this->gamestate->jumpToState(ST_PLAYER_CHOOSE_ACTION);
     }
+
+    function debug_playToEndGame() {
+        $count = 0;
+        while ($this->gamestate->getCurrentMainStateId() < 99 && $count < 20) {
+            $count++;
+            foreach($this->gamestate->getActivePlayerList() as $playerId) {
+                $playerId = (int)$playerId;
+                try {
+                    $this->gamestate->runStateClassZombie($this->gamestate->getCurrentState($playerId), $playerId);
+                } catch (\Throwable $e) {
+                    $count = 100;
+                }
+            }
+        }
+    }
 }
