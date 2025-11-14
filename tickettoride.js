@@ -2676,9 +2676,9 @@ var TicketToRide = /** @class */ (function (_super) {
      * Update player destinations.
      */
     TicketToRide.prototype.notif_destinationsPicked = function (notif) {
-        var _a, _b;
+        var _a;
         this.destinationCardCounters[notif.args.playerId].incValue(notif.args.number);
-        var destinations = (_b = (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a[this.getPlayerId()]) === null || _b === void 0 ? void 0 : _b.destinations;
+        var destinations = (_a = notif.args._private) === null || _a === void 0 ? void 0 : _a.destinations;
         if (destinations) {
             this.playerTable.addDestinations(destinations, this.destinationSelection.destinations);
         }

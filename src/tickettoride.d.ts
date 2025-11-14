@@ -196,10 +196,8 @@ interface NotifDestinationsPickedArgs {
     number: number;
     count: number;
     remainingDestinationsInDeck: number;
-    _private: {
-        [playerId: number]: {
-            destinations: Destination[];
-        };
+    _private?: {
+        destinations: Destination[];
     };
 }
 

@@ -879,7 +879,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      */ 
     notif_destinationsPicked(notif: Notif<NotifDestinationsPickedArgs>) {
         this.destinationCardCounters[notif.args.playerId].incValue(notif.args.number);
-        const destinations = notif.args._private?.[this.getPlayerId()]?.destinations;
+        const destinations = notif.args._private?.destinations;
         if (destinations) {
             this.playerTable.addDestinations(destinations, this.destinationSelection.destinations);
         } else {
