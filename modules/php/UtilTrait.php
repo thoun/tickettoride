@@ -55,7 +55,7 @@ trait UtilTrait {
             2 => 'europe',
             3 => 'switzerland',
             4 => 'india',
-            default => 'usa',
+            default => 'india', // DONOTCOMMIT
         };
     }
 

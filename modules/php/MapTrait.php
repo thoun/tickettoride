@@ -172,7 +172,7 @@ trait MapTrait {
 
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
 
-        $citiesConnectedToFrom = $this->getAccessibleCitiesFrom(new ConnectedCity($destination->from, []), [$destination->from], $claimedRoutesIds);
+        $citiesConnectedToFrom = $this->getAccessibleCitiesFromDistinctRoutes(new ConnectedCity($destination->from, []), [], $claimedRoutesIds);
 
         $validConnections = array_values(array_filter($citiesConnectedToFrom, fn($connectedCity) => $connectedCity->city == $destination->to));
 
@@ -327,6 +327,35 @@ trait MapTrait {
         }
 
         return $recursiveConnectedCities;
+    }
+
+    /**
+     * Similar to getAccessibleCitiesFrom but allows revisiting cities as long as a route is never reused.
+     *
+     * @return ConnectedCity[]
+     */
+    private function getAccessibleCitiesFromDistinctRoutes(object $connectedCity, array $visitedRoutesIds, array $playerClaimedRoutesIds): array {
+        $connectedRoutes = $this->getRoutesConnectedToCity($connectedCity->city);
+
+        $claimedConnectedRoutesToExplore = array_values(array_filter($connectedRoutes, function($route) use ($playerClaimedRoutesIds, $visitedRoutesIds) {
+            return in_array($route->id, $playerClaimedRoutesIds) && !in_array($route->id, $visitedRoutesIds);
+        }));
+
+        $connectedCities = [];
+
+        foreach ($claimedConnectedRoutesToExplore as $route) {
+            $cityOnOtherSideOfRoute = $route->from == $connectedCity->city ? $route->to : $route->from;
+            $nextConnectedCity = new ConnectedCity($cityOnOtherSideOfRoute, array_merge($connectedCity->routes, [$route]));
+            $connectedCities[] = $nextConnectedCity;
+
+            $newVisitedRoutesIds = $visitedRoutesIds;
+            $newVisitedRoutesIds[] = $route->id;
+            foreach ($this->getAccessibleCitiesFromDistinctRoutes($nextConnectedCity, $newVisitedRoutesIds, $playerClaimedRoutesIds) as $recursiveCity) {
+                $connectedCities[] = $recursiveCity;
+            }
+        }
+
+        return $connectedCities;
     }
 
     //  Returns a LongestPath object.
