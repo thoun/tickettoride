@@ -140,7 +140,7 @@ class EuropeMap extends Map {
                 $baseBig = getBaseBigDestinations();
                 $big = get1912BigDestinations(); 
 
-                $bigIdsFromBaseIds = array_keys(array_filter($big, fn($destination) => $this->array_some($baseBig, fn($baseDestination) => 
+                $bigIdsFromBaseIds = array_keys(array_filter($big, fn($destination) => array_any($baseBig, fn($baseDestination) => 
                     ($destination->from === $baseDestination->from && $destination->to === $baseDestination->to) || 
                     ($destination->from === $baseDestination->to && $destination->to === $baseDestination->from)
                 )));
@@ -149,7 +149,7 @@ class EuropeMap extends Map {
                 $baseSmall = getBaseSmallDestinations();
                 $small = get1912SmallDestinations(); 
 
-                $smallIdsFromBaseIds = array_keys(array_filter($small, fn($destination) => $this->array_some($baseSmall, fn($baseDestination) => 
+                $smallIdsFromBaseIds = array_keys(array_filter($small, fn($destination) => array_any($baseSmall, fn($baseDestination) => 
                     ($destination->from === $baseDestination->from && $destination->to === $baseDestination->to) || 
                     ($destination->from === $baseDestination->to && $destination->to === $baseDestination->from)
                 )));
@@ -217,15 +217,6 @@ class EuropeMap extends Map {
             'deckbig' => $destinationsBig,
             'deck' => $destinations, 
         ];
-    }
-
-    function array_some(array $array, callable $fn) {
-        foreach ($array as $value) {
-            if($fn($value)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
 

@@ -852,6 +852,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
+            ['scoreDestinationGrandTour', skipEndOfGameAnimations ? 1 : 2000],
             ['highlightWinnerScore', 1],
         ];
 
@@ -1021,6 +1022,13 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      */ 
     notif_longestPath(notif: Notif<NotifLongestPathArgs>) {
         this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length, this.isFastEndScoring());
+    }
+
+    /** 
+     * Animate mandala routes for end score.
+     */ 
+    notif_scoreDestinationGrandTour(notif: Notif<NotifMandalaRoutesArgs>) {
+        this.endScore?.showMandalaRoutes(notif.args.routes, notif.args.destination, this.isFastEndScoring());
     }
 
     /** 

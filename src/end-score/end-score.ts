@@ -176,6 +176,30 @@ class EndScore {
     }
     
     /** 
+     * Show mandala routes animation for a player.
+     */ 
+    public showMandalaRoutes(routes: Route[], destination: Destination, isFastEndScoring: boolean = false) {
+        if (isFastEndScoring) {
+            return;
+        }
+        
+        const newDac = new MandalaRoutesAnimation(
+            this.game,
+            routes, 
+            destination,
+            {
+                end: () => {
+                    //playSound(`ttr-longest-line-scoring`);
+                    //(this.game as any).disableNextMoveSound();
+                }
+            }
+        );
+        
+
+        this.game.addAnimation(newDac);
+    }
+    
+    /** 
      * Show longest path animation for a player.
      */ 
     public showLongestPath(playerColor: string, routes: Route[], length: number, isFastEndScoring: boolean = false) {

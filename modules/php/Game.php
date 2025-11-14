@@ -240,7 +240,7 @@ class Game extends Table {
         $result['isGlobetrotterBonusActive'] = $this->getMap()->isGlobetrotterBonusActive($expansionOption);
         $result['isLongestPathBonusActive'] = $this->getMap()->isLongestPathBonusActive($expansionOption);
         
-        $result['showTurnOrder'] = $this->getOptionValue(SHOW_TURN_ORDER_OPTION) == 2;
+        $result['showTurnOrder'] = $this->tableOptions->get(SHOW_TURN_ORDER_OPTION) == 2;
         
         if ($isEnd) {
             $result['bestScore'] = max(array_map(fn($player) => intval($player['score']), $result['players']));

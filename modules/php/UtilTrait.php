@@ -14,42 +14,6 @@ trait UtilTrait {
 //////////// Utility functions
 ////////////
 
-    function array_find(array $array, callable $fn) {
-        foreach ($array as $value) {
-            if($fn($value)) {
-                return $value;
-            }
-        }
-        return null;
-    }
-
-    function array_find_index(array $array, callable $fn) {
-        foreach ($array as $index => $value) {
-            if($fn($value)) {
-                return $index;
-            }
-        }
-        return null;
-    }
-
-    function array_some(array $array, callable $fn) {
-        foreach ($array as $value) {
-            if($fn($value)) {
-                return true;
-            }
-        }
-        return false;
-    }
-        
-    function array_every(array $array, callable $fn) {
-        foreach ($array as $value) {
-            if(!$fn($value)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     /**
      * Save (insert or update) any object/array as variable.
      */
@@ -79,13 +43,9 @@ trait UtilTrait {
         $this->DbQuery("DELETE FROM `global_variables` where `name` = '$name'");
     }
 
-    public function getOptionValue(int $optionId): int {
-        return (int)($this->gamestate->table_globals[$optionId]);
-    }
-
     function getExpansionOption() {
         $expansion = $this->getMap()->expansion;
-        return $expansion !== null ? $this->getOptionValue($expansion) : 0;
+        return $expansion !== null ? $this->tableOptions->get($expansion) : 0;
     }
 
     function getMapCode(): string {
@@ -156,12 +116,6 @@ trait UtilTrait {
 
     function getRemainingTrainCarsCount(int $playerId) {
         return $this->getUniqueIntValueFromDB("SELECT `player_remaining_train_cars` FROM player WHERE player_id = $playerId");
-    }
-
-    function getNonZombiePlayersIds() {
-        $sql = "SELECT player_id FROM player WHERE player_eliminated = 0 AND player_zombie = 0 ORDER BY player_no";
-        $dbResults = $this->getCollectionFromDB($sql);
-        return array_map(fn($dbResult) => intval($dbResult['player_id']), array_values($dbResults));
     }
 
     function getClaimedRoutes($playerId = null) {

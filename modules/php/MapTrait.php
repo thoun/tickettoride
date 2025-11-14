@@ -164,7 +164,10 @@ trait MapTrait {
         }
     }
 
-    public function getDistinctRoutesCount(int $playerId, object $destination): int {
+     /**
+     * @return ConnectedCity[]
+     */
+    public function getDistinctRoutes(int $playerId, object $destination): array {
         $claimedRoutes = $this->getClaimedRoutes($playerId);
 
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
@@ -174,7 +177,7 @@ trait MapTrait {
         $validConnections = array_values(array_filter($citiesConnectedToFrom, fn($connectedCity) => $connectedCity->city == $destination->to));
 
         if (count($validConnections) < 2) {
-            return count($validConnections);
+            return $validConnections;
         }
 
         foreach ($validConnections as $index1 => $validConnection1) {
@@ -182,13 +185,13 @@ trait MapTrait {
                 if ($index1 != $index2) {
                     $allDifferent = array_all($validConnection1->routes, fn($route1) => array_all($validConnection2->routes, fn($route2) => $route1->id != $route2->id));
                     if ($allDifferent) {
-                        return 2;
+                        return [$validConnection1, $validConnection2];
                     }
                 }
             }
         }
 
-        return 1;
+        return [$validConnections[0]];
     }
 
     public function getAllRoutes() {
@@ -297,8 +300,10 @@ trait MapTrait {
         return $connectedRoutes;
     }
 
-    // return an array of ConnectedCity
-    private function getAccessibleCitiesFrom(object $connectedCity, array $visitedCitiesIds, array $playerClaimedRoutesIds) {
+    /**
+     * @return ConnectedCity[]
+     */
+    private function getAccessibleCitiesFrom(object $connectedCity, array $visitedCitiesIds, array $playerClaimedRoutesIds): array {
         $connectedRoutes = $this->getRoutesConnectedToCity($connectedCity->city);
 
         // we only check route to cities we haven't checked, to avoid infinite loop

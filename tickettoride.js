@@ -251,6 +251,48 @@ var LongestPathAnimation = /** @class */ (function (_super) {
     };
     return LongestPathAnimation;
 }(WagonsAnimation));
+/**
+ * Longest path animation : wagons used by longest path are highlighted, and length is displayed over the map.
+ */
+var MandalaRoutesAnimation = /** @class */ (function (_super) {
+    __extends(MandalaRoutesAnimation, _super);
+    function MandalaRoutesAnimation(game, routes, destination, actions) {
+        var _this = _super.call(this, game, routes) || this;
+        _this.routes = routes;
+        _this.actions = actions;
+        _this.cities = [];
+        [destination.from, destination.to].forEach(function (cityId) { return _this.cities.push(document.getElementById("city".concat(cityId))); });
+        return _this;
+    }
+    MandalaRoutesAnimation.prototype.animate = function () {
+        var _this = this;
+        return new Promise(function (resolve) {
+            _this.cities.forEach(function (city) { return city.dataset.highlight = 'true'; });
+            _this.setWagonsVisibility(true);
+            setTimeout(function () { return _this.endAnimation(resolve); }, 1900);
+        });
+    };
+    MandalaRoutesAnimation.prototype.endAnimation = function (resolve) {
+        var _a, _b;
+        this.setWagonsVisibility(false);
+        this.cities.forEach(function (city) { return city.dataset.highlight = 'false'; });
+        resolve(this);
+        this.game.endAnimation(this);
+        (_b = (_a = this.actions).end) === null || _b === void 0 ? void 0 : _b.call(_a);
+    };
+    MandalaRoutesAnimation.prototype.getCardPosition = function () {
+        var x = 100;
+        var y = 100;
+        if (this.routes.length) {
+            var map_2 = this.game.getMap();
+            var positions = [this.routes[0].from, this.routes[this.routes.length - 1].to].map(function (cityId) { return map_2.cities[cityId]; });
+            x = (positions[0].x + positions[1].x) / 2;
+            y = (positions[0].y + positions[1].y) / 2;
+        }
+        return "left: ".concat(x, "px; top: ").concat(y, "px;");
+    };
+    return MandalaRoutesAnimation;
+}(WagonsAnimation));
 var DRAG_AUTO_ZOOM_DELAY = 2000;
 var SIDES = ['left', 'right', 'top', 'bottom'];
 var CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
@@ -1839,6 +1881,22 @@ var EndScore = /** @class */ (function () {
         }
     };
     /**
+     * Show mandala routes animation for a player.
+     */
+    EndScore.prototype.showMandalaRoutes = function (routes, destination, isFastEndScoring) {
+        if (isFastEndScoring === void 0) { isFastEndScoring = false; }
+        if (isFastEndScoring) {
+            return;
+        }
+        var newDac = new MandalaRoutesAnimation(this.game, routes, destination, {
+            end: function () {
+                //playSound(`ttr-longest-line-scoring`);
+                //(this.game as any).disableNextMoveSound();
+            }
+        });
+        this.game.addAnimation(newDac);
+    };
+    /**
      * Show longest path animation for a player.
      */
     EndScore.prototype.showLongestPath = function (playerColor, routes, length, isFastEndScoring) {
@@ -2595,6 +2653,7 @@ var TicketToRide = /** @class */ (function (_super) {
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
+            ['scoreDestinationGrandTour', skipEndOfGameAnimations ? 1 : 2000],
             ['highlightWinnerScore', 1],
         ];
         notifs.forEach(function (notif) {
@@ -2756,6 +2815,13 @@ var TicketToRide = /** @class */ (function (_super) {
     TicketToRide.prototype.notif_longestPath = function (notif) {
         var _a;
         (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length, this.isFastEndScoring());
+    };
+    /**
+     * Animate mandala routes for end score.
+     */
+    TicketToRide.prototype.notif_scoreDestinationGrandTour = function (notif) {
+        var _a;
+        (_a = this.endScore) === null || _a === void 0 ? void 0 : _a.showMandalaRoutes(notif.args.routes, notif.args.destination, this.isFastEndScoring());
     };
     /**
      * Add longest path badge for end score.

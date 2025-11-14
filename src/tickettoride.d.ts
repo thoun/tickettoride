@@ -255,6 +255,12 @@ interface NotifLongestPathArgs {
     routes: Route[];
 }
 
+interface NotifMandalaRoutesArgs {
+    playerId: number;
+    destination: Destination;
+    routes: Route[];
+}
+
 
 interface NotifBadgeArgs {
     playerId: number;

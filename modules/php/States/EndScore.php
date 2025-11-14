@@ -6,6 +6,8 @@ use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\StateType;
 use Bga\Games\TicketToRide\Game;
 
+use function Bga\Games\TicketToRide\debug;
+
 class EndScore extends GameState {
     public function __construct(protected Game $game)
     {
@@ -128,15 +130,22 @@ class EndScore extends GameState {
         }
 
         $mandalaResults = [];
+        $mandalaRoutes = [];
         // Mandala
         if ($mandalaPoints !== null) {
             foreach ($destinationsResults as $playerId => $destinations) {
                 $playerMandalas = [];
                 $completedDestinations = array_values(array_filter($destinations, fn($destination) => (array_key_exists($destination->id, $routeByCompletedDestination) ? $routeByCompletedDestination[$destination->id] : $this->game->getDestinationRoutes($playerId, $destination)) != null));
                 foreach ($completedDestinations as $destination) {
-                    $distinctRoutesCount = $this->game->getDistinctRoutesCount($playerId, $destination);
+                    $distinctRoutes = $this->game->getDistinctRoutes($playerId, $destination);
+                    $distinctRoutesCount = count($distinctRoutes);
                     if ($distinctRoutesCount >= 2) {
                         $playerMandalas[] = $destination;
+                        $routes = [];
+                        foreach($distinctRoutes as $distinctRoute) {
+                            $routes = array_merge($routes, $distinctRoute->routes);
+                        }
+                        $mandalaRoutes[$destination->id] = $routes;
                     }
                 }
                 $mandalaResults[$playerId] = $playerMandalas;
@@ -271,12 +280,13 @@ class EndScore extends GameState {
             foreach ($mandalaResults as $playerId => $playerMandalas) {
 
                 foreach ($playerMandalas as $destination) {
-                    $this->notify->all('scoreDestinationGrandTour', clienttranslate('${player_name} gets a Grand Tour bonus from ${from} to ${to}'), [
+                    $this->notify->all('scoreDestinationGrandTour', clienttranslate('${player_name} gets a Grand Tour bonus (Mandala) from ${from} to ${to}'), [
                         'playerId' => $playerId,
                         'player_name' => $this->game->getPlayerNameById($playerId),
                         'destination' => $destination,
                         'from' => $this->game->getCityName($destination->from),
                         'to' => $this->game->getLogTo($destination),
+                        'routes' => $mandalaRoutes[$destination->id],
                     ]);
                 }
 
@@ -286,7 +296,7 @@ class EndScore extends GameState {
                 );
                 $points =  $mandalaPoints[$completedMandalas];                
                 
-                $message = clienttranslate('${player_name} gains ${delta} points for ${number} completed Grand Tour(s)');
+                $message = clienttranslate('${player_name} gains ${delta} points for ${number} completed Grand Tour(s) (Mandala)');
                 $this->game->incScore($playerId, $points, $message, [
                     'delta' => $points,
                     'number' => count($playerMandalas),
