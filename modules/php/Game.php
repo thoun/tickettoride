@@ -28,6 +28,8 @@ require_once('constants.inc.php');
 require_once(__DIR__.'/objects/map.php');
 require_once(__DIR__.'/objects/route.php');
 require_once(__DIR__.'/objects/destination.php');
+require_once(__DIR__.'/objects/train-car.php');
+require_once(__DIR__.'/objects/tunnel-attempt.php');
 
 /*
  * Game main class.
@@ -35,12 +37,7 @@ require_once(__DIR__.'/objects/destination.php');
  */
 class Game extends Table {
     use UtilTrait;
-    use ActionTrait;
-    use StateTrait;
-    use ArgsTrait;
     use MapTrait;
-    use TrainCarDeckTrait;
-    use DestinationDeckTrait;
     use DebugUtilTrait;
 
     public Deck $destinations;
@@ -140,10 +137,10 @@ class Game extends Table {
         $isLongestPathBonusActive = $this->getMap()->isLongestPathBonusActive($expansionOption);
 
         if ($isLongestPathBonusActive) {
-            $this->initStat('player', 'longestPathBonus', 0);
+            $this->playerStats->init('longestPathBonus', 0);
         }
         if ($isGlobetrotterBonusActive) {
-            $this->initStat('player', 'globetrotterBonus', 0);
+            $this->playerStats->init('globetrotterBonus', 0);
         }
 
         // setup the initial game situation here
@@ -276,44 +273,429 @@ class Game extends Table {
         return 100 * ($this->getMap()->trainCarsPerPlayer - $this->getLowestTrainCarsCount()) / $this->getMap()->trainCarsPerPlayer;
     }
 
-//////////////////////////////////////////////////////////////////////////////
-//////////// Zombie
-////////////
+    /**
+     * Create cards, place 5 on table, and check revealed cards are valid.
+     */
+    public function createTrainCars() {
+        for ($color = 0; $color <= 8; $color++) {
+            $trainCars[] = [ 'type' => $color, 'type_arg' => null, 'nbr' => ($color == 0 ? $this->getMap()->numberOfLocomotiveCards : $this->getMap()->numberOfColoredCards)];
+        }
+        $this->trainCars->createCards($trainCars, 'deck');
+        $this->trainCars->shuffle('deck');
 
-    /*
-        zombieTurn:
-        
-        This method is called each time it is the turn of a player who has quit the game (= "zombie" player).
-        You can do whatever you want in order to make sure the turn of this player ends appropriately
-        (ex: pass).
-        
-        Important: your zombie code will be called when the player leaves the game. This action is triggered
-        from the main site and propagated to the gameserver from a server, not from a browser.
-        As a consequence, there is no current player associated to this action. In your zombieTurn function,
-        you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message. 
-    */
+        $this->placeNewTrainCarCardsOnTable(false);
+        $this->checkTooMuchLocomotives();
+    }
 
-    function zombieTurn($state, $active_player): void {
-    	$statename = $state['name'];
-    	
-        if ($state['type'] === "activeplayer") {
-            switch ($statename) {
-                default:
-                    $this->gamestate->jumpToState(ST_NEXT_PLAYER);
-                	break;
+    /**
+     * Give initial cards to each player.
+     */
+    public function giveInitialTrainCarCards(array $playersIds) {
+		foreach ($playersIds as $playerId) {
+            $this->trainCars->pickCards($this->getMap()->initialTrainCarCardsInHand, 'deck', $playerId);
+        }
+    }
+
+    /**
+     * List visible cards.
+     * Optional filter can return only card play can draw.
+     */
+    public function getVisibleTrainCarCards(bool $limitToSelectableOnSecondPick = false) {
+        $cards = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('table'));
+
+        if ($limitToSelectableOnSecondPick && $this->getMap()->visibleLocomotivesCountsAsTwoCards) {
+            $cards = array_values(array_filter($cards, fn($card) => $card->type != 0));
+        }
+
+        return $cards;
+    }
+
+    /**
+     * Draw 1 or 2 hidden cards, to player hand.
+     */
+    public function drawTrainCarCardsFromDeck(int $playerId, int $number, bool $isSecondCard = false) {
+        if ($number != 1 && $number != 2) {
+            throw new \BgaUserException("You must take one or two cards.");
+        }
+        
+        if ($number == 2 && $isSecondCard) {
+            throw new \BgaUserException("You must take one card.");
+        }
+
+        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
+
+        if ($number == 2 && $remainingTrainCarCardsInDeck == 1) {
+            $number = 1;
+        }
+
+        if ($number > $remainingTrainCarCardsInDeck) {
+            throw new \BgaUserException(self::_("You can't take train car cards because the deck is empty"));
+        }
+
+        $cards = $this->getTrainCarsFromDb($this->trainCars->pickCards($number, 'deck', $playerId));
+
+        $this->notify->all('trainCarPicked', clienttranslate('${player_name} takes ${count} hidden train car card(s)'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerNameById($playerId),
+            'number' => $number,
+            'count' => $number,
+            'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+            'origin' => 0, // 0 means hidden
+        ]);
+
+        $this->notify->player($playerId, 'trainCarPicked', clienttranslate('You take hidden train car card(s) ${colors}'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerNameById($playerId),
+            'number' => $number,
+            'count' => $number,
+            'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+            'cards' => $cards,
+            'colors' => array_map(fn($card) => $card->type, $cards),
+            'origin' => 0, // 0 means hidden
+        ]);
+
+        return $number;
+    }
+
+    /**
+     * Draw 1 visible card, to player hand.
+     */
+    public function drawTrainCarCardsFromTable(int $playerId, int $id, bool $isSecondCard = false) { // return card
+        $card = $this->getTrainCarFromDb($this->trainCars->getCard($id));
+
+        if ($card->location != 'table') {
+            throw new \BgaUserException("You can't take this visible card.");
+        }
+
+        if ($isSecondCard && $card->type == 0 && $this->getMap()->visibleLocomotivesCountsAsTwoCards) {
+            throw new \BgaUserException("You can't take a locomotive as a second card.");
+        }
+
+        $spot = $card->location_arg;
+
+        $this->trainCars->moveCard($id, 'hand', $playerId);
+
+        $this->notify->all('trainCarPicked', clienttranslate('${player_name} takes ${color}'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerNameById($playerId),
+            'number' => 1,
+            'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+            'cards' => [$card],
+            'color' => $card->type,
+            'origin' => $spot,
+        ]);
+
+        $this->placeNewTrainCarCardOnTable($spot);
+
+        $this->checkTooMuchLocomotives();
+
+        return $card;
+    }
+
+    /**
+     * get remaining cards in deck (can include discarded ones, to know how many cards player can pick).
+     */
+    public function getRemainingTrainCarCardsInDeck(bool $includeDiscard = false, bool $includeVisible = false) {
+        $remaining = intval($this->trainCars->countCardInLocation('deck'));
+
+        if ($includeDiscard || $remaining == 0) {
+            $remaining += intval($this->trainCars->countCardInLocation('discard'));
+        }
+        if ($includeVisible) {
+            $remaining += intval($this->trainCars->countCardInLocation('table'));
+        }
+
+        return $remaining;
+    }
+
+    /**
+     * reset visible cards if there is 3 or more locomotives
+     */
+    private function checkTooMuchLocomotives(int $attempts = 0) {
+        if ($this->getMap()->resetVisibleCardsWithLocomotives === null) {
+            return;
+        }
+
+        $cards = $this->getVisibleTrainCarCards();
+        $locomotives = count(array_filter($cards, fn($card) => $card->type == 0));
+        if ($locomotives >= $this->getMap()->resetVisibleCardsWithLocomotives && $this->getRemainingTrainCarCardsInDeck(true) > 0) {
+            if ($attempts >= 3) {
+                $this->notify->all('log', clienttranslate('Three locomotives have been revealed multiples times in a row, they will stay visible'), []);
+            } else {
+                $this->trainCars->moveAllCardsInLocation('table', 'discard');
+                $this->placeNewTrainCarCardsOnTable(true);
+
+                $this->checkTooMuchLocomotives($attempts + 1);
             }
+        }
+    }
 
-            return;
+    /**
+     * replace all visible cards
+     */
+    private function placeNewTrainCarCardsOnTable(bool $fromLocomotiveReset) {
+        $cards = [];
+        $spots = [];
+        
+        for ($i=1; $i<=5; $i++) {
+            $newCard = $this->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $i));
+            if ($newCard !== null) {
+                $cards[] = $newCard;
+            }
+            $spots[$i] = $newCard;
         }
 
-        if ($state['type'] === "multipleactiveplayer") {
-            // Make sure player is in a non blocking status for role turn
-            $this->gamestate->setPlayerNonMultiactive($active_player, '');
+        if ($fromLocomotiveReset) {
+            $this->notify->all('highlightVisibleLocomotives', clienttranslate('Three locomotives have been revealed, visible train cards are replaced'), []);
+
+            $this->tableStats->inc('visibleCardsReplaced', 1);
+        }
+
+        if (count($cards) > 0) {
+            $this->notify->all('newCardsOnTable', '', [
+                'cards' => $cards,
+                'spotsCards' => $spots,
+                'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+                'locomotiveRefill' => true,
+            ]);
+        }
+
+        return $cards;
+    }
+
+    /**
+     * replace a visible card
+     */
+    private function placeNewTrainCarCardOnTable(int $spot) {
+        $card = $this->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $spot));
+
+        $this->notify->all('newCardsOnTable', '', [
+            'cards' => [$card],
+            'spotsCards' => [$spot => $card],
+            'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+            'locomotiveRefill' => false,
+        ]);
+    }
+
+    private function checkVisibleTrainCarCards() {
+        if (intval($this->trainCars->countCardInLocation('table')) < 5 && $this->getRemainingTrainCarCardsInDeck(true) > 0) {
+            $spots = [];
             
-            return;
+            for ($i=1; $i<=5; $i++) {
+                $cards = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('table', $i));
+                if (count($cards) == 0) {
+                    $newCard = $this->getTrainCarFromDb($this->trainCars->pickCardForLocation('deck', 'table', $i));
+                    if ($newCard !== null) {
+                        $cards[] = $newCard;
+                    }
+                    $spots[$i] = $newCard;
+                }
+            }
+            if (count($spots) > 0) {
+                $this->notify->all('newCardsOnTable', '', [
+                    'spotsCards' => $spots,
+                    'remainingTrainCarsInDeck' => $this->getRemainingTrainCarCardsInDeck(),
+                    'locomotiveRefill' => false,
+                ]);
+
+                $this->checkTooMuchLocomotives();
+            }
+        }
+    }
+
+    public function canTakeASecondCard(?int $firstCardType) { // null if unknown/hidden
+        if ($firstCardType === 0 && $this->getMap()->visibleLocomotivesCountsAsTwoCards) {
+            // if the player chose a locomotive
+            return false;
         }
 
-        throw new \feException("Zombie mode not supported at this game state: ".$statename);
+        $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
+        if ($remainingTrainCarCardsInDeck == 0) {
+            // if there is no hidden card and all remaining visible cards are locomotives, it's impossible to take a second card
+            $tableCards = $this->getVisibleTrainCarCards(true);
+            return count($tableCards) > 0; 
+        }
+
+        return true;
+    }
+
+    public function trainCarDeckAutoReshuffle() {
+        $this->notify->all('log', clienttranslate('The train car deck has been reshuffled'), []);
+    }
+
+    /**
+     * Create destination cards.
+     */
+    public function createDestinations() {
+        $expansionOption = $this->getExpansionOption();
+        $destinations = $this->getMap()->getDestinationToGenerate($expansionOption);
+        //debug($this->getMap()->code, $expansionOption, $destinations);
+
+        foreach($destinations as $deck => $cards) {
+            $this->destinations->createCards($cards, $deck);
+            $this->destinations->shuffle($deck);
+        }
+    }
+	
+    /**
+     * Pick destination cards for beginning choice.
+     */
+    public function pickInitialDestinationCards(int $playerId) {
+        $expansionOption = $this->getExpansionOption();
+        $pick = $this->getMap()->getInitialDestinationPick($expansionOption);
+
+        $cards = [];
+        foreach ($pick as $deck => $number) {
+            $cards = array_merge($cards, $this->pickDestinationCards($playerId, $number, $deck));
+        }
+
+		return $cards;
+    }	
+
+    /**
+     * Select kept destination cards for beginning choice. 
+     * Unused destination cards are set back on the deck or discarded.
+     */
+    public function keepInitialDestinationCards(int $playerId, array $ids) {
+		$this->keepDestinationCards($playerId, $ids, $this->getMap()->getInitialDestinationMinimumKept($this->getExpansionOption()), $this->getMap()->unusedInitialDestinationsGoToDeckBottom);
+    }	
+	
+    /**
+     * Pick destination cards for pick destination action.
+     */
+    public function pickAdditionalDestinationCards(int $playerId) {
+		return $this->pickDestinationCards($playerId, $this->getMap()->getAdditionalDestinationCardNumber($this->getExpansionOption()));
+    }	
+
+    /**
+     * Select kept destination cards for pick destination action. 
+     * Unused destination cards are set back on the deck or discarded.
+     */
+    public function keepAdditionalDestinationCards(int $playerId, array $ids) {
+		$this->keepDestinationCards($playerId, $ids, $this->getMap()->additionalDestinationMinimumKept, $this->getMap()->unusedAdditionalDestinationsGoToDeckBottom);
+    }
+
+    /**
+     * Get destination picked cards (cards player can choose).
+     */
+    public function getPickedDestinationCards(int $playerId) {
+        $cards = $this->getDestinationsFromDb($this->destinations->getCardsInLocation("pick$playerId"));
+        return $cards;
+    }
+
+    /**
+     * get remaining destination cards in deck.
+     */
+    public function getRemainingDestinationCardsInDeck() {
+        $remaining = intval($this->destinations->countCardInLocation('deck'));
+
+        if ($remaining == 0) {
+            $remaining = intval($this->destinations->countCardInLocation('discard'));
+        }
+
+        return $remaining;
+    }
+
+    /**
+     * place a number of destinations cards to pick$playerId.
+     */
+    private function pickDestinationCards($playerId, int $number, string $from = 'deck') {
+        $cards = $this->getDestinationsFromDb($this->destinations->pickCardsForLocation($number, $from, "pick$playerId"));
+        return $cards;
+    }
+
+    /**
+     * move selected cards to player hand, and empty pick$playerId.
+     */
+    private function keepDestinationCards(int $playerId, array $ids, int $minimum, bool $toDeckBottom) {
+        if (count($ids) < $minimum) {
+            throw new \BgaUserException("You must keep at least $minimum cards.");
+        }
+
+        if (count($ids) > 0 && $this->getUniqueIntValueFromDB("SELECT count(*) FROM destination WHERE `card_location` != 'pick$playerId' AND `card_id` in (".implode(', ', $ids).")") > 0) {
+            throw new \BgaUserException("Selected cards are not available.");
+        }
+
+        $this->destinations->moveCards($ids, 'hand', $playerId);
+
+        $remainingCardsInPick = intval($this->destinations->countCardInLocation("pick$playerId"));
+        if ($remainingCardsInPick > 0) {
+            if ($toDeckBottom) {
+                $this->destinations->shuffle("pick$playerId");
+                // we put remaining cards in pick at the bottom of the deck
+                $this->DbQuery("UPDATE destination SET `card_location_arg` = card_location_arg + $remainingCardsInPick WHERE `card_location` = 'deck'");
+                $this->destinations->moveAllCardsInLocationKeepOrder("pick$playerId", 'deck');
+            } else {
+                // we discard remaining cards in pick
+                $this->destinations->moveAllCardsInLocation("pick$playerId", 'void');
+            }
+        }
+
+        $this->notify->all('destinationsPicked', clienttranslate('${player_name} keeps ${count} destinations'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerNameById($playerId),
+            'count' => count($ids),
+            'number' => count($ids),
+            'remainingDestinationsInDeck' => $this->getRemainingDestinationCardsInDeck(),
+            '_private' => [
+                $playerId => [
+                    'destinations' => $this->getDestinationsFromDb($this->destinations->getCards($ids)),
+                ],
+            ],
+        ]);
+    }
+
+    function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0) {
+        $route = $this->getAllRoutes()[$routeId];
+        $cardCost = $route->number + $extraCardCost;
+        
+        $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
+        $trainCarsHand = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
+        $cardsToRemove = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost);
+
+        $this->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
+
+        // save claimed route
+        self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
+
+        // update score
+        $points = $this->getMap()->routePoints[$route->number];
+        $this->incScore($playerId, $points);
+
+        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $route->number WHERE player_id = $playerId");
+        
+        $this->notify->all('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerNameById($playerId),
+            'points' => $points,
+            'route' => $route,
+            'from' => $this->getCityName($route->from),
+            'to' => $this->getCityName($route->to),
+            'number' => $cardCost,
+            'removeCards' => $cardsToRemove,
+            'colors' => array_map(fn($card) => $card->type, $cardsToRemove),
+            'remainingTrainCars' => $this->getRemainingTrainCarsCount($playerId),
+        ]);
+
+        $this->playerStats->inc('claimedRoutes', 1, $playerId, updateTableStat: true);
+        $this->playerStats->inc('playedTrainCars', $route->number, $playerId, updateTableStat: true);
+        $this->playerStats->inc('pointsWithClaimedRoutes', $points, $playerId, updateTableStat: true);
+
+        $this->checkCompletedDestinations($playerId);
+
+        // in case there is less than 5 visible cards on the table, we refill with newly discarded cards
+        $this->checkVisibleTrainCarCards();
+
+        $this->gamestate->nextState('nextPlayer'); 
+    }
+
+    function endTunnelAttempt(bool $storedTunnelAttempt) {
+        // put back tunnel cards
+        $this->trainCars->moveAllCardsInLocation('tunnel', 'discard');
+
+        if ($storedTunnelAttempt) {
+            $this->deleteGlobalVariable(TUNNEL_ATTEMPT);
+        }
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:

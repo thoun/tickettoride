@@ -714,7 +714,7 @@ declare interface Notif<T = any> {
   type: string; // type of the notification (as passed by php function)
   log: string; // the log string passed from php notification
   args: T; // This is the arguments that you passed on your notification method on php
-  bIsTableMsg: boolean; // is true when you use [[Main_game_logic:_yourgamename.game.php#NotifyAllPlayers|NotifyAllPlayers]] method (false otherwise)
+  bIsTableMsg: boolean; // is true when you use [[Main_game_logic:_yourgamename.game.php#notify->all|notify->all]] method (false otherwise)
   move_id: number; // ID of the move associated with the notification
   time: number; // UNIX GMT timestamp
   uid: number; // unique identifier of the notification

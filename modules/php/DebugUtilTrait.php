@@ -82,7 +82,7 @@ trait DebugUtilTrait {
         $route = $this->getMap()->routes[$routeId];
         $points = $this->getMap()->routePoints[$route->number];
 
-        self::notifyAllPlayers('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
+        $this->notify->all('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'points' => $points,

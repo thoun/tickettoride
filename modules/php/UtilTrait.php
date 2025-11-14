@@ -114,7 +114,7 @@ trait UtilTrait {
     /**
      * Transforms a TrainCar Db object to TrainCar class.
      */
-    function getTrainCarFromDb($dbObject) {
+    function getTrainCarFromDb($dbObject): ?\TrainCar {
         if ($dbObject === null) {
             return null;
         }
@@ -126,8 +126,10 @@ trait UtilTrait {
 
     /**
      * Transforms a TrainCar Db object array to TrainCar class array.
+     * 
+     * @return TrainCar[]
      */
-    function getTrainCarsFromDb(array $dbObjects) {
+    function getTrainCarsFromDb(array $dbObjects): ?array {
         return array_map(fn($dbObject) => $this->getTrainCarFromDb($dbObject), array_values($dbObjects));
     }
 
@@ -158,7 +160,7 @@ trait UtilTrait {
 
     function getNonZombiePlayersIds() {
         $sql = "SELECT player_id FROM player WHERE player_eliminated = 0 AND player_zombie = 0 ORDER BY player_no";
-        $dbResults = self::getCollectionFromDB($sql);
+        $dbResults = $this->getCollectionFromDB($sql);
         return array_map(fn($dbResult) => intval($dbResult['player_id']), array_values($dbResults));
     }
 
@@ -167,7 +169,7 @@ trait UtilTrait {
         if ($playerId !== null) {
             $sql .= "WHERE player_id = $playerId ";
         }
-        $dbResults = self::getCollectionFromDB($sql);
+        $dbResults = $this->getCollectionFromDB($sql);
         return array_map(fn($dbResult) => new \ClaimedRoute($dbResult), array_values($dbResults));
     }
 
@@ -175,42 +177,30 @@ trait UtilTrait {
         return array_keys($this->loadPlayersBasicInfos());
     }
 
-    function getPlayerCount() {
-        return count($this->getPlayersIds());
-    }
-
-    function getPlayerName(int $playerId) {
-        return self::getUniqueValueFromDb("SELECT player_name FROM player WHERE player_id = $playerId");
-    }
-
-    function getPlayerScore(int $playerId) {
-        return $this->getUniqueIntValueFromDB("SELECT player_score FROM player where `player_id` = $playerId");
-    }
-
     function incScore(int $playerId, int $delta, $message = null, $messageArgs = []) {
-        self::DbQuery("UPDATE player SET `player_score` = `player_score` + $delta where `player_id` = $playerId");
+        $this->playerScore->inc($playerId, $delta, null);
 
-        self::notifyAllPlayers('points', $message !== null ? $message : '', [
+        $this->notify->all('points', $message !== null ? $message : '', [
             'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
-            'points' => $this->getPlayerScore($playerId),
+            'player_name' => $this->getPlayerNameById($playerId),
+            'points' => $this->playerScore->get($playerId),
             'delta' => $delta,
         ] + $messageArgs);
     }
 
     function getUniqueIntValueFromDB(string $sql) {
-        return intval(self::getUniqueValueFromDB($sql));
+        return intval($this->getUniqueValueFromDB($sql));
     }
 
     function getCompletedDestinationsIds(int $playerId) {
         $sql = "SELECT `card_id` FROM `destination` WHERE `card_location` = 'hand' AND `card_location_arg` = $playerId AND  `completed` = 1";
-        $dbResults = self::getCollectionFromDB($sql);
+        $dbResults = $this->getCollectionFromDB($sql);
         return array_map(fn($dbResult) => intval($dbResult['card_id']), array_values($dbResults));
     }
 
     function getUnompletedDestinationsIds(int $playerId) {
         $sql = "SELECT `card_id` FROM `destination` WHERE `card_location` = 'hand' AND `card_location_arg` = $playerId AND  `completed` = 0";
-        $dbResults = self::getCollectionFromDB($sql);
+        $dbResults = $this->getCollectionFromDB($sql);
         return array_map(fn($dbResult) => intval($dbResult['card_id']), array_values($dbResults));
     }
 
@@ -226,11 +216,11 @@ trait UtilTrait {
             if (!in_array($destination->id, $alreadyCompleted)) {
                 $destinationRoutes = $this->getDestinationRoutes($playerId, $destination);
                 if ($destinationRoutes != null) {
-                    self::DbQuery("UPDATE `destination` SET `completed` = 1 where `card_id` = $destination->id");
+                    $this->DbQuery("UPDATE `destination` SET `completed` = 1 where `card_id` = $destination->id");
 
-                    self::notifyPlayer($playerId, 'destinationCompleted', clienttranslate('${you} completed a new destination : ${from} - ${to}'), [
+                    $this->notify->player($playerId, 'destinationCompleted', clienttranslate('${you} completed a new destination : ${from} - ${to}'), [
                         'playerId' => $playerId,
-                        'player_name' => $this->getPlayerName($playerId),
+                        'player_name' => $this->getPlayerNameById($playerId),
                         'destination' => $destination,
                         'from' => $this->getCityName($destination->from),
                         'to' => $this->getLogTo($destination),
@@ -239,8 +229,8 @@ trait UtilTrait {
                         'destinationRoutes' => $destinationRoutes,
                     ]);
 
-                    self::incStat(1, 'completedDestinations');
-                    self::incStat(1, 'completedDestinations', $playerId);
+                    $this->incStat(1, 'completedDestinations');
+                    $this->incStat(1, 'completedDestinations', $playerId);
                 }
             }
         }

@@ -827,7 +827,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
 
         In this method, you associate each of your game notifications with your local method to handle it.
 
-        Note: game notification names correspond to "notifyAllPlayers" and "notifyPlayer" calls in
+        Note: game notification names correspond to "notify->all" and "notify->player" calls in
                 your azul.game.php file.
 
     */
