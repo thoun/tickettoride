@@ -313,7 +313,6 @@ class EndScore extends GameState {
             }
         }
 
-        //return ST_END_GAME; // DONOTCOMMIT
-        return ChooseAction::class;
+        return ST_END_GAME;
     }
 }
