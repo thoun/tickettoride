@@ -1,5 +1,5 @@
 const COLORS = ['GRAY', 'PINK', 'WHITE', 'BLUE', 'YELLOW', 'ORANGE', 'BLACK', 'RED', 'GREEN'];
-const VERTICAL_MAPS = ['india'];
+const VERTICAL_MAPS = ['india', 'nordiccountries'];
 
 let MAP = localStorage.getItem('BGA_TTR_EDITOR_MAP') ?? 'usa';
 let selectedCity = null;

@@ -2,6 +2,7 @@
 
 namespace Bga\Games\TicketToRide;
 
+use Bga\GameFramework\Table;
 use Map;
 
 require_once(__DIR__.'/objects/train-car.php');
@@ -55,7 +56,7 @@ trait UtilTrait {
             2 => 'europe',
             3 => 'switzerland',
             4 => 'india',
-            default => 'usa',
+            default => Table::getBgaEnvironment() === 'studio' ? 'nordiccountries' : 'usa',
         };
     }
 
