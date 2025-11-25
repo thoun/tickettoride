@@ -225,6 +225,8 @@ trait MapTrait {
             $colorsToTest = [$color];
         } else if ($route->color > 0) {
             $colorsToTest = [$route->color];
+        } else {
+            $colorsToTest = [$color];
         }
         $locomotiveCards = array_filter($trainCarsHand, fn($card) => $card->type == 0);
 
