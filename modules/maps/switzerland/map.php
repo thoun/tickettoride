@@ -35,7 +35,7 @@ class SwitzerlandMap extends Map {
         );
 
         $this->visibleLocomotivesCountsAsTwoCards = false; // Says if it is possible to take only one visible locomotive.
-        $this->canOnlyUseLocomotivesInTunnels = true; // Says locomotives are reserved to tunnels.
+        $this->locomotiveUsageRestriction = Map::LOCOMOTIVE_TUNNEL; // Locomotive jokers only usable on tunnels.
         $this->trainCarsPerPlayer = 40; // trains car tokens per player at the beginning of the game
         $this->unusedInitialDestinationsGoToDeckBottom = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
         $this->unusedAdditionalDestinationsGoToDeckBottom = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.

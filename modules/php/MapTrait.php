@@ -232,7 +232,12 @@ trait MapTrait {
             return null;
         }
 
-        $forbidLocomotiveAsJoker = $this->getMap()->canOnlyUseLocomotivesInTunnels && !$route->tunnel;
+        $locomotiveRestriction = $this->getMap()->locomotiveUsageRestriction;
+        $canUseRestrictedLocomotiveAsJoker = 
+            $locomotiveRestriction === 0
+            || (($locomotiveRestriction & \Map::LOCOMOTIVE_TUNNEL) !== 0 && $route->tunnel)
+            || (($locomotiveRestriction & \Map::LOCOMOTIVE_FERRY) !== 0 && $route->locomotives > 0);
+        $forbidLocomotiveAsJoker = !$canUseRestrictedLocomotiveAsJoker;
         
         if ($color === 0) {
             // the user wants to pay with locomotives

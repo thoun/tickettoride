@@ -35,7 +35,6 @@ class IndiaMap extends Map {
         );
 
         $this->visibleLocomotivesCountsAsTwoCards = true; // Says if it is possible to take only one visible locomotive.
-        $this->canOnlyUseLocomotivesInTunnels = false; // Says locomotives are reserved to tunnels.
         $this->trainCarsPerPlayer = 45; // trains car tokens per player at the beginning of the game
         $this->unusedInitialDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
         $this->unusedAdditionalDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.

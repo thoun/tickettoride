@@ -1,6 +1,9 @@
 <?php
 
 class Map {
+    public const LOCOMOTIVE_TUNNEL = 0b01;
+    public const LOCOMOTIVE_FERRY = 0b10;
+
     public string $code;
     public ?int $expansion = null;
     public ?array $bigCities = null;
@@ -10,7 +13,7 @@ class Map {
     public int $numberOfColoredCards = 12;
     public int $initialTrainCarCardsInHand = 4; // Number of train car cards in hand, for each player, at the beginning of the game.
     public bool $visibleLocomotivesCountsAsTwoCards = true; // Says if it is possible to take only one visible locomotive.
-    public bool $canOnlyUseLocomotivesInTunnels = false; // Says locomotives are reserved to tunnels.
+    public int $locomotiveUsageRestriction = 0; // Combination of LOCOMOTIVE_TUNNEL / LOCOMOTIVE_FERRY for joker usage. (0 means no restriction)
     public ?int $resetVisibleCardsWithLocomotives = 3; // Resets visible cards when 3 locomotives are visible (null means disabled)
     public int $trainCarsNumberToStartLastTurn = 2; // 2 means 0, 1, or 2 will start last turn
     public int $trainCarsPerPlayer = 45; // trains car tokens per player at the beginning of the game

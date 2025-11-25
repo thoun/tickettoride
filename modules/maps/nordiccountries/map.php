@@ -36,18 +36,22 @@ class NordicCountriesMap extends Map {
         );
 
         $this->visibleLocomotivesCountsAsTwoCards = false; // Says if it is possible to take only one visible locomotive.
-        $this->canOnlyUseLocomotivesInTunnels = false; // Says locomotives are reserved to tunnels.
-        $this->trainCarsPerPlayer = 45; // trains car tokens per player at the beginning of the game
-        $this->unusedInitialDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
-        $this->unusedAdditionalDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
-        $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
-        $this->minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
+        $this->locomotiveUsageRestriction = Map::LOCOMOTIVE_TUNNEL | Map::LOCOMOTIVE_FERRY; // Locomotive jokers only usable on tunnels or ferries.
+        $this->trainCarsPerPlayer = 40; // trains car tokens per player at the beginning of the game
+        $this->unusedInitialDestinationsGoToDeckBottom = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
+        $this->unusedAdditionalDestinationsGoToDeckBottom = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
+        $this->pointsForLongestPath = null; // points for maximum longest countinuous path (null means disabled)
+        $this->pointsForGlobetrotter = 10; // points for maximum completed destinations (null means disabled)
+        $this->minimumPlayerForDoubleRoutes = 3; // 4 means 2-3 players cant use double routes
 
-        $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/production-asmodeees/uploads/2023/06/Reglas_TTR_India-1.pdf';
+        $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/staging-daysofwonder/uploads/2024/07/7208-T2RNC-Rules-EN.pdf';
         $this->rulesDifferences = [
-            clienttranslate('You can only play 4 players maximum. Double routes are only available at 4 players.'),
-            clienttranslate('Ferries: To claim a Ferry route, a player must play a Locomotive card for each Locomotive symbol on the route.'),
-            clienttranslate('Grand Tour bonus (Mandala): Any Ticket whose 2 Destination Cities are linked via at least 2 distinct continuous paths of its owner’s plastic trains qualifies for a Grand Tour bonus.'),
+            clienttranslate('All players start with 40 trains instead of 45 trains.'),
+            clienttranslate('Locomotives count as a simple card, so you can take 2 visible locomotives in one turn'),
+            clienttranslate('Locomotives can only be used for tunnels and ferries'),
+            clienttranslate('You can only play 3 players maximum. Double routes are only available at 3 players.'),
+            clienttranslate('Game start: Deal 5 tickets and keep at least 2.'),
+            clienttranslate('All unselected tickets will be discarded from the deck.'),
         ];
 
         $this->vertical = true;
@@ -57,11 +61,11 @@ class NordicCountriesMap extends Map {
      * Return the number of destinations cards shown at the beginning, for each deck.
      */
     function getInitialDestinationPick(int $expansionValue): array {
-        return ['deck' => 4];
+        return ['deck' => 5];
     }
 
     function getPreloadImages(int $expansionValue): array {
-        return ['destinations-1-0.jpg'];
+        return ['destinations-1-0.jpg', 'train-cards.jpg'];
     }
     
     /**

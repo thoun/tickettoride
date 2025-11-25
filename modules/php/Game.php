@@ -184,7 +184,7 @@ class Game extends Table {
                 'bigCities' => $this->getMap()->getBigCities($expansionOption),
                 'illustration' => $expansionOption,
                 'preloadImages' => $this->getMap()->getPreloadImages($expansionOption),
-                'canOnlyUseLocomotivesInTunnels' => $this->getMap()->canOnlyUseLocomotivesInTunnels,
+                'locomotiveUsageRestriction' => $this->getMap()->locomotiveUsageRestriction,
                 'minimumPlayerForDoubleRoutes' => $this->getMap()->minimumPlayerForDoubleRoutes,
                 'multilingualPdfRulesUrl' => $this->getMap()->multilingualPdfRulesUrl,
                 'rulesDifferences' => $this->getMap()->rulesDifferences,

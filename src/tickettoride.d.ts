@@ -73,7 +73,7 @@ interface TicketToRideMap {
     bigCities: BigCity[];
     preloadImages: string[];
     illustration: number;
-    canOnlyUseLocomotivesInTunnels: boolean;
+    locomotiveUsageRestriction: number;
     minimumPlayerForDoubleRoutes: number;
     multilingualPdfRulesUrl?: string;
     rulesDifferences?: string[];
