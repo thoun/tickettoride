@@ -1,3 +1,8 @@
 #map {
     background-image: url('./map.jpg');
 }
+
+
+.train-car-card, .icon.train-car-color {
+    background-image: url("./train-cards.jpg");
+}
