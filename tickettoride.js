@@ -1929,6 +1929,108 @@ var EndScore = /** @class */ (function () {
     };
     return EndScore;
 }());
+var StateHandler = /** @class */ (function () {
+    function StateHandler(game) {
+        this.game = game;
+    }
+    StateHandler.prototype.onEnteringState = function (args, isCurrentPlayerActive) { };
+    StateHandler.prototype.onLeavingState = function (args, isCurrentPlayerActive) { };
+    StateHandler.prototype.onUpdateActionButtons = function (args, isCurrentPlayerActive) { };
+    Object.defineProperty(StateHandler.prototype, "args", {
+        get: function () {
+            var _a, _b;
+            return (_b = (_a = this.game.gamedatas.gamestate.private_state) === null || _a === void 0 ? void 0 : _a.args) !== null && _b !== void 0 ? _b : this.game.gamedatas.gamestate.args;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return StateHandler;
+}());
+var ChooseActionState = /** @class */ (function (_super) {
+    __extends(ChooseActionState, _super);
+    function ChooseActionState() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    ChooseActionState.prototype.match = function () { return "chooseAction"; };
+    /**
+     * Show selectable routes, and make train car draggable.
+     */
+    ChooseActionState.prototype.onEnteringState = function (args, isCurrentPlayerActive) {
+        var _a, _b;
+        if (!args.canTakeTrainCarCards) {
+            this.game.statusBar.setTitle(isCurrentPlayerActive ?
+                _('${you} must claim a route or draw destination tickets') :
+                _('${actplayer} must claim a route or draw destination tickets'), args);
+        }
+        this.game.trainCarSelection.setSelectableTopDeck(isCurrentPlayerActive, args.maxHiddenCardsPick);
+        this.game.map.setSelectableRoutes(isCurrentPlayerActive, args.possibleRoutes);
+        (_a = this.game.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(isCurrentPlayerActive);
+        (_b = this.game.playerTable) === null || _b === void 0 ? void 0 : _b.setSelectable(isCurrentPlayerActive);
+    };
+    ChooseActionState.prototype.onLeavingState = function (args, isCurrentPlayerActive) {
+        var _a, _b, _c;
+        this.game.map.setSelectableRoutes(false, []);
+        (_a = this.game.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(false);
+        (_b = this.game.playerTable) === null || _b === void 0 ? void 0 : _b.setSelectable(false);
+        (_c = this.game.playerTable) === null || _c === void 0 ? void 0 : _c.setSelectableTrainCarColors(null);
+        document.getElementById('destination-deck-hidden-pile').classList.remove('selectable');
+        Array.from(document.getElementsByClassName('train-car-group hide')).forEach(function (group) { return group.classList.remove('hide'); });
+    };
+    ChooseActionState.prototype.onUpdateActionButtons = function (args, isCurrentPlayerActive) {
+        if (isCurrentPlayerActive) {
+            if (args.maxDestinationsPick) {
+                document.getElementById('destination-deck-hidden-pile').classList.add('selectable');
+            }
+            this.game.setActionBarChooseAction(false);
+        }
+    };
+    return ChooseActionState;
+}(StateHandler));
+var DrawSecondCardState = /** @class */ (function (_super) {
+    __extends(DrawSecondCardState, _super);
+    function DrawSecondCardState() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    DrawSecondCardState.prototype.match = function () { return "drawSecondCard"; };
+    /**
+     * Allow to pick a second card (locomotives will be grayed).
+     */
+    DrawSecondCardState.prototype.onEnteringState = function (args, isCurrentPlayerActive) {
+        this.game.trainCarSelection.setSelectableTopDeck(isCurrentPlayerActive, args.maxHiddenCardsPick);
+        this.game.trainCarSelection.setSelectableVisibleCards(args.availableVisibleCards);
+    };
+    DrawSecondCardState.prototype.onLeavingState = function (args, isCurrentPlayerActive) {
+        this.game.trainCarSelection.removeSelectableVisibleCards();
+    };
+    return DrawSecondCardState;
+}(StateHandler));
+var ConfirmTunnelState = /** @class */ (function (_super) {
+    __extends(ConfirmTunnelState, _super);
+    function ConfirmTunnelState() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    ConfirmTunnelState.prototype.match = function () { return "confirmTunnel"; };
+    ConfirmTunnelState.prototype.onEnteringState = function (args, isCurrentPlayerActive) {
+        var route = this.game.getMap().routes[args.tunnelAttempt.routeId];
+        this.game.map.setHoveredRoute(route, true, this.game.gamedatas.players[args.playerId]);
+        this.game.trainCarSelection.showTunnelCards(args.tunnelAttempt.tunnelCards);
+    };
+    ConfirmTunnelState.prototype.onLeavingState = function (args, isCurrentPlayerActive) {
+        this.game.map.setHoveredRoute(null);
+        this.game.trainCarSelection.showTunnelCards([]);
+    };
+    ConfirmTunnelState.prototype.onUpdateActionButtons = function (args, isCurrentPlayerActive) {
+        var _this = this;
+        if (isCurrentPlayerActive) {
+            var confirmLabel = _("Confirm tunnel claim") + (args.canPay ? '' : " (".concat(_("You don't have enough cards"), ")"));
+            // Claim a tunnel (confirm paying extra cost).
+            this.game.statusBar.addActionButton(confirmLabel, function () { return _this.game.bgaPerformAction('actClaimTunnel'); }, { disabled: !args.canPay });
+            // Skip a tunnel (deny paying extra cost).
+            this.game.statusBar.addActionButton(_("Skip tunnel claim"), function () { return _this.game.bgaPerformAction('actSkipTunnel'); }, { color: 'secondary' });
+        }
+    };
+    return ConfirmTunnelState;
+}(StateHandler));
 var ANIMATION_MS = 500;
 var SCORE_MS = 1500;
 var isDebug = window.location.host == 'studio.boardgamearena.com';
@@ -1951,7 +2053,9 @@ var TicketToRide = /** @class */ (function (_super) {
         _this.isTouch = window.matchMedia('(hover: none)').matches;
         _this.routeToConfirm = null;
         _this.actionTimerId = null;
+        _this.states = [];
         _this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
+        _this.states.push(new ChooseActionState(_this), new DrawSecondCardState(_this), new ConfirmTunnelState(_this));
         return _this;
     }
     /*
@@ -2009,20 +2113,51 @@ var TicketToRide = /** @class */ (function (_super) {
     };
     ///////////////////////////////////////////////////
     //// Game & client states
+    TicketToRide.prototype.getStateByName = function (stateName) {
+        var stateHandler = this.states.find(function (state) {
+            var result = state.match(stateName);
+            if (typeof result === 'string') {
+                return stateName === result;
+            }
+            else if (typeof result === 'boolean') {
+                return result;
+            }
+            else {
+                throw new Error('Invalid state.match return type');
+            }
+        });
+        if (stateHandler) {
+            return stateHandler;
+        }
+        else {
+            //throw new Error(`No state handler for stateName ${stateName}`);
+            return undefined;
+        }
+    };
+    TicketToRide.prototype.getCurrentStateHandler = function () {
+        return this.getStateByName(this.getCurrentPlayerStateName());
+    };
+    TicketToRide.prototype.getCurrentPlayerStateName = function () {
+        var _a, _b;
+        return (_b = (_a = this.gamedatas.gamestate.private_state) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : this.gamedatas.gamestate.name;
+    };
     // onEnteringState: this method is called each time we are entering into a new game state.
     //                  You can use this method to perform some user interface changes at this moment.
     //
     TicketToRide.prototype.onEnteringState = function (stateName, args) {
         var _this = this;
-        var _a;
+        var _a, _b;
         log('Entering state: ' + stateName, args.args);
+        if (this.gamedatas.gamestate.type !== 'multipleactiveplayer') {
+            (_a = this.getStateByName(stateName)) === null || _a === void 0 ? void 0 : _a.onEnteringState(args.args, this.isCurrentPlayerActive());
+        }
         switch (stateName) {
             case 'privateChooseInitialDestinations':
             case 'chooseInitialDestinations':
             case 'chooseAdditionalDestinations':
                 if (args === null || args === void 0 ? void 0 : args.args) {
                     var chooseDestinationsArgs = args.args;
-                    var destinations = chooseDestinationsArgs.destinations || ((_a = chooseDestinationsArgs._private) === null || _a === void 0 ? void 0 : _a.destinations);
+                    var destinations = chooseDestinationsArgs.destinations || ((_b = chooseDestinationsArgs._private) === null || _b === void 0 ? void 0 : _b.destinations);
                     if (destinations && this.isCurrentPlayerActive()) {
                         destinations.forEach(function (destination) { return _this.map.setSelectableDestination(destination, true); });
                         this.destinationSelection.setCards(destinations, chooseDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
@@ -2030,47 +2165,10 @@ var TicketToRide = /** @class */ (function (_super) {
                     }
                 }
                 break;
-            case 'chooseAction':
-                this.onEnteringChooseAction(args.args);
-                break;
-            case 'drawSecondCard':
-                this.onEnteringDrawSecondCard(args.args);
-                break;
-            case 'confirmTunnel':
-                this.onEnteringConfirmTunnel(args.args);
-                break;
             case 'endScore':
                 this.onEnteringEndScore();
                 break;
         }
-    };
-    /**
-     * Show selectable routes, and make train car draggable.
-     */
-    TicketToRide.prototype.onEnteringChooseAction = function (args) {
-        var _a, _b;
-        if (!args.canTakeTrainCarCards) {
-            this.statusBar.setTitle(this.isCurrentPlayerActive() ?
-                _('${you} must claim a route or draw destination tickets') :
-                _('${actplayer} must claim a route or draw destination tickets'), args);
-        }
-        var currentPlayerActive = this.isCurrentPlayerActive();
-        this.trainCarSelection.setSelectableTopDeck(currentPlayerActive, args.maxHiddenCardsPick);
-        this.map.setSelectableRoutes(currentPlayerActive, args.possibleRoutes);
-        (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(currentPlayerActive);
-        (_b = this.playerTable) === null || _b === void 0 ? void 0 : _b.setSelectable(currentPlayerActive);
-    };
-    /**
-     * Allow to pick a second card (locomotives will be grayed).
-     */
-    TicketToRide.prototype.onEnteringDrawSecondCard = function (args) {
-        this.trainCarSelection.setSelectableTopDeck(this.isCurrentPlayerActive(), args.maxHiddenCardsPick);
-        this.trainCarSelection.setSelectableVisibleCards(args.availableVisibleCards);
-    };
-    TicketToRide.prototype.onEnteringConfirmTunnel = function (args) {
-        var route = this.getMap().routes[args.tunnelAttempt.routeId];
-        this.map.setHoveredRoute(route, true, this.gamedatas.players[args.playerId]);
-        this.trainCarSelection.showTunnelCards(args.tunnelAttempt.tunnelCards);
     };
     /**
      * Show score board.
@@ -2085,8 +2183,9 @@ var TicketToRide = /** @class */ (function (_super) {
     //                 You can use this method to perform some user interface changes at this moment.
     //
     TicketToRide.prototype.onLeavingState = function (stateName) {
-        var _a, _b, _c;
+        var _a;
         log('Leaving state: ' + stateName);
+        (_a = this.getStateByName(stateName)) === null || _a === void 0 ? void 0 : _a.onLeavingState(this.gamedatas.gamestate.args, this.isCurrentPlayerActive());
         switch (stateName) {
             case 'privateChooseInitialDestinations':
             case 'chooseInitialDestinations':
@@ -2099,21 +2198,6 @@ var TicketToRide = /** @class */ (function (_super) {
             case 'multiChooseInitialDestinations':
                 Array.from(document.getElementsByClassName('player-turn-order')).forEach(function (elem) { return elem.remove(); });
                 break;
-            case 'chooseAction':
-                this.map.setSelectableRoutes(false, []);
-                (_a = this.playerTable) === null || _a === void 0 ? void 0 : _a.setDraggable(false);
-                (_b = this.playerTable) === null || _b === void 0 ? void 0 : _b.setSelectable(false);
-                (_c = this.playerTable) === null || _c === void 0 ? void 0 : _c.setSelectableTrainCarColors(null);
-                document.getElementById('destination-deck-hidden-pile').classList.remove('selectable');
-                Array.from(document.getElementsByClassName('train-car-group hide')).forEach(function (group) { return group.classList.remove('hide'); });
-                break;
-            case 'drawSecondCard':
-                this.trainCarSelection.removeSelectableVisibleCards();
-                break;
-            case 'confirmTunnel':
-                this.map.setHoveredRoute(null);
-                this.trainCarSelection.showTunnelCards([]);
-                break;
         }
     };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -2121,31 +2205,30 @@ var TicketToRide = /** @class */ (function (_super) {
     //
     TicketToRide.prototype.onUpdateActionButtons = function (stateName, args) {
         var _this = this;
+        var state = this.getStateByName(stateName);
+        if (state) {
+            var isCurrentPlayerActive = this.isCurrentPlayerActive();
+            if (this.gamedatas.gamestate.type === 'multipleactiveplayer') {
+                state.onEnteringState(args, isCurrentPlayerActive);
+            }
+            state.onUpdateActionButtons(args, isCurrentPlayerActive);
+        }
+        else if (this.gamedatas.gamestate.type === 'multipleactiveplayer' && this.gamedatas.gamestate.private_state) {
+            var leftState = this.states.find(function (state) { return state.match(_this.gamedatas.gamestate.private_state.name); });
+            if (leftState) {
+                var isCurrentPlayerActive = this.isCurrentPlayerActive();
+                leftState.onLeavingState(this.gamedatas.gamestate.private_state.args, isCurrentPlayerActive);
+            }
+        }
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'privateChooseInitialDestinations':
                     this.addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), function () { return _this.chooseInitialDestinations(); });
                     this.destinationSelection.selectionChange();
                     break;
-                case 'chooseAction':
-                    var chooseActionArgs = args;
-                    if (chooseActionArgs.maxDestinationsPick) {
-                        document.getElementById('destination-deck-hidden-pile').classList.add('selectable');
-                    }
-                    this.setActionBarChooseAction(false);
-                    break;
                 case 'chooseAdditionalDestinations':
                     this.addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), function () { return _this.chooseAdditionalDestinations(); });
                     dojo.addClass('chooseAdditionalDestinations_button', 'disabled');
-                    break;
-                case 'confirmTunnel':
-                    var confirmTunnelArgs = args;
-                    var confirmLabel = _("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : " (".concat(_("You don't have enough cards"), ")"));
-                    this.addActionButton('claimTunnel_button', confirmLabel, function () { return _this.claimTunnel(); });
-                    this.addActionButton('skipTunnel_button', _("Skip tunnel claim"), function () { return _this.skipTunnel(); }, null, null, 'gray');
-                    if (!confirmTunnelArgs.canPay) {
-                        dojo.addClass('claimTunnel_button', 'disabled');
-                    }
                     break;
             }
         }
@@ -2607,18 +2690,6 @@ var TicketToRide = /** @class */ (function (_super) {
     TicketToRide.prototype.pass = function () {
         this.bgaPerformAction('actPass');
     };
-    /**
-     * Claim a tunnel (confirm paying extra cost).
-     */
-    TicketToRide.prototype.claimTunnel = function () {
-        this.bgaPerformAction('actClaimTunnel');
-    };
-    /**
-     * Skip a tunnel (deny paying extra cost).
-     */
-    TicketToRide.prototype.skipTunnel = function () {
-        this.bgaPerformAction('actSkipTunnel');
-    };
     TicketToRide.prototype.isFastEndScoring = function () {
         return this.getGameUserPreference(208) == 2;
     };
@@ -2750,7 +2821,7 @@ var TicketToRide = /** @class */ (function (_super) {
      */
     TicketToRide.prototype.notif_freeTunnel = function (notif) {
         var _this = this;
-        if (document.visibilityState !== 'hidden' && !this.instantaneousMode) {
+        if (this.bgaAnimationsActive()) {
             this.trainCarSelection.showTunnelCards(notif.args.tunnelCards);
             setTimeout(function () { return _this.trainCarSelection.showTunnelCards([]); }, 2000);
         }

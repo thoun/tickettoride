@@ -120,6 +120,8 @@ interface TicketToRideGamedatas {
 }
 
 interface TicketToRideGame extends GameGui<TicketToRideGamedatas> {
+    trainCarSelection: TrainCarSelection;
+    playerTable: PlayerTable | null;
     map: TtrMap;
 
     getMap(): TicketToRideMap;
@@ -149,6 +151,7 @@ interface TicketToRideGame extends GameGui<TicketToRideGamedatas> {
     setTooltipToClass(className: string, html: string): void;
     isGlobetrotterBonusActive(): boolean;
     isLongestPathBonusActive(): boolean;
+    setActionBarChooseAction(fromCancel: boolean): void;
 }
 
 interface EnteringChooseDestinationsArgs {
@@ -159,31 +162,11 @@ interface EnteringChooseDestinationsArgs {
     minimum: number;
 }
 
-interface EnteringChooseActionArgs {
-    possibleRoutes: Route[];
-    costForRoute: { [routeId: number]: { [color: number]: number[] } };
-    maxHiddenCardsPick: number;
-    maxDestinationsPick: number;
-    canTakeTrainCarCards: boolean;
-    canPass: boolean;
-}
-
-interface EnteringDrawSecondCardArgs {
-    availableVisibleCards: TrainCar[];
-    maxHiddenCardsPick: number;
-}
-
 interface TunnelAttempt {    
     routeId: number;
     color: number;
     extraCards: number;
     tunnelCards: TrainCar[];
-}
-
-interface EnteringConfirmTunnelArgs {
-    playerId: number;
-    tunnelAttempt: TunnelAttempt;
-    canPay: boolean;
 }
 
 interface NotifPointsArgs {

@@ -18,9 +18,9 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     public gamedatas: TicketToRideGamedatas;
 
     public map: TtrMap;
-    private trainCarSelection: TrainCarSelection;
+    public trainCarSelection: TrainCarSelection;
+    public playerTable: PlayerTable | null = null;
     private destinationSelection: DestinationSelection;
-    private playerTable: PlayerTable = null;
     private endScore: EndScore;
 
     private trainCarCounters: Counter[] = [];
@@ -35,10 +35,17 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     private originalTextChooseAction: string;
     private actionTimerId = null;
 
+    private states: StateHandler<any>[] = [];
+
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
     constructor() {
         super();
+        this.states.push(
+            new ChooseActionState(this),
+            new DrawSecondCardState(this),
+            new ConfirmTunnelState(this),
+        );
     }
     
     /*
@@ -123,11 +130,42 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     ///////////////////////////////////////////////////
     //// Game & client states
 
+    private getStateByName(stateName: string): StateHandler<any> {
+        const stateHandler = this.states.find(state => {
+            const result = state.match(stateName);
+            if (typeof result === 'string') {
+                return stateName === result;
+            } else if (typeof result === 'boolean') {
+                return result;
+            } else {
+                throw new Error('Invalid state.match return type');
+            }
+        });
+        if (stateHandler) {
+            return stateHandler;
+        } else {
+            //throw new Error(`No state handler for stateName ${stateName}`);
+            return undefined;
+        }
+    }
+
+    public getCurrentStateHandler(): StateHandler<any> {
+        return this.getStateByName(this.getCurrentPlayerStateName());
+    }
+
+    public getCurrentPlayerStateName(): string {
+        return this.gamedatas.gamestate.private_state?.name ?? this.gamedatas.gamestate.name;
+    }
+
     // onEnteringState: this method is called each time we are entering into a new game state.
     //                  You can use this method to perform some user interface changes at this moment.
     //
     public onEnteringState(stateName: string, args: any) {
         log('Entering state: '+stateName, args.args);
+
+        if (this.gamedatas.gamestate.type !== 'multipleactiveplayer') {
+            this.getStateByName(stateName)?.onEnteringState(args.args, this.isCurrentPlayerActive());
+        }
 
         switch (stateName) {
             case 'privateChooseInitialDestinations': case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
@@ -141,53 +179,10 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
                     }
                 }
                 break;
-            case 'chooseAction':
-                this.onEnteringChooseAction(args.args as EnteringChooseActionArgs);
-                break;
-            case 'drawSecondCard':
-                this.onEnteringDrawSecondCard(args.args as EnteringDrawSecondCardArgs);
-                break;
-            case 'confirmTunnel':
-                this.onEnteringConfirmTunnel(args.args as EnteringConfirmTunnelArgs);
-                break;
             case 'endScore':
                 this.onEnteringEndScore();
                 break;
         }
-    }
-
-    /**
-     * Show selectable routes, and make train car draggable.
-     */ 
-    private onEnteringChooseAction(args: EnteringChooseActionArgs) {
-        if (!args.canTakeTrainCarCards) {
-            this.statusBar.setTitle(this.isCurrentPlayerActive() ?
-                    _('${you} must claim a route or draw destination tickets') :
-                    _('${actplayer} must claim a route or draw destination tickets'),
-                args);
-        }
-
-        const currentPlayerActive = this.isCurrentPlayerActive();
-        this.trainCarSelection.setSelectableTopDeck(currentPlayerActive, args.maxHiddenCardsPick);
-        
-        this.map.setSelectableRoutes(currentPlayerActive, args.possibleRoutes);
-
-        this.playerTable?.setDraggable(currentPlayerActive);
-        this.playerTable?.setSelectable(currentPlayerActive);        
-    }
-
-    /**
-     * Allow to pick a second card (locomotives will be grayed).
-     */ 
-    private onEnteringDrawSecondCard(args: EnteringDrawSecondCardArgs) {
-        this.trainCarSelection.setSelectableTopDeck(this.isCurrentPlayerActive(), args.maxHiddenCardsPick);
-        this.trainCarSelection.setSelectableVisibleCards(args.availableVisibleCards);
-    }
-    
-    private onEnteringConfirmTunnel(args: EnteringConfirmTunnelArgs) {
-        const route = this.getMap().routes[args.tunnelAttempt.routeId];
-        this.map.setHoveredRoute(route, true, this.gamedatas.players[args.playerId]);
-        this.trainCarSelection.showTunnelCards(args.tunnelAttempt.tunnelCards);
     }
 
     /**
@@ -207,6 +202,8 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     public onLeavingState(stateName: string) {
         log('Leaving state: '+stateName);
 
+        this.getStateByName(stateName)?.onLeavingState(this.gamedatas.gamestate.args, this.isCurrentPlayerActive());
+
         switch (stateName) {
             case 'privateChooseInitialDestinations': case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
@@ -217,21 +214,6 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
             case 'multiChooseInitialDestinations':
                 (Array.from(document.getElementsByClassName('player-turn-order')) as HTMLDivElement[]).forEach(elem => elem.remove());
                 break;
-            case 'chooseAction':
-                this.map.setSelectableRoutes(false, []);
-                this.playerTable?.setDraggable(false);
-                this.playerTable?.setSelectable(false);   
-                this.playerTable?.setSelectableTrainCarColors(null);
-                document.getElementById('destination-deck-hidden-pile').classList.remove('selectable');
-                (Array.from(document.getElementsByClassName('train-car-group hide')) as HTMLDivElement[]).forEach(group => group.classList.remove('hide'));
-                break;
-            case 'drawSecondCard':
-                this.trainCarSelection.removeSelectableVisibleCards();  
-                break;
-            case 'confirmTunnel':
-                this.map.setHoveredRoute(null);
-                this.trainCarSelection.showTunnelCards([]);
-                break;
         }
     }
 
@@ -239,32 +221,31 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     //                        action status bar (ie: the HTML links in the status bar).
     //
     public onUpdateActionButtons(stateName: string, args: any) {
+        const state = this.getStateByName(stateName);
+        if (state) {
+            const isCurrentPlayerActive = this.isCurrentPlayerActive();
+            if (this.gamedatas.gamestate.type === 'multipleactiveplayer') {
+                state.onEnteringState(args, isCurrentPlayerActive);
+            }
+            state.onUpdateActionButtons(args, isCurrentPlayerActive);
+        } else if (this.gamedatas.gamestate.type === 'multipleactiveplayer' && this.gamedatas.gamestate.private_state) {
+            const leftState = this.states.find(state => state.match(this.gamedatas.gamestate.private_state.name));
+            if (leftState) {
+                const isCurrentPlayerActive = this.isCurrentPlayerActive();
+                leftState.onLeavingState(this.gamedatas.gamestate.private_state.args, isCurrentPlayerActive);
+            }
+        }
+
         if(this.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'privateChooseInitialDestinations':
                     this.addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), () => this.chooseInitialDestinations());
                     this.destinationSelection.selectionChange();
                     break;   
-                case 'chooseAction':
-                    const chooseActionArgs = args as EnteringChooseActionArgs;
-                    if (chooseActionArgs.maxDestinationsPick) {
-                        document.getElementById('destination-deck-hidden-pile').classList.add('selectable');
-                    }
-                    this.setActionBarChooseAction(false);
-                    break;
                 case 'chooseAdditionalDestinations':
                     this.addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), () => this.chooseAdditionalDestinations());
                     dojo.addClass('chooseAdditionalDestinations_button', 'disabled');
-                    break;  
-                case 'confirmTunnel':
-                    const confirmTunnelArgs = args as EnteringConfirmTunnelArgs;
-                    const confirmLabel = _("Confirm tunnel claim") + (confirmTunnelArgs.canPay ? '' : ` (${_("You don't have enough cards")})`);
-                    this.addActionButton('claimTunnel_button', confirmLabel, () => this.claimTunnel());
-                    this.addActionButton('skipTunnel_button', _("Skip tunnel claim"), () => this.skipTunnel(), null, null, 'gray');
-                    if (!confirmTunnelArgs.canPay) {
-                        dojo.addClass('claimTunnel_button', 'disabled');
-                    }
-                    break;  
+                    break;
             }
         }
     } 
@@ -418,7 +399,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
         return (
             route.color == 0 || cardsColor == 0 || route.color == cardsColor
         ) && (
-            (this.gamedatas.gamestate.args as EnteringChooseActionArgs).possibleRoutes.some(pr => pr.id == route.id)
+            (this.gamedatas.gamestate.args as EnteringConfirmTunnelArgs).possibleRoutes.some(pr => pr.id == route.id)
         );
     }
 
@@ -493,7 +474,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
             return;
         }
 
-        const args = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
+        const args = this.gamedatas.gamestate.args as EnteringConfirmTunnelArgs;
         if (selectedColor === null || selectedColor === 0) {
             this.map.setSelectableRoutes(true, args.possibleRoutes);
         } else {
@@ -599,7 +580,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     /**
      * Sets the action bar (title and buttons) for Choose action.
      */
-    private setActionBarChooseAction(fromCancel: boolean) {
+    public setActionBarChooseAction(fromCancel: boolean): void {
         document.getElementById(`generalactions`).innerHTML = '';
         if (fromCancel) {
             this.setChooseActionGamestateDescription();
@@ -608,7 +589,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
             window.clearInterval(this.actionTimerId);
         }
 
-        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
+        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringConfirmTunnelArgs;
         this.addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), () => this.drawDestinations(), null, null, 'red');
         dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
         if (chooseActionArgs.canPass) {
@@ -641,7 +622,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Sets the action bar (title and buttons) for Confirm route claim.
      */
     private setActionBarConfirmRouteClaim(route: Route, color: number) {
-        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
+        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringConfirmTunnelArgs;
         const colors = chooseActionArgs.costForRoute[route.id][color].map(cardColor => `<div class="train-car-color icon" data-color="${cardColor}"></div>`);
         const confirmationQuestion = _("Confirm ${color} route from ${from} to ${to} with ${colors} ?")
             .replace('${color}', getColor(route.color, 'route'))
@@ -801,20 +782,6 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
         this.bgaPerformAction('actPass');
     }
 
-    /** 
-     * Claim a tunnel (confirm paying extra cost).
-     */ 
-    public claimTunnel() {
-        this.bgaPerformAction('actClaimTunnel');
-    }
-
-    /** 
-     * Skip a tunnel (deny paying extra cost).
-     */ 
-    public skipTunnel() {
-        this.bgaPerformAction('actSkipTunnel');
-    }
-
     private isFastEndScoring() {
         return this.getGameUserPreference(208) == 2;
     }
@@ -957,7 +924,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Show the 3 cards when attempting a tunnel (case withno extra cards required, play automatically).
      */ 
     notif_freeTunnel(notif: Notif<NotifFreeTunnelArgs>) {
-        if (document.visibilityState !== 'hidden' && !this.instantaneousMode) {
+        if (this.bgaAnimationsActive()) {
             this.trainCarSelection.showTunnelCards(notif.args.tunnelCards);
             setTimeout(() => this.trainCarSelection.showTunnelCards([]), 2000);
         }

@@ -1,30 +1,34 @@
 {
-    "rootDir": ".", 
-    "compilerOptions": {
-      "target": "es5",
-      "module": "none",
-      "lib": ["dom", "esnext"],  
-      "sourceMap": false,
-      "outFile": "tickettoride.js"
-    },
-    "files": [
-        "bga-framework.d.ts",
-        "src/tickettoride.d.ts",
-        "src/slide-utils.ts",
-        "src/stock-utils.ts",
-        "src/wagons-animation.ts",
-        "src/destination-animation.ts",
-        "src/longest-path-animation.ts",
-        "src/mandala-routes-animation.ts",
-        "src/map/map.ts",
-        "src/destination-deck/destination-deck.ts",
-        "src/train-car-deck/visible-card-spot.ts",
-        "src/train-car-deck/train-car-deck.ts",
-        "src/player-table/player-table.ts",
-        "src/player-table/player-destinations.ts",
-        "src/player-table/player-train-cars.ts",
-        "src/end-score/end-score.ts",
-        "src/tickettoride.ts",
-        "src/define.ts"
-    ]
+  "rootDir": ".", 
+  "compilerOptions": {
+    "target": "es5",
+    "module": "none",
+    "lib": ["dom", "esnext"],  
+    "sourceMap": false,
+    "outFile": "tickettoride.js"
+  },
+  "files": [
+    "bga-framework.d.ts",
+    "src/tickettoride.d.ts",
+    "src/slide-utils.ts",
+    "src/stock-utils.ts",
+    "src/wagons-animation.ts",
+    "src/destination-animation.ts",
+    "src/longest-path-animation.ts",
+    "src/mandala-routes-animation.ts",
+    "src/map/map.ts",
+    "src/destination-deck/destination-deck.ts",
+    "src/train-car-deck/visible-card-spot.ts",
+    "src/train-car-deck/train-car-deck.ts",
+    "src/player-table/player-table.ts",
+    "src/player-table/player-destinations.ts",
+    "src/player-table/player-train-cars.ts",
+    "src/end-score/end-score.ts",
+    "src/states/state-handler.ts",
+    "src/states/ChooseAction.ts",
+    "src/states/DrawSecondCard.ts",
+    "src/states/ConfirmTunnel.ts",
+    "src/tickettoride.ts",
+    "src/define.ts"
+  ]
 }
