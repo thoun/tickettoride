@@ -29,7 +29,7 @@ class ConfirmTunnel extends GameState {
 
         $route = $this->game->getAllRoutes()[$tunnelAttempt->routeId];
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);        
-        $trainCarsHand = $this->game->getTrainCarsFromDb($this->game->trainCars->getCardsInLocation('hand', $activePlayerId));
+        $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
         $tunnelCost = $this->game->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, $tunnelAttempt->extraCards);
         $canPay = $tunnelCost != null;
 

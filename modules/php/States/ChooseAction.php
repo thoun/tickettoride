@@ -27,14 +27,14 @@ class ChooseAction extends GameState {
     }
 
     function getArgs(int $activePlayerId) {
-        $trainCarsHand = $this->game->getTrainCarsFromDb($this->game->trainCars->getCardsInLocation('hand', $activePlayerId));
+        $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
         // we don't limit claimable routes to the number of remaining train cars, because the players don't understand why they can't claim the route
         // so instead they'll get an error when they try to claim the route, saying they don't have enough train cars left
         $remainingTrainCars = 99;
         $realRemainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
 
         $possibleRoutes = $this->game->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars);
-        $maxHiddenCardsPick = min(2, $this->game->getRemainingTrainCarCardsInDeck(true));
+        $maxHiddenCardsPick = min(2, $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true));
         $maxDestinationsPick = min($this->game->getMap()->getAdditionalDestinationCardNumber($this->game->getExpansionOption()), $this->game->destinationManager->getRemainingDestinationCardsInDeck());
 
         $canClaimARoute = false;
@@ -52,7 +52,7 @@ class ChooseAction extends GameState {
             $costForRoute[$possibleRoute->id] = array_map(fn($cardCost) => $cardCost == null ? null : array_map(fn($card) => $card->type, $cardCost), $costByColor);
         }
 
-        $canTakeTrainCarCards = $this->game->getRemainingTrainCarCardsInDeck(true, true);
+        $canTakeTrainCarCards = $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true, true);
 
         $canPass = !$canClaimARoute && $maxDestinationsPick == 0 && $canTakeTrainCarCards == 0;
 
@@ -68,19 +68,19 @@ class ChooseAction extends GameState {
 
     #[PossibleAction]
     public function actDrawDeckCards(int $number, int $activePlayerId) { 
-        $drawNumber = $this->game->drawTrainCarCardsFromDeck($activePlayerId, $number);
+        $drawNumber = $this->game->trainCarManager->drawTrainCarCardsFromDeck($activePlayerId, $number);
 
         $this->game->incStat($drawNumber, 'collectedTrainCarCards');
         $this->game->incStat($drawNumber, 'collectedTrainCarCards', $activePlayerId);
         $this->game->incStat($drawNumber, 'collectedHiddenTrainCarCards');
         $this->game->incStat($drawNumber, 'collectedHiddenTrainCarCards', $activePlayerId);
 
-       return $drawNumber == 1 && $this->game->canTakeASecondCard(null) ? DrawSecondCard::class : ST_NEXT_PLAYER;
+       return $drawNumber == 1 && $this->game->trainCarManager->canTakeASecondCard(null) ? DrawSecondCard::class : ST_NEXT_PLAYER;
     }
     
     #[PossibleAction]
     public function actDrawTableCard(int $id, int $activePlayerId) { 
-        $card = $this->game->drawTrainCarCardsFromTable($activePlayerId, $id);
+        $card = $this->game->trainCarManager->drawTrainCarCardsFromTable($activePlayerId, $id);
 
         $this->game->incStat(1, 'collectedTrainCarCards');
         $this->game->incStat(1, 'collectedTrainCarCards', $activePlayerId);
@@ -91,7 +91,7 @@ class ChooseAction extends GameState {
             $this->game->incStat(1, 'collectedVisibleLocomotives', $activePlayerId);
         }
 
-        return $this->game->canTakeASecondCard($card->type) ? DrawSecondCard::class : ST_NEXT_PLAYER;
+        return $this->game->trainCarManager->canTakeASecondCard($card->type) ? DrawSecondCard::class : ST_NEXT_PLAYER;
     }
     
     #[PossibleAction]
@@ -123,7 +123,7 @@ class ChooseAction extends GameState {
             throw new \BgaUserException("Route is already claimed.");
         }
         
-        $trainCarsHand = $this->game->getTrainCarsFromDb($this->game->trainCars->getCardsInLocation('hand', $activePlayerId));
+        $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
         $colorAndLocomotiveCards = $this->game->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color);
         
         if ($colorAndLocomotiveCards == null || count($colorAndLocomotiveCards) < $route->number) {
@@ -136,12 +136,12 @@ class ChooseAction extends GameState {
         }
 
         if ($route->tunnel) {
-            $remainingDeckCards = $this->game->getRemainingTrainCarCardsInDeck(true);
+            $remainingDeckCards = $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true);
             if ($remainingDeckCards == 0) {
                 $this->notify->all('log', clienttranslate('No train car card in deck or discard, tunnel is free'), []);
             } else {
                 $pickedCardCount = min(3, $remainingDeckCards);
-                $tunnelCards = $this->game->getTrainCarsFromDb($this->game->trainCars->pickCardsForLocation($pickedCardCount, 'deck', 'tunnel'));
+                $tunnelCards = $this->game->trainCarManager->pickCardsForTunnel($pickedCardCount);
                 $extraCards = count(array_filter($tunnelCards, fn($card) => $card->type == 0 || $card->type == $color));
 
                 $this->notify->all('log', clienttranslate('${player_name} tries to build a tunnel from ${from} to ${to} with color ${color}'), [

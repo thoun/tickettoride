@@ -71,28 +71,6 @@ trait UtilTrait {
         return $this->map;
     }
 
-    /**
-     * Transforms a TrainCar Db object to TrainCar class.
-     */
-    function getTrainCarFromDb($dbObject): ?\TrainCar {
-        if ($dbObject === null) {
-            return null;
-        }
-        if (!$dbObject || !array_key_exists('id', $dbObject)) {
-            throw new \BgaSystemException("Train car doesn't exists ".json_encode($dbObject));
-        }
-        return new \TrainCar($dbObject);
-    }
-
-    /**
-     * Transforms a TrainCar Db object array to TrainCar class array.
-     * 
-     * @return TrainCar[]
-     */
-    function getTrainCarsFromDb(array $dbObjects): ?array {
-        return array_map(fn($dbObject) => $this->getTrainCarFromDb($dbObject), array_values($dbObjects));
-    }
-
     function getLowestTrainCarsCount() {
         return $this->getUniqueIntValueFromDB("SELECT min(`player_remaining_train_cars`) FROM player");
     }

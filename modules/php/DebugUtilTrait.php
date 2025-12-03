@@ -47,24 +47,24 @@ trait DebugUtilTrait {
 
     // SELECT card_location, count(*)  FROM `traincar` GROUP BY card_location
     function debug_EmptyHand() {
-        $this->trainCars->moveAllCardsInLocation('hand', 'void');
+        $this->trainCarManager->trainCars->moveAllCardsInLocation('hand', 'void');
     }
     function debug_EmptyDeck() {
-        $this->trainCars->moveAllCardsInLocation('deck', 'void');
+        $this->trainCarManager->trainCars->moveAllCardsInLocation('deck', 'void');
     }
     function debug_EmptyDiscard() {
-        $this->trainCars->moveAllCardsInLocation('discard', 'void');
+        $this->trainCarManager->trainCars->moveAllCardsInLocation('discard', 'void');
     }
     
     function debug_AlmostEmptyDeck() {
-        $moveNumber = $this->getRemainingTrainCarCardsInDeck(true) - 1;
-        $this->trainCars->pickCardsForLocation($moveNumber, 'deck', 'void');
+        $moveNumber = $this->trainCarManager->getRemainingTrainCarCardsInDeck(true) - 1;
+        $this->trainCarManager->trainCars->pickCardsForLocation($moveNumber, 'deck', 'void');
     }
 
     function debugNoAvailableTrainCardCards() {
-        $this->trainCars->moveAllCardsInLocation('table', 'void');
-        $this->trainCars->moveAllCardsInLocation('deck', 'void');
-        $this->trainCars->moveAllCardsInLocation('discard', 'void');
+        $this->trainCarManager->trainCars->moveAllCardsInLocation('table', 'void');
+        $this->trainCarManager->trainCars->moveAllCardsInLocation('deck', 'void');
+        $this->trainCarManager->trainCars->moveAllCardsInLocation('discard', 'void');
     }
 
     function debug_EmptyDestinationDeck() {
@@ -111,8 +111,8 @@ trait DebugUtilTrait {
     }
 
     function debug_SetRemainingTrainCarDeck(int $remaining) {
-        $moveNumber = $this->getRemainingTrainCarCardsInDeck() - $remaining;
-        $this->trainCars->pickCardsForLocation($moveNumber, 'deck', 'discard');
+        $moveNumber = $this->trainCarManager->getRemainingTrainCarCardsInDeck() - $remaining;
+        $this->trainCarManager->trainCars->pickCardsForLocation($moveNumber, 'deck', 'discard');
     }
 
     function debug_SetLastTurn() {

@@ -20,8 +20,8 @@ class DrawSecondCard extends GameState {
     }
 
     function getArgs() {
-        $maxHiddenCardsPick = min(1, $this->game->getRemainingTrainCarCardsInDeck(true));
-        $availableVisibleCards = $this->game->getVisibleTrainCarCards(true);
+        $maxHiddenCardsPick = min(1, $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true));
+        $availableVisibleCards = $this->game->trainCarManager->getVisibleTrainCarCards(true);
 
         return [
             'maxHiddenCardsPick' => $maxHiddenCardsPick,
@@ -31,7 +31,7 @@ class DrawSecondCard extends GameState {
 
     #[PossibleAction]
     public function actDrawSecondDeckCard(int $activePlayerId) {
-        $this->game->drawTrainCarCardsFromDeck($activePlayerId, 1, true);
+        $this->game->trainCarManager->drawTrainCarCardsFromDeck($activePlayerId, 1, true);
 
         $this->game->incStat(1, 'collectedTrainCarCards');
         $this->game->incStat(1, 'collectedTrainCarCards', $activePlayerId);
@@ -43,7 +43,7 @@ class DrawSecondCard extends GameState {
     
     #[PossibleAction]
     public function actDrawSecondTableCard(int $id, int $activePlayerId) {
-        $card = $this->game->drawTrainCarCardsFromTable($activePlayerId, $id, true);
+        $card = $this->game->trainCarManager->drawTrainCarCardsFromTable($activePlayerId, $id, true);
 
         $this->game->incStat(1, 'collectedTrainCarCards');
         $this->game->incStat(1, 'collectedTrainCarCards', $activePlayerId);
