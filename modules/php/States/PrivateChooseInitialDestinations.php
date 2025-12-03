@@ -23,13 +23,13 @@ class PrivateChooseInitialDestinations extends GameState {
     function getArgs(int $playerId) {
         return [
             'minimum' => $this->game->getMap()->getInitialDestinationMinimumKept($this->game->getExpansionOption()),
-            'destinations' => $this->game->getPickedDestinationCards($playerId),
+            'destinations' => $this->game->destinationManager->getPickedDestinationCards($playerId),
         ];
     }
 
     #[PossibleAction]    
     public function actChooseInitialDestinations(#[IntArrayParam] array $destinationsIds, int $currentPlayerId) {
-        $this->game->keepInitialDestinationCards($currentPlayerId, $destinationsIds);
+        $this->game->destinationManager->keepInitialDestinationCards($currentPlayerId, $destinationsIds);
 
         $this->game->incStat(count($destinationsIds), 'keptInitialDestinationCards', $currentPlayerId);
         

@@ -46,7 +46,7 @@ class EndScore extends GameState {
             $completedDestinations = [];
             $claimedRoutes = $this->game->getClaimedRoutes($playerId);
 
-            $destinations = $this->game->getDestinationsFromDb($this->game->destinations->getCardsInLocation('hand', $playerId));
+            $destinations = $this->game->destinationManager->getPlayerHand($playerId);
 
             foreach ($destinations as &$destination) {
                 $completed = boolval($this->game->getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));

@@ -22,7 +22,7 @@ class DealInitialDestinations extends GameState {
         $playersIds = $this->game->getPlayersIds();
 
         foreach($playersIds as $playerId) {
-            $this->game->pickInitialDestinationCards($playerId);
+            $this->game->destinationManager->pickInitialDestinationCards($playerId);
         }
         
         return MultiplayerChooseInitialDestinations::class;

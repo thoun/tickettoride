@@ -40,7 +40,7 @@ class Game extends Table {
     use MapTrait;
     use DebugUtilTrait;
 
-    public Deck $destinations;
+    public DestinationManager $destinationManager;
     public Deck $trainCars;
 
     public \Map $map;
@@ -51,12 +51,12 @@ class Game extends Table {
         $this->initGameStateLabels(array_merge([
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
         ]));
-        
-        $this->destinations = $this->deckFactory->createDeck('destination');
 		
         $this->trainCars = $this->deckFactory->createDeck('traincar');
         $this->trainCars->autoreshuffle = true;
         $this->trainCars->autoreshuffle_trigger = ['obj' => $this, 'method' => 'trainCarDeckAutoReshuffle'];
+
+        $this->destinationManager = new DestinationManager($this);
 	}
 
     /*
@@ -145,7 +145,7 @@ class Game extends Table {
 
         // setup the initial game situation here
 
-        $this->createDestinations();
+        $this->destinationManager->createDestinations();
 
         $this->createTrainCars();
         // give 4 to each player
@@ -211,19 +211,19 @@ class Game extends Table {
 
         // private data : current player hidden informations
         $result['handTrainCars'] = $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $currentPlayerId));
-        $result['handDestinations'] = $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $currentPlayerId));
-        $result['completedDestinations'] = $this->getDestinationsFromDb($this->destinations->getCards($this->getCompletedDestinationsIds($currentPlayerId)));
+        $result['handDestinations'] = $this->destinationManager->getPlayerHand($currentPlayerId);
+        $result['completedDestinations'] = $this->destinationManager->getCompletedDestinations($currentPlayerId);
 
         // share informations (for player panels)
         foreach ($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
             $player['trainCarsCount'] = intval($this->trainCars->countCardInLocation('hand', $playerId));
-            $player['destinationsCount'] = intval($this->destinations->countCardInLocation('hand', $playerId));
+            $player['destinationsCount'] = $this->destinationManager->getPlayerHandCount($playerId);
             $player['remainingTrainCarsCount'] = $this->getRemainingTrainCarsCount($playerId);
 
             if ($isEnd) {
-                $player['completedDestinations'] = $this->getDestinationsFromDb($this->destinations->getCards($this->getCompletedDestinationsIds($playerId)));
-                $player['uncompletedDestinations'] = $this->getDestinationsFromDb($this->destinations->getCards($this->getUnompletedDestinationsIds($playerId)));
+                $player['completedDestinations'] = $this->destinationManager->getCompletedDestinations($playerId);
+                $player['uncompletedDestinations'] = $this->destinationManager->getUncompletedDestinations($playerId);
                 $player['longestPathLength'] = $this->getLongestPath($playerId)->length;
             } else {
                 $player['completedDestinations'] = [];
@@ -233,7 +233,7 @@ class Game extends Table {
 
         // deck counters
         $result['trainCarDeckCount'] = $this->getRemainingTrainCarCardsInDeck();
-        $result['destinationDeckCount'] = $this->getRemainingDestinationCardsInDeck();
+        $result['destinationDeckCount'] = $this->destinationManager->getRemainingDestinationCardsInDeck();
         $result['trainCarDeckMaxCount'] = intval($this->getUniqueValueFromDB("select count(*) from `traincar`"));
         $result['destinationDeckMaxCount'] = intval($this->getUniqueValueFromDB("select count(*) from `destination`"));          
 
@@ -523,128 +523,6 @@ class Game extends Table {
         $this->notify->all('log', clienttranslate('The train car deck has been reshuffled'), []);
     }
 
-    /**
-     * Create destination cards.
-     */
-    public function createDestinations() {
-        $expansionOption = $this->getExpansionOption();
-        $destinations = $this->getMap()->getDestinationToGenerate($expansionOption);
-        //debug($this->getMap()->code, $expansionOption, $destinations);
-
-        foreach($destinations as $deck => $cards) {
-            $this->destinations->createCards($cards, $deck);
-            $this->destinations->shuffle($deck);
-        }
-    }
-	
-    /**
-     * Pick destination cards for beginning choice.
-     */
-    public function pickInitialDestinationCards(int $playerId) {
-        $expansionOption = $this->getExpansionOption();
-        $pick = $this->getMap()->getInitialDestinationPick($expansionOption);
-
-        $cards = [];
-        foreach ($pick as $deck => $number) {
-            $cards = array_merge($cards, $this->pickDestinationCards($playerId, $number, $deck));
-        }
-
-		return $cards;
-    }	
-
-    /**
-     * Select kept destination cards for beginning choice. 
-     * Unused destination cards are set back on the deck or discarded.
-     */
-    public function keepInitialDestinationCards(int $playerId, array $ids) {
-		$this->keepDestinationCards($playerId, $ids, $this->getMap()->getInitialDestinationMinimumKept($this->getExpansionOption()), $this->getMap()->unusedInitialDestinationsGoToDeckBottom);
-    }	
-	
-    /**
-     * Pick destination cards for pick destination action.
-     */
-    public function pickAdditionalDestinationCards(int $playerId) {
-		return $this->pickDestinationCards($playerId, $this->getMap()->getAdditionalDestinationCardNumber($this->getExpansionOption()));
-    }	
-
-    /**
-     * Select kept destination cards for pick destination action. 
-     * Unused destination cards are set back on the deck or discarded.
-     */
-    public function keepAdditionalDestinationCards(int $playerId, array $ids) {
-		$this->keepDestinationCards($playerId, $ids, $this->getMap()->additionalDestinationMinimumKept, $this->getMap()->unusedAdditionalDestinationsGoToDeckBottom);
-    }
-
-    /**
-     * Get destination picked cards (cards player can choose).
-     */
-    public function getPickedDestinationCards(int $playerId) {
-        $cards = $this->getDestinationsFromDb($this->destinations->getCardsInLocation("pick$playerId"));
-        return $cards;
-    }
-
-    /**
-     * get remaining destination cards in deck.
-     */
-    public function getRemainingDestinationCardsInDeck() {
-        $remaining = intval($this->destinations->countCardInLocation('deck'));
-
-        if ($remaining == 0) {
-            $remaining = intval($this->destinations->countCardInLocation('discard'));
-        }
-
-        return $remaining;
-    }
-
-    /**
-     * place a number of destinations cards to pick$playerId.
-     */
-    private function pickDestinationCards($playerId, int $number, string $from = 'deck') {
-        $cards = $this->getDestinationsFromDb($this->destinations->pickCardsForLocation($number, $from, "pick$playerId"));
-        return $cards;
-    }
-
-    /**
-     * move selected cards to player hand, and empty pick$playerId.
-     */
-    private function keepDestinationCards(int $playerId, array $ids, int $minimum, bool $toDeckBottom) {
-        if (count($ids) < $minimum) {
-            throw new \BgaUserException("You must keep at least $minimum cards.");
-        }
-
-        if (count($ids) > 0 && $this->getUniqueIntValueFromDB("SELECT count(*) FROM destination WHERE `card_location` != 'pick$playerId' AND `card_id` in (".implode(', ', $ids).")") > 0) {
-            throw new \BgaUserException("Selected cards are not available.");
-        }
-
-        $this->destinations->moveCards($ids, 'hand', $playerId);
-
-        $remainingCardsInPick = intval($this->destinations->countCardInLocation("pick$playerId"));
-        if ($remainingCardsInPick > 0) {
-            if ($toDeckBottom) {
-                $this->destinations->shuffle("pick$playerId");
-                // we put remaining cards in pick at the bottom of the deck
-                $this->DbQuery("UPDATE destination SET `card_location_arg` = card_location_arg + $remainingCardsInPick WHERE `card_location` = 'deck'");
-                $this->destinations->moveAllCardsInLocationKeepOrder("pick$playerId", 'deck');
-            } else {
-                // we discard remaining cards in pick
-                $this->destinations->moveAllCardsInLocation("pick$playerId", 'void');
-            }
-        }
-
-        $this->notify->all('destinationsPicked', clienttranslate('${player_name} keeps ${count} destinations'), [
-            'playerId' => $playerId,
-            'player_name' => $this->getPlayerNameById($playerId),
-            'count' => count($ids),
-            'number' => count($ids),
-            'remainingDestinationsInDeck' => $this->getRemainingDestinationCardsInDeck(),
-            '_private' => [
-                $playerId => [
-                    'destinations' => $this->getDestinationsFromDb($this->destinations->getCards($ids)),
-                ],
-            ],
-        ]);
-    }
-
     function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0) {
         $route = $this->getAllRoutes()[$routeId];
         $cardCost = $route->number + $extraCardCost;
@@ -681,7 +559,7 @@ class Game extends Table {
         $this->playerStats->inc('playedTrainCars', $route->number, $playerId, updateTableStat: true);
         $this->playerStats->inc('pointsWithClaimedRoutes', $points, $playerId, updateTableStat: true);
 
-        $this->checkCompletedDestinations($playerId);
+        $this->destinationManager->checkCompletedDestinations($playerId);
 
         // in case there is less than 5 visible cards on the table, we refill with newly discarded cards
         $this->checkVisibleTrainCarCards();
@@ -696,6 +574,33 @@ class Game extends Table {
         if ($storedTunnelAttempt) {
             $this->deleteGlobalVariable(TUNNEL_ATTEMPT);
         }
+    }
+
+    function getLogTo(\Destination $destination) {
+        return is_array($destination->to) ? implode(' / ', array_map(fn($to) => $this->getCityName($to), $destination->to)) : $this->getCityName($destination->to);
+    }
+
+    function getCityName(int $id) {
+        return $this->getMap()->cities[$id]->name;
+    }
+
+    function getPlayersIds() {
+        return array_keys($this->loadPlayersBasicInfos());
+    }
+
+    function incScore(int $playerId, int $delta, $message = null, $messageArgs = []) {
+        $this->playerScore->inc($playerId, $delta, null);
+
+        $this->notify->all('points', $message !== null ? $message : '', [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerNameById($playerId),
+            'points' => $this->playerScore->get($playerId),
+            'delta' => $delta,
+        ] + $messageArgs);
+    }
+
+    function getUniqueIntValueFromDB(string $sql) {
+        return intval($this->getUniqueValueFromDB($sql));
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:

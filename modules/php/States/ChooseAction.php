@@ -35,7 +35,7 @@ class ChooseAction extends GameState {
 
         $possibleRoutes = $this->game->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars);
         $maxHiddenCardsPick = min(2, $this->game->getRemainingTrainCarCardsInDeck(true));
-        $maxDestinationsPick = min($this->game->getMap()->getAdditionalDestinationCardNumber($this->game->getExpansionOption()), $this->game->getRemainingDestinationCardsInDeck());
+        $maxDestinationsPick = min($this->game->getMap()->getAdditionalDestinationCardNumber($this->game->getExpansionOption()), $this->game->destinationManager->getRemainingDestinationCardsInDeck());
 
         $canClaimARoute = false;
         $costForRoute = [];
@@ -96,12 +96,12 @@ class ChooseAction extends GameState {
     
     #[PossibleAction]
     public function actDrawDestinations(int $activePlayerId) {
-        $remainingDestinationsCardsInDeck = $this->game->getRemainingDestinationCardsInDeck();
+        $remainingDestinationsCardsInDeck = $this->game->destinationManager->getRemainingDestinationCardsInDeck();
         if ($remainingDestinationsCardsInDeck == 0) {
             throw new \BgaUserException(clienttranslate("You can't take new Destination cards because the deck is empty"));
         }
 
-        $this->game->pickAdditionalDestinationCards($activePlayerId);
+        $this->game->destinationManager->pickAdditionalDestinationCards($activePlayerId);
 
         $this->game->incStat(1, 'drawDestinationsAction');
         $this->game->incStat(1, 'drawDestinationsAction', $activePlayerId);

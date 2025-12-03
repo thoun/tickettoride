@@ -40,8 +40,8 @@ trait DebugUtilTrait {
     }
 
     function debug_SetDestinationInHand(int $cardType, int $playerId) {
-        $card = $this->getDestinationFromDb(array_values($this->destinations->getCardsOfType(1, $cardType))[0]);
-        $this->destinations->moveCard($card->id, 'hand', $playerId);
+        $card = $this->destinationManager->getDestinationFromDb(array_values($this->destinationManager->destinations->getCardsOfType(1, $cardType))[0]);
+        $this->destinationManager->destinations->moveCard($card->id, 'hand', $playerId);
         return $card;
     }
 
@@ -68,12 +68,12 @@ trait DebugUtilTrait {
     }
 
     function debug_EmptyDestinationDeck() {
-        $this->destinations->moveAllCardsInLocation('deck', 'void');
+        $this->destinationManager->destinations->moveAllCardsInLocation('deck', 'void');
     }
     
     function debug_AlmostEmptyDestinationDeck() {
-        $moveNumber = $this->getRemainingDestinationCardsInDeck() - 1;
-        $this->destinations->pickCardsForLocation($moveNumber, 'deck', 'discard');
+        $moveNumber = $this->destinationManager->getRemainingDestinationCardsInDeck() - 1;
+        $this->destinationManager->destinations->pickCardsForLocation($moveNumber, 'deck', 'discard');
     }
 
     function debug_ClaimRoute(int $playerId, int $routeId) {
@@ -126,9 +126,9 @@ trait DebugUtilTrait {
     function debug_Start() {
         $playersIds = $this->getPlayersIds();
         foreach ($playersIds as $playerId) {
-            $destinations = $this->getPickedDestinationCards($playerId);
+            $destinations = $this->destinationManager->getPickedDestinationCards($playerId);
             $ids = array_map(fn($card) => $card->id, $destinations);
-            $this->keepInitialDestinationCards($playerId, $ids);
+            $this->destinationManager->keepInitialDestinationCards($playerId, $ids);
         }
 
         $this->gamestate->jumpToState(ST_PLAYER_CHOOSE_ACTION);

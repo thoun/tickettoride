@@ -22,7 +22,7 @@ class ChooseAdditionalDestinations extends GameState {
     }
 
     function getArgs(int $activePlayerId) {
-        $destinations = $this->game->getPickedDestinationCards($activePlayerId);
+        $destinations = $this->game->destinationManager->getPickedDestinationCards($activePlayerId);
 
         return [
             'minimum' => $this->game->getMap()->additionalDestinationMinimumKept,
@@ -36,10 +36,10 @@ class ChooseAdditionalDestinations extends GameState {
 
     #[PossibleAction]
     public function actChooseAdditionalDestinations(#[IntArrayParam] array $destinationsIds, int $activePlayerId) {
-        $this->game->keepAdditionalDestinationCards($activePlayerId, $destinationsIds);
+        $this->game->destinationManager->keepAdditionalDestinationCards($activePlayerId, $destinationsIds);
 
         // player may have already completed picked destinations
-        $this->game->checkCompletedDestinations($activePlayerId);
+        $this->game->destinationManager->checkCompletedDestinations($activePlayerId);
 
         $this->game->incStat(count($destinationsIds), 'keptAdditionalDestinationCards', $activePlayerId);
         
