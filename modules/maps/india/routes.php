@@ -266,11 +266,11 @@ function getRoutes() {
     60 => new Route(11, 34, GRAY, [
       new RouteSpace(336, 1437, 79),
       new RouteSpace(356, 1502, 63),
-    ]),
+    ], locomotives: 1),
     61 => new Route(11, 34, GRAY, [
       new RouteSpace(356, 1433, 83),
       new RouteSpace(377, 1494, 62),
-    ]),
+    ], locomotives: 1),
     62 => new Route(12, 14, WHITE, [
       new RouteSpace(1052, 704, 57),
       new RouteSpace(1012, 657, 44),
