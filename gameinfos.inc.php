@@ -66,9 +66,6 @@ $gameinfos = [
 // Allow to rank solo games for games where it's the only available mode (ex: Thermopyles). Should be left to false for games where solo mode exists in addition to multiple players mode.
 'solo_mode_ranked' => false,
 
-// Game is "beta". A game MUST set is_beta=1 when published on BGA for the first time, and must remains like this until all bugs are fixed.
-'is_beta' => 1,                     
-
 // Is this game cooperative (all players wins together or loose together)
 'is_coop' => 0,
 
@@ -99,4 +96,6 @@ $gameinfos = [
     //  minimum possible value: 320 (the lowest value you specify, the better the display is on mobile)
     'min' => 490, // under 490, player panels aren't on 2 columns on mobile
 ],
+
+    'take_translation_from' => 'tickettoride',
 ];
