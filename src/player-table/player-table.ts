@@ -1,7 +1,11 @@
+import { TicketToRideGame, TicketToRidePlayer, TrainCar, Destination, Route } from "../tickettoride.d";
+import { PlayerDestinations } from "./player-destinations";
+import { PlayerTrainCars } from "./player-train-cars";
+
 /** 
  * Player table : train car et destination cards.
  */ 
-class PlayerTable {
+export class PlayerTable {
     private playerDestinations: PlayerDestinations;
     private playerTrainCars: PlayerTrainCars;
 
@@ -19,7 +23,7 @@ class PlayerTable {
             </div>
         `;
 
-        dojo.place(html, 'resized');
+        document.getElementById('resized').insertAdjacentHTML('beforeend', html);
 
         this.playerDestinations = new PlayerDestinations(game, player, destinations, completedDestinations);
         this.playerTrainCars = new PlayerTrainCars(game, player, trainCars);

@@ -1,7 +1,13 @@
+// @ts-ignore
+const [Stock] = await globalThis.importDojoLibs(["ebg/stock"]);
+
+import { CARD_HEIGHT, CARD_WIDTH, setupDestinationCardDiv, setupDestinationCards } from "../stock-utils";
+import { TicketToRideGame, TicketToRideMap, Destination } from "../tickettoride.d";
+
 /**
  * Selection of new destinations.
  */ 
-class DestinationSelection {
+export class DestinationSelection {
     /** Destinations stock */ 
     public destinations: Stock;
     /** Minimum number of selected destinations to enable the confirm selection button */ 
@@ -17,15 +23,19 @@ class DestinationSelection {
         const DESTINATION_CARD_WIDTH = map.vertical ? CARD_HEIGHT : CARD_WIDTH;
         const DESTINATION_CARD_HEIGHT = map.vertical ? CARD_WIDTH : CARD_HEIGHT;
 
+        // @ts-ignore
         this.destinations = new ebg.stock() as Stock;
         this.destinations.setSelectionAppearance('class');
         this.destinations.selectionClass = 'selected';
         this.destinations.setSelectionMode(2);
-        this.destinations.create(game, $(`destination-stock`), DESTINATION_CARD_WIDTH, DESTINATION_CARD_HEIGHT);
+        // @ts-ignore
+        this.destinations.create(game.bga.gameui, document.getElementById(`destination-stock`), DESTINATION_CARD_WIDTH, DESTINATION_CARD_HEIGHT);
         this.destinations.onItemCreate = (cardDiv: HTMLDivElement, cardUniqueId) => setupDestinationCardDiv(game, cardDiv, Number(cardUniqueId));
         this.destinations.image_items_per_row = 10;
         this.destinations.centerItems = true;
+        // @ts-ignore
         this.destinations.item_margin = 20;
+        // @ts-ignore
         dojo.connect(this.destinations, 'onChangeSelection', this, () => this.selectionChange());
         setupDestinationCards(map, this.destinations);
     }

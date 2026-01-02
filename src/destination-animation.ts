@@ -1,9 +1,13 @@
+import { CARD_HEIGHT, CARD_WIDTH, getBackgroundInlineStyleForDestination } from "./stock-utils";
+import { Destination, TicketToRideGame, Route } from "./tickettoride.d";
+import { WagonsAnimation } from "./wagons-animation";
+
 type DestinationAnimationCallback = (destination: Destination) => void;
 
 /**
  * Destination animation : destination slides over the map, wagons used by destination are highlighted, destination is mark "done" or "uncomplete", and card slides back to original place.
  */ 
-class DestinationCompleteAnimation extends WagonsAnimation {
+export class DestinationCompleteAnimation extends WagonsAnimation {
 
     constructor(
         game: TicketToRideGame,
@@ -26,9 +30,9 @@ class DestinationCompleteAnimation extends WagonsAnimation {
         return new Promise(resolve => {
             const fromBR = document.getElementById(this.fromId).getBoundingClientRect();
 
-            dojo.place(`
+            document.getElementById('map').insertAdjacentHTML('beforeend', `
             <div id="animated-destination-card-${this.destination.id}" class="destination-card" style="${this.getCardPosition(this.destination)}${getBackgroundInlineStyleForDestination(this.game.getMap(), this.destination)}"></div>
-            `, 'map');
+            `);
 
             const noMask = Array.isArray(this.destination.to);
             const card = document.getElementById(`animated-destination-card-${this.destination.id}`);

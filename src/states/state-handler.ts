@@ -1,7 +1,9 @@
-abstract class StateHandler<Args> {
+import { TicketToRideGame } from "../tickettoride.d";
+
+export abstract class StateHandler<Args> {
     public abstract match(stateName: string): boolean | string;
 
-    constructor(protected game: TicketToRideGame) {
+    constructor(protected game: TicketToRideGame, protected bga: Bga) {
     }
 
     public onEnteringState(args: Args, isCurrentPlayerActive: boolean) {}

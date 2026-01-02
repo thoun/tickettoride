@@ -1,10 +1,13 @@
-interface EnteringConfirmTunnelArgs {
+import { TunnelAttempt } from "../tickettoride.d";
+import { StateHandler } from "./state-handler";
+
+export interface EnteringConfirmTunnelArgs {
     playerId: number;
     tunnelAttempt: TunnelAttempt;
     canPay: boolean;
 }
 
-class ConfirmTunnelState extends StateHandler<EnteringConfirmTunnelArgs> {
+export class ConfirmTunnelState extends StateHandler<EnteringConfirmTunnelArgs> {
     public match(): string { return `confirmTunnel`; }
 
     public onEnteringState(args: EnteringConfirmTunnelArgs, isCurrentPlayerActive: boolean) {
@@ -22,9 +25,9 @@ class ConfirmTunnelState extends StateHandler<EnteringConfirmTunnelArgs> {
         if (isCurrentPlayerActive) {
             const confirmLabel = _("Confirm tunnel claim") + (args.canPay ? '' : ` (${_("You don't have enough cards")})`);
             // Claim a tunnel (confirm paying extra cost).
-            this.game.statusBar.addActionButton(confirmLabel, () => this.game.bgaPerformAction('actClaimTunnel'), { disabled: !args.canPay });
+            this.bga.statusBar.addActionButton(confirmLabel, () => this.bga.actions.performAction('actClaimTunnel'), { disabled: !args.canPay });
             // Skip a tunnel (deny paying extra cost).
-            this.game.statusBar.addActionButton(_("Skip tunnel claim"), () => this.game.bgaPerformAction('actSkipTunnel'), { color: 'secondary'});
+            this.bga.statusBar.addActionButton(_("Skip tunnel claim"), () => this.bga.actions.performAction('actSkipTunnel'), { color: 'secondary'});
         }
     }
 }

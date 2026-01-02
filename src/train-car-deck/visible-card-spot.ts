@@ -1,7 +1,11 @@
+import { animateCardToCounterAndDestroy } from "../slide-utils";
+import { setupTrainCarCardDiv } from "../stock-utils";
+import { TrainCar, TicketToRideGame, Card } from "../tickettoride.d";
+
 /** 
  * Selection of new train cars.
  */ 
-class VisibleCardSpot {
+export class VisibleCardSpot {
     private card: TrainCar | null;
     private spotDiv: HTMLDivElement;
 
@@ -80,7 +84,9 @@ class VisibleCardSpot {
      * Create the card in the spot.
      */ 
     private createCard(card: Card) {
-        dojo.place(`<div id="train-car-card-${card.id}" class="train-car-card" data-color="${this.card.type}"></div>`, this.spotDiv);
+        this.spotDiv.insertAdjacentHTML('beforeend', `
+            <div id="train-car-card-${card.id}" class="train-car-card" data-color="${this.card.type}"></div>
+        `);
     }
     
     /**
@@ -106,7 +112,7 @@ class VisibleCardSpot {
      * Add an animation to the card (when it is created).
      */ 
     private addAnimationFrom(card: HTMLElement) {
-        if (document.visibilityState === 'hidden' || (this.game as any).instantaneousMode) {
+        if (!this.game.bga.gameui.bgaAnimationsActive()) {
             return;
         }
 

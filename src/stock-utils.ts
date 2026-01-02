@@ -1,15 +1,18 @@
-const CARD_WIDTH = 250;
-const CARD_HEIGHT = 161;
-const DESTINATION_CARD_SHIFT = 32;
+import { IMAGE_ITEMS_PER_ROW } from "./player-table/player-destinations";
+import { TicketToRideMap, TicketToRideGame, Destination } from "./tickettoride.d";
 
-function setupTrainCarCards(stock: Stock) {
+export const CARD_WIDTH = 250;
+export const CARD_HEIGHT = 161;
+export const DESTINATION_CARD_SHIFT = 32;
+
+export function setupTrainCarCards(stock: Stock) {
     const trainCarsUrl = `${g_gamethemeurl}img/train-cards.jpg`;
     for (let type=0; type<=8; type++) {
         stock.addItemType(type, type, trainCarsUrl, type);
     }
 }
 
-function setupDestinationCards(map: TicketToRideMap, stock: Stock) {
+export function setupDestinationCards(map: TicketToRideMap, stock: Stock) {
     const destinations = getDestinations(map);
     destinations.forEach(destination => {
         const file = `${g_gamethemeurl}img/${map.code}/destinations-${destination.type}-${destination.setTypeArg}.jpg`;  
@@ -27,7 +30,7 @@ const BLACK = 6;
 const RED = 7;
 const GREEN = 8;
 
-function getColor(color: number, type: 'route' | 'train-car') {
+export function getColor(color: number, type: 'route' | 'train-car') {
     switch (color) {
         case 0: return type == 'route' ? _('Gray') : _('Locomotive');
         case 1: return _('Pink');
@@ -41,7 +44,7 @@ function getColor(color: number, type: 'route' | 'train-car') {
     }
 }
 
-function setupTrainCarCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
+export function setupTrainCarCardDiv(cardDiv: HTMLDivElement, cardTypeId) {
     cardDiv.title = getColor(Number(cardTypeId), 'train-car');
 }
 
@@ -69,7 +72,7 @@ function getDestinations(map: TicketToRideMap): DestinationCard[] {
     return destinations;
 }
 
-function setupDestinationCardDiv(game: TicketToRideGame, cardDiv: HTMLDivElement, cardUniqueId: number) {
+export function setupDestinationCardDiv(game: TicketToRideGame, cardDiv: HTMLDivElement, cardUniqueId: number) {
     const destinations = getDestinations(game.getMap());
     const destination = destinations.find(d => d.uniqueId == cardUniqueId);
     cardDiv.title = `${dojo.string.substitute(_('${from} to ${to}'), {
@@ -78,7 +81,7 @@ function setupDestinationCardDiv(game: TicketToRideGame, cardDiv: HTMLDivElement
     })}, ${Array.isArray(destination.points) ? destination.points.join(' / ') : destination.points} ${_('points')}`;
 }
 
-function getBackgroundInlineStyleForDestination(map: TicketToRideMap, destination: Destination) {
+export function getBackgroundInlineStyleForDestination(map: TicketToRideMap, destination: Destination) {
     const setTypeArg = Math.floor(destination.type_arg / 100);
     let file = `destinations-${destination.type}-${setTypeArg}.jpg`;
 

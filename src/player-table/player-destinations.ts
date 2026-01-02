@@ -1,10 +1,13 @@
+import { DestinationCompleteAnimation } from "../destination-animation";
+import { getBackgroundInlineStyleForDestination, setupDestinationCardDiv, DESTINATION_CARD_SHIFT, CARD_HEIGHT } from "../stock-utils";
+import { Destination, TicketToRideGame, TicketToRidePlayer, Route } from "../tickettoride.d";
 
-const IMAGE_ITEMS_PER_ROW = 10;
+export const IMAGE_ITEMS_PER_ROW = 10;
 
 /** 
  * Player's destination cards.
  */ 
-class PlayerDestinations {
+export class PlayerDestinations {
     public playerId: number;
     /** Highlighted destination on the map */ 
     private selectedDestination: Destination | null = null;
@@ -26,7 +29,7 @@ class PlayerDestinations {
         <div id="player-table-${player.id}-destinations-done" class="player-table-destinations-column done"></div>
         `;
 
-        dojo.place(html, `player-table-${player.id}-destinations`);
+        document.getElementById(`player-table-${player.id}-destinations`).insertAdjacentHTML('beforeend', html);
 
         this.addDestinations(destinations);
         destinations.filter(destination => completedDestinations.some(d => d.id == destination.id)).forEach(destination => 
@@ -46,7 +49,7 @@ class PlayerDestinations {
             <div id="destination-card-${destination.id}" class="destination-card" style="${getBackgroundInlineStyleForDestination(this.game.getMap(), destination)}"></div>
             `;
 
-            dojo.place(html, `player-table-${this.playerId}-destinations-todo`);
+            document.getElementById(`player-table-${this.playerId}-destinations-todo`).insertAdjacentHTML('beforeend', html);
             
             const card = document.getElementById(`destination-card-${destination.id}`) as HTMLDivElement;
             setupDestinationCardDiv(this.game, card, destination.type * 1000 + destination.type_arg);
@@ -122,7 +125,7 @@ class PlayerDestinations {
      * Mark a destination as complete.
      */ 
     public markDestinationComplete(destination: Destination, destinationRoutes?: Route[]) {
-        if (destinationRoutes && !(document.visibilityState === 'hidden' || (this.game as any).instantaneousMode)) {
+        if (destinationRoutes && this.game.bga.gameui.bgaAnimationsActive()) {
             this.markDestinationCompleteAnimation(destination, destinationRoutes);
         } else {
             this.markDestinationCompleteNoAnimation(destination);
@@ -189,7 +192,7 @@ class PlayerDestinations {
      * Add an animation to the card (when it is created).
      */ 
     private addAnimationFrom(card: HTMLElement, from: HTMLElement) {
-        if (document.visibilityState === 'hidden' || (this.game as any).instantaneousMode) {
+        if (!this.game.bga.gameui.bgaAnimationsActive()) {
             return;
         }
 

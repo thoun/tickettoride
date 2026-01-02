@@ -1,9 +1,12 @@
+import { TrainCar } from "../tickettoride.d";
+import { StateHandler } from "./state-handler";
+
 interface EnteringDrawSecondCardArgs {
     availableVisibleCards: TrainCar[];
     maxHiddenCardsPick: number;
 }
 
-class DrawSecondCardState extends StateHandler<EnteringDrawSecondCardArgs> {
+export class DrawSecondCardState extends StateHandler<EnteringDrawSecondCardArgs> {
     public match(): string { return `drawSecondCard`; }
 
     /**

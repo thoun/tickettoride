@@ -1,3 +1,7 @@
+import { CROSSHAIR_SIZE } from "../player-table/player-train-cars";
+import { getColor } from "../stock-utils";
+import { Route, TicketToRideMap, TicketToRideGame, TicketToRidePlayer, ClaimedRoute, RouteSpace, Destination } from "../tickettoride.d";
+
 const DRAG_AUTO_ZOOM_DELAY = 2000;
 
 const SIDES = ['left', 'right', 'top', 'bottom'];
@@ -142,7 +146,7 @@ class InMapZoomManager {
 /** 
  * Map creation and in-map zoom handler.
  */ 
-class TtrMap {
+export class TtrMap {
     private scale: number;
     private inMapZoomManager: InMapZoomManager;
     private resizedDiv: HTMLDivElement;
@@ -166,23 +170,23 @@ class TtrMap {
         illustration: number,
     ) {
         // map border
-        dojo.place(`
+        document.getElementById('map').insertAdjacentHTML('afterbegin', `
             <div class="illustration" data-illustration="${illustration}"></div>
             <div id="cities"></div>
             <div id="route-spaces"></div>
             <div id="train-cars"></div>
-        `, 'map', 'first');
-        SIDES.forEach(side => dojo.place(`<div class="side ${side}"></div>`, 'map-and-borders'));
-        CORNERS.forEach(corner => dojo.place(`<div class="corner ${corner}"></div>`, 'map-and-borders'));
-        map.bigCities.forEach(bigCity => dojo.place(`<div class="big-city" style="left: ${bigCity.x}px; top: ${bigCity.y}px; width: ${bigCity.width}px;"></div>`, 'cities')); 
+        `);
+        SIDES.forEach(side => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="side ${side}"></div>`));
+        CORNERS.forEach(corner => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="corner ${corner}"></div>`));
+        map.bigCities.forEach(bigCity => document.getElementById('cities').insertAdjacentHTML('beforeend', `<div class="big-city" style="left: ${bigCity.x}px; top: ${bigCity.y}px; width: ${bigCity.width}px;"></div>`)); 
 
         Object.entries(map.cities).forEach(entry => {
             const id = Number(entry[0]);
             const city = entry[1];
-            dojo.place(`<div id="city${id}" class="city" 
+            document.getElementById('cities').insertAdjacentHTML('beforeend', `<div id="city${id}" class="city" 
                 style="transform: translate(${city.x}px, ${city.y}px)"
                 title="${game.getCityName(id)}"
-            ></div>`, 'cities')
+            ></div>`);
         });
 
         this.createRouteSpaces('route-spaces');
@@ -215,11 +219,11 @@ class TtrMap {
                     title += ` (${_("${number} locomotive(s) required").replace('${number}', `${route.locomotives}`)})`;
                 }  
                 
-                dojo.place(`<div id="${destination}-route${route.id}-space${spaceIndex}" class="route-space ${route.tunnel ? 'tunnel' : ''}" 
+                document.getElementById(destination).insertAdjacentHTML('beforeend', `<div id="${destination}-route${route.id}-space${spaceIndex}" class="route-space ${route.tunnel ? 'tunnel' : ''}" 
                     style="transform: translate(${space.x + shiftX}px, ${space.y + shiftY}px) rotate(${space.angle}deg);"
                     title="${title}"
                     data-route="${route.id}" data-color="${route.color}"
-                ></div>`, destination);
+                ></div>`);
                 const spaceDiv = document.getElementById(`${destination}-route${route.id}-space${spaceIndex}`);
                 if (destination == 'route-spaces') {
                     this.setSpaceClickEvents(spaceDiv, route);
@@ -331,7 +335,7 @@ class TtrMap {
                         if (spaceDiv) {
                             spaceDiv.classList.add('forbidden');
                             this.game.setTooltip(spaceDiv.id, `<strong><span style="color: darkred">${_('Important Note:')}</span> 
-                            ${ (this.game as any).gamedatas.map.minimumPlayerForDoubleRoutes <= 3 ?
+                            ${ this.game.gamedatas.map.minimumPlayerForDoubleRoutes <= 3 ?
                                 _('In 2 player games, only one of the Double-Routes can be used.') :
                                 _('In 2 or 3 player games, only one of the Double-Routes can be used.')
                             }</strong>`);
@@ -394,19 +398,19 @@ class TtrMap {
         const wagonHtml = `<div id="${id}" class="wagon angle${angleClassNumber} ${phantom ? 'phantom' : ''} ${space.top ? 'top' : ''}" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}" data-xy="${xy}" style="transform: translate(${x}px, ${y}px)"></div>`;
         // we consider a wagon must be more visible than another if its X + Y is > as the other
         if (!alreadyPlacedWagons.length) {
-            dojo.place(wagonHtml, 'train-cars');
+            document.getElementById('train-cars').insertAdjacentHTML('beforeend', wagonHtml);
         } else {
             let placed = false;
             for (let i = 0; i < alreadyPlacedWagons.length; i++) {
                 if (Number(alreadyPlacedWagons[i].dataset.xy) > xy) {
-                    dojo.place(wagonHtml, alreadyPlacedWagons[i].id, 'before');
+                    document.getElementById(alreadyPlacedWagons[i].id).insertAdjacentHTML('beforebegin', wagonHtml);
                     placed = true;
                     break;
                 }
             }
 
             if (!placed) {
-                dojo.place(wagonHtml, 'train-cars');
+                document.getElementById('train-cars').insertAdjacentHTML('beforeend', wagonHtml);
             }
         }
         
@@ -434,10 +438,10 @@ class TtrMap {
             route.spaces.forEach((space, spaceIndex) => {
                 setTimeout(() => {
                     this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute);
-                    playSound(`ttr-placed-train-car`);
+                    this.game.bga.sounds.play(`ttr-placed-train-car`);
                 }, 200 * spaceIndex);
             });
-            (this.game as any).disableNextMoveSound();
+            this.game.bga.gameui.disableNextMoveSound();
         } else {
             route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute));
         }
@@ -493,7 +497,7 @@ class TtrMap {
         const screenRatio = document.getElementById('game_play_area').clientWidth / (window.innerHeight - 80);
         const leftDistance = Math.abs(LEFT_RATIO - screenRatio);
         const bottomDistance = Math.abs(BOTTOM_RATIO - screenRatio);
-        const left = leftDistance < bottomDistance || (this.game as any).isSpectator;
+        const left = leftDistance < bottomDistance || this.game.bga.players.isCurrentPlayerSpectator();
         this.game.setPlayerTablePosition(left);
 
         const gameWidth = (left ? PLAYER_WIDTH : 0) + MAP_WIDTH + DECK_WIDTH;
@@ -685,7 +689,7 @@ class TtrMap {
      * Set outline for train cars on the map, according to preferences.
      */ 
     public setOutline() {
-        const preference = Number((this.game as any).prefs[203]?.value);
+        const preference = Number(this.game.bga.userPreferences.get(203));
         const outline = preference === 1 || (preference === 2 && this.mapDiv?.getBoundingClientRect().width < 1000);
         this.mapDiv.dataset.bigShadows = outline.toString();
     }

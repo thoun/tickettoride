@@ -1,9 +1,11 @@
-const CROSSHAIR_SIZE = 20;
+import { Route, TicketToRideGame, TicketToRidePlayer, TrainCar } from "../tickettoride.d";
+
+export const CROSSHAIR_SIZE = 20;
 
 /** 
  * Player's train car cards.
  */ 
-class PlayerTrainCars {
+export class PlayerTrainCars {
     public playerId: number;
     private left: boolean = true;
     private route: Route | null = null;
@@ -121,12 +123,12 @@ class PlayerTrainCars {
     private getGroup(type: number) {
         let group = document.getElementById(`train-car-group-${type}`);
         if (!group) {
-            dojo.place(`
+            document.getElementById(`player-table-${this.playerId}-train-cars`).insertAdjacentHTML(type == 0 ? 'afterbegin' : 'beforeend', `
             <div id="train-car-group-${type}" class="train-car-group" data-type="${type}">
                 <div id="train-car-group-${type}-counter" class="train-car-group-counter">0</div>
                 <div id="train-car-group-${type}-cards" class="train-car-cards"></div>
             </div>
-            `, `player-table-${this.playerId}-train-cars`, type == 0 ? 'first' : 'last');
+            `);
             this.updateCounters();
 
             group = document.getElementById(`train-car-group-${type}`);
@@ -235,7 +237,7 @@ class PlayerTrainCars {
      * Add an animation to the card (when it is created).
      */ 
     private addAnimationFrom(card: HTMLElement, group: HTMLElement, from: HTMLElement, deg: number, degWithColorBlind: number) {
-        if (document.visibilityState === 'hidden' || (this.game as any).instantaneousMode) {
+        if (!this.game.bga.gameui.bgaAnimationsActive()) {
             return;
         }
 

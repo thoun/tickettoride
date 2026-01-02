@@ -1,19 +1,23 @@
+import { animateCardToCounterAndDestroy } from "../slide-utils";
+import { TicketToRideGame, TrainCar } from "../tickettoride.d";
+import { VisibleCardSpot } from "./visible-card-spot";
+
 const DBL_CLICK_TIMEOUT = 300;
 
 /** 
  * Level of cards in deck indicator.
  */ 
-class Gauge {
+export class Gauge {
     private levelDiv: HTMLDivElement;
 
     constructor(containerId: string,
         className: string,
         private max: number,
     ) {
-        dojo.place(`
+        document.getElementById(containerId).insertAdjacentHTML('beforeend', `
         <div id="gauge-${className}" class="gauge ${className}">
             <div class="inner" id="gauge-${className}-level"></div>
-        </div>`, containerId);
+        </div>`);
 
         this.levelDiv = document.getElementById(`gauge-${className}-level`) as HTMLDivElement;
     }
@@ -26,7 +30,7 @@ class Gauge {
 /** 
  * Selection of new train cars.
  */ 
-class TrainCarSelection {
+export class TrainCarSelection {
     public visibleCardsSpots: VisibleCardSpot[] = [];
     private trainCarGauge: Gauge;
     private destinationGauge: Gauge;
@@ -150,9 +154,9 @@ class TrainCarSelection {
         } else {
             for (let i=0; i<number; i++) {
                 setTimeout(() => {
-                    dojo.place(`
-                    <div id="animated-train-car-card-0-${i}" class="animated train-car-card from-hidden-pile"></div>
-                    `, document.getElementById('train-car-deck-hidden-pile'));
+                    document.getElementById('train-car-deck-hidden-pile').insertAdjacentHTML('beforeend', `
+                        <div id="animated-train-car-card-0-${i}" class="animated train-car-card from-hidden-pile"></div>
+                    `);
 
                     animateCardToCounterAndDestroy(this.game,
                         `animated-train-car-card-0-${i}`, 
@@ -169,9 +173,9 @@ class TrainCarSelection {
     public moveDestinationCardToPlayerBoard(playerId: number, number: number) {
         for (let i=0; i<number; i++) {
             setTimeout(() => {
-                dojo.place(`
+                document.getElementById('destination-deck-hidden-pile').insertAdjacentHTML('beforeend', `
                 <div id="animated-destination-card-${i}" class="animated-destination-card"></div>
-                `, 'destination-deck-hidden-pile');
+                `);
 
                 animateCardToCounterAndDestroy(this.game,
                     `animated-destination-card-${i}`, 
@@ -206,15 +210,15 @@ class TrainCarSelection {
      */ 
      public showTunnelCards(tunnelCards: TrainCar[]) {
         if (tunnelCards?.length) {
-            dojo.place(`<div id="tunnel-cards"></div>`, 'train-car-deck-hidden-pile');
+            document.getElementById('train-car-deck-hidden-pile').insertAdjacentHTML('beforeend', `<div id="tunnel-cards"></div>`);
             tunnelCards.forEach((card, index) => {
-                dojo.place(`<div id="tunnel-card-${index}" class="train-car-card tunnel-card animated" data-color="${card.type}"></div>`, 'tunnel-cards');
+                document.getElementById('tunnel-cards').insertAdjacentHTML('beforeend', `<div id="tunnel-card-${index}" class="train-car-card tunnel-card animated" data-color="${card.type}"></div>`);
                 const element = document.getElementById(`tunnel-card-${index}`);
-                const shift = 75 * ((this.game as any).prefs[205]?.value == 2 ? -1 : 1);
+                const shift = 75 * (this.game.bga.userPreferences.get(205) == 2 ? -1 : 1);
                 setTimeout(() => element.style.transform = `translateY(${105 * (index - 1) + shift}px) scale(0.6)`);
             });
         } else {
-            (this.game as any).fadeOutAndDestroy('tunnel-cards');
+            this.game.bga.gameui.fadeOutAndDestroy('tunnel-cards');
             //document.getElementById('tunnel-cards')?.remove();
         }
     }

@@ -1,7 +1,9 @@
+import { TicketToRideGame } from "./tickettoride.d";
+
 /**
  * Animation to move a card to a player's counter (the destroy animated card).
  */ 
-function animateCardToCounterAndDestroy(game: TicketToRideGame, cardOrCardId: string | HTMLElement, destinationId: string) {
+export function animateCardToCounterAndDestroy(game: TicketToRideGame, cardOrCardId: string | HTMLElement, destinationId: string) {
     const card = typeof(cardOrCardId) === 'string' ? document.getElementById(cardOrCardId) : cardOrCardId;
     card.classList.add('animated', 'transform-origin-top-left');
     const cardBR = card.getBoundingClientRect();

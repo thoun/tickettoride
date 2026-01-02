@@ -1,4 +1,9 @@
-interface Card {
+import { TtrMap } from "./map/map";
+import { PlayerTable } from "./player-table/player-table";
+import { TrainCarSelection } from "./train-car-deck/train-car-deck";
+import { WagonsAnimation } from "./wagons-animation";
+
+export interface Card {
     id: number;
     type: number;
     type_arg: number;
@@ -6,23 +11,23 @@ interface Card {
     location_arg: number;
 }
 
-interface TrainCar extends Card {
+export interface TrainCar extends Card {
 }
 
-interface Destination extends Card {
+export interface Destination extends Card {
     from: number;
     to: number;
     points: number;
 }
 
-interface RouteSpace {
+export interface RouteSpace {
     x: number;
     y: number;
     angle: number;
     top: boolean;
 }
 
-interface Route {
+export interface Route {
     id: number;
     from: number;
     to: number;
@@ -33,12 +38,12 @@ interface Route {
     tunnel: boolean;
 }
 
-interface ClaimedRoute {
+export interface ClaimedRoute {
     routeId: number;
     playerId: number;
 }
 
-interface TicketToRidePlayer extends Player {
+export interface TicketToRidePlayer extends Player {
     playerNo: number;
     trainCarsCount: number;
     destinationsCount: number;
@@ -50,20 +55,20 @@ interface TicketToRidePlayer extends Player {
     longestPathLength: number;
 }
 
-interface City {
+export interface City {
     id: number;
     name: string;
     x: number;
     y: number;
 }
 
-interface BigCity {
+export interface BigCity {
     x: number;
     y: number;
     width: number;
 }
 
-interface TicketToRideMap {
+export interface TicketToRideMap {
     code: string;
     cities: { [id: number]: City };
     routes: { [id: number]: Route };
@@ -84,7 +89,7 @@ interface TicketToRideMap {
  * Your game interfaces
  */
 
-interface TicketToRideGamedatas {
+export interface TicketToRideGamedatas {
     map: TicketToRideMap;
     current_player_id: string;
     decision: {decision_type: string};
@@ -119,10 +124,14 @@ interface TicketToRideGamedatas {
     showTurnOrder: boolean;
 }
 
-interface TicketToRideGame extends GameGui<TicketToRideGamedatas> {
+export interface TicketToRideGame{
     trainCarSelection: TrainCarSelection;
     playerTable: PlayerTable | null;
     map: TtrMap;
+    destinationCardCounters: Counter[];
+
+    bga: Bga;
+    gamedatas: TicketToRideGamedatas;
 
     getMap(): TicketToRideMap;
     getCityName(to: number): string;
@@ -154,7 +163,7 @@ interface TicketToRideGame extends GameGui<TicketToRideGamedatas> {
     setActionBarChooseAction(fromCancel: boolean): void;
 }
 
-interface EnteringChooseDestinationsArgs {
+export interface EnteringChooseDestinationsArgs {
     _private?: {
         destinations: Destination[];
     };
@@ -162,19 +171,19 @@ interface EnteringChooseDestinationsArgs {
     minimum: number;
 }
 
-interface TunnelAttempt {    
+export interface TunnelAttempt {    
     routeId: number;
     color: number;
     extraCards: number;
     tunnelCards: TrainCar[];
 }
 
-interface NotifPointsArgs {
+export interface NotifPointsArgs {
     playerId: number;
     points: number;
 }
 
-interface NotifDestinationsPickedArgs {
+export interface NotifDestinationsPickedArgs {
     playerId: number;
     number: number;
     count: number;
@@ -184,7 +193,7 @@ interface NotifDestinationsPickedArgs {
     };
 }
 
-interface NotifTrainCarsPickedArgs {
+export interface NotifTrainCarsPickedArgs {
     playerId: number;
     count: number;
     number: number;
@@ -193,57 +202,57 @@ interface NotifTrainCarsPickedArgs {
     origin: number; // 0 for hidden, else spot number
 }
 
-interface NotifNewCardsOnTableArgs {
+export interface NotifNewCardsOnTableArgs {
     spotsCards: { [spot: number]: TrainCar | null };
     remainingTrainCarsInDeck: number;
     locomotiveRefill: boolean;
 }
 
-interface NotifClaimedRouteArgs {
+export interface NotifClaimedRouteArgs {
     playerId: number;
     route: Route;
     removeCards: TrainCar[];
     remainingTrainCars: number;
 }
 
-interface NotifDestinationCompletedArgs {
+export interface NotifDestinationCompletedArgs {
     playerId: number;
     destination: Destination;
     destinationRoutes: Route[];
 }
 
-interface NotifFreeTunnelArgs {
+export interface NotifFreeTunnelArgs {
     tunnelCards: TrainCar[];
 }
 
-interface NotifBestScoreArgs {
+export interface NotifBestScoreArgs {
     bestScore: number;
 }
 
-interface NotifScorePointArgs {
+export interface NotifScorePointArgs {
     playerId: number;
     points: number;
 }
 
-interface NotifScoreDestinationArgs {
+export interface NotifScoreDestinationArgs {
     playerId: number;
     points: number;
 }
 
-interface NotifLongestPathArgs {
+export interface NotifLongestPathArgs {
     playerId: number;
     length: number;
     routes: Route[];
 }
 
-interface NotifMandalaRoutesArgs {
+export interface NotifMandalaRoutesArgs {
     playerId: number;
     destination: Destination;
     routes: Route[];
 }
 
 
-interface NotifBadgeArgs {
+export interface NotifBadgeArgs {
     playerId: number;
     length: number;
 }

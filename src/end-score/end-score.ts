@@ -1,10 +1,14 @@
-declare const playSound;
+import { DestinationCompleteAnimation } from "../destination-animation";
+import { LongestPathAnimation } from "../longest-path-animation";
+import { MandalaRoutesAnimation } from "../mandala-routes-animation";
+import { getBackgroundInlineStyleForDestination } from "../stock-utils";
+import { TicketToRideGame, TicketToRidePlayer, Destination, Route } from "../tickettoride.d";
 
 /**
  * End score board.
  * It will start empty, and notifications will update it and start animations one by one.
  */ 
-class EndScore {
+export class EndScore {
     /** Player scores (key is player id) */ 
     private scoreCounters: Counter[] = [];
     /** Unrevealed destinations counters (key is player id) */ 
@@ -26,7 +30,7 @@ class EndScore {
         players.forEach(player => {
             const playerId = Number(player.id);
 
-            dojo.place(`<tr id="score${player.id}">
+            document.getElementById('score-table-body').insertAdjacentHTML('beforeend', `<tr id="score${player.id}">
                 <td id="score-name-${player.id}" class="player-name" style="color: #${player.color}">${player.name}<div id="bonus-card-icons-${player.id}" class="bonus-card-icons"></div></td>
                 <td id="destinations-score-${player.id}" class="destinations">
                     <div class="icons-grid">
@@ -39,11 +43,11 @@ class EndScore {
                     <div id="train-image-${player.id}" class="train-image" data-player-color="${player.color}"></div>
                 </td>
                 <td id="end-score-${player.id}" class="total"></td>
-            </tr>`, 'score-table-body');
+            </tr>`);
 
             const destinationCounter: Counter = new ebg.counter();
             destinationCounter.create(`destination-counter-${player.id}`);
-            destinationCounter.setValue(fromReload ? 0 : (this.game as any).destinationCardCounters[player.id].getValue());
+            destinationCounter.setValue(fromReload ? 0 : this.game.destinationCardCounters[player.id].getValue());
             this.destinationCounters[playerId] = destinationCounter;
             
             const completedDestinationCounter: Counter = new ebg.counter();
@@ -143,8 +147,8 @@ class EndScore {
             `${destinationRoutes ? 'completed' : 'uncompleted'}-destination-counter-${playerId}`,
             {
                 change: () => {
-                    playSound(`ttr-${destinationRoutes ? 'completed' : 'uncompleted'}-end`);
-                    (this.game as any).disableNextMoveSound();
+                    this.game.bga.sounds.play(`ttr-${destinationRoutes ? 'completed' : 'uncompleted'}-end`);
+                    this.game.bga.gameui.disableNextMoveSound();
                 },
 
                 end: endFunction,
@@ -189,8 +193,8 @@ class EndScore {
             destination,
             {
                 end: () => {
-                    //playSound(`ttr-longest-line-scoring`);
-                    //(this.game as any).disableNextMoveSound();
+                    //this.game.bga.sounds.play(`ttr-longest-line-scoring`);
+                    //this.game.bga.gameui.disableNextMoveSound();
                 }
             }
         );
@@ -214,8 +218,8 @@ class EndScore {
             playerColor,
             {
                 end: () => {
-                    playSound(`ttr-longest-line-scoring`);
-                    (this.game as any).disableNextMoveSound();
+                    this.game.bga.sounds.play(`ttr-longest-line-scoring`);
+                    this.game.bga.gameui.disableNextMoveSound();
                 }
             }
         );
@@ -228,7 +232,7 @@ class EndScore {
      * Add Globetrotter badge to the Globetrotter winner(s).
      */ 
     public setGlobetrotterWinner(playerId: number | string, length: number) {
-        dojo.place(`<div id="globetrotter-bonus-card-${playerId}" class="globetrotter bonus-card bonus-card-icon"></div>`, `bonus-card-icons-${playerId}`);
+        document.getElementById(`bonus-card-icons-${playerId}`).insertAdjacentHTML('beforeend', `<div id="globetrotter-bonus-card-${playerId}" class="globetrotter bonus-card bonus-card-icon"></div>`);
 
         this.game.setTooltip(`globetrotter-bonus-card-${playerId}`, `
         <div><strong>${_('Most Completed Tickets')} : ${length}</strong></div>
@@ -241,7 +245,7 @@ class EndScore {
      * Add longest path badge to the longest path winner(s).
      */ 
     public setLongestPathWinner(playerId: number | string, length: number) {
-        dojo.place(`<div id="longest-path-bonus-card-${playerId}" class="longest-path bonus-card bonus-card-icon"></div>`, `bonus-card-icons-${playerId}`);
+        document.getElementById(`bonus-card-icons-${playerId}`).insertAdjacentHTML('beforeend', `<div id="longest-path-bonus-card-${playerId}" class="longest-path bonus-card bonus-card-icon"></div>`);
 
         this.game.setTooltip(`longest-path-bonus-card-${playerId}`, `
         <div><strong>${_('Longest path')} : ${length}</strong></div>

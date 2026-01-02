@@ -1,4 +1,7 @@
-interface EnteringConfirmTunnelArgs {
+import { Route } from "../tickettoride.d";
+import { StateHandler } from "./state-handler";
+
+export interface EnteringChooseActionArgs {
     possibleRoutes: Route[];
     costForRoute: { [routeId: number]: { [color: number]: number[] } };
     maxHiddenCardsPick: number;
@@ -7,15 +10,15 @@ interface EnteringConfirmTunnelArgs {
     canPass: boolean;
 }
 
-class ChooseActionState extends StateHandler<EnteringConfirmTunnelArgs> {
+export class ChooseActionState extends StateHandler<EnteringChooseActionArgs> {
     public match(): string { return `chooseAction`; }
 
     /**
      * Show selectable routes, and make train car draggable.
      */ 
-    public onEnteringState(args: EnteringConfirmTunnelArgs, isCurrentPlayerActive: boolean) {
+    public onEnteringState(args: EnteringChooseActionArgs, isCurrentPlayerActive: boolean) {
         if (!args.canTakeTrainCarCards) {
-            this.game.statusBar.setTitle(isCurrentPlayerActive ?
+            this.bga.statusBar.setTitle(isCurrentPlayerActive ?
                     _('${you} must claim a route or draw destination tickets') :
                     _('${actplayer} must claim a route or draw destination tickets'),
                 args);
@@ -29,7 +32,7 @@ class ChooseActionState extends StateHandler<EnteringConfirmTunnelArgs> {
         this.game.playerTable?.setSelectable(isCurrentPlayerActive);
     }
 
-    public onLeavingState(args: EnteringConfirmTunnelArgs, isCurrentPlayerActive: boolean) {
+    public onLeavingState(args: EnteringChooseActionArgs, isCurrentPlayerActive: boolean) {
         this.game.map.setSelectableRoutes(false, []);
         this.game.playerTable?.setDraggable(false);
         this.game.playerTable?.setSelectable(false);   
@@ -38,7 +41,7 @@ class ChooseActionState extends StateHandler<EnteringConfirmTunnelArgs> {
         (Array.from(document.getElementsByClassName('train-car-group hide')) as HTMLDivElement[]).forEach(group => group.classList.remove('hide'));
     }
 
-    public onUpdateActionButtons(args: EnteringConfirmTunnelArgs, isCurrentPlayerActive: boolean) {
+    public onUpdateActionButtons(args: EnteringChooseActionArgs, isCurrentPlayerActive: boolean) {
         if (isCurrentPlayerActive) {
             if (args.maxDestinationsPick) {
                 document.getElementById('destination-deck-hidden-pile').classList.add('selectable');

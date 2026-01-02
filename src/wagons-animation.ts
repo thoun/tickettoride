@@ -1,8 +1,9 @@
+import { TicketToRideGame, Route } from "./tickettoride.d";
 
 /**
  * Animation with highlighted wagons.
  */ 
-abstract class WagonsAnimation {
+export abstract class WagonsAnimation {
     protected wagons: Element[] = [];
     protected zoom: number;
     private shadowDiv;

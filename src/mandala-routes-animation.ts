@@ -1,7 +1,10 @@
+import { TicketToRideGame, Route, Destination } from "./tickettoride.d";
+import { WagonsAnimation } from "./wagons-animation";
+
 /**
  * Longest path animation : wagons used by longest path are highlighted, and length is displayed over the map.
  */ 
-class MandalaRoutesAnimation extends WagonsAnimation {
+export class MandalaRoutesAnimation extends WagonsAnimation {
     private cities: HTMLElement[] = [];
 
     constructor(

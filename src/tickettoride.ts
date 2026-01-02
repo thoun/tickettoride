@@ -1,20 +1,22 @@
-declare const g_img_preload;
+import { DestinationSelection } from "./destination-deck/destination-deck";
+import { EndScore } from "./end-score/end-score";
+import { TtrMap } from "./map/map";
+import { PlayerTable } from "./player-table/player-table";
+import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseAction";
+import { ConfirmTunnelState } from "./states/ConfirmTunnel";
+import { DrawSecondCardState } from "./states/DrawSecondCard";
+import { StateHandler } from "./states/state-handler";
+import { getColor } from "./stock-utils";
+import { Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer } from "./tickettoride.d";
+import { TrainCarSelection } from "./train-car-deck/train-car-deck";
+import { WagonsAnimation } from "./wagons-animation";
 
 const ANIMATION_MS = 500;
-const SCORE_MS = 1500;
-
-const isDebug = window.location.host == 'studio.boardgamearena.com';
-const log = isDebug ? console.log.bind(window.console) : function () { };
 
 const ACTION_TIMER_DURATION = 8;
 
-// @ts-ignore
-GameGui = (function () { // this hack required so we fake extend GameGui
-  function GameGui() {}
-  return GameGui;
-})();
-
-class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRideGame {
+export class Game implements TicketToRideGame {
+    public bga: Bga;
     public gamedatas: TicketToRideGamedatas;
 
     public map: TtrMap;
@@ -25,7 +27,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
 
     private trainCarCounters: Counter[] = [];
     private trainCarCardCounters: Counter[] = [];
-    private destinationCardCounters: Counter[] = [];
+    public destinationCardCounters: Counter[] = [];
     private completedDestinationsCounter: Counter;
 
     private animations: WagonsAnimation[] = [];
@@ -39,12 +41,13 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
 
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
-    constructor() {
-        super();
+    constructor(bga: Bga) {
+        this.bga = bga;
+
         this.states.push(
-            new ChooseActionState(this),
-            new DrawSecondCardState(this),
-            new ConfirmTunnelState(this),
+            new ChooseActionState(this, bga),
+            new DrawSecondCardState(this, bga),
+            new ConfirmTunnelState(this, bga),
         );
     }
     
@@ -62,6 +65,8 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     */
 
     public setup(gamedatas: TicketToRideGamedatas) {
+        this.gamedatas = gamedatas;
+        
         const map = this.getMap();
         Object.entries(map.cities).forEach(entry => entry[1].id = Number(entry[0]));
         Object.entries(map.routes).forEach(entry => entry[1].id = Number(entry[0]));
@@ -69,20 +74,16 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
 
         document.getElementById(`score`).insertAdjacentHTML(`beforebegin`, `<link rel="stylesheet" type="text/css" href="${g_gamethemeurl}img/${map.code}/map.css"/>`);
 
-        /*this.ensureSpecificGameImageLoading([
-            `${map.code}/map.jpg`,
-            ...map.preloadImages.map(filename => `${map.code}/${filename}`)
-        ]);*/
-        g_img_preload.push(...[
+        this.bga.images.preloadImages([
             `${map.code}/map.jpg`,
             ...map.preloadImages.map(filename => `${map.code}/${filename}`)
         ]);
 
-        log("Starting game setup");
+        console.log("Starting game setup");
         
         this.gamedatas = gamedatas;
 
-        log('gamedatas', gamedatas);
+        console.log('gamedatas', gamedatas);
 
         this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.map.illustration);
         this.trainCarSelection = new TrainCarSelection(this, 
@@ -110,10 +111,10 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
 
         this.setupNotifications();
 
-        this.onScreenWidthChange = () => this.map.setAutoZoom();
+        this.bga.gameui.onScreenWidthChange = () => this.map.setAutoZoom();
 
         if (this.gamedatas.map.multilingualPdfRulesUrl || this.gamedatas.map.rulesDifferences) {
-            this.statusBar.addActionButton(
+            this.bga.statusBar.addActionButton(
                 _('Rules differences between USA and current map'), 
                 () => this.createRulesPopin(), 
                 { id: 'rules-differences-btn', destination: document.getElementById(`player_boards`) }
@@ -124,7 +125,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
             document.body.classList.add('vertical-map');
         }
 
-        log("Ending game setup");
+        console.log("Ending game setup");
     }
 
     ///////////////////////////////////////////////////
@@ -161,10 +162,10 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     //                  You can use this method to perform some user interface changes at this moment.
     //
     public onEnteringState(stateName: string, args: any) {
-        log('Entering state: '+stateName, args.args);
+        console.log('Entering state: '+stateName, args.args);
 
         if (this.gamedatas.gamestate.type !== 'multipleactiveplayer') {
-            this.getStateByName(stateName)?.onEnteringState(args.args, this.isCurrentPlayerActive());
+            this.getStateByName(stateName)?.onEnteringState(args.args, this.bga.players.isCurrentPlayerActive());
         }
 
         switch (stateName) {
@@ -172,7 +173,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
                 if (args?.args) {
                     const chooseDestinationsArgs = args.args as EnteringChooseDestinationsArgs;
                     const destinations = chooseDestinationsArgs.destinations || chooseDestinationsArgs._private?.destinations;
-                    if (destinations && this.isCurrentPlayerActive()) {
+                    if (destinations && this.bga.players.isCurrentPlayerActive()) {
                         destinations.forEach(destination => this.map.setSelectableDestination(destination, true));
                         this.destinationSelection.setCards(destinations, chooseDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
                         this.destinationSelection.selectionChange();
@@ -189,7 +190,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Show score board.
      */ 
     private onEnteringEndScore(fromReload: boolean = false) {
-        this.removeLastTurnBanner();
+        this.bga.gameArea.removeLastTurnBanner();
 
         document.getElementById('score').style.display = 'flex';
 
@@ -200,9 +201,9 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     //                 You can use this method to perform some user interface changes at this moment.
     //
     public onLeavingState(stateName: string) {
-        log('Leaving state: '+stateName);
+        console.log('Leaving state: '+stateName);
 
-        this.getStateByName(stateName)?.onLeavingState(this.gamedatas.gamestate.args, this.isCurrentPlayerActive());
+        this.getStateByName(stateName)?.onLeavingState(this.gamedatas.gamestate.args, this.bga.players.isCurrentPlayerActive());
 
         switch (stateName) {
             case 'privateChooseInitialDestinations': case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
@@ -223,7 +224,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     public onUpdateActionButtons(stateName: string, args: any) {
         const state = this.getStateByName(stateName);
         if (state) {
-            const isCurrentPlayerActive = this.isCurrentPlayerActive();
+            const isCurrentPlayerActive = this.bga.players.isCurrentPlayerActive();
             if (this.gamedatas.gamestate.type === 'multipleactiveplayer') {
                 state.onEnteringState(args, isCurrentPlayerActive);
             }
@@ -231,19 +232,19 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
         } else if (this.gamedatas.gamestate.type === 'multipleactiveplayer' && this.gamedatas.gamestate.private_state) {
             const leftState = this.states.find(state => state.match(this.gamedatas.gamestate.private_state.name));
             if (leftState) {
-                const isCurrentPlayerActive = this.isCurrentPlayerActive();
+                const isCurrentPlayerActive = this.bga.players.isCurrentPlayerActive();
                 leftState.onLeavingState(this.gamedatas.gamestate.private_state.args, isCurrentPlayerActive);
             }
         }
 
-        if(this.isCurrentPlayerActive()) {
+        if(this.bga.players.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'privateChooseInitialDestinations':
-                    this.addActionButton('chooseInitialDestinations_button', _("Keep selected destinations"), () => this.chooseInitialDestinations());
+                    this.bga.statusBar.addActionButton(_("Keep selected destinations"), () => this.chooseInitialDestinations(), { id: 'chooseInitialDestinations_button' });
                     this.destinationSelection.selectionChange();
                     break;   
                 case 'chooseAdditionalDestinations':
-                    this.addActionButton('chooseAdditionalDestinations_button', _("Keep selected destinations"), () => this.chooseAdditionalDestinations());
+                    this.bga.statusBar.addActionButton(_("Keep selected destinations"), () => this.chooseAdditionalDestinations(), { id: 'chooseAdditionalDestinations_button' });
                     dojo.addClass('chooseAdditionalDestinations_button', 'disabled');
                     break;
             }
@@ -266,10 +267,10 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     }
 
     public setTooltip(id: string, html: string) {
-        this.addTooltipHtml(id, html, this.TOOLTIP_DELAY);
+        this.bga.gameui.addTooltipHtml(id, html, this.TOOLTIP_DELAY);
     }
     public setTooltipToClass(className: string, html: string) {
-        this.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
+        this.bga.gameui.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
     }
       
     /**
@@ -297,15 +298,15 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     }
 
     public isColorBlindMode(): boolean {
-        return this.getGameUserPreference(204) === 1;
+        return this.bga.userPreferences.get(204) === 1;
     }
 
     public getPlayerId(): number {
-        return Number(this.player_id);
+        return this.bga.players.getCurrentPlayerId();
     }
 
     public getPlayerScore(playerId: number): number {
-        return this.scoreCtrl[playerId]?.getValue() ?? Number(this.gamedatas.players[playerId].score);
+        return this.bga.gameui.scoreCtrl[playerId]?.getValue() ?? Number(this.gamedatas.players[playerId].score);
     }
 
     public isDoubleRouteForbidden(): boolean {
@@ -331,7 +332,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
             document.getElementById(`overall_player_board_${player.id}`).dataset.playerColor = player.color;
 
             // public counters
-            dojo.place(`<div class="counters">
+            this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `<div class="counters">
                 <div id="train-car-counter-${player.id}-wrapper" class="counter train-car-counter">
                     <div class="icon train" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> 
                     <span id="train-car-counter-${player.id}"></span>
@@ -344,7 +345,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
                     <div class="icon destination-card"></div> 
                     <span id="completed-destinations-counter-${player.id}">${this.getPlayerId() !== playerId ? '?' : ''}</span>/<span id="destination-card-counter-${player.id}"></span>
                 </div>
-            </div>`, `player_board_${player.id}`);
+            </div>`);
 
             const trainCarCounter = new ebg.counter();
             trainCarCounter.create(`train-car-counter-${player.id}`);
@@ -369,7 +370,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
             }
 
             if (gamedatas.showTurnOrder && Number(gamedatas.gamestate.id) < 30) { // don't show turn order if game is already started (refresh or TB game)
-                dojo.place(`<div class="player-turn-order">${_('Player ${number}').replace('${number}', `<strong>${player.playerNo}</strong>`)}</div>`, `player_board_${player.id}`);
+                this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `<div class="player-turn-order">${_('Player ${number}').replace('${number}', `<strong>${player.playerNo}</strong>`)}</div>`);
             }
         });
 
@@ -382,7 +383,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Update player score.
      */ 
     private setPoints(playerId: number, points: number) {
-        this.scoreCtrl[playerId]?.toValue(points);
+        this.bga.gameui.scoreCtrl[playerId]?.toValue(points);
     }
     
     /** 
@@ -399,7 +400,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
         return (
             route.color == 0 || cardsColor == 0 || route.color == cardsColor
         ) && (
-            (this.gamedatas.gamestate.args as EnteringConfirmTunnelArgs).possibleRoutes.some(pr => pr.id == route.id)
+            (this.gamedatas.gamestate.args as EnteringChooseActionArgs).possibleRoutes.some(pr => pr.id == route.id)
         );
     }
 
@@ -470,11 +471,11 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     }
     
     public selectedColorChanged(selectedColor: number | null) {
-        if(!this.isCurrentPlayerActive() || this.gamedatas.gamestate.name !== 'chooseAction') {
+        if(!this.bga.players.isCurrentPlayerActive() || this.gamedatas.gamestate.name !== 'chooseAction') {
             return;
         }
 
-        const args = this.gamedatas.gamestate.args as EnteringConfirmTunnelArgs;
+        const args = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
         if (selectedColor === null || selectedColor === 0) {
             this.map.setSelectableRoutes(true, args.possibleRoutes);
         } else {
@@ -486,7 +487,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Handle route click.
      */ 
     public clickedRoute(route: Route, needToCheckDoubleRoute?: boolean): void { 
-        if(!this.isCurrentPlayerActive()) {
+        if(!this.bga.players.isCurrentPlayerActive()) {
             return;
         }
 
@@ -546,7 +547,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
             window.clearInterval(this.actionTimerId);
         }
         
-        if (this.getGameUserPreference(207) == 2) {
+        if (this.bga.userPreferences.get(207) == 2) {
             return false;
         }
 
@@ -589,11 +590,11 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
             window.clearInterval(this.actionTimerId);
         }
 
-        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringConfirmTunnelArgs;
-        this.addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), () => this.drawDestinations(), null, null, 'red');
+        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
+        this.bga.gameui.addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), () => this.drawDestinations(), null, null, 'red');
         dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
         if (chooseActionArgs.canPass) {
-            this.addActionButton('pass_button', _("Pass"), () => this.pass());
+            this.bga.statusBar.addActionButton(_("Pass"), () => this.pass());
         }
     }
     
@@ -612,17 +613,17 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
             const label = dojo.string.substitute(_("Use ${color}"), {
                 'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
             });
-            this.addActionButton(`claimRouteWithColor_button${color}`, label, () => this.askRouteClaimConfirmation(route, color));
+            this.bga.gameui.addActionButton(`claimRouteWithColor_button${color}`, label, () => this.askRouteClaimConfirmation(route, color));
         });
 
-        this.addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
+        this.bga.gameui.addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
     }
     
     /**
      * Sets the action bar (title and buttons) for Confirm route claim.
      */
     private setActionBarConfirmRouteClaim(route: Route, color: number) {
-        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringConfirmTunnelArgs;
+        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
         const colors = chooseActionArgs.costForRoute[route.id][color].map(cardColor => `<div class="train-car-color icon" data-color="${cardColor}"></div>`);
         const confirmationQuestion = _("Confirm ${color} route from ${from} to ${to} with ${colors} ?")
             .replace('${color}', getColor(route.color, 'route'))
@@ -632,8 +633,8 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
         this.setChooseActionGamestateDescription(confirmationQuestion);
 
         document.getElementById(`generalactions`).innerHTML = '';
-        this.addActionButton(`confirmRouteClaim-button`, _("Confirm"), () => this.confirmRouteClaim());
-        this.addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
+        this.bga.gameui.addActionButton(`confirmRouteClaim-button`, _("Confirm"), () => this.confirmRouteClaim());
+        this.bga.gameui.addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
         this.startActionTimer(`confirmRouteClaim-button`, ACTION_TIMER_DURATION);
     }
 
@@ -641,7 +642,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Check if player should be asked for a route claim confirmation.
      */
     private confirmRouteClaimActive() {
-        const preferenceValue = this.getGameUserPreference(202);
+        const preferenceValue = this.bga.userPreferences.get(202);
         return preferenceValue === 1 || (preferenceValue === 2 && this.isTouch);
     }
 
@@ -649,7 +650,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Check if player should be asked for the color he wants when he clicks on a double route.
      */
     private askDoubleRouteActive() {
-        const preferenceValue = this.getGameUserPreference(209);
+        const preferenceValue = this.bga.userPreferences.get(209);
         return preferenceValue === 1;
     }
 
@@ -659,9 +660,9 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
 
         document.getElementById(`generalactions`).innerHTML = '';
         [clickedRoute, otherRoute].forEach(route => {
-            this.addActionButton(`claimDoubleRoute${route.id}-button`, `<div class="train-car-color icon" data-color="${route.color}"></div> ${getColor(route.color, 'train-car')}`, () => this.clickedRoute(route, false));
+            this.bga.gameui.addActionButton(`claimDoubleRoute${route.id}-button`, `<div class="train-car-color icon" data-color="${route.color}"></div> ${getColor(route.color, 'train-car')}`, () => this.clickedRoute(route, false));
         });
-        this.addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
+        this.bga.gameui.addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
     }
 
     /**
@@ -712,7 +713,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     public chooseInitialDestinations() {
         const destinationsIds = this.destinationSelection.getSelectedDestinationsIds();
 
-        this.bgaPerformAction('actChooseInitialDestinations', {
+        this.bga.actions.performAction('actChooseInitialDestinations', {
             destinationsIds: destinationsIds.join(',')
         });
     }
@@ -721,14 +722,16 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Pick destinations.
      */ 
     public drawDestinations() {
-        const confirmation = this.getGameUserPreference(206) !== 2;
+        const confirmation = this.bga.userPreferences.get(206) !== 2;
 
         if (confirmation && this.gamedatas.gamestate.args.maxDestinationsPick) {
-            this.confirmationDialog( _('Are you sure you want to take new destinations?'), () => {
-                this.bgaPerformAction('actDrawDestinations');
+            this.bga.dialogs.confirmation( _('Are you sure you want to take new destinations?')).then(result => {
+                if (result) {
+                    this.bga.actions.performAction('actDrawDestinations');
+                }
             }); 
         } else {
-            this.bgaPerformAction('actDrawDestinations');
+            this.bga.actions.performAction('actDrawDestinations');
         }
     }
 
@@ -738,7 +741,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     public chooseAdditionalDestinations() {
         const destinationsIds = this.destinationSelection.getSelectedDestinationsIds();
 
-        this.bgaPerformAction('actChooseAdditionalDestinations', {
+        this.bga.actions.performAction('actChooseAdditionalDestinations', {
             destinationsIds: destinationsIds.join(',')
         });
     }
@@ -749,7 +752,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     public onHiddenTrainCarDeckClick(number: number) {
         const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'actDrawSecondDeckCard' : 'actDrawDeckCards';
         
-        this.bgaPerformAction(action, {
+        this.bga.actions.performAction(action, {
             number
         });
     }
@@ -760,7 +763,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     public onVisibleTrainCarCardClick(id: number) {
         const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'actDrawSecondTableCard' : 'actDrawTableCard';
 
-        this.bgaPerformAction(action, {
+        this.bga.actions.performAction(action, {
             id
         });
     }
@@ -769,7 +772,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Claim a route.
      */ 
     public claimRoute(routeId: number, color: number) {
-        this.bgaPerformAction('actClaimRoute', {
+        this.bga.actions.performAction('actClaimRoute', {
             routeId,
             color
         });
@@ -779,11 +782,11 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Pass (in case of no possible action).
      */ 
     public pass() {
-        this.bgaPerformAction('actPass');
+        this.bga.actions.performAction('actPass');
     }
 
     private isFastEndScoring() {
-        return this.getGameUserPreference(208) == 2;
+        return this.bga.userPreferences.get(208) == 2;
     }
 
     ///////////////////////////////////////////////////
@@ -799,7 +802,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
 
     */
     setupNotifications() {
-        //log( 'notifications subscriptions setup' );
+        //console.log( 'notifications subscriptions setup' );
 
         const skipEndOfGameAnimations = this.isFastEndScoring();
 
@@ -825,10 +828,10 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
 
         notifs.forEach((notif) => {
             dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
-            (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
+            (this.bga.gameui as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
 
-        (this as any).notifqueue.setIgnoreNotificationCheck('trainCarPicked', (notif: Notif<NotifTrainCarsPickedArgs>) => 
+        (this.bga.gameui as any).notifqueue.setIgnoreNotificationCheck('trainCarPicked', (notif: Notif<NotifTrainCarsPickedArgs>) => 
             notif.args.playerId == this.getPlayerId() && !notif.args.cards
         );
     }
@@ -874,8 +877,8 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      */ 
     notif_newCardsOnTable(notif: Notif<NotifNewCardsOnTableArgs>) {
         if (notif.args.locomotiveRefill) {
-            playSound(`ttr-clear-train-car-cards`);
-            this.disableNextMoveSound();
+            this.bga.sounds.play(`ttr-clear-train-car-cards`);
+            this.bga.gameui.disableNextMoveSound();
         }
 
         this.trainCarSelection.setNewCardsOnTable(notif.args.spotsCards, true);
@@ -916,15 +919,15 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
         this.gamedatas.completedDestinations.push(destination);
         this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
 
-        playSound(`ttr-completed-in-game`);
-        this.disableNextMoveSound();
+        this.bga.sounds.play(`ttr-completed-in-game`);
+        this.bga.gameui.disableNextMoveSound();
     }
 
     /** 
      * Show the 3 cards when attempting a tunnel (case withno extra cards required, play automatically).
      */ 
     notif_freeTunnel(notif: Notif<NotifFreeTunnelArgs>) {
-        if (this.bgaAnimationsActive()) {
+        if (this.bga.gameui.bgaAnimationsActive()) {
             this.trainCarSelection.showTunnelCards(notif.args.tunnelCards);
             setTimeout(() => this.trainCarSelection.showTunnelCards([]), 2000);
         }
@@ -934,7 +937,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Show an error message and animate train car counter to show the player can't take the route because he doesn't have enough train cars left.
      */ 
     notif_notEnoughTrainCars() {
-        this.showMessage(_("Not enough train cars left to claim the route."), 'error');
+        this.bga.dialogs.showMessage(_("Not enough train cars left to claim the route."), 'error');
         const animatedElement = document.getElementById(`train-car-counter-${this.getPlayerId()}-wrapper`);
         animatedElement.classList.remove('animate-low-count');
         setTimeout(() => animatedElement.classList.add('animate-low-count'), 1);
@@ -950,7 +953,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
      * Show last turn banner.
      */ 
     notif_lastTurn(animate: boolean = true) {
-        this.addLastTurnBanner(_("This is the final round!"));
+        this.bga.gameArea.addLastTurnBanner(_("This is the final round!"));
     }
     
     /** 
@@ -1011,13 +1014,11 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
     notif_highlightWinnerScore(notif: Notif<NotifLongestPathArgs>) {
         this.endScore?.highlightWinnerScore(notif.args.playerId);
 
-        playSound(`ttr-scoring-end`);
-        this.disableNextMoveSound();
+        this.bga.sounds.play(`ttr-scoring-end`);
+        this.bga.gameui.disableNextMoveSound();
     }
 
-    /* This enable to inject translatable styled things to logs or action bar */
-    /* @Override */
-    public format_string_recursive(log: string, args: any) {
+    public bgaFormatText(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
                 if (typeof args.color == 'number') {
@@ -1043,7 +1044,7 @@ class TicketToRide extends GameGui<TicketToRideGamedatas> implements TicketToRid
         } catch (e) {
             console.error(log,args,"Exception thrown", e.stack);
         }
-        return (this as any).inherited(arguments);
+        return { log, args };
     }
 
     private createRulesPopin()  {

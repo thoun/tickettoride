@@ -1,7 +1,10 @@
+import { TicketToRideGame, Route } from "./tickettoride.d";
+import { WagonsAnimation } from "./wagons-animation";
+
 /**
  * Longest path animation : wagons used by longest path are highlighted, and length is displayed over the map.
  */ 
-class LongestPathAnimation extends WagonsAnimation {
+export class LongestPathAnimation extends WagonsAnimation {
 
     constructor(
         game: TicketToRideGame,
@@ -18,9 +21,9 @@ class LongestPathAnimation extends WagonsAnimation {
     public animate(): Promise<WagonsAnimation> {
         return new Promise(resolve => {
 
-            dojo.place(`
+            document.getElementById('map').insertAdjacentHTML('beforeend', `
             <div id="longest-path-animation" style="color: #${this.playerColor};${this.getCardPosition()}">${this.length}</div>
-            `, 'map');
+            `);
             this.setWagonsVisibility(true);
     
             setTimeout(() => this.endAnimation(resolve), 1900);
