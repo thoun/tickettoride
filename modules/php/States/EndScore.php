@@ -6,8 +6,6 @@ use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\StateType;
 use Bga\Games\TicketToRide\Game;
 
-use function Bga\Games\TicketToRide\debug;
-
 class EndScore extends GameState {
     public function __construct(protected Game $game)
     {

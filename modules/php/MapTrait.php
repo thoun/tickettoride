@@ -225,9 +225,12 @@ trait MapTrait {
             $colorsToTest = [$color];
         } else if ($route->color > 0) {
             $colorsToTest = [$route->color];
-        } else {
-            $colorsToTest = [$color];
         }
+        // if all route spaces are locomotives, you can only pay it with locomotives
+        if ($route->locomotives === $route->number) {
+            $colorsToTest = [0];
+        }
+
         $locomotiveCards = array_filter($trainCarsHand, fn($card) => $card->type == 0);
 
         if (count($locomotiveCards) < $route->locomotives) {
