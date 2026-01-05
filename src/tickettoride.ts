@@ -46,6 +46,8 @@ export class Game implements TicketToRideGame {
             new DrawSecondCardState(this, bga),
             new ConfirmTunnelState(this, bga),
         );
+
+        this.bga.userPreferences.onChange = (id, val) => this.onUserPreferenceChanged(id, val);
     }
     
     /*
@@ -272,9 +274,8 @@ export class Game implements TicketToRideGame {
       
     /**
      * Handle user preferences changes.
-     */ 
-    // @ts-ignore
-    onGameUserPreferenceChanged(prefId: number, prefValue: number) {
+     */
+    onUserPreferenceChanged(prefId: number, prefValue: number) {
         switch (prefId) {
             case 201: // 1 = buttons, 2 = double click to pick 2 cards
                 dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', prefValue == 1);

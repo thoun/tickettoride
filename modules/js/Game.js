@@ -1955,6 +1955,7 @@ class Game {
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
         this.bga = bga;
         this.states.push(new ChooseActionState(this, bga), new DrawSecondCardState(this, bga), new ConfirmTunnelState(this, bga));
+        this.bga.userPreferences.onChange = (id, val) => this.onUserPreferenceChanged(id, val);
     }
     /*
         setup:
@@ -2140,8 +2141,7 @@ class Game {
     /**
      * Handle user preferences changes.
      */
-    // @ts-ignore
-    onGameUserPreferenceChanged(prefId, prefValue) {
+    onUserPreferenceChanged(prefId, prefValue) {
         switch (prefId) {
             case 201: // 1 = buttons, 2 = double click to pick 2 cards
                 dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', prefValue == 1);
