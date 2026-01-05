@@ -2353,7 +2353,7 @@ class Game {
                 const possibleColors = [];
                 const costForRoute = this.gamedatas.gamestate.args.costForRoute[route.id];
                 if (costForRoute) {
-                    for (let i = 0; i < costForRoute.length; i++) {
+                    for (let i = 0; i <= 8; i++) {
                         if (costForRoute[i]) {
                             possibleColors.push(i);
                         }
