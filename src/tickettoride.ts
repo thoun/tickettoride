@@ -13,8 +13,6 @@ import { WagonsAnimation } from "./wagons-animation";
 
 const ANIMATION_MS = 500;
 
-const ACTION_TIMER_DURATION = 8;
-
 export class Game implements TicketToRideGame {
     public bga: Bga;
     public gamedatas: TicketToRideGamedatas;
@@ -35,7 +33,6 @@ export class Game implements TicketToRideGame {
     private isTouch = window.matchMedia('(hover: none)').matches;
     private routeToConfirm: { route: Route, color: number } | null = null;
     private originalTextChooseAction: string;
-    private actionTimerId = null;
 
     private states: StateHandler<any>[] = [];
 
@@ -522,7 +519,15 @@ export class Game implements TicketToRideGame {
             if (selectedColor !== null) {
                 this.askRouteClaimConfirmation(route, selectedColor);
             } else {
-                const possibleColors: number[] = this.playerTable?.getPossibleColors(route) || [];
+                const possibleColors: number[] = [];
+                const costForRoute = this.gamedatas.gamestate.args.costForRoute[route.id];
+                if (costForRoute) {
+                    for (let i = 0; i < costForRoute.length; i++) {
+                        if (costForRoute[i]) {
+                            possibleColors.push(i);
+                        }
+                    }
+                }
                 // do not filter for tunnel, or if locomotive is the only possibility
                 const possibleColorsWithoutLocomotives = route.tunnel || possibleColors.length <= 1 ? 
                     possibleColors : 
@@ -537,37 +542,6 @@ export class Game implements TicketToRideGame {
                 }
             }
         }
-    }
-
-    /**
-     * Timer for Confirm button
-     */
-    private startActionTimer(buttonId: string, time: number) {
-        if (this.actionTimerId) {
-            window.clearInterval(this.actionTimerId);
-        }
-        
-        if (this.bga.userPreferences.get(207) == 2) {
-            return false;
-        }
-
-        const button = document.getElementById(buttonId);
- 
-        const _actionTimerLabel = button.innerHTML;
-        let _actionTimerSeconds = time;
-        const actionTimerFunction = () => {
-          const button = document.getElementById(buttonId);
-          if (button == null) {
-            window.clearInterval(this.actionTimerId);
-          } else if (_actionTimerSeconds-- > 1) {
-            button.innerHTML = _actionTimerLabel + ' (' + _actionTimerSeconds + ')';
-          } else {
-            window.clearInterval(this.actionTimerId);
-            button.click();
-          }
-        };
-        actionTimerFunction();
-        this.actionTimerId = window.setInterval(() => actionTimerFunction(), 1000);
     }
     
     private setChooseActionGamestateDescription(newText?: string) {
@@ -586,13 +560,13 @@ export class Game implements TicketToRideGame {
         if (fromCancel) {
             this.setChooseActionGamestateDescription();
         }
-        if (this.actionTimerId) {
-            window.clearInterval(this.actionTimerId);
-        }
 
         const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
-        this.bga.gameui.addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), () => this.drawDestinations(), null, null, 'red');
-        dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
+        this.bga.statusBar.addActionButton(
+            dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), 
+            () => this.drawDestinations(), 
+            { color: 'alert', disabled: !chooseActionArgs.maxDestinationsPick },
+        );
         if (chooseActionArgs.canPass) {
             this.bga.statusBar.addActionButton(_("Pass"), () => this.pass());
         }
@@ -633,9 +607,8 @@ export class Game implements TicketToRideGame {
         this.setChooseActionGamestateDescription(confirmationQuestion);
 
         document.getElementById(`generalactions`).innerHTML = '';
-        this.bga.gameui.addActionButton(`confirmRouteClaim-button`, _("Confirm"), () => this.confirmRouteClaim());
-        this.bga.gameui.addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
-        this.startActionTimer(`confirmRouteClaim-button`, ACTION_TIMER_DURATION);
+        this.bga.statusBar.addActionButton(_("Confirm"), () => this.confirmRouteClaim(), { id: `confirmRouteClaim-button`, autoclick: this.bga.userPreferences.get(207) != 2 });
+        this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelRouteClaim(), { color: 'secondary' });
     }
 
     /**

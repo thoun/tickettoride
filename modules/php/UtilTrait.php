@@ -8,6 +8,13 @@ use Map;
 require_once(__DIR__.'/objects/train-car.php');
 require_once(__DIR__.'/objects/route.php');
 
+const MAP_LIST = [
+    1 => 'usa',
+    2 => 'europe',
+    3 => 'switzerland',
+    4 => 'india',
+];
+
 trait UtilTrait {
 
 //////////////////////////////////////////////////////////////////////////////
@@ -50,13 +57,7 @@ trait UtilTrait {
 
     function getMapCode(): string {
         $mapOption = (int)$this->getUniqueValueFromDB("SELECT `global_value` FROM `global` where `global_id` = ".MAP_OPTION);
-        return match ($mapOption) {
-            1 => 'usa',
-            2 => 'europe',
-            3 => 'switzerland',
-            4 => 'india',
-            default => Table::getBgaEnvironment() === 'studio' ? 'nordiccountries' : 'usa',
-        };
+        return MAP_LIST[$mapOption] ?? MAP_LIST[/*Table::getBgaEnvironment() === 'studio' ? 3 :*/ 1];
     }
 
     function getMap(): Map {

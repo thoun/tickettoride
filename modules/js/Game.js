@@ -896,30 +896,6 @@ class PlayerTrainCars {
     /**
      * Get the colors a player can use to claim a given route.
      */
-    getPossibleColors(route) {
-        const groups = this.getGroups();
-        const locomotiveGroup = groups.find(groupDiv => groupDiv.dataset.type == '0');
-        const locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
-        const possibleColors = [];
-        if (route.locomotives < route.spaces.length) { // if route is only locomotives, don't ask for color
-            groups.forEach(groupDiv => {
-                const count = Number(groupDiv.dataset.count);
-                if (count + locomotives >= route.spaces.length) {
-                    const color = Number(groupDiv.dataset.type);
-                    if (color > 0 && (route.color == 0 || route.color == color)) {
-                        possibleColors.push(color);
-                    }
-                }
-            });
-        }
-        if (locomotives >= route.spaces.length) {
-            possibleColors.push(0);
-        }
-        return possibleColors;
-    }
-    /**
-     * Get the colors a player can use to claim a given route.
-     */
     setSelectableTrainCarColors(route, possibleColors) {
         this.route = route;
         const groups = this.getGroups();
@@ -1561,9 +1537,6 @@ class PlayerTable {
     setSelectable(selectable) {
         this.playerTrainCars.setSelectable(selectable);
     }
-    getPossibleColors(route) {
-        return this.playerTrainCars.getPossibleColors(route);
-    }
     setSelectableTrainCarColors(route, possibleColors = null) {
         this.playerTrainCars.setSelectableTrainCarColors(route, possibleColors);
     }
@@ -1969,7 +1942,6 @@ class TrainCarSelection {
 }
 
 const ANIMATION_MS = 500;
-const ACTION_TIMER_DURATION = 8;
 class Game {
     constructor(bga) {
         this.playerTable = null;
@@ -1979,7 +1951,6 @@ class Game {
         this.animations = [];
         this.isTouch = window.matchMedia('(hover: none)').matches;
         this.routeToConfirm = null;
-        this.actionTimerId = null;
         this.states = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
         this.bga = bga;
@@ -2379,7 +2350,15 @@ class Game {
                 this.askRouteClaimConfirmation(route, selectedColor);
             }
             else {
-                const possibleColors = this.playerTable?.getPossibleColors(route) || [];
+                const possibleColors = [];
+                const costForRoute = this.gamedatas.gamestate.args.costForRoute[route.id];
+                if (costForRoute) {
+                    for (let i = 0; i < costForRoute.length; i++) {
+                        if (costForRoute[i]) {
+                            possibleColors.push(i);
+                        }
+                    }
+                }
                 // do not filter for tunnel, or if locomotive is the only possibility
                 const possibleColorsWithoutLocomotives = route.tunnel || possibleColors.length <= 1 ?
                     possibleColors :
@@ -2393,35 +2372,6 @@ class Game {
                 }
             }
         }
-    }
-    /**
-     * Timer for Confirm button
-     */
-    startActionTimer(buttonId, time) {
-        if (this.actionTimerId) {
-            window.clearInterval(this.actionTimerId);
-        }
-        if (this.bga.userPreferences.get(207) == 2) {
-            return false;
-        }
-        const button = document.getElementById(buttonId);
-        const _actionTimerLabel = button.innerHTML;
-        let _actionTimerSeconds = time;
-        const actionTimerFunction = () => {
-            const button = document.getElementById(buttonId);
-            if (button == null) {
-                window.clearInterval(this.actionTimerId);
-            }
-            else if (_actionTimerSeconds-- > 1) {
-                button.innerHTML = _actionTimerLabel + ' (' + _actionTimerSeconds + ')';
-            }
-            else {
-                window.clearInterval(this.actionTimerId);
-                button.click();
-            }
-        };
-        actionTimerFunction();
-        this.actionTimerId = window.setInterval(() => actionTimerFunction(), 1000);
     }
     setChooseActionGamestateDescription(newText) {
         if (!this.originalTextChooseAction) {
@@ -2437,12 +2387,8 @@ class Game {
         if (fromCancel) {
             this.setChooseActionGamestateDescription();
         }
-        if (this.actionTimerId) {
-            window.clearInterval(this.actionTimerId);
-        }
         const chooseActionArgs = this.gamedatas.gamestate.args;
-        this.bga.gameui.addActionButton('drawDestinations_button', dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick }), () => this.drawDestinations(), null, null, 'red');
-        dojo.toggleClass('drawDestinations_button', 'disabled', !chooseActionArgs.maxDestinationsPick);
+        this.bga.statusBar.addActionButton(dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick }), () => this.drawDestinations(), { color: 'alert', disabled: !chooseActionArgs.maxDestinationsPick });
         if (chooseActionArgs.canPass) {
             this.bga.statusBar.addActionButton(_("Pass"), () => this.pass());
         }
@@ -2477,9 +2423,8 @@ class Game {
             .replace('${colors}', `<div class="color-cards">${colors.join('')}</div>`);
         this.setChooseActionGamestateDescription(confirmationQuestion);
         document.getElementById(`generalactions`).innerHTML = '';
-        this.bga.gameui.addActionButton(`confirmRouteClaim-button`, _("Confirm"), () => this.confirmRouteClaim());
-        this.bga.gameui.addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
-        this.startActionTimer(`confirmRouteClaim-button`, ACTION_TIMER_DURATION);
+        this.bga.statusBar.addActionButton(_("Confirm"), () => this.confirmRouteClaim(), { id: `confirmRouteClaim-button`, autoclick: this.bga.userPreferences.get(207) != 2 });
+        this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelRouteClaim(), { color: 'secondary' });
     }
     /**
      * Check if player should be asked for a route claim confirmation.

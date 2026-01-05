@@ -152,7 +152,7 @@ function parseRoutes(text) {
             if (routeSpaceMatch) {
                 routes.push(routeSpaceMatch.slice(1,4).map(Number));
             } else if (id !== null) {
-                const routeEndMatch = line.match(/\][, ]*(\w+)?[, ]*(\d+)?/);
+                const routeEndMatch = line.match(/\].*(true)?.*(\d+)?/);
                 if (routeEndMatch) {
                     tunnel = routeEndMatch[1] === 'true';
                     locomotives = routeEndMatch[2] ? Number(routeEndMatch[2]) : 0;
@@ -348,7 +348,7 @@ function updateRoutesExport() {
             const locomotives = Number(firstSpace.dataset.locomotives);
             php += `    ${id} => new Route(${from}, ${to}, ${firstSpace.dataset.color}, [\n`;
             spaces.forEach(space => php += `      new RouteSpace(${space.dataset.x}, ${space.dataset.y}, ${space.dataset.a}),\n`),
-            php += `    ]${firstSpace.dataset.tunnel === 'true' || locomotives > 0 ? `, ${firstSpace.dataset.tunnel}` : ''}${locomotives > 0 ? `, ${locomotives}` : '' }),\n`;
+            php += `    ]${firstSpace.dataset.tunnel === 'true' ? `, tunnel: ${firstSpace.dataset.tunnel}` : ''}${locomotives > 0 ? `, locomotives: ${locomotives}` : '' }),\n`;
         }
     }
     document.getElementById('routes-export').value = php;

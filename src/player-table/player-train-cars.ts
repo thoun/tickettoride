@@ -272,35 +272,6 @@ export class PlayerTrainCars {
     /** 
      * Get the colors a player can use to claim a given route.
      */ 
-    public getPossibleColors(route: Route): number[] {
-        const groups = this.getGroups();
-
-        const locomotiveGroup = groups.find(groupDiv => groupDiv.dataset.type == '0');
-        const locomotives = locomotiveGroup ? Number(locomotiveGroup.dataset.count) : 0;
-
-        const possibleColors = [];
-
-        if (route.locomotives < route.spaces.length) { // if route is only locomotives, don't ask for color
-            groups.forEach(groupDiv => {
-                const count = Number(groupDiv.dataset.count);
-                if (count + locomotives >= route.spaces.length) {
-                    const color = Number(groupDiv.dataset.type);
-                    if (color > 0 && (route.color == 0 || route.color == color)) {
-                        possibleColors.push(color);
-                    }
-                } 
-            });
-        }
-
-        if (locomotives >= route.spaces.length) {
-            possibleColors.push(0);
-        }
-
-        return possibleColors;
-    }
-    /** 
-     * Get the colors a player can use to claim a given route.
-     */ 
      setSelectableTrainCarColors(route: Route | null, possibleColors: number[] | null) {
         this.route = route;
 
