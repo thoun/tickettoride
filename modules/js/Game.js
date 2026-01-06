@@ -1785,7 +1785,6 @@ class ChooseActionState {
      * Sets the action bar (title and buttons) for Choose action.
      */
     setActionBarChooseAction(isCurrentPlayerActive) {
-        this.bga.statusBar.removeActionButtons();
         if (!this.args.canTakeTrainCarCards) {
             this.bga.statusBar.setTitle(isCurrentPlayerActive ?
                 _('${you} must claim a route or draw destination tickets') :
@@ -1796,10 +1795,13 @@ class ChooseActionState {
                 _('${you} must draw train car cards, claim a route or draw destination tickets') :
                 _('${actplayer} must draw train car cards, claim a route or draw destination tickets'), this.args);
         }
-        this.bga.statusBar.addActionButton(dojo.string.substitute(_("Draw ${number} destination tickets"), { number: this.args.maxDestinationsPick }), () => this.game.drawDestinations(), { color: 'alert', disabled: !this.args.maxDestinationsPick });
-        if (this.args.canPass) {
-            // Pass (only in case of no possible action)
-            this.bga.statusBar.addActionButton(_("Pass"), () => this.bga.actions.performAction('actPass'));
+        if (isCurrentPlayerActive) {
+            this.bga.statusBar.removeActionButtons();
+            this.bga.statusBar.addActionButton(dojo.string.substitute(_("Draw ${number} destination tickets"), { number: this.args.maxDestinationsPick }), () => this.game.drawDestinations(), { color: 'alert', disabled: !this.args.maxDestinationsPick });
+            if (this.args.canPass) {
+                // Pass (only in case of no possible action)
+                this.bga.statusBar.addActionButton(_("Pass"), () => this.bga.actions.performAction('actPass'));
+            }
         }
     }
     setActionBarAskDoubleRoad(clickedRoute, otherRoute) {
