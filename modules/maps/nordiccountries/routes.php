@@ -197,7 +197,7 @@ function getRoutes() {
     43 => new Route(15, 24, BLACK, [
       new RouteSpace(330, 1427, -84),
       new RouteSpace(353, 1366, -56),
-    ], tunnel: true),
+    ]),
     44 => new Route(15, 29, GREEN, [
       new RouteSpace(283, 1465, -176),
       new RouteSpace(218, 1461, -176),

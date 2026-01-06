@@ -241,7 +241,7 @@ export class ChooseActionState {
             }
         }
 
-        this.clickedRouteColorChosen(route, route.color);
+        this.clickedRouteColorChosen(route, this.game.playerTable.getSelectedColor() ?? route.color);
     }
     
     /**

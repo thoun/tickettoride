@@ -1684,7 +1684,7 @@ class DistributionPopin {
         if (!locomotivesAndSetOnly) {
             value += this.distributionCards[this.claimingRoute.color]?.length ?? 0;
         }
-        if (this.claimingRoute.route.canPayWithAnySetOfCards) {
+        if (this.claimingRoute.route.canPayWithAnySetOfCards && this.distributionCards[99]) {
             value += Math.floor(this.distributionCards[99].length / this.claimingRoute.route.canPayWithAnySetOfCards);
         }
         return value;
@@ -1929,7 +1929,7 @@ class ChooseActionState {
                 return;
             }
         }
-        this.clickedRouteColorChosen(route, route.color);
+        this.clickedRouteColorChosen(route, this.game.playerTable.getSelectedColor() ?? route.color);
     }
     /**
      * Sets the action bar (title and buttons) for the color route.
