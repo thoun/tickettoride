@@ -1,13 +1,18 @@
-import { TrainCar } from "../tickettoride.d";
-import { StateHandler } from "./state-handler";
+import { TicketToRideGame, TrainCar } from "../tickettoride.d";
 
 interface EnteringDrawSecondCardArgs {
     availableVisibleCards: TrainCar[];
     maxHiddenCardsPick: number;
 }
 
-export class DrawSecondCardState extends StateHandler<EnteringDrawSecondCardArgs> {
-    public match(): string { return `drawSecondCard`; }
+export class DrawSecondCardState {
+    protected game: TicketToRideGame;
+    protected bga: Bga;
+
+    constructor(game: TicketToRideGame, bga: Bga) {
+        this.game = game;
+        this.bga = bga;
+    }
 
     /**
      * Allow to pick a second card (locomotives will be grayed).

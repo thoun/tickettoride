@@ -247,7 +247,7 @@ export class TtrMap {
                 overRoute = otherRoute;
             }
         }
-        let canClaimRoute = this.game.canClaimRoute(overRoute, cardsColor);
+        let canClaimRoute = this.game.chooseActionState.canClaimRoute(overRoute, cardsColor);
 
         this.setHoveredRoute(overRoute, canClaimRoute);
         if (canClaimRoute) {
@@ -278,7 +278,7 @@ export class TtrMap {
             }
         }
         
-        this.game.askRouteClaimConfirmation(overRoute, cardsColor);
+        this.game.chooseActionState.clickedRouteColorChosen(overRoute, cardsColor);
     };
 
     /** 
@@ -289,7 +289,7 @@ export class TtrMap {
         spaceDiv.addEventListener('dragover', e => this.routeDragOver(e, route));
         spaceDiv.addEventListener('dragleave', e => this.setHoveredRoute(null));
         spaceDiv.addEventListener('drop', e => this.routeDragDrop(e, route));
-        spaceDiv.addEventListener('click', () => this.game.clickedRoute(route));
+        spaceDiv.addEventListener('click', () => this.game.chooseActionState.clickedRoute(route));
     }
 
     /** 

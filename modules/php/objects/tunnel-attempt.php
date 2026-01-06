@@ -9,6 +9,7 @@ class TunnelAttempt {
         public int $color,
         public int $extraCards,
         public array $tunnelCards,
+        public ?array $distribution = null,
     ) {
     } 
 }

@@ -1,5 +1,6 @@
 import { TtrMap } from "./map/map";
 import { PlayerTable } from "./player-table/player-table";
+import { ChooseActionState } from "./states/ChooseAction";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 
@@ -36,6 +37,13 @@ export interface Route {
     color: number;
     locomotives: number;
     tunnel: boolean;
+    canPayWithAnySetOfCards: number | null;
+}
+
+export interface ClaimingRoute {
+    route: Route;
+    color: number;
+    distribution: number[] | null;
 }
 
 export interface ClaimedRoute {
@@ -133,10 +141,11 @@ export interface TicketToRideGame{
     bga: Bga;
     gamedatas: TicketToRideGamedatas;
 
+    chooseActionState: ChooseActionState;
+
     getMap(): TicketToRideMap;
     getCityName(to: number): string;
 
-    clickedRoute(route: Route): void;
     setPlayerTablePosition(left: boolean): void;
     getZoom(): number;
     getCurrentPlayer(): TicketToRidePlayer;
@@ -146,9 +155,7 @@ export interface TicketToRideGame{
     drawDestinations(): void;
     onVisibleTrainCarCardClick(itemId: number): void;
     onHiddenTrainCarDeckClick(number: number): void;
-    askRouteClaimConfirmation(route: Route, color: number): void;
     setActiveDestination(destination: Destination, previousDestination?: Destination): void;
-    canClaimRoute(route: Route, cardsColor: number): boolean;
     setHighligthedDestination(destination: Destination | null): void;
     setSelectedDestination(destination: Destination, visible: boolean): void;
     addAnimation(animation: WagonsAnimation): void;
@@ -160,7 +167,6 @@ export interface TicketToRideGame{
     setTooltipToClass(className: string, html: string): void;
     isGlobetrotterBonusActive(): boolean;
     isLongestPathBonusActive(): boolean;
-    setActionBarChooseAction(fromCancel: boolean): void;
 }
 
 export interface EnteringChooseDestinationsArgs {
@@ -176,6 +182,7 @@ export interface TunnelAttempt {
     color: number;
     extraCards: number;
     tunnelCards: TrainCar[];
+    distribution?: number[];
 }
 
 export interface NotifPointsArgs {

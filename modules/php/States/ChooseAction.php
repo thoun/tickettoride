@@ -2,9 +2,11 @@
 
 namespace Bga\Games\TicketToRide\States;
 
+use Bga\GameFramework\Actions\Types\IntArrayParam;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\StateType;
+use Bga\GameFramework\UserException;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
 use Bga\Games\TicketToRide\Game;
 
@@ -15,8 +17,6 @@ class ChooseAction extends GameState {
             id: ST_PLAYER_CHOOSE_ACTION,
             type: StateType::ACTIVE_PLAYER,
             name: 'chooseAction',
-            description: clienttranslate('${actplayer} must draw train car cards, claim a route or draw destination tickets'),
-            descriptionMyTurn: clienttranslate('${you} must draw train car cards, claim a route or draw destination tickets'),
             transitions: [
                 "drawSecondCard" => ST_PLAYER_DRAW_SECOND_CARD,
                 "drawDestinations" => ST_PLAYER_CHOOSE_ADDITIONAL_DESTINATIONS,
@@ -56,14 +56,29 @@ class ChooseAction extends GameState {
 
         $canPass = !$canClaimARoute && $maxDestinationsPick == 0 && $canTakeTrainCarCards == 0;
 
-        return [
+        $args = [
             'possibleRoutes' => $possibleRoutes,
             'costForRoute' => $costForRoute,
             'maxHiddenCardsPick' => $maxHiddenCardsPick,
             'maxDestinationsPick' => $maxDestinationsPick,
             'canTakeTrainCarCards' => $canTakeTrainCarCards,
             'canPass' => $canPass,
+            '_private' => [
+                $activePlayerId => [
+
+                ]
+            ]
         ];
+
+        if ($this->game->getMap()->locomotiveUsageRestriction) {
+            $args['_private'] = [
+                $activePlayerId => [
+                    'trainCarsHand' => $trainCarsHand,
+                ],
+            ];
+        }
+
+        return $args;
     }
 
     #[PossibleAction]
@@ -98,7 +113,7 @@ class ChooseAction extends GameState {
     public function actDrawDestinations(int $activePlayerId) {
         $remainingDestinationsCardsInDeck = $this->game->destinationManager->getRemainingDestinationCardsInDeck();
         if ($remainingDestinationsCardsInDeck == 0) {
-            throw new \BgaUserException(clienttranslate("You can't take new Destination cards because the deck is empty"));
+            throw new UserException(clienttranslate("You can't take new Destination cards because the deck is empty"));
         }
 
         $this->game->destinationManager->pickAdditionalDestinationCards($activePlayerId);
@@ -110,7 +125,7 @@ class ChooseAction extends GameState {
     }
     
     #[PossibleAction]
-    public function actClaimRoute(int $routeId, int $color, int $activePlayerId) {
+    public function actClaimRoute(int $routeId, int $color, #[IntArrayParam()] ?array $distribution, int $activePlayerId) {
         $route = $this->game->getAllRoutes()[$routeId];
 
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
@@ -120,19 +135,20 @@ class ChooseAction extends GameState {
         }
 
         if ($this->game->getUniqueIntValueFromDB( "SELECT count(*) FROM `claimed_routes` WHERE `route_id` = $routeId") > 0) {
-            throw new \BgaUserException("Route is already claimed.");
+            throw new UserException("Route is already claimed.");
         }
         
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
-        $colorAndLocomotiveCards = $this->game->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color);
+        $distributionCards = $distribution ? Arrays::filter($trainCarsHand, fn($card) => in_array($card->id, $distribution)) : null;
+        $colorAndLocomotiveCards = $this->game->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, distributionCards: $distributionCards);
         
         if ($colorAndLocomotiveCards == null || count($colorAndLocomotiveCards) < $route->number) {
-            throw new \BgaUserException("Not enough cards to claim the route.");
+            throw new UserException("Not enough cards to claim the route.");
         }
 
         $possibleRoutes = $this->game->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars);
         if (!Arrays::some($possibleRoutes, fn($possibleRoute) => $possibleRoute->id == $routeId)) {
-            throw new \BgaUserException("You can't claim this route");
+            throw new UserException("You can't claim this route");
         }
 
         if ($route->tunnel) {
@@ -160,7 +176,7 @@ class ChooseAction extends GameState {
                 ]);
                 
                 if ($extraCards > 0) { // if the player can't afford, we still ask to hide the fact he can't
-                    $this->game->setGlobalVariable(TUNNEL_ATTEMPT, new \TunnelAttempt($routeId, $color, $extraCards, $tunnelCards));
+                    $this->game->setGlobalVariable(TUNNEL_ATTEMPT, new \TunnelAttempt($routeId, $color, $extraCards, $tunnelCards, $distribution));
                     $this->gamestate->nextState('tunnel'); 
                     return;
                 } else {
@@ -170,13 +186,13 @@ class ChooseAction extends GameState {
             }
         }
 
-        $this->game->applyClaimRoute($activePlayerId, $routeId, $color, 0);
+        $this->game->applyClaimRoute($activePlayerId, $routeId, $color, 0, distributionCards: $distributionCards);
     }
     
     #[PossibleAction]
     public function actPass(array $args) {
         if (!$args['canPass']) {
-            throw new \BgaUserException("You cannot pass");
+            throw new UserException("You cannot pass");
         }
 
         return ST_NEXT_PLAYER;

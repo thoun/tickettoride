@@ -169,7 +169,7 @@ export class PlayerTrainCars {
 
             group.addEventListener('click', () => {
                 if (this.route) {
-                    this.game.askRouteClaimConfirmation(this.route, type);
+                    this.game.chooseActionState.clickedRouteColorChosen(this.route, type);
                 } else if (this.selectable) {
                     if (this.selectedColor === type) {
                         this.deselectColor(type);

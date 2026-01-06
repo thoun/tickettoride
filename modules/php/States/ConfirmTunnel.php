@@ -2,6 +2,7 @@
 
 namespace Bga\Games\TicketToRide\States;
 
+use Bga\GameFramework\Actions\Types\IntArrayParam;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\StateType;
@@ -39,22 +40,34 @@ class ConfirmTunnel extends GameState {
             $extraCards = array_values(array_filter($tunnelCost, fn($tunnelCard) => !Arrays::some($routeCost, fn($routeCard) => $routeCard->id == $tunnelCard->id)));
         }
 
-        return [
+        $args = [
             'playerId' => $activePlayerId,
             'tunnelAttempt' => $tunnelAttempt,
             'canPay' => $canPay,
             'colors' => $extraCards == null ? '' : array_map(fn($card) => $card->type, $extraCards), // for title bar
             'extraCards' => $tunnelAttempt->extraCards, // for title bar
         ];
+
+        if ($canPay && isset($tunnelAttempt->distribution)) {
+            $args['_private'] = [
+                $activePlayerId => [
+                    'trainCarsHand' => $trainCarsHand,
+                ],
+            ];
+        }
+
+        return $args;
     }
 
     #[PossibleAction]    
-    public function actClaimTunnel(int $activePlayerId) {
+    public function actClaimTunnel(#[IntArrayParam()] ?array $distribution, int $activePlayerId) {
         $tunnelAttempt = $this->game->getGlobalVariable(TUNNEL_ATTEMPT);
 
         $this->game->endTunnelAttempt(true);
 
-        $this->game->applyClaimRoute($activePlayerId, $tunnelAttempt->routeId, $tunnelAttempt->color, $tunnelAttempt->extraCards);
+        $distributionCards = $distribution ? Arrays::filter($this->game->trainCarManager->getPlayerHand($activePlayerId), fn($card) => in_array($card->id, $distribution)) : null;
+
+        $this->game->applyClaimRoute($activePlayerId, $tunnelAttempt->routeId, $tunnelAttempt->color, $tunnelAttempt->extraCards, distributionCards: $distributionCards);
         // applyClaimRoute handles the call to nextState
     }
 
@@ -71,6 +84,6 @@ class ConfirmTunnel extends GameState {
     }
 
     function zombie(int $playerId, array $args) {
-        return $args['canPay'] ? $this->actClaimTunnel($playerId) : $this->actSkipTunnel($playerId);
+        return $args['canPay'] ? $this->actClaimTunnel(null, $playerId) : $this->actSkipTunnel($playerId);
     }
 }

@@ -30,6 +30,7 @@ class Route {
         public array $spaces = [], 
         public bool $tunnel = false, 
         public int $locomotives = 0,
+        public ?int $canPayWithAnySetOfCards = null,
     ) {
         $this->number = count($spaces);
     } 

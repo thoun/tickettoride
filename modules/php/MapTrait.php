@@ -2,6 +2,8 @@
 
 namespace Bga\Games\TicketToRide;
 
+use Bga\GameFrameworkPrototype\Helpers\Arrays;
+
 require_once(__DIR__.'/objects/route.php');
 
 class ConnectedCity {
@@ -209,7 +211,7 @@ trait MapTrait {
      * If player cannot pay, returns null.
      * If player can pay return cards to pay for the route.
      */
-    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0): ?array {
+    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0, ?array $distributionCards = null): ?array {
         $cardCost = $route->number + $extraCardsCost;
 
         if ($remainingTrainCars < $route->number) {
@@ -217,7 +219,7 @@ trait MapTrait {
         }
 
         if ($color != null && $color > 0 && $route->color > 0 && $color != $route->color) {
-            return null;
+            return null; // we try to pay with a color that doesn't match the route color
         }
 
         $colorsToTest = [1,2,3,4,5,6,7,8];
@@ -233,30 +235,52 @@ trait MapTrait {
 
         $locomotiveCards = array_filter($trainCarsHand, fn($card) => $card->type == 0);
 
-        if (count($locomotiveCards) < $route->locomotives) {
-            return null;
-        }
-
         $locomotiveRestriction = $this->getMap()->locomotiveUsageRestriction;
         $canUseRestrictedLocomotiveAsJoker = 
             $locomotiveRestriction === 0
             || (($locomotiveRestriction & \Map::LOCOMOTIVE_TUNNEL) !== 0 && $route->tunnel)
             || (($locomotiveRestriction & \Map::LOCOMOTIVE_FERRY) !== 0 && $route->locomotives > 0);
         $forbidLocomotiveAsJoker = !$canUseRestrictedLocomotiveAsJoker;
+
+        if ($distributionCards) {
+            $locomotiveCount = $forbidLocomotiveAsJoker ? 0 : Arrays::count($distributionCards, fn($card) => $card->type == 0);
+            $colorCount = $color === 0 ? 0 : Arrays::count($distributionCards, fn($card) => $card->type == $color);
+            $setCount = 0;
+            if ($route->canPayWithAnySetOfCards) {
+                $setCardsCount = Arrays::count($distributionCards, fn($card) => !in_array($card->type, $forbidLocomotiveAsJoker ? [$color] : [0, $color]));
+                $setCount = (int)floor($setCardsCount / $route->canPayWithAnySetOfCards);
+            }
+            // check if valid
+            if (($locomotiveCount + $setCount) < $route->locomotives) {
+                return null;
+            } 
+            if (($locomotiveCount + $colorCount + $setCount) === ($route->number + $extraCardsCost)) {
+                return $distributionCards;
+            } else {
+                return null;
+            }
+        }
+
+        // after distribution, so we don't block if locomotives are replaced by set of cards
+        if (!$route->canPayWithAnySetOfCards && count($locomotiveCards) < $route->locomotives) {
+            return null;
+        }
         
         if ($color === 0) {
             // the user wants to pay with locomotives
-            if (count($locomotiveCards) >= $cardCost) {
+            $possibleSets = $route->canPayWithAnySetOfCards ? (int)floor(Arrays::count($trainCarsHand, fn($card) => $card->type != 0) / $route->canPayWithAnySetOfCards) : 0;
+            if ((count($locomotiveCards) + $possibleSets) >= $cardCost) {
                 if ($forbidLocomotiveAsJoker) {
                     return null;
                 }
                 // enough locomotive cards
                 return array_slice($locomotiveCards, 0, $cardCost); 
             }
-        } else {        
+        } else {
             // route is gray, check for each possible color
             foreach ($colorsToTest as $color) {
                 $colorCards = array_filter($trainCarsHand, fn($card) => $card->type == $color);
+                $possibleSets = $route->canPayWithAnySetOfCards ? (int)floor(Arrays::count($trainCarsHand, fn($card) => !in_array($card->type, $forbidLocomotiveAsJoker ? [$color] : [0, $color])) / $route->canPayWithAnySetOfCards) : 0;
 
                 // first we set required locomotives
                 $locomotiveCardsCount = $route->locomotives;
@@ -271,9 +295,9 @@ trait MapTrait {
                 }
 
                 if (
-                    ($locomotiveCardsCount + $colorCardCount) >= $cardCost 
+                    ($locomotiveCardsCount + $colorCardCount + $possibleSets) >= $cardCost
                     && $locomotiveCardsCount <= count($locomotiveCards) 
-                    && $colorCardCount <= count($colorCards)
+                    && $colorCardCount <= (count($colorCards) + $possibleSets)
                 ) {
                     return array_merge(
                         // first required locomotives

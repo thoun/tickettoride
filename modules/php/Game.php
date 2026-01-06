@@ -270,13 +270,13 @@ class Game extends Table {
         return 100 * ($this->getMap()->trainCarsPerPlayer - $this->getLowestTrainCarsCount()) / $this->getMap()->trainCarsPerPlayer;
     }
 
-    function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0) {
+    function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null) {
         $route = $this->getAllRoutes()[$routeId];
         $cardCost = $route->number + $extraCardCost;
         
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
         $trainCarsHand = $this->trainCarManager->getPlayerHand($playerId);
-        $cardsToRemove = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost);
+        $cardsToRemove = $distributionCards ?? $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost);
 
         $this->trainCarManager->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
 

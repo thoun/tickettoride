@@ -254,3 +254,34 @@ h2 {
         list-style: unset;
     }
 }
+
+#popin_distributionPopin {
+    .train-car-color.icon {
+        margin: 4px;
+
+        &.selectable {
+            outline: 3px solid transparent;
+            cursor: pointer;
+        }
+        &.selected {
+            outline: 3px solid red;
+        }
+        &.grayed {
+            filter: brightness(0.6);
+        }
+    }
+
+    .total {
+        font-weight: bold;
+        font-size: 120%;
+    }
+
+    #distribution-current-size {
+        &[data-valid="true"] {
+            color: green;
+        }
+        &[data-valid="false"] {
+            color: darkred;
+        }
+    }
+}

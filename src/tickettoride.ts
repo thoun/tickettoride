@@ -5,9 +5,8 @@ import { PlayerTable } from "./player-table/player-table";
 import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseAction";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
-import { StateHandler } from "./states/state-handler";
 import { getColor } from "./stock-utils";
-import { Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer } from "./tickettoride.d";
+import { ClaimingRoute, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar } from "./tickettoride.d";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 
@@ -16,6 +15,8 @@ const ANIMATION_MS = 500;
 export class Game implements TicketToRideGame {
     public bga: Bga;
     public gamedatas: TicketToRideGamedatas;
+
+    public chooseActionState: ChooseActionState;
 
     public map: TtrMap;
     public trainCarSelection: TrainCarSelection;
@@ -30,22 +31,17 @@ export class Game implements TicketToRideGame {
 
     private animations: WagonsAnimation[] = [];
 
-    private isTouch = window.matchMedia('(hover: none)').matches;
-    private routeToConfirm: { route: Route, color: number } | null = null;
-    private originalTextChooseAction: string;
-
-    private states: StateHandler<any>[] = [];
-
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
+
+    private distributionCards: number[][] = null;
 
     constructor(bga: Bga) {
         this.bga = bga;
 
-        this.states.push(
-            new ChooseActionState(this, bga),
-            new DrawSecondCardState(this, bga),
-            new ConfirmTunnelState(this, bga),
-        );
+        this.chooseActionState = new ChooseActionState(this, bga);
+        this.bga.states.register('chooseAction', this.chooseActionState);
+        this.bga.states.register('drawSecondCard', new DrawSecondCardState(this, bga));
+        this.bga.states.register('confirmTunnel', new ConfirmTunnelState(this, bga));
 
         this.bga.userPreferences.onChange = (id, val) => this.onUserPreferenceChanged(id, val);
     }
@@ -130,42 +126,11 @@ export class Game implements TicketToRideGame {
     ///////////////////////////////////////////////////
     //// Game & client states
 
-    private getStateByName(stateName: string): StateHandler<any> {
-        const stateHandler = this.states.find(state => {
-            const result = state.match(stateName);
-            if (typeof result === 'string') {
-                return stateName === result;
-            } else if (typeof result === 'boolean') {
-                return result;
-            } else {
-                throw new Error('Invalid state.match return type');
-            }
-        });
-        if (stateHandler) {
-            return stateHandler;
-        } else {
-            //throw new Error(`No state handler for stateName ${stateName}`);
-            return undefined;
-        }
-    }
-
-    public getCurrentStateHandler(): StateHandler<any> {
-        return this.getStateByName(this.getCurrentPlayerStateName());
-    }
-
-    public getCurrentPlayerStateName(): string {
-        return this.gamedatas.gamestate.private_state?.name ?? this.gamedatas.gamestate.name;
-    }
-
     // onEnteringState: this method is called each time we are entering into a new game state.
     //                  You can use this method to perform some user interface changes at this moment.
     //
     public onEnteringState(stateName: string, args: any) {
         console.log('Entering state: '+stateName, args.args);
-
-        if (this.gamedatas.gamestate.type !== 'multipleactiveplayer') {
-            this.getStateByName(stateName)?.onEnteringState(args.args, this.bga.players.isCurrentPlayerActive());
-        }
 
         switch (stateName) {
             case 'privateChooseInitialDestinations': case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
@@ -202,8 +167,6 @@ export class Game implements TicketToRideGame {
     public onLeavingState(stateName: string) {
         console.log('Leaving state: '+stateName);
 
-        this.getStateByName(stateName)?.onLeavingState(this.gamedatas.gamestate.args, this.bga.players.isCurrentPlayerActive());
-
         switch (stateName) {
             case 'privateChooseInitialDestinations': case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
@@ -221,21 +184,6 @@ export class Game implements TicketToRideGame {
     //                        action status bar (ie: the HTML links in the status bar).
     //
     public onUpdateActionButtons(stateName: string, args: any) {
-        const state = this.getStateByName(stateName);
-        if (state) {
-            const isCurrentPlayerActive = this.bga.players.isCurrentPlayerActive();
-            if (this.gamedatas.gamestate.type === 'multipleactiveplayer') {
-                state.onEnteringState(args, isCurrentPlayerActive);
-            }
-            state.onUpdateActionButtons(args, isCurrentPlayerActive);
-        } else if (this.gamedatas.gamestate.type === 'multipleactiveplayer' && this.gamedatas.gamestate.private_state) {
-            const leftState = this.states.find(state => state.match(this.gamedatas.gamestate.private_state.name));
-            if (leftState) {
-                const isCurrentPlayerActive = this.bga.players.isCurrentPlayerActive();
-                leftState.onLeavingState(this.gamedatas.gamestate.private_state.args, isCurrentPlayerActive);
-            }
-        }
-
         if(this.bga.players.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'privateChooseInitialDestinations':
@@ -392,17 +340,6 @@ export class Game implements TicketToRideGame {
     }
 
     /** 
-     * Check if a route can be claimed with dragged cards.
-     */ 
-    public canClaimRoute(route: Route, cardsColor: number): boolean {
-        return (
-            route.color == 0 || cardsColor == 0 || route.color == cardsColor
-        ) && (
-            (this.gamedatas.gamestate.args as EnteringChooseActionArgs).possibleRoutes.some(pr => pr.id == route.id)
-        );
-    }
-
-    /** 
      * Highlight destination (on destination mouse over).
      */ 
     public setHighligthedDestination(destination: Destination | null): void {
@@ -480,206 +417,6 @@ export class Game implements TicketToRideGame {
             this.map.setSelectableRoutes(true, args.possibleRoutes.filter(route => route.color === selectedColor || route.color === 0));
         }
     }
-    
-    /** 
-     * Handle route click.
-     */ 
-    public clickedRoute(route: Route, needToCheckDoubleRoute?: boolean): void { 
-        if(!this.bga.players.isCurrentPlayerActive()) {
-            return;
-        }
-
-        if (needToCheckDoubleRoute === undefined) {
-            needToCheckDoubleRoute = this.askDoubleRouteActive();
-        }
-
-        const otherRoute = Object.values(this.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
-        let askDoubleRouteColor = needToCheckDoubleRoute && otherRoute && otherRoute.color != route.color && this.canClaimRoute(route, 0) && this.canClaimRoute(otherRoute, 0);
-        if (askDoubleRouteColor) {
-            const selectedColor = this.playerTable.getSelectedColor();
-            if (selectedColor) {
-                askDoubleRouteColor = false;
-            }
-        }
-
-        if(askDoubleRouteColor) {
-            this.setActionBarAskDoubleRoad(route, otherRoute);
-            return;
-        }
-
-        if(!this.canClaimRoute(route, 0)) {
-            return;
-        }
-
-        document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
-        if (route.color > 0 && !route.tunnel) {
-            this.askRouteClaimConfirmation(route, route.color);
-        } else {
-            const selectedColor = this.playerTable.getSelectedColor();
-
-            if (selectedColor !== null) {
-                this.askRouteClaimConfirmation(route, selectedColor);
-            } else {
-                const possibleColors: number[] = [];
-                const costForRoute = this.gamedatas.gamestate.args.costForRoute[route.id];
-                if (costForRoute) {
-                    for (let i = 0; i <= 8; i++) {
-                        if (costForRoute[i]) {
-                            possibleColors.push(i);
-                        }
-                    }
-                }
-                // do not filter for tunnel, or if locomotive is the only possibility
-                const possibleColorsWithoutLocomotives = route.tunnel || possibleColors.length <= 1 ? 
-                    possibleColors : 
-                    possibleColors.filter(color => color != 0);
-
-                if (possibleColorsWithoutLocomotives.length == 1) {
-                    this.askRouteClaimConfirmation(route, possibleColorsWithoutLocomotives[0]);
-                } else if (possibleColorsWithoutLocomotives.length > 1) {
-                    this.setActionBarChooseColor(route, possibleColorsWithoutLocomotives);
-
-                    this.playerTable.setSelectableTrainCarColors(route, possibleColorsWithoutLocomotives);
-                }
-            }
-        }
-    }
-    
-    private setChooseActionGamestateDescription(newText?: string) {
-        if (!this.originalTextChooseAction) {
-            this.originalTextChooseAction = document.getElementById('pagemaintitletext').innerHTML;
-        }
-
-        document.getElementById('pagemaintitletext').innerHTML = newText ?? this.originalTextChooseAction;
-    }
-    
-    /**
-     * Sets the action bar (title and buttons) for Choose action.
-     */
-    public setActionBarChooseAction(fromCancel: boolean): void {
-        document.getElementById(`generalactions`).innerHTML = '';
-        if (fromCancel) {
-            this.setChooseActionGamestateDescription();
-        }
-
-        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
-        this.bga.statusBar.addActionButton(
-            dojo.string.substitute(_("Draw ${number} destination tickets"), { number: chooseActionArgs.maxDestinationsPick}), 
-            () => this.drawDestinations(), 
-            { color: 'alert', disabled: !chooseActionArgs.maxDestinationsPick },
-        );
-        if (chooseActionArgs.canPass) {
-            this.bga.statusBar.addActionButton(_("Pass"), () => this.pass());
-        }
-    }
-    
-    /**
-     * Sets the action bar (title and buttons) for the color route.
-     */
-    private setActionBarChooseColor(route: Route, possibleColors: number[]) {
-        const confirmationQuestion = _("Choose color for the route from ${from} to ${to}")
-            .replace('${from}', this.getCityName(route.from))
-            .replace('${to}', this.getCityName(route.to));
-        this.setChooseActionGamestateDescription(confirmationQuestion);
-
-        document.getElementById(`generalactions`).innerHTML = '';
-
-        possibleColors.forEach(color => {
-            const label = dojo.string.substitute(_("Use ${color}"), {
-                'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
-            });
-            this.bga.gameui.addActionButton(`claimRouteWithColor_button${color}`, label, () => this.askRouteClaimConfirmation(route, color));
-        });
-
-        this.bga.gameui.addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
-    }
-    
-    /**
-     * Sets the action bar (title and buttons) for Confirm route claim.
-     */
-    private setActionBarConfirmRouteClaim(route: Route, color: number) {
-        const chooseActionArgs = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
-        const colors = chooseActionArgs.costForRoute[route.id][color].map(cardColor => `<div class="train-car-color icon" data-color="${cardColor}"></div>`);
-        const confirmationQuestion = _("Confirm ${color} route from ${from} to ${to} with ${colors} ?")
-            .replace('${color}', getColor(route.color, 'route'))
-            .replace('${from}', this.getCityName(route.from))
-            .replace('${to}', this.getCityName(route.to))
-            .replace('${colors}', `<div class="color-cards">${colors.join('')}</div>`);
-        this.setChooseActionGamestateDescription(confirmationQuestion);
-
-        document.getElementById(`generalactions`).innerHTML = '';
-        this.bga.statusBar.addActionButton(_("Confirm"), () => this.confirmRouteClaim(), { id: `confirmRouteClaim-button`, autoclick: this.bga.userPreferences.get(207) != 2 });
-        this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelRouteClaim(), { color: 'secondary' });
-    }
-
-    /**
-     * Check if player should be asked for a route claim confirmation.
-     */
-    private confirmRouteClaimActive() {
-        const preferenceValue = this.bga.userPreferences.get(202);
-        return preferenceValue === 1 || (preferenceValue === 2 && this.isTouch);
-    }
-
-    /**
-     * Check if player should be asked for the color he wants when he clicks on a double route.
-     */
-    private askDoubleRouteActive() {
-        const preferenceValue = this.bga.userPreferences.get(209);
-        return preferenceValue === 1;
-    }
-
-    private setActionBarAskDoubleRoad(clickedRoute: Route, otherRoute: Route) {
-        const question = _("Which part of the double route do you want to claim?")
-        this.setChooseActionGamestateDescription(question);
-
-        document.getElementById(`generalactions`).innerHTML = '';
-        [clickedRoute, otherRoute].forEach(route => {
-            this.bga.gameui.addActionButton(`claimDoubleRoute${route.id}-button`, `<div class="train-car-color icon" data-color="${route.color}"></div> ${getColor(route.color, 'train-car')}`, () => this.clickedRoute(route, false));
-        });
-        this.bga.gameui.addActionButton(`cancelRouteClaim-button`, _("Cancel"), () => this.cancelRouteClaim(), null, null, 'gray');
-    }
-
-    /**
-     * Ask confirmation for claimed route.
-     */
-    public askRouteClaimConfirmation(route: Route, color: number) {
-        const selectedColor = this.playerTable.getSelectedColor();
-        if (route.color !== 0 && selectedColor !== null && selectedColor !== 0 && route.color !== selectedColor) {
-            const otherRoute = Object.values(this.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
-            if (otherRoute.color === selectedColor) {
-                this.askRouteClaimConfirmation(otherRoute, selectedColor);
-            }
-            return;
-        }
-
-        if (this.confirmRouteClaimActive()) {
-            this.routeToConfirm = { route, color };
-            this.map.setHoveredRoute(route, true);
-            this.setActionBarConfirmRouteClaim(route, color);
-        } else {
-            this.claimRoute(route.id, color);
-        }
-    }
-
-    /**
-     * Player cancels claimed route.
-     */
-    public cancelRouteClaim() {
-        this.setActionBarChooseAction(true);
-        this.map.setHoveredRoute(null);
-        this.playerTable?.setSelectableTrainCarColors(null);
-        this.routeToConfirm = null;
-
-        document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement?.removeChild(button));
-    }
-
-    /**
-     * Player confirms claimed route.
-     */
-    public confirmRouteClaim() {
-        this.map.setHoveredRoute(null);
-        this.claimRoute(this.routeToConfirm.route.id, this.routeToConfirm.color);
-    }
 
     /** 
      * Apply destination selection (initial objectives).
@@ -740,23 +477,6 @@ export class Game implements TicketToRideGame {
         this.bga.actions.performAction(action, {
             id
         });
-    }
-
-    /** 
-     * Claim a route.
-     */ 
-    public claimRoute(routeId: number, color: number) {
-        this.bga.actions.performAction('actClaimRoute', {
-            routeId,
-            color
-        });
-    }
-
-    /** 
-     * Pass (in case of no possible action).
-     */ 
-    public pass() {
-        this.bga.actions.performAction('actPass');
     }
 
     private isFastEndScoring() {
@@ -917,7 +637,7 @@ export class Game implements TicketToRideGame {
         setTimeout(() => animatedElement.classList.add('animate-low-count'), 1);
 
         if (document.getElementById(`confirmRouteClaim-button`)) {
-            this.cancelRouteClaim();
+            this.chooseActionState.cancelRouteClaim();
         } else {            
             document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement?.removeChild(button));
         }

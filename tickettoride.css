@@ -444,11 +444,11 @@
   background-position-x: 100% !important;
   opacity: 1;
 }
-.city[data-to-connect=true] {
-  opacity: 1;
-}
 .city[data-to-connect=true][data-selected-destination=true] {
   background-position-x: 20%;
+}
+.city[data-to-connect=true] {
+  opacity: 1;
 }
 .city[data-to-connect=true]:not([data-selected=true]):not([data-highlight=true]):not([data-selected-destination=true]) {
   background-position-x: 40%;
@@ -1581,4 +1581,28 @@ h2 {
 }
 #playermat-container-modal li {
   list-style: unset;
+}
+
+#popin_distributionPopin .train-car-color.icon {
+  margin: 4px;
+}
+#popin_distributionPopin .train-car-color.icon.selectable {
+  outline: 3px solid transparent;
+  cursor: pointer;
+}
+#popin_distributionPopin .train-car-color.icon.selected {
+  outline: 3px solid red;
+}
+#popin_distributionPopin .train-car-color.icon.grayed {
+  filter: brightness(0.6);
+}
+#popin_distributionPopin .total {
+  font-weight: bold;
+  font-size: 120%;
+}
+#popin_distributionPopin #distribution-current-size[data-valid=true] {
+  color: green;
+}
+#popin_distributionPopin #distribution-current-size[data-valid=false] {
+  color: darkred;
 }

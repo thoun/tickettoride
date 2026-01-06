@@ -8,57 +8,57 @@ require_once(__DIR__.'/../../php/objects/route.php');
  * For cities (from/to), it's always low id to high id.
  */
 function getRoutes() {
-  return [
+  $routes = [
     1 => new Route(1, 2, PINK, [
       new RouteSpace(453, 1608, 61),
     ]),
     2 => new Route(1, 6, GRAY, [
       new RouteSpace(475, 1563, 1),
       new RouteSpace(501, 1520, -80),
-    ], false, 1),
+    ], locomotives: 1),
     3 => new Route(1, 15, RED, [
       new RouteSpace(391, 1563, -158),
       new RouteSpace(343, 1520, -120),
-    ], false, 1),
+    ], locomotives: 1),
     4 => new Route(1, 24, WHITE, [
       new RouteSpace(417, 1519, -100),
       new RouteSpace(407, 1455, -100),
       new RouteSpace(396, 1391, -100),
-    ], false, 1),
+    ], locomotives: 1),
     5 => new Route(2, 14, GRAY, [
       new RouteSpace(533, 1644, 0),
-    ], false, 1),
+    ], locomotives: 1),
     6 => new Route(3, 4, BLACK, [
       new RouteSpace(151, 1063, 179),
       new RouteSpace(99, 1091, 120),
       new RouteSpace(74, 1148, 107),
       new RouteSpace(66, 1210, 93),
       new RouteSpace(78, 1271, 61),
-    ], false, 2),
+    ], locomotives: 2),
     7 => new Route(3, 18, YELLOW, [
       new RouteSpace(234, 1105, 44),
       new RouteSpace(283, 1153, 44),
-    ], true),
+    ], tunnel: true),
     8 => new Route(3, 33, WHITE, [
       new RouteSpace(191, 1026, -89),
       new RouteSpace(230, 989, 1),
-    ], false, 1),
+    ], locomotives: 1),
     9 => new Route(4, 24, BLUE, [
       new RouteSpace(145, 1287, -33),
       new RouteSpace(210, 1260, -12),
       new RouteSpace(280, 1262, 12),
       new RouteSpace(345, 1291, 32),
-    ], true),
+    ], tunnel: true),
     10 => new Route(4, 24, RED, [
       new RouteSpace(157, 1308, -33),
       new RouteSpace(215, 1285, -12),
       new RouteSpace(275, 1287, 12),
       new RouteSpace(333, 1313, 32),
-    ], true),
+    ], tunnel: true),
     11 => new Route(4, 29, PINK, [
       new RouteSpace(104, 1379, 83),
       new RouteSpace(132, 1436, 49),
-    ], false, 1),
+    ], locomotives: 1),
     12 => new Route(5, 13, BLACK, [
       new RouteSpace(545, 515, -174),
       new RouteSpace(485, 495, -148),
@@ -85,7 +85,7 @@ function getRoutes() {
     17 => new Route(6, 14, BLACK, [
       new RouteSpace(541, 1523, 70),
       new RouteSpace(561, 1584, 70),
-    ], false, 1),
+    ], locomotives: 1),
     18 => new Route(6, 23, GRAY, [
       new RouteSpace(556, 1441, -36),
       new RouteSpace(607, 1402, -36),
@@ -112,17 +112,17 @@ function getRoutes() {
       new RouteSpace(862, 1116, 140),
       new RouteSpace(814, 1156, 140),
       new RouteSpace(764, 1196, 140),
-    ], false, 2),
+    ], locomotives: 2),
     24 => new Route(7, 30, YELLOW, [
       new RouteSpace(897, 1056, 140),
       new RouteSpace(847, 1097, 140),
       new RouteSpace(799, 1137, 140),
       new RouteSpace(750, 1178, 141),
-    ], false, 1),
+    ], locomotives: 1),
     25 => new Route(7, 35, PINK, [
       new RouteSpace(981, 1058, 42),
       new RouteSpace(998, 1103, 133),
-    ], false, 1),
+    ], locomotives: 1),
     26 => new Route(7, 32, ORANGE, [
       new RouteSpace(889, 976, -135),
     ]),
@@ -132,13 +132,13 @@ function getRoutes() {
     28 => new Route(8, 12, GREEN, [
       new RouteSpace(560, 87, 42),
       new RouteSpace(616, 123, 22),
-    ], false, 1),
+    ], locomotives: 1),
     29 => new Route(8, 34, PINK, [
       new RouteSpace(490, 74, 146),
       new RouteSpace(440, 114, 140),
       new RouteSpace(399, 159, 128),
       new RouteSpace(365, 214, 117),
-    ], false, 2),
+    ], locomotives: 2),
     30 => new Route(9, 16, PINK, [
       new RouteSpace(1044, 774, -107),
       new RouteSpace(1001, 723, -154),
@@ -161,11 +161,11 @@ function getRoutes() {
     35 => new Route(11, 14, GREEN, [
       new RouteSpace(688, 1575, 155),
       new RouteSpace(629, 1601, 155),
-    ], false, 1),
+    ], locomotives: 1),
     36 => new Route(11, 14, BLUE, [
       new RouteSpace(696, 1599, 155),
       new RouteSpace(638, 1624, 155),
-    ], false, 1),
+    ], locomotives: 1),
     37 => new Route(11, 23, YELLOW, [
       new RouteSpace(743, 1510, -98),
       new RouteSpace(734, 1448, -98),
@@ -180,7 +180,7 @@ function getRoutes() {
       new RouteSpace(678, 94, -53),
       new RouteSpace(734, 69, 0),
       new RouteSpace(796, 75, 11),
-    ], false, 1),
+    ], locomotives: 1),
     40 => new Route(12, 28, BLUE, [
       new RouteSpace(697, 163, 41),
       new RouteSpace(740, 208, 56),
@@ -190,23 +190,23 @@ function getRoutes() {
     ]),
     41 => new Route(13, 22, PINK, [
       new RouteSpace(357, 409, -162),
-    ], true),
+    ], tunnel: true),
     42 => new Route(13, 22, WHITE, [
       new RouteSpace(350, 433, -162),
-    ], true),
+    ], tunnel: true),
     43 => new Route(15, 24, BLACK, [
       new RouteSpace(330, 1427, -84),
       new RouteSpace(353, 1366, -56),
-    ], true),
+    ], tunnel: true),
     44 => new Route(15, 29, GREEN, [
       new RouteSpace(283, 1465, -176),
       new RouteSpace(218, 1461, -176),
-    ], true),
+    ], tunnel: true),
     45 => new Route(15, 29, ORANGE, [
       new RouteSpace(294, 1509, -228),
       new RouteSpace(239, 1531, -178),
       new RouteSpace(184, 1506, -132),
-    ], false, 1),
+    ], locomotives: 1),
     46 => new Route(16, 17, WHITE, [
       new RouteSpace(952, 752, 98),
       new RouteSpace(932, 813, 118),
@@ -232,12 +232,12 @@ function getRoutes() {
     51 => new Route(18, 24, PINK, [
       new RouteSpace(353, 1217, 45),
       new RouteSpace(384, 1270, 78),
-    ], true),
+    ], tunnel: true),
     52 => new Route(18, 33, ORANGE, [
       new RouteSpace(339, 1146, -74),
       new RouteSpace(341, 1085, -104),
       new RouteSpace(311, 1031, -133),
-    ], true),
+    ], tunnel: true),
     53 => new Route(19, 21, GRAY, [
       new RouteSpace(1006, 573, -74),
       new RouteSpace(1025, 512, -76),
@@ -248,20 +248,20 @@ function getRoutes() {
       new RouteSpace(970, 209, -126),
       new RouteSpace(928, 160, -133),
       new RouteSpace(880, 118, -142),
-    ]),
+    ], canPayWithAnySetOfCards: 4), // he Murmansk-Lieksa route is an exception. On this route, a player can use any four cards (including locomotives) as a substitute for a card of any color.
     54 => new Route(20, 22, ORANGE, [
       new RouteSpace(249, 607, -121),
       new RouteSpace(229, 546, -98),
       new RouteSpace(236, 484, -70),
       new RouteSpace(270, 431, -46),
-    ], false, 2),
+    ], locomotives: 2),
     55 => new Route(20, 33, GREEN, [
       new RouteSpace(286, 693, 90),
       new RouteSpace(286, 754, 90),
       new RouteSpace(286, 817, 90),
       new RouteSpace(287, 879, 90),
       new RouteSpace(287, 943, 90),
-    ], true),
+    ], tunnel: true),
     56 => new Route(20, 33, RED, [
       new RouteSpace(241, 667, 141),
       new RouteSpace(203, 716, 116),
@@ -269,12 +269,12 @@ function getRoutes() {
       new RouteSpace(188, 837, 84),
       new RouteSpace(202, 896, 65),
       new RouteSpace(240, 946, 42),
-    ], false, 2),
+    ], locomotives: 2),
     57 => new Route(22, 34, YELLOW, [
       new RouteSpace(277, 374, -129),
       new RouteSpace(265, 315, -73),
       new RouteSpace(303, 267, -25),
-    ], false, 1),
+    ], locomotives: 1),
     58 => new Route(23, 26, GRAY, [
       new RouteSpace(647, 1325, -184),
       new RouteSpace(584, 1311, -155),
@@ -326,7 +326,7 @@ function getRoutes() {
     10 => new Route(27, 33, BLACK, [
       new RouteSpace(382, 963, 146),
       new RouteSpace(326, 986, 167),
-    ], true),
+    ], tunnel: true),
     71 => new Route(28, 37, RED, [
       new RouteSpace(673, 473, 93),
     ]),
@@ -335,7 +335,7 @@ function getRoutes() {
       new RouteSpace(828, 1228, -13),
       new RouteSpace(884, 1205, -33),
       new RouteSpace(935, 1166, -39),
-    ], false, 2),
+    ], locomotives: 2),
     73 => new Route(30, 31, GRAY, [
       new RouteSpace(687, 1156, -119),
       new RouteSpace(658, 1103, -119),
@@ -352,7 +352,7 @@ function getRoutes() {
       new RouteSpace(725, 1152, -70),
       new RouteSpace(751, 1096, -57),
       new RouteSpace(796, 1052, -35),
-    ], false, 1),
+    ], locomotives: 1),
     76 => new Route(31, 39, YELLOW, [
       new RouteSpace(581, 915, -78),
       new RouteSpace(595, 854, -78),
@@ -367,7 +367,7 @@ function getRoutes() {
       new RouteSpace(621, 946, -8),
       new RouteSpace(676, 918, -48),
       new RouteSpace(696, 860, -92),
-    ], false, 1),
+    ], locomotives: 1),
     79 => new Route(32, 36, RED, [
       new RouteSpace(838, 974, 91),
     ]),
@@ -377,7 +377,16 @@ function getRoutes() {
     ]),
     81 => new Route(38, 39, GRAY, [
       new RouteSpace(658, 777, -147),
-    ], false, 1),
+    ], locomotives: 1),
   ];
+
+  // Any three cards can be used as a substitute for a Locomotive card (A player can play additional Locomotive cards as a substitute for a color card)
+  foreach ($routes as &$route) {
+    if ($route->locomotives > 0) {
+      $route->canPayWithAnySetOfCards = 3;
+    }
+  }
+
+  return $routes;
 }
 
