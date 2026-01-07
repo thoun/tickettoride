@@ -2484,6 +2484,7 @@ class Game {
                 mapDiv.querySelectorAll(`.city[data-selected]`).forEach((city) => city.dataset.selected = 'false');
                 break;
             case 'multiChooseInitialDestinations':
+                this.destinationSelection.hide();
                 Array.from(document.getElementsByClassName('player-turn-order')).forEach(elem => elem.remove());
                 break;
         }

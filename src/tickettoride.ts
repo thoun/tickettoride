@@ -175,6 +175,7 @@ export class Game implements TicketToRideGame {
                 mapDiv.querySelectorAll(`.city[data-selected]`).forEach((city: HTMLElement) => city.dataset.selected = 'false');
                 break;
             case 'multiChooseInitialDestinations':
+                this.destinationSelection.hide();
                 (Array.from(document.getElementsByClassName('player-turn-order')) as HTMLDivElement[]).forEach(elem => elem.remove());
                 break;
         }
