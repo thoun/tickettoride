@@ -52,6 +52,8 @@ class NordicCountriesMap extends Map {
             clienttranslate('You can only play 3 players maximum. Double routes are only available at 3 players.'),
             clienttranslate('Game start: Deal 5 tickets and keep at least 2.'),
             clienttranslate('All unselected tickets will be discarded from the deck.'),
+            clienttranslate('You can spend any set of 3 cards to replace a locomotive on ferries.'),
+            clienttranslate('You can spend any set of 4 cards to replace a color card on the Murmansk-Lieksa route.'),
         ];
 
         $this->vertical = true;

@@ -1569,7 +1569,7 @@ class DistributionPopin {
             distributionDlg.create('distributionPopin');
             distributionDlg.setTitle(title);
             const otherCardsForSet = this.trainCarsHand.filter(card => !(this.canUseLocomotives ? [0, this.claimingRoute.color] : [this.claimingRoute.color]).includes(card.type));
-            const showSet = this.claimingRoute.route.canPayWithAnySetOfCards > 0 && otherCardsForSet.length > this.claimingRoute.route.canPayWithAnySetOfCards;
+            const showSet = this.claimingRoute.route.canPayWithAnySetOfCards > 0 && otherCardsForSet.length >= this.claimingRoute.route.canPayWithAnySetOfCards;
             const locomotiveCards = this.canUseLocomotives ? this.trainCarsHand.filter(card => card.type == 0).slice(0, this.cost) : [];
             let minLocomotives = showSet ? 0 : this.claimingRoute.route.locomotives;
             const maxLocomotives = this.canUseLocomotives ? locomotiveCards.length : 0;
@@ -1695,7 +1695,12 @@ class DistributionPopin {
         element.innerText = `${selectedCardCount}`;
         const validCount = selectedCardCount === this.cost;
         element.dataset.valid = JSON.stringify(validCount);
-        const valid = validCount && this.getSelectedCardCount(true) >= this.claimingRoute.route.locomotives;
+        let valid = validCount && this.getSelectedCardCount(true) >= this.claimingRoute.route.locomotives;
+        if (this.claimingRoute.route.canPayWithAnySetOfCards && this.distributionCards[99]) {
+            if (this.distributionCards[99].length % this.claimingRoute.route.canPayWithAnySetOfCards !== 0) {
+                valid = false;
+            }
+        }
         document.getElementById('confirmDistribution-btn').disabled = !valid;
         const useMax0 = document.getElementById(`use-maximum-0-btn`);
         const useMaxColor = document.getElementById(`use-maximum-${this.claimingRoute.color}-btn`);

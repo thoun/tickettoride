@@ -58,7 +58,7 @@ trait UtilTrait {
 
     function getMapCode(): string {
         $mapOption = (int)$this->getUniqueValueFromDB("SELECT `global_value` FROM `global` where `global_id` = ".MAP_OPTION);
-        return MAP_LIST[$mapOption] ?? MAP_LIST[Table::getBgaEnvironment() === 'studio' ? 3 : 1];
+        return MAP_LIST[$mapOption] ?? MAP_LIST[Table::getBgaEnvironment() === 'studio' ? 5 : 1];
     }
 
     function getMap(): Map {

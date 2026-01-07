@@ -41,6 +41,10 @@ class ChooseAction extends GameState {
         $costForRoute = [];
         foreach($possibleRoutes as $possibleRoute) {
             $colorsToTest = $possibleRoute->color > 0 ? [0, $possibleRoute->color] : [0,1,2,3,4,5,6,7,8];
+            // if all route spaces are locomotives, you can only pay it with locomotives
+            if ($possibleRoute->locomotives === $possibleRoute->number) {
+                $colorsToTest = [0];
+            }
             $costByColor = [];
             foreach($colorsToTest as $colorToTest) {
                 $costByColor[$colorToTest] = $this->game->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest);
