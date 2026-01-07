@@ -1681,7 +1681,7 @@ class DistributionPopin {
     }
     getSelectedCardCount(locomotivesAndSetOnly = false) {
         let value = this.distributionCards[0]?.length ?? 0;
-        if (!locomotivesAndSetOnly) {
+        if (!locomotivesAndSetOnly && this.claimingRoute.color !== 0) {
             value += this.distributionCards[this.claimingRoute.color]?.length ?? 0;
         }
         if (this.claimingRoute.route.canPayWithAnySetOfCards && this.distributionCards[99]) {
