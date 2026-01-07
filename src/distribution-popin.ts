@@ -25,11 +25,9 @@ export class DistributionPopin {
             distributionDlg.create('distributionPopin');
             distributionDlg.setTitle(title);
 
-            const otherCardsForSet = this.trainCarsHand.filter(card => !(this.canUseLocomotives ? [0, this.claimingRoute.color] : [this.claimingRoute.color]).includes(card.type));
-            const showSet = this.claimingRoute.route.canPayWithAnySetOfCards > 0 && otherCardsForSet.length >= this.claimingRoute.route.canPayWithAnySetOfCards;
 
             const locomotiveCards = this.canUseLocomotives ? this.trainCarsHand.filter(card => card.type == 0).slice(0, this.cost) : [];
-            let minLocomotives = showSet ? 0 : this.claimingRoute.route.locomotives;
+            let minLocomotives = this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? 0 : this.claimingRoute.route.locomotives;
             const maxLocomotives = this.canUseLocomotives ? locomotiveCards.length : 0;
             const showLocomotives = this.canUseLocomotives ? (minLocomotives > 0 || maxLocomotives > 0) : false;
 
@@ -38,26 +36,36 @@ export class DistributionPopin {
             let maxColorCards = 0;
             if (this.claimingRoute.color > 0) {
                 colorCards = this.trainCarsHand.filter(card => card.type == this.claimingRoute.color).slice(0, this.cost);
-                minColorCards = showSet ? 0 : Math.max(0, this.cost - maxLocomotives);
-                maxColorCards = Math.min(this.cost - minLocomotives, colorCards.length);
+                minColorCards = this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? 0 : Math.max(0, Math.min(this.cost - minLocomotives, this.cost - maxLocomotives));
+                maxColorCards = Math.min(this.cost - this.claimingRoute.route.locomotives, colorCards.length);
 
-                if (!showSet && maxColorCards < this.cost) {
+                if (!this.claimingRoute.route.canPayWithAnySetOfCards && maxColorCards < this.cost) {
                     minLocomotives = Math.min(maxLocomotives, this.cost - maxColorCards);
                 }
             }
             const showColorCards = minColorCards > 0 || maxColorCards > 0;
+
+            const locomotiveCardsToDisplay = locomotiveCards.slice(0, maxLocomotives);
+            const colorCardsToDisplay = colorCards.slice(0, maxColorCards);
+            const singleCards = [...locomotiveCardsToDisplay, ...colorCardsToDisplay];
+
+            const otherCardsForSet = this.trainCarsHand.filter(card => !singleCards.some(sc => sc.id == card.id));
+            const showSet = this.claimingRoute.route.canPayWithAnySetOfCards > 0 && otherCardsForSet.length >= this.claimingRoute.route.canPayWithAnySetOfCards;
             
             let html = ``;
             if (showLocomotives) {
+                this.distributionCards[0] = [];
                 if (this.claimingRoute.route.locomotives) {
                     html += `${_('${number} locomotives required').replace('${number}', `${this.claimingRoute.route.locomotives}`)}<br>`
                 }
-                html += this.cardSection(locomotiveCards, showSet ? null : 0);
+                html += this.cardSection(locomotiveCardsToDisplay, this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : 0);
             }
             if (showColorCards) {
-                html += this.cardSection(colorCards, showSet ? null : this.claimingRoute.color);
+                this.distributionCards[this.claimingRoute.color] = [];
+                html += this.cardSection(colorCardsToDisplay, this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : this.claimingRoute.color);
             }
-            if (showSet) {
+            if (this.claimingRoute.route.canPayWithAnySetOfCards > 0) {
+                this.distributionCards[99] = [];
                 html += `${_('Any set of ${number} cards').replace('${number}', `${this.claimingRoute.route.canPayWithAnySetOfCards}`)}<br>` + this.cardSection(otherCardsForSet, null);
             }
             html += `
@@ -73,8 +81,7 @@ export class DistributionPopin {
             distributionDlg.show();
 
             if (showLocomotives) {
-                this.distributionCards[0] = [];
-                locomotiveCards.forEach((card, index) => {
+                locomotiveCardsToDisplay.forEach((card, index) => {
                     const element = document.getElementById(`distribution-${card.id}`);
                     if (index < minLocomotives) {
                         element.classList.add('selected', 'grayed');
@@ -94,8 +101,7 @@ export class DistributionPopin {
                 }
             }
             if (showColorCards) {
-                this.distributionCards[this.claimingRoute.color] = [];
-                colorCards.forEach((card, index) => {
+                colorCardsToDisplay.forEach((card, index) => {
                     const element = document.getElementById(`distribution-${card.id}`);
                     if (index < minColorCards) {
                         element.classList.add('selected', 'grayed');
@@ -115,7 +121,6 @@ export class DistributionPopin {
                 }
             }
             if (showSet) {
-                this.distributionCards[99] = [];
                 otherCardsForSet.forEach(card => {
                     const element = document.getElementById(`distribution-${card.id}`);
                     element.classList.add('selectable');
