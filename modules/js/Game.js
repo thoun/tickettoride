@@ -1549,9 +1549,12 @@ class PlayerTable {
 }
 
 class DistributionResult {
-    constructor(cardIds, auto = false) {
-        this.cardIds = cardIds;
+    constructor(distributionCards, auto = false) {
         this.auto = auto;
+        this.cardIds = distributionCards.flat();
+        const colorKey = Object.keys(distributionCards).map(Number).filter(n => ![0, 99].includes(n))[0];
+        const hasColorCards = colorKey && distributionCards[colorKey].length > 0;
+        this.locomotivesOnly = !hasColorCards;
     }
 }
 class DistributionPopin {
@@ -1665,11 +1668,11 @@ class DistributionPopin {
             this.updateTotal();
             const closeFn = (result) => { resolve(result ? new DistributionResult(result) : null); distributionDlg.destroy(); };
             distributionDlg.replaceCloseCallback(() => closeFn(null));
-            document.getElementById('confirmDistribution-btn').addEventListener('click', () => closeFn(this.distributionCards.flat()));
+            document.getElementById('confirmDistribution-btn').addEventListener('click', () => closeFn(this.distributionCards));
             document.getElementById('cancelDistribution-btn').addEventListener('click', () => closeFn(null));
             if ((minLocomotives + minColorCards) === this.cost) {
                 // all possible cards are preselected, meaning the player doesn't have a choice
-                resolve(new DistributionResult(this.distributionCards.flat(), true));
+                resolve(new DistributionResult(this.distributionCards, true));
                 distributionDlg.destroy();
             }
         });
@@ -1834,32 +1837,6 @@ class ChooseActionState {
             return;
         }
         this.claimingRoute = { route, color, distribution: null };
-        const locomotiveRestriction = this.game.getMap().locomotiveUsageRestriction;
-        const canUseLocomotives = locomotiveRestriction === 0
-            || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
-            || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
-        if (route.canPayWithAnySetOfCards || (locomotiveRestriction && canUseLocomotives)) {
-            const confirmationQuestion = _("Cards to take ${color} route from ${from} to ${to}")
-                .replace('${color}', getColor(this.claimingRoute.route.color, 'route'))
-                .replace('${from}', this.game.getCityName(this.claimingRoute.route.from))
-                .replace('${to}', this.game.getCityName(this.claimingRoute.route.to));
-            new DistributionPopin(this.args._private.trainCarsHand, this.claimingRoute, this.claimingRoute.route.spaces.length, canUseLocomotives).show(confirmationQuestion).then((distribution) => {
-                if (distribution) {
-                    this.claimingRoute.distribution = distribution.cardIds;
-                    if (distribution.auto) {
-                        this.clickedRouteDistributionChosen();
-                    }
-                    else {
-                        // do not ask for confirmation, the popin is a kind of confirmation
-                        this.claimRoute();
-                    }
-                }
-                else {
-                    this.cancelRouteClaim();
-                }
-            });
-            return;
-        }
         this.clickedRouteDistributionChosen();
     }
     clickedRouteDistributionChosen() {
@@ -1913,9 +1890,17 @@ class ChooseActionState {
         }
         this.clickedRouteDoubleRouteConfirmed(route);
     }
+    showDistributionPopin(route) {
+        const locomotiveRestriction = this.game.getMap().locomotiveUsageRestriction;
+        const canUseLocomotives = locomotiveRestriction === 0
+            || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
+            || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
+        return route.canPayWithAnySetOfCards > 0 || (locomotiveRestriction && canUseLocomotives);
+    }
     clickedRouteDoubleRouteConfirmed(route) {
         document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
-        if ((route.color === 0 || route.tunnel) && this.game.playerTable.getSelectedColor() === null) {
+        const showDistributionPopin = this.showDistributionPopin(route);
+        if ((route.color === 0 || route.tunnel || showDistributionPopin) && this.game.playerTable.getSelectedColor() === null) {
             const possibleColors = [];
             const costForRoute = this.args.costForRoute[route.id];
             if (costForRoute) {
@@ -1929,13 +1914,13 @@ class ChooseActionState {
             const possibleColorsWithoutLocomotives = route.tunnel || possibleColors.length <= 1 ?
                 possibleColors :
                 possibleColors.filter(color => color != 0);
-            if (possibleColorsWithoutLocomotives.length == 1) {
-                this.clickedRouteColorChosen(route, possibleColorsWithoutLocomotives[0]);
+            if (showDistributionPopin || possibleColorsWithoutLocomotives.length > 1) {
+                this.setActionBarChooseColor(route, possibleColorsWithoutLocomotives, showDistributionPopin);
+                this.game.playerTable.setSelectableTrainCarColors(route, possibleColorsWithoutLocomotives);
                 return;
             }
-            else if (possibleColorsWithoutLocomotives.length > 1) {
-                this.setActionBarChooseColor(route, possibleColorsWithoutLocomotives);
-                this.game.playerTable.setSelectableTrainCarColors(route, possibleColorsWithoutLocomotives);
+            else {
+                this.clickedRouteColorChosen(route, possibleColorsWithoutLocomotives[0]);
                 return;
             }
         }
@@ -1944,7 +1929,7 @@ class ChooseActionState {
     /**
      * Sets the action bar (title and buttons) for the color route.
      */
-    setActionBarChooseColor(route, possibleColors) {
+    setActionBarChooseColor(route, possibleColors, showDistributionPopin) {
         const confirmationQuestion = _("Choose color for the route from ${from} to ${to}")
             .replace('${from}', this.game.getCityName(route.from))
             .replace('${to}', this.game.getCityName(route.to));
@@ -1956,6 +1941,33 @@ class ChooseActionState {
             });
             this.bga.statusBar.addActionButton(label, () => this.clickedRouteColorChosen(route, color), { id: `claimRouteWithColor_button${color}`, });
         });
+        if (showDistributionPopin) {
+            this.claimingRoute = { route, color: route.color, distribution: null };
+            this.bga.statusBar.addActionButton(_("Custom..."), () => {
+                const locomotiveRestriction = this.game.getMap().locomotiveUsageRestriction;
+                const canUseLocomotives = locomotiveRestriction === 0
+                    || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
+                    || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
+                new DistributionPopin(this.args._private.trainCarsHand, this.claimingRoute, this.claimingRoute.route.spaces.length, canUseLocomotives).show(confirmationQuestion).then((distribution) => {
+                    if (distribution) {
+                        if (distribution.locomotivesOnly) {
+                            this.claimingRoute.color = 0;
+                        }
+                        this.claimingRoute.distribution = distribution.cardIds;
+                        if (distribution.auto) {
+                            this.clickedRouteDistributionChosen();
+                        }
+                        else {
+                            // do not ask for confirmation, the popin is a kind of confirmation
+                            this.claimRoute();
+                        }
+                    }
+                    else {
+                        this.cancelRouteClaim();
+                    }
+                });
+            }, { id: `claimRouteWithColor_button99`, });
+        }
         this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelRouteClaim(), { color: 'secondary' });
     }
     /**

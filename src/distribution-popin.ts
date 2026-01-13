@@ -1,10 +1,18 @@
 import { ClaimingRoute, TrainCar } from "./tickettoride.d";
 
 export class DistributionResult {
+    public cardIds: number[];
+    public locomotivesOnly: boolean;
+
     constructor(
-        public cardIds: number[],
+        distributionCards: number[][],
         public auto: boolean = false,
-    ) {}
+    ) {
+        this.cardIds = distributionCards.flat();
+        const colorKey = Object.keys(distributionCards).map(Number).filter(n => ![0,99].includes(n))[0];
+        const hasColorCards = colorKey && distributionCards[colorKey].length > 0;
+        this.locomotivesOnly = !hasColorCards;
+    }
 }
 
 export class DistributionPopin {
@@ -130,14 +138,14 @@ export class DistributionPopin {
 
             this.updateTotal();
 
-            const closeFn = (result: number[] | null) => { resolve(result ? new DistributionResult(result) : null); distributionDlg.destroy(); };
+            const closeFn = (result: number[][] | null) => { resolve(result ? new DistributionResult(result) : null); distributionDlg.destroy(); };
             distributionDlg.replaceCloseCallback(() => closeFn(null));
-            document.getElementById('confirmDistribution-btn').addEventListener('click', () => closeFn(this.distributionCards.flat()));
+            document.getElementById('confirmDistribution-btn').addEventListener('click', () => closeFn(this.distributionCards));
             document.getElementById('cancelDistribution-btn').addEventListener('click', () => closeFn(null));
 
             if ((minLocomotives + minColorCards) === this.cost) {
                 // all possible cards are preselected, meaning the player doesn't have a choice
-                resolve(new DistributionResult(this.distributionCards.flat(), true));
+                resolve(new DistributionResult(this.distributionCards, true));
                 distributionDlg.destroy();
             }
         });
