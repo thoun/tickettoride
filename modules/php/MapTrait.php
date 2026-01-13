@@ -243,18 +243,19 @@ trait MapTrait {
         $forbidLocomotiveAsJoker = !$canUseRestrictedLocomotiveAsJoker;
 
         if ($distributionCards) {
-            $locomotiveCount = $forbidLocomotiveAsJoker ? 0 : Arrays::count($distributionCards, fn($card) => $card->type == 0);
-            $colorCount = $color === 0 ? 0 : Arrays::count($distributionCards, fn($card) => $card->type == $color);
+            $locomotiveCards = $forbidLocomotiveAsJoker ? [] : Arrays::filter($distributionCards, fn($card) => $card->type == 0);
+            $colorCards = $color === 0 ? [] : array_slice(Arrays::filter($distributionCards, fn($card) => $card->type == $color), 0, ($route->number + $extraCardsCost) - $route->locomotives);
             $setCount = 0;
             if ($route->canPayWithAnySetOfCards) {
-                $setCardsCount = Arrays::count($distributionCards, fn($card) => !in_array($card->type, $forbidLocomotiveAsJoker ? [$color] : [0, $color]));
+                $singleCards = array_merge($locomotiveCards, $colorCards);
+                $setCardsCount = Arrays::count($distributionCards, fn($card) => !Arrays::some($singleCards, fn($sc) => $sc->id == $card->id));
                 $setCount = (int)floor($setCardsCount / $route->canPayWithAnySetOfCards);
             }
             // check if valid
-            if (($locomotiveCount + $setCount) < $route->locomotives) {
+            if ((count($locomotiveCards) + $setCount) < $route->locomotives) {
                 return null;
             } 
-            if (($locomotiveCount + $colorCount + $setCount) === ($route->number + $extraCardsCost)) {
+            if ((count($locomotiveCards) + count($colorCards) + $setCount) === ($route->number + $extraCardsCost)) {
                 return $distributionCards;
             } else {
                 return null;

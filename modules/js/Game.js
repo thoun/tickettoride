@@ -1586,10 +1586,10 @@ class DistributionPopin {
                     minLocomotives = Math.min(maxLocomotives, this.cost - maxColorCards);
                 }
             }
-            const showColorCards = minColorCards > 0 || maxColorCards > 0;
+            const showColorCards = this.claimingRoute.color > 0 && (minColorCards > 0 || maxColorCards > 0);
             const locomotiveCardsToDisplay = locomotiveCards.slice(0, maxLocomotives);
-            const colorCardsToDisplay = colorCards.slice(0, maxColorCards);
-            const singleCards = [...locomotiveCardsToDisplay, ...colorCardsToDisplay];
+            const colorCardsToDisplay = colorCards?.slice(0, maxColorCards);
+            const singleCards = [...locomotiveCardsToDisplay, ...(colorCardsToDisplay ?? [])];
             const otherCardsForSet = this.trainCarsHand.filter(card => !singleCards.some(sc => sc.id == card.id));
             const showSet = this.claimingRoute.route.canPayWithAnySetOfCards > 0 && otherCardsForSet.length >= this.claimingRoute.route.canPayWithAnySetOfCards;
             let html = ``;
