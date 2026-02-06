@@ -21,7 +21,6 @@ class ChooseAction extends GameState {
                 "drawSecondCard" => ST_PLAYER_DRAW_SECOND_CARD,
                 "drawDestinations" => ST_PLAYER_CHOOSE_ADDITIONAL_DESTINATIONS,
                 "tunnel" => ST_PLAYER_CONFIRM_TUNNEL,
-                "nextPlayer" => ST_NEXT_PLAYER,
             ]
         );
     }
@@ -57,15 +56,35 @@ class ChooseAction extends GameState {
         }
 
         $canTakeTrainCarCards = $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true, true);
+        $canBuildStation = false;
+        $possibleStations = null;
+        $costForStation = null;
+        if ($this->game->getMap()->stations !== null) {
+            $remainingStations = $this->game->buildingManager->getRemainingStations($activePlayerId);
+            $canBuildStation = $remainingStations > 0 && $this->game->buildingManager->canPayForStation($trainCarsHand, 4 - $remainingStations) != null;
+            $possibleStations = $canBuildStation ? $this->game->buildingManager->claimableStations() : [];
+            $costForStation = [];
+            if ($canBuildStation) {
+                $colorsToTest = [0,1,2,3,4,5,6,7,8];
+                $costByColor = [];
+                foreach($colorsToTest as $colorToTest) {
+                    $costByColor[$colorToTest] = $this->game->buildingManager->canPayForStation($trainCarsHand, 4 - $remainingStations, $colorToTest);
+                }
+                $costForStation = array_map(fn($cardCost) => $cardCost == null ? null : array_map(fn($card) => $card->type, $cardCost), $costByColor);
+            }
+        }
 
-        $canPass = !$canClaimARoute && $maxDestinationsPick == 0 && $canTakeTrainCarCards == 0;
+        $canPass = !$canClaimARoute && !$canBuildStation && $maxDestinationsPick == 0 && $canTakeTrainCarCards == 0;
 
         $args = [
             'possibleRoutes' => $possibleRoutes,
+            'possibleStations' => $possibleStations,
             'costForRoute' => $costForRoute,
             'maxHiddenCardsPick' => $maxHiddenCardsPick,
             'maxDestinationsPick' => $maxDestinationsPick,
             'canTakeTrainCarCards' => $canTakeTrainCarCards,
+            'canBuildStation' => $canBuildStation,
+            'costForStation' => $costForStation,
             'canPass' => $canPass,
             '_private' => [
                 $activePlayerId => [
@@ -94,7 +113,7 @@ class ChooseAction extends GameState {
         $this->game->incStat($drawNumber, 'collectedHiddenTrainCarCards');
         $this->game->incStat($drawNumber, 'collectedHiddenTrainCarCards', $activePlayerId);
 
-       return $drawNumber == 1 && $this->game->trainCarManager->canTakeASecondCard(null) ? DrawSecondCard::class : ST_NEXT_PLAYER;
+       return $drawNumber == 1 && $this->game->trainCarManager->canTakeASecondCard(null) ? DrawSecondCard::class : NextPlayer::class;
     }
     
     #[PossibleAction]
@@ -110,7 +129,7 @@ class ChooseAction extends GameState {
             $this->game->incStat(1, 'collectedVisibleLocomotives', $activePlayerId);
         }
 
-        return $this->game->trainCarManager->canTakeASecondCard($card->type) ? DrawSecondCard::class : ST_NEXT_PLAYER;
+        return $this->game->trainCarManager->canTakeASecondCard($card->type) ? DrawSecondCard::class : NextPlayer::class;
     }
     
     #[PossibleAction]
@@ -191,6 +210,40 @@ class ChooseAction extends GameState {
         }
 
         $this->game->applyClaimRoute($activePlayerId, $routeId, $color, 0, distributionCards: $distributionCards);
+
+        return NextPlayer::class;
+    }
+  	
+    /**
+     * Build a station on a city with seleced color
+     */
+    #[PossibleAction]
+    public function actBuildStation(int $cityId, int $color, int $activePlayerId) {
+
+        $remainingStations = $this->game->buildingManager->getRemainingStations($activePlayerId);
+        if ($remainingStations <= 0) {
+            throw new UserException("No station remaining");
+        }
+
+        if ($this->game->getUniqueIntValueFromDB( "SELECT count(*) FROM `placed_buildings` WHERE `city_id` = $cityId") > 0) {
+            throw new UserException("City is already claimed.");
+        }
+        
+        $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
+        $colorAndLocomotiveCards = $this->game->buildingManager->canPayForStation($trainCarsHand, 4 - $remainingStations, $color);
+        
+        if ($colorAndLocomotiveCards == null || count($colorAndLocomotiveCards) < 4 - $remainingStations) {
+            throw new UserException("Not enough cards to build a station.");
+        }
+
+        $possibleStations = $this->game->buildingManager->claimableStations();
+        if (!Arrays::some($possibleStations, fn($possibleStation) => $possibleStation->id == $cityId)) {
+            throw new UserException("You can't claim this city");
+        }
+
+        $this->game->buildingManager->applyBuildStation($activePlayerId, $cityId, $color);
+
+        return NextPlayer::class;
     }
     
     #[PossibleAction]
@@ -199,7 +252,7 @@ class ChooseAction extends GameState {
             throw new UserException("You cannot pass");
         }
 
-        return ST_NEXT_PLAYER;
+        return NextPlayer::class;
     }
 
     function zombie(int $playerId, array $args) {

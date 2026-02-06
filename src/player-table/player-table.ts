@@ -1,4 +1,4 @@
-import { TicketToRideGame, TicketToRidePlayer, TrainCar, Destination, Route } from "../tickettoride.d";
+import { TicketToRideGame, TicketToRidePlayer, TrainCar, Destination, Route, City } from "../tickettoride.d";
 import { PlayerDestinations } from "./player-destinations";
 import { PlayerTrainCars } from "./player-train-cars";
 
@@ -70,6 +70,10 @@ export class PlayerTable {
     
     public setSelectableTrainCarColors(route: Route | null, possibleColors: number[] | null = null) {
         this.playerTrainCars.setSelectableTrainCarColors(route, possibleColors);
+    }
+    
+    public setSelectableTrainCarColorsForStation(city: City | null, possibleColors: number[] | null = null) {
+        this.playerTrainCars.setSelectableTrainCarColorsForStation(city, possibleColors);
     }
 
     public getSelectedColor(): number | null {

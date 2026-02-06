@@ -6,7 +6,7 @@ import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseActi
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
 import { getColor } from "./stock-utils";
-import { ClaimingRoute, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar } from "./tickettoride.d";
+import { City, ClaimingRoute, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar } from "./tickettoride.d";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 
@@ -25,6 +25,7 @@ export class Game implements TicketToRideGame {
     private endScore: EndScore;
 
     private trainCarCounters: Counter[] = [];
+    public stationCounters: Counter[] = [];
     private trainCarCardCounters: Counter[] = [];
     public destinationCardCounters: Counter[] = [];
     private completedDestinationsCounter: Counter;
@@ -80,7 +81,7 @@ export class Game implements TicketToRideGame {
 
         console.log('gamedatas', gamedatas);
 
-        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.map.illustration);
+        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.builtStations, gamedatas.map.illustration);
         this.trainCarSelection = new TrainCarSelection(this, 
             gamedatas.visibleTrainCards,
             gamedatas.trainCarDeckCount,
@@ -283,7 +284,11 @@ export class Game implements TicketToRideGame {
                 <div id="train-car-counter-${player.id}-wrapper" class="counter train-car-counter">
                     <div class="icon train" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> 
                     <span id="train-car-counter-${player.id}"></span>
-                </div>
+                </div>${this.gamedatas.map.stations !== null ? `
+                <div id="station-counter-${player.id}-wrapper" class="counter station-counter">
+                    <div class="icon station" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> 
+                    <span id="station-counter-${player.id}"></span>
+                </div>` : ''}
                 <div id="train-car-card-counter-${player.id}-wrapper" class="counter train-car-card-counter">
                     <div class="icon train-car-card-icon"></div> 
                     <span id="train-car-card-counter-${player.id}"></span>
@@ -298,6 +303,13 @@ export class Game implements TicketToRideGame {
             trainCarCounter.create(`train-car-counter-${player.id}`);
             trainCarCounter.setValue(player.remainingTrainCarsCount);
             this.trainCarCounters[playerId] = trainCarCounter;
+
+            if (this.gamedatas.map.stations !== null) {
+                const stationCounter = new ebg.counter();
+                stationCounter.create(`station-counter-${player.id}`);
+                stationCounter.setValue(player.remainingStations);
+                this.stationCounters[playerId] = stationCounter;
+            }
 
             const trainCarCardCounter = new ebg.counter();
             trainCarCardCounter.create(`train-car-card-counter-${player.id}`);
@@ -504,6 +516,7 @@ export class Game implements TicketToRideGame {
         const notifs = [
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
+            ['builtStation', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
@@ -517,6 +530,7 @@ export class Game implements TicketToRideGame {
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
+            ['remainingStations', skipEndOfGameAnimations ? 1 : 1500],
             ['scoreDestinationGrandTour', skipEndOfGameAnimations ? 1 : 2000],
             ['highlightWinnerScore', 1],
         ];
@@ -602,6 +616,26 @@ export class Game implements TicketToRideGame {
         }], playerId);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
+        }
+    }
+
+    /** 
+     * Update built stations.
+     */ 
+    notif_builtStation(notif: Notif<NotifBuiltStationArgs>) {
+        const playerId = notif.args.playerId;
+        const city: City = notif.args.city;
+
+        this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
+        this.stationCounters[playerId].incValue(-1);
+        this.map.setBuiltStations([{
+            playerId,
+            cityId: city.id
+        }], playerId);
+        if (playerId == this.getPlayerId()) {
+            this.playerTable.removeCards(notif.args.removeCards);
+
+            document.getElementById('stations-information-button').classList.add('visible');
         }
     }
 
@@ -701,6 +735,13 @@ export class Game implements TicketToRideGame {
      */ 
     notif_longestPathWinner(notif: Notif<NotifBadgeArgs>) {
         this.endScore?.setLongestPathWinner(notif.args.playerId, notif.args.length);
+    }
+
+    /** 
+     * Animate remaining stations for end score.
+     */ 
+    notif_remainingStations(notif: Notif<NotifRemainingStationsArgs>) {
+        this.endScore?.showRemainingStations(this.gamedatas.players[notif.args.playerId].color, notif.args.remainingStations, this.isFastEndScoring());
     }
 
     /** 

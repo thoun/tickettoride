@@ -18,7 +18,6 @@
 
 namespace Bga\Games\TicketToRide;
 
-use Bga\GameFramework\Components\Deck;
 use Bga\GameFramework\Table;
 use Bga\Games\TicketToRide\States\DealInitialDestinations;
 
@@ -27,6 +26,7 @@ require_once('framework-prototype/Helpers/Arrays.php');
 require_once('constants.inc.php');
 require_once(__DIR__.'/objects/map.php');
 require_once(__DIR__.'/objects/route.php');
+require_once(__DIR__.'/objects/building.php');
 require_once(__DIR__.'/objects/destination.php');
 require_once(__DIR__.'/objects/train-car.php');
 require_once(__DIR__.'/objects/tunnel-attempt.php');
@@ -42,6 +42,7 @@ class Game extends Table {
 
     public DestinationManager $destinationManager;
     public TrainCarManager $trainCarManager;
+    public BuildingManager $buildingManager;
 
     public \Map $map;
 
@@ -54,6 +55,7 @@ class Game extends Table {
 
         $this->destinationManager = new DestinationManager($this);
         $this->trainCarManager = new TrainCarManager($this);
+        $this->buildingManager = new BuildingManager($this);
 	}
 
     /*
@@ -186,6 +188,7 @@ class Game extends Table {
                 'multilingualPdfRulesUrl' => $this->getMap()->multilingualPdfRulesUrl,
                 'rulesDifferences' => $this->getMap()->rulesDifferences,
                 'vertical' => $this->getMap()->vertical,
+                'stations' => $this->getMap()->stations,
             ],
         ];
     
@@ -199,6 +202,7 @@ class Game extends Table {
         // Gather all information about current game situation (visible by player $currentPlayerId).
 
         $result['claimedRoutes'] = $this->getClaimedRoutes();
+        $result['builtStations'] = $this->buildingManager->getPlacedStations();
         $visibleTrainCards = $this->trainCarManager->getVisibleTrainCarCards();
         $spotsCards = [];
         foreach($visibleTrainCards as $visibleTrainCard) {
@@ -217,6 +221,10 @@ class Game extends Table {
             $player['trainCarsCount'] = $this->trainCarManager->getPlayerHandCount($playerId);
             $player['destinationsCount'] = $this->destinationManager->getPlayerHandCount($playerId);
             $player['remainingTrainCarsCount'] = $this->getRemainingTrainCarsCount($playerId);
+            $remainingStations = $this->buildingManager->getRemainingStations($playerId);
+            if ($remainingStations !== null) {
+                $player['remainingStations'] = $remainingStations;
+            }
 
             if ($isEnd) {
                 $player['completedDestinations'] = $this->destinationManager->getCompletedDestinations($playerId);
@@ -310,8 +318,6 @@ class Game extends Table {
 
         // in case there is less than 5 visible cards on the table, we refill with newly discarded cards
         $this->trainCarManager->checkVisibleTrainCarCards();
-
-        $this->gamestate->nextState('nextPlayer'); 
     }
 
     function endTunnelAttempt(bool $storedTunnelAttempt) {

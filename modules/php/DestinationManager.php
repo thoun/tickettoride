@@ -4,14 +4,19 @@ declare(strict_types=1);
 namespace Bga\Games\TicketToRide;
 
 use Bga\GameFramework\Components\Deck;
+use Bga\GameFramework\SystemException;
+use Bga\GameFramework\UserException;
 
 class DestinationManager {
 
     public Deck $destinations;
 
+    protected \Bga\GameFramework\Bga $bga;
+
     function __construct(
         protected Game $game,
     ) {
+        $this->bga = $game->bga;
         $this->destinations = $this->game->deckFactory->createDeck('destination');
     }
 
@@ -20,7 +25,7 @@ class DestinationManager {
      */    
     /*private but used for DebugUtilTrait*/ function getDestinationFromDb(?array $dbObject): \Destination {
         if (!$dbObject || !array_key_exists('id', $dbObject)) {
-            throw new \BgaSystemException("Destination doesn't exists ".json_encode($dbObject));
+            throw new SystemException("Destination doesn't exists ".json_encode($dbObject));
         }
         return new \Destination($dbObject, $this->game->getMap()->destinations);
     }
@@ -128,11 +133,11 @@ class DestinationManager {
      */
     private function keepDestinationCards(int $playerId, array $ids, int $minimum, bool $toDeckBottom): void {
         if (count($ids) < $minimum) {
-            throw new \BgaUserException("You must keep at least $minimum cards.");
+            throw new UserException("You must keep at least $minimum cards.");
         }
 
         if (count($ids) > 0 && $this->game->getUniqueIntValueFromDB("SELECT count(*) FROM destination WHERE `card_location` != 'pick$playerId' AND `card_id` in (".implode(', ', $ids).")") > 0) {
-            throw new \BgaUserException("Selected cards are not available.");
+            throw new UserException("Selected cards are not available.");
         }
 
         $this->destinations->moveCards($ids, 'hand', $playerId);
@@ -215,22 +220,31 @@ class DestinationManager {
             if (!in_array($destination->id, $alreadyCompleted)) {
                 $destinationRoutes = $this->game->getDestinationRoutes($playerId, $destination);
                 if ($destinationRoutes != null) {
-                    $this->game->DbQuery("UPDATE `destination` SET `completed` = 1 where `card_id` = $destination->id");
-
-                    $this->game->notify->player($playerId, 'destinationCompleted', clienttranslate('${you} completed a new destination : ${from} - ${to}'), [
-                        'playerId' => $playerId,
-                        'player_name' => $this->game->getPlayerNameById($playerId),
-                        'destination' => $destination,
-                        'from' => $this->game->getCityName($destination->from),
-                        'to' => $this->game->getLogTo($destination),
-                        'you' => clienttranslate('You'),
-                        'i18n' => ['you'],
-                        'destinationRoutes' => $destinationRoutes,
-                    ]);
-
-                    $this->game->playerStats->inc('completedDestinations', 1, $playerId, updateTableStat: true);
+                    $this->markCompletedDestination($playerId, $destination, $destinationRoutes);
                 }
             }
         }
+    }
+
+    function markCompletedDestination(int $playerId, object $destination, array $destinationRoutes, array $stations = []) {
+        $this->game->DbQuery("UPDATE `destination` SET `completed` = 1 where `card_id` = $destination->id");
+
+        $message = count($stations) > 0 ?
+            clienttranslate('${you} completed a new destination : ${from} - ${to} using station(s) : ${city_name}') :
+            clienttranslate('${you} completed a new destination : ${from} - ${to}');
+        $this->bga->notify->player($playerId, 'destinationCompleted', $message, [
+            'playerId' => $playerId,
+            'player_name' => $this->game->getPlayerNameById($playerId),
+            'destination' => $destination,
+            'from' => $this->game->getCityName($destination->from),
+            'to' => $this->game->getCityName($destination->to),
+            'you' => clienttranslate('You'),
+            'i18n' => ['you'],
+            'destinationRoutes' => $destinationRoutes,
+            'destinationStations' => $stations,
+            'city_name' => implode(', ', array_map(fn($station) => $this->game->getCityName($station), $stations)),
+        ]);
+
+        $this->bga->playerStats->inc('completedDestinations', 1, $playerId, updateTableStat: true);
     }
 }

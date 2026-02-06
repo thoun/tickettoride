@@ -26,6 +26,7 @@ class Map {
     public ?string $multilingualPdfRulesUrl = null; // PDF rules URL to display when it's not the base game
     public ?array $rulesDifferences = null; // text summary of rules differences to display when it's not the base game
     public bool $vertical = false;
+    public ?int $stations = null;
     public ?array $mandalaPoints = null;
 
     public function __construct(

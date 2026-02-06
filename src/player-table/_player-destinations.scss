@@ -139,3 +139,22 @@
         }  
     }
 }
+
+#stations-information-button {
+    position: absolute;
+    top: 0;
+    right: -32px;
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+    color: #71d904;
+    text-shadow: 1px 1px 4px black;
+    cursor: pointer;
+    pointer-events: all;
+    display: none;
+
+    &.visible {
+        display: unset;
+        animation: last-round-animation 2s 1 forwards ease-in-out;
+    }
+}

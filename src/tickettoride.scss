@@ -2,6 +2,8 @@
 // new colors (from end score train image)
 $player-colors: ("red": "e3001a", "green": "41a62a", "blue": "0056aa", "yellow": "ffed00", "purple": "af0ac2");
 
+$playerColors: "0056aa", "41a62a", "af0ac2", "e3001a", "ffed00";
+
 @import 'playerboards';
 @import 'map/map';
 @import 'train-car-deck/train-car-deck';

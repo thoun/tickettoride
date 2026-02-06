@@ -66,6 +66,30 @@
     }
   }
 
+  .station-counter {
+    align-self: start;
+    flex-direction: row-reverse;
+    width: 48px;
+    height: 48px;
+    background: url('img/playerboard-train-background.png') no-repeat center;
+    background-size: contain;
+    margin: -5px -10px -10px -10px;
+    position: relative;
+
+    color: black;
+
+    span {
+      margin-top: -5px;
+      padding: 0 !important;
+    }
+
+    .icon {
+      width: 19px;
+      height: 24px;
+      margin: -7px 0 0 -2px;
+    }
+  }
+
   .player-turn-order {
     background: #FFFFFFAA;
     color: black;
@@ -141,6 +165,31 @@
 
   &.train {
     background-image: url('img/train-icons.png');
+
+    &[data-player-color="e3001a"] {
+      background-position: #{3 * 100% / 4} 0%;
+    }
+
+    &[data-player-color="41a62a"] {
+      background-position: #{1 * 100% / 4} 0%;
+    }
+
+    &[data-player-color="0056aa"] {
+      background-position: #{0 * 100% / 4} 0%;
+    }
+
+    &[data-player-color="ffed00"] {
+      background-position: #{4 * 100% / 4} 0%;
+    }
+
+    &[data-player-color="af0ac2"] {
+      background-position: #{2 * 100% / 4} 0%;
+    }
+  }
+
+  &.station {
+    background-image: url('img/europe/station-icons.png');
+    width: 25px;
 
     &[data-player-color="e3001a"] {
       background-position: #{3 * 100% / 4} 0%;

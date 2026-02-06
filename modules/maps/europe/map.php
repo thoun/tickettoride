@@ -50,6 +50,8 @@ class EuropeMap extends Map {
             33, // Roma',
             44, // Wien',
         ];
+
+        $this->stations = 3;
     }
     
     /**

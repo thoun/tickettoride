@@ -107,13 +107,39 @@ class PlayerDestinations {
         this.playerId = Number(player.id);
         let html = `
         <div id="player-table-${player.id}-destinations-todo" class="player-table-destinations-column todo"></div>
-        <div id="player-table-${player.id}-destinations-done" class="player-table-destinations-column done"></div>
+        <div id="player-table-${player.id}-destinations-done" class="player-table-destinations-column done">
+            <div id="stations-information-button">
+                <i class="fa fa-info-circle" aria-hidden="true"></i>
+            </div>
+        </div>
         `;
         document.getElementById(`player-table-${player.id}-destinations`).insertAdjacentHTML('beforeend', html);
         this.addDestinations(destinations);
         destinations.filter(destination => completedDestinations.some(d => d.id == destination.id)).forEach(destination => this.markDestinationComplete(destination));
         // highlight the first "to do" destination
         this.activateNextDestination(this.destinationsTodo);
+        if (this.game.getMap().stations !== null) {
+            if (player.remainingStations < this.game.getMap().stations) {
+                document.getElementById('stations-information-button').classList.add('visible');
+            }
+            document.getElementById(`stations-information-button`).addEventListener('click', () => {
+                const stationsInformationsDialog = new ebg.popindialog();
+                stationsInformationsDialog.create('stationsInformationsDialog');
+                stationsInformationsDialog.setTitle(_("Destinations with stations"));
+                stationsInformationsDialog.setMaxWidth(500);
+                // Show the dialog
+                stationsInformationsDialog.setContent(`
+                    ${_("When the game ends, the stations will automatically be used on the tickets scoring the most points.")}<br>
+                    ${_("This means that destinations using stations will not be marked as complete until the end of the game.")}<br><br>
+                    <button id="stationsInformationsDialog-close-button" class="bgabutton bgabutton_blue">${_("Close")}</button>
+                `);
+                stationsInformationsDialog.show();
+                document.getElementById(`stationsInformationsDialog-close-button`).addEventListener('click', event => {
+                    event.preventDefault();
+                    stationsInformationsDialog.destroy();
+                });
+            });
+        }
     }
     /**
      * Add destinations to player's hand.
@@ -474,6 +500,38 @@ class MandalaRoutesAnimation extends WagonsAnimation {
 }
 
 /**
+ * Remaining stations animation : Remaining stations count is displayed over the map.
+ */
+class RemainingStationsAnimation extends WagonsAnimation {
+    constructor(game, remainingStations, playerColor, actions) {
+        super(game, []);
+        this.remainingStations = remainingStations;
+        this.playerColor = playerColor;
+        this.actions = actions;
+    }
+    animate() {
+        return new Promise(resolve => {
+            dojo.place(`
+            <div id="remaining-station-animation">
+                ${this.remainingStations}
+                <div class="icon station" data-player-color="${this.playerColor}"></div>
+            </div>
+            `, 'map');
+            this.setWagonsVisibility(true);
+            setTimeout(() => this.endAnimation(resolve), 1900);
+        });
+    }
+    endAnimation(resolve) {
+        this.setWagonsVisibility(false);
+        const number = document.getElementById('remaining-station-animation');
+        number.parentElement.removeChild(number);
+        resolve(this);
+        this.game.endAnimation(this);
+        this.actions.end?.();
+    }
+}
+
+/**
  * End score board.
  * It will start empty, and notifications will update it and start animations one by one.
  */
@@ -655,6 +713,16 @@ class EndScore {
         `);
     }
     /**
+     * Show longest path animation for a player.
+     */
+    showRemainingStations(playerColor, remainingStations, isFastEndScoring = false) {
+        if (isFastEndScoring) {
+            return;
+        }
+        const newDac = new RemainingStationsAnimation(this.game, remainingStations, playerColor, {});
+        this.game.addAnimation(newDac);
+    }
+    /**
      * Add longest path badge to the longest path winner(s).
      */
     setLongestPathWinner(playerId, length) {
@@ -676,6 +744,7 @@ class PlayerTrainCars {
         this.game = game;
         this.left = true;
         this.route = null;
+        this.city = null;
         this.selectable = false;
         this.selectedColor = null;
         this.playerId = Number(player.id);
@@ -809,6 +878,9 @@ class PlayerTrainCars {
                 if (this.route) {
                     this.game.chooseActionState.clickedRouteColorChosen(this.route, type);
                 }
+                else if (this.city) {
+                    this.game.chooseActionState.clickedCityColorChosen(this.city, type);
+                }
                 else if (this.selectable) {
                     if (this.selectedColor === type) {
                         this.deselectColor(type);
@@ -903,6 +975,22 @@ class PlayerTrainCars {
             if (route) {
                 const color = Number(groupDiv.dataset.type);
                 groupDiv.classList.toggle('disabled', color != 0 && !possibleColors.includes(color));
+            }
+            else {
+                groupDiv.classList.remove('disabled');
+            }
+        });
+    }
+    /**
+     * Get the colors a player can use to claim a given city.
+     */
+    setSelectableTrainCarColorsForStation(city, possibleColors) {
+        this.city = city;
+        const groups = this.getGroups();
+        groups.forEach(groupDiv => {
+            if (city) {
+                const color = Number(groupDiv.dataset.type);
+                groupDiv.classList.toggle('disabled', !possibleColors.includes(color));
             }
             else {
                 groupDiv.classList.remove('disabled');
@@ -1025,6 +1113,9 @@ class InMapZoomManager {
     setHoveredRoute(route) {
         this.hoveredRoute = route;
     }
+    setHoveredCity(city) {
+        this.hoveredCity = city;
+    }
 }
 /**
  * Map creation and in-map zoom handler.
@@ -1033,7 +1124,7 @@ class TtrMap {
     /**
      * Place map corner illustration and borders, cities, routes, and bind events.
      */
-    constructor(game, map, players, claimedRoutes, illustration) {
+    constructor(game, map, players, claimedRoutes, builtStations, illustration) {
         this.game = game;
         this.map = map;
         this.players = players;
@@ -1042,12 +1133,14 @@ class TtrMap {
         this.crosshairHalfSize = 0;
         this.crosshairShift = 0;
         this.claimedRoutesIds = [];
+        this.claimedCitiesIds = [];
         // map border
         document.getElementById('map').insertAdjacentHTML('afterbegin', `
             <div class="illustration" data-illustration="${illustration}"></div>
             <div id="cities"></div>
             <div id="route-spaces"></div>
             <div id="train-cars"></div>
+            <div id="stations"></div>
         `);
         SIDES.forEach(side => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="side ${side}"></div>`));
         CORNERS.forEach(corner => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="corner ${corner}"></div>`));
@@ -1061,7 +1154,11 @@ class TtrMap {
             ></div>`);
         });
         this.createRouteSpaces('route-spaces');
+        if (map.stations !== null) {
+            this.createCities('cities');
+        }
         this.setClaimedRoutes(claimedRoutes, null);
+        this.setBuiltStations(builtStations, null);
         this.resizedDiv = document.getElementById('resized');
         this.mapDiv = document.getElementById('map');
         this.inMapZoomManager = new InMapZoomManager(map);
@@ -1096,6 +1193,25 @@ class TtrMap {
             }
         }));
     }
+    createCities(destination, shiftX = 0, shiftY = 0) {
+        Object.entries(this.map.cities).forEach(entry => {
+            const city = entry[1];
+            city.id = Number(entry[0]);
+            dojo.place(`<div id="city${city.id}${destination === 'map-drag-overlay' ? '-drag' : ''}" class="city" 
+                style="transform: translate(${city.x + shiftX}px, ${city.y + shiftY}px); ${destination === 'map-drag-overlay' ? 'border: 2px solid red;' : ''}"
+                title="${this.game.getCityName(city.id)}"
+            ></div>`, destination);
+            const cityDiv = document.getElementById(`city${city.id}${destination === 'map-drag-overlay' ? '-drag' : ''}`);
+            if (!this.claimedCitiesIds.some(id => id == city.id)) {
+                if (destination == 'cities') {
+                    this.setCityClickEvents(cityDiv, city);
+                }
+                else {
+                    this.setCityDragEvents(cityDiv, city);
+                }
+            }
+        });
+    }
     /**
      * Handle dragging train car cards over a route.
      */
@@ -1111,6 +1227,18 @@ class TtrMap {
         let canClaimRoute = this.game.chooseActionState.canClaimRoute(overRoute, cardsColor);
         this.setHoveredRoute(overRoute, canClaimRoute);
         if (canClaimRoute) {
+            e.preventDefault();
+        }
+    }
+    ;
+    /**
+     * Handle dragging train car cards over a city.
+     */
+    cityDragOver(e, city) {
+        const cardsColor = Number(this.mapDiv.dataset.dragColor);
+        let canClaimCity = this.game.chooseActionState.canClaimCity(city, cardsColor);
+        this.setHoveredCity(city, canClaimCity);
+        if (canClaimCity) {
             e.preventDefault();
         }
     }
@@ -1138,6 +1266,20 @@ class TtrMap {
     }
     ;
     /**
+     * Handle dropping train car cards over a city.
+     */
+    cityDragDrop(e, city) {
+        e.preventDefault();
+        const mapDiv = document.getElementById('map');
+        if (mapDiv.dataset.dragColor == '') {
+            return;
+        }
+        this.setHoveredCity(null);
+        const cardsColor = Number(this.mapDiv.dataset.dragColor);
+        mapDiv.dataset.dragColor = '';
+        this.game.chooseActionState.clickedCityColorChosen(city, cardsColor);
+    }
+    /**
      * Bind click events to route space.
      */
     setSpaceClickEvents(spaceDiv, route) {
@@ -1157,12 +1299,36 @@ class TtrMap {
         spaceDiv.addEventListener('drop', e => this.routeDragDrop(e, route));
     }
     /**
+     * Bind click events to vity.
+     */
+    setCityClickEvents(spaceDiv, city) {
+        spaceDiv.addEventListener('click', () => this.game.chooseActionState.clickedCity(city));
+    }
+    /**
+     * Bind drag events to city.
+     */
+    setCityDragEvents(cityDiv, city) {
+        cityDiv.addEventListener('dragenter', e => this.cityDragOver(e, city));
+        cityDiv.addEventListener('dragover', e => this.cityDragOver(e, city));
+        cityDiv.addEventListener('dragleave', e => this.setHoveredRoute(null));
+        cityDiv.addEventListener('drop', e => this.cityDragDrop(e, city));
+    }
+    /**
      * Highlight selectable route spaces.
      */
     setSelectableRoutes(selectable, possibleRoutes) {
         dojo.query('.route-space').removeClass('selectable');
         if (selectable) {
             possibleRoutes.forEach(route => this.map.routes[route.id].spaces.forEach((_, index) => document.getElementById(`route-spaces-route${route.id}-space${index}`)?.classList.add('selectable')));
+        }
+    }
+    /**
+     * Highlight selectable cities.
+     */
+    setSelectableStations(selectable, possibleStations) {
+        dojo.query('.city').removeClass('selectable');
+        if (selectable) {
+            possibleStations?.forEach(city => document.getElementById(`city${city.id}`)?.classList.add('selectable'));
         }
     }
     /**
@@ -1203,7 +1369,32 @@ class TtrMap {
         wagon.style.transform = `translate(${fromX + toX}px, ${fromY + toY}px)`;
         setTimeout(() => {
             wagon.style.transition = 'transform 0.5s';
-            wagon.style.transform = `translate(${toX}px, ${toY}px`;
+            wagon.style.transform = `translate(${toX}px, ${toY}px)`;
+        }, 0);
+    }
+    /**
+     * Place stations claimed city.
+     * fromPlayerId is for animation (null for no animation)
+     */
+    setBuiltStations(builtStations, fromPlayerId) {
+        builtStations.forEach(builtStation => {
+            this.claimedCitiesIds.push(builtStation.cityId);
+            const city = this.map.cities[builtStation.cityId];
+            const player = this.players.find(player => Number(player.id) == builtStation.playerId);
+            this.setStation(city, player, fromPlayerId, false);
+        });
+    }
+    animateStationFromCounter(playerId, stationId, toX, toY) {
+        const station = document.getElementById(stationId);
+        const stationBR = station.getBoundingClientRect();
+        const fromBR = document.getElementById(`station-counter-${playerId}-wrapper`).getBoundingClientRect();
+        const zoom = this.game.getZoom();
+        const fromX = (fromBR.x - stationBR.x) / zoom;
+        const fromY = (fromBR.y - stationBR.y) / zoom;
+        station.style.transform = `translate(${fromX + toX}px, ${fromY + toY}px)`;
+        setTimeout(() => {
+            station.style.transition = 'transform 0.5s';
+            station.style.transform = `translate(${toX}px, ${toY}px)`;
         }, 0);
     }
     /**
@@ -1280,6 +1471,23 @@ class TtrMap {
         }
         else {
             route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute));
+        }
+    }
+    /**
+     * Place station on a city.
+     * Phantom is for dragging over a route : station is shown translucent.
+     */
+    setStation(city, player, fromPlayerId, phantom) {
+        const id = `station${city.id}${phantom ? '-phantom' : ''}`;
+        if (document.getElementById(id)) {
+            return;
+        }
+        let x = city.x;
+        let y = city.y;
+        const stationHtml = `<div id="${id}" class="station ${phantom ? 'phantom' : ''}" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}" style="transform: translate(${x}px, ${y}px)"></div>`;
+        dojo.place(stationHtml, 'stations');
+        if (fromPlayerId) {
+            this.animateStationFromCounter(fromPlayerId, id, x, y);
         }
     }
     /**
@@ -1374,6 +1582,21 @@ class TtrMap {
             Object.values(this.map.routes).forEach(r => [r.from, r.to].filter(city => city > 0).forEach(city => document.getElementById(`city${city}`).dataset.hovered = 'false'));
             // remove phantom wagons
             this.mapDiv.querySelectorAll('.wagon.phantom').forEach(spaceDiv => spaceDiv.parentElement.removeChild(spaceDiv));
+        }
+    }
+    /**
+     * Highlight hovered city (when dragging train cars).
+     */
+    setHoveredCity(city, valid = null) {
+        this.inMapZoomManager.setHoveredCity(city);
+        if (city) {
+            if (valid) {
+                this.setStation(city, this.game.getCurrentPlayer(), null, true);
+            }
+        }
+        else {
+            // remove phantom stations
+            this.mapDiv.querySelectorAll('.station.phantom').forEach(spaceDiv => spaceDiv.parentElement.removeChild(spaceDiv));
         }
     }
     /**
@@ -1539,6 +1762,9 @@ class PlayerTable {
     }
     setSelectableTrainCarColors(route, possibleColors = null) {
         this.playerTrainCars.setSelectableTrainCarColors(route, possibleColors);
+    }
+    setSelectableTrainCarColorsForStation(city, possibleColors = null) {
+        this.playerTrainCars.setSelectableTrainCarColorsForStation(city, possibleColors);
     }
     getSelectedColor() {
         return this.playerTrainCars.getSelectedColor();
@@ -1764,6 +1990,7 @@ const LOCOMOTIVE_FERRY = 0b10;
 class ChooseActionState {
     constructor(game, bga) {
         this.claimingRoute = null;
+        this.cityToConfirm = null;
         this.isTouch = window.matchMedia('(hover: none)').matches;
         this.game = game;
         this.bga = bga;
@@ -1774,6 +2001,7 @@ class ChooseActionState {
     onEnteringState(args, isCurrentPlayerActive) {
         this.game.trainCarSelection.setSelectableTopDeck(isCurrentPlayerActive, args.maxHiddenCardsPick);
         this.game.map.setSelectableRoutes(isCurrentPlayerActive, args.possibleRoutes);
+        this.game.map.setSelectableStations(isCurrentPlayerActive, args.possibleStations);
         this.game.playerTable?.setDraggable(isCurrentPlayerActive);
         this.game.playerTable?.setSelectable(isCurrentPlayerActive);
         if (isCurrentPlayerActive) {
@@ -1785,7 +2013,9 @@ class ChooseActionState {
     }
     onLeavingState(args, isCurrentPlayerActive) {
         this.game.map.setHoveredRoute(null);
+        this.game.map.setHoveredCity(null);
         this.game.map.setSelectableRoutes(false, []);
+        this.game.map.setSelectableStations(false, []);
         this.game.playerTable?.setDraggable(false);
         this.game.playerTable?.setSelectable(false);
         this.game.playerTable?.setSelectableTrainCarColors(null);
@@ -1796,15 +2026,29 @@ class ChooseActionState {
      * Sets the action bar (title and buttons) for Choose action.
      */
     setActionBarChooseAction(isCurrentPlayerActive) {
-        if (!this.args.canTakeTrainCarCards) {
-            this.bga.statusBar.setTitle(isCurrentPlayerActive ?
-                _('${you} must claim a route or draw destination tickets') :
-                _('${actplayer} must claim a route or draw destination tickets'), this.args);
+        if (this.args.canBuildStation) {
+            if (!this.args.canTakeTrainCarCards) {
+                this.bga.statusBar.setTitle(isCurrentPlayerActive ?
+                    _('${you} must claim a route, build a station or draw destination tickets') :
+                    _('${actplayer} must claim a route, build a station or draw destination tickets'), this.args);
+            }
+            else {
+                this.bga.statusBar.setTitle(isCurrentPlayerActive ?
+                    _('${you} must draw train car cards, claim a route, build a station or draw destination tickets') :
+                    _('${actplayer} must draw train car cards, claim a route, build a station or draw destination tickets'), this.args);
+            }
         }
         else {
-            this.bga.statusBar.setTitle(isCurrentPlayerActive ?
-                _('${you} must draw train car cards, claim a route or draw destination tickets') :
-                _('${actplayer} must draw train car cards, claim a route or draw destination tickets'), this.args);
+            if (!this.args.canTakeTrainCarCards) {
+                this.bga.statusBar.setTitle(isCurrentPlayerActive ?
+                    _('${you} must claim a route or draw destination tickets') :
+                    _('${actplayer} must claim a route or draw destination tickets'), this.args);
+            }
+            else {
+                this.bga.statusBar.setTitle(isCurrentPlayerActive ?
+                    _('${you} must draw train car cards, claim a route or draw destination tickets') :
+                    _('${actplayer} must draw train car cards, claim a route or draw destination tickets'), this.args);
+            }
         }
         if (isCurrentPlayerActive) {
             this.bga.statusBar.removeActionButtons();
@@ -1849,6 +2093,44 @@ class ChooseActionState {
         }
     }
     /**
+     * Sets the action bar (title and buttons) for the color station.
+     */
+    setActionBarChooseColorStation(city, possibleColors) {
+        const confirmationQuestion = _("Choose color for the station on ${city}")
+            .replace('${city}', city.name);
+        this.bga.statusBar.setTitle(confirmationQuestion);
+        this.bga.statusBar.removeActionButtons();
+        possibleColors.forEach(color => {
+            const label = dojo.string.substitute(_("Use ${color}"), {
+                'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
+            });
+            this.bga.statusBar.addActionButton(label, () => this.clickedCityColorChosen(city, color));
+        });
+        this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelRouteClaim(), { color: 'secondary' });
+    }
+    /**
+     * Sets the action bar (title and buttons) for Confirm city claim.
+     */
+    setActionBarConfirmStation(city, color) {
+        const chooseActionArgs = this.game.gamedatas.gamestate.args;
+        const colors = chooseActionArgs.costForStation[color].map(cardColor => `<div class="train-car-color icon" data-color="${cardColor}"></div>`);
+        const confirmationQuestion = _("Confirm station on ${city_name} with ${colors} ?")
+            .replace('${city_name}', this.game.getCityName(city.id))
+            .replace('${colors}', `<div class="color-cards">${colors.join('')}</div>`);
+        this.bga.statusBar.setTitle(confirmationQuestion);
+        this.bga.statusBar.removeActionButtons();
+        this.bga.statusBar.addActionButton(_("Confirm station"), () => this.confirmStation(), { autoclick: this.bga.userPreferences.get(207) != 2 });
+        this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelStation(), { color: 'secondary' });
+    }
+    /**
+     * Ask confirmation for claimed city.
+     */
+    clickedCityColorChosen(city, color) {
+        this.cityToConfirm = { city, color };
+        this.game.map.setHoveredCity(city, true);
+        this.setActionBarConfirmStation(city, color);
+    }
+    /**
      * Player cancels claimed route.
      */
     cancelRouteClaim() {
@@ -1859,11 +2141,28 @@ class ChooseActionState {
         document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement?.removeChild(button));
     }
     /**
+     * Player cancels claimed city.
+     */
+    cancelStation() {
+        this.setActionBarChooseAction(true);
+        this.game.map.setHoveredCity(null);
+        this.game.playerTable?.setSelectableTrainCarColors(null);
+        this.cityToConfirm = null;
+        document.querySelectorAll(`[id^="claimCityWithColor_button"]`).forEach(button => button.parentElement?.removeChild(button));
+    }
+    /**
      * Player confirms claimed route.
      */
     confirmRouteClaim() {
         this.game.map.setHoveredRoute(null);
         this.claimRoute();
+    }
+    /**
+     * Player confirms claimed city.
+     */
+    confirmStation() {
+        this.game.map.setHoveredCity(null);
+        this.buildStation(this.cityToConfirm.city.id, this.cityToConfirm.color);
     }
     /**
      * Handle route click.
@@ -1889,6 +2188,47 @@ class ChooseActionState {
             return;
         }
         this.clickedRouteDoubleRouteConfirmed(route);
+    }
+    /**
+     * Check if a route can be claimed with dragged cards.
+     */
+    canClaimCity(city, cardsColor) {
+        return this.args.possibleStations.some(ps => ps.id == city.id);
+    }
+    /**
+     * Handle city click.
+     */
+    clickedCity(city) {
+        if (!this.bga.players.isCurrentPlayerActive()) {
+            return;
+        }
+        if (!this.canClaimCity(city, 0)) {
+            return;
+        }
+        this.game.map.setHoveredCity(null);
+        document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
+        const selectedColor = this.game.playerTable.getSelectedColor();
+        if (selectedColor !== null) {
+            this.clickedCityColorChosen(city, selectedColor);
+        }
+        else {
+            const possibleColors = [];
+            const costForStation = this.args.costForStation;
+            if (costForStation) {
+                for (let i = 0; i <= 8; i++) {
+                    if (costForStation[i]) {
+                        possibleColors.push(i);
+                    }
+                }
+            }
+            if (possibleColors.length == 1) {
+                this.clickedCityColorChosen(city, possibleColors[0]);
+            }
+            else if (possibleColors.length > 1) {
+                this.setActionBarChooseColorStation(city, possibleColors);
+                this.game.playerTable.setSelectableTrainCarColorsForStation(city, possibleColors);
+            }
+        }
     }
     showDistributionPopin(route) {
         const locomotiveRestriction = this.game.getMap().locomotiveUsageRestriction;
@@ -1993,6 +2333,15 @@ class ChooseActionState {
             routeId: this.claimingRoute.route.id,
             color: this.claimingRoute.color,
             distribution: this.claimingRoute.distribution,
+        });
+    }
+    /**
+     * Claim a city.
+     */
+    buildStation(cityId, color) {
+        this.bga.actions.performAction('actBuildStation', {
+            cityId,
+            color
         });
     }
     /**
@@ -2388,6 +2737,7 @@ class Game {
     constructor(bga) {
         this.playerTable = null;
         this.trainCarCounters = [];
+        this.stationCounters = [];
         this.trainCarCardCounters = [];
         this.destinationCardCounters = [];
         this.animations = [];
@@ -2426,7 +2776,7 @@ class Game {
         console.log("Starting game setup");
         this.gamedatas = gamedatas;
         console.log('gamedatas', gamedatas);
-        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.map.illustration);
+        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.builtStations, gamedatas.map.illustration);
         this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards, gamedatas.trainCarDeckCount, gamedatas.destinationDeckCount, gamedatas.trainCarDeckMaxCount, gamedatas.destinationDeckMaxCount);
         this.destinationSelection = new DestinationSelection(this, map);
         const player = gamedatas.players[this.getPlayerId()];
@@ -2588,7 +2938,11 @@ class Game {
                 <div id="train-car-counter-${player.id}-wrapper" class="counter train-car-counter">
                     <div class="icon train" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> 
                     <span id="train-car-counter-${player.id}"></span>
-                </div>
+                </div>${this.gamedatas.map.stations !== null ? `
+                <div id="station-counter-${player.id}-wrapper" class="counter station-counter">
+                    <div class="icon station" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> 
+                    <span id="station-counter-${player.id}"></span>
+                </div>` : ''}
                 <div id="train-car-card-counter-${player.id}-wrapper" class="counter train-car-card-counter">
                     <div class="icon train-car-card-icon"></div> 
                     <span id="train-car-card-counter-${player.id}"></span>
@@ -2602,6 +2956,12 @@ class Game {
             trainCarCounter.create(`train-car-counter-${player.id}`);
             trainCarCounter.setValue(player.remainingTrainCarsCount);
             this.trainCarCounters[playerId] = trainCarCounter;
+            if (this.gamedatas.map.stations !== null) {
+                const stationCounter = new ebg.counter();
+                stationCounter.create(`station-counter-${player.id}`);
+                stationCounter.setValue(player.remainingStations);
+                this.stationCounters[playerId] = stationCounter;
+            }
             const trainCarCardCounter = new ebg.counter();
             trainCarCardCounter.create(`train-car-card-counter-${player.id}`);
             trainCarCardCounter.setValue(player.trainCarsCount);
@@ -2779,6 +3139,7 @@ class Game {
         const notifs = [
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
+            ['builtStation', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
@@ -2792,6 +3153,7 @@ class Game {
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
+            ['remainingStations', skipEndOfGameAnimations ? 1 : 1500],
             ['scoreDestinationGrandTour', skipEndOfGameAnimations ? 1 : 2000],
             ['highlightWinnerScore', 1],
         ];
@@ -2867,6 +3229,23 @@ class Game {
             }], playerId);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
+        }
+    }
+    /**
+     * Update built stations.
+     */
+    notif_builtStation(notif) {
+        const playerId = notif.args.playerId;
+        const city = notif.args.city;
+        this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
+        this.stationCounters[playerId].incValue(-1);
+        this.map.setBuiltStations([{
+                playerId,
+                cityId: city.id
+            }], playerId);
+        if (playerId == this.getPlayerId()) {
+            this.playerTable.removeCards(notif.args.removeCards);
+            document.getElementById('stations-information-button').classList.add('visible');
         }
     }
     /**
@@ -2956,6 +3335,12 @@ class Game {
      */
     notif_longestPathWinner(notif) {
         this.endScore?.setLongestPathWinner(notif.args.playerId, notif.args.length);
+    }
+    /**
+     * Animate remaining stations for end score.
+     */
+    notif_remainingStations(notif) {
+        this.endScore?.showRemainingStations(this.gamedatas.players[notif.args.playerId].color, notif.args.remainingStations, this.isFastEndScoring());
     }
     /**
      * Highlight winner for end score.

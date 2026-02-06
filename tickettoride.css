@@ -108,6 +108,26 @@
   margin-left: -24px;
   margin-top: -24px;
 }
+.player-board .station-counter {
+  align-self: start;
+  flex-direction: row-reverse;
+  width: 48px;
+  height: 48px;
+  background: url("img/playerboard-train-background.png") no-repeat center;
+  background-size: contain;
+  margin: -5px -10px -10px -10px;
+  position: relative;
+  color: black;
+}
+.player-board .station-counter span {
+  margin-top: -5px;
+  padding: 0 !important;
+}
+.player-board .station-counter .icon {
+  width: 19px;
+  height: 24px;
+  margin: -7px 0 0 -2px;
+}
 .player-board .player-turn-order {
   background: rgba(255, 255, 255, 0.6666666667);
   color: black;
@@ -188,6 +208,25 @@
   background-position: 100% 0%;
 }
 .icon.train[data-player-color=af0ac2] {
+  background-position: 50% 0%;
+}
+.icon.station {
+  background-image: url("img/europe/station-icons.png");
+  width: 25px;
+}
+.icon.station[data-player-color=e3001a] {
+  background-position: 75% 0%;
+}
+.icon.station[data-player-color="41a62a"] {
+  background-position: 25% 0%;
+}
+.icon.station[data-player-color="0056aa"] {
+  background-position: 0% 0%;
+}
+.icon.station[data-player-color=ffed00] {
+  background-position: 100% 0%;
+}
+.icon.station[data-player-color=af0ac2] {
   background-position: 50% 0%;
 }
 .icon.train-car-color {
@@ -471,6 +510,10 @@
   background-position-x: 60%;
   opacity: 1;
 }
+.city.selectable {
+  pointer-events: all;
+  cursor: pointer;
+}
 
 .big-city {
   position: absolute;
@@ -712,6 +755,39 @@
   background-image: url("img/wagons-purple.png"), url("img/wagons-shadow-big.png");
 }
 
+#map .station {
+  position: absolute;
+  z-index: 3;
+  top: -24px;
+  left: -20px;
+  width: 32px;
+  height: 42px;
+  background-size: auto 100%;
+  background-image: url("img/europe/station-icons.png");
+  background-repeat: no-repeat;
+}
+#map .station[data-player-color="0056aa"] {
+  background-position-x: 0%;
+}
+#map .station[data-player-color="41a62a"] {
+  background-position-x: 25%;
+}
+#map .station[data-player-color=af0ac2] {
+  background-position-x: 50%;
+}
+#map .station[data-player-color=e3001a] {
+  background-position-x: 75%;
+}
+#map .station[data-player-color=ffed00] {
+  background-position-x: 100%;
+}
+#map .station.phantom {
+  opacity: 0.5;
+}
+#map .station.highlight {
+  z-index: 11;
+}
+
 #longest-path-animation {
   position: absolute;
   width: 120px;
@@ -724,6 +800,29 @@
   align-items: center;
   font-size: 400%;
   z-index: 21;
+}
+
+#remaining-station-animation {
+  position: absolute;
+  left: 750px;
+  top: 650px;
+  width: 160px;
+  height: 160px;
+  margin: -80px;
+  border-radius: 50%;
+  background: url("img/playerboard-train-background.png") no-repeat center;
+  background-size: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  font-size: 400%;
+  z-index: 21;
+}
+#remaining-station-animation .station.icon {
+  position: unset;
+  width: 48px;
+  height: 70px;
 }
 
 #map-drag-overlay {
@@ -742,6 +841,9 @@
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3Csvg xmlns='http://www.w3.org/2000/svg' id='root' version='1.1' viewBox='0 0 16 16'%3E%3Ccircle fill='none' stroke='currentColor' cx='8' cy='8' r='6'/%3E%3Cpath fill='none' stroke='currentColor' d='M 8 0 L 8 6.5'/%3E%3Cpath fill='none' stroke='currentColor' d='M 0 8 L 6.5 8'/%3E%3Cpath fill='none' stroke='currentColor' d='M 8 9.5 L 8 16'/%3E%3Cpath fill='none' stroke='currentColor' d='M 9.5 8 L 16 8'/%3E%3C/svg%3E");
   transition: left 0.05s, top 0.05s;
+}
+#map-drag-overlay .city {
+  pointer-events: all;
 }
 
 #train-car-deck {
@@ -1104,6 +1206,24 @@
   background: url("img/destination-done-vertical.png");
 }
 
+#stations-information-button {
+  position: absolute;
+  top: 0;
+  right: -32px;
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+  color: #71d904;
+  text-shadow: 1px 1px 4px black;
+  cursor: pointer;
+  pointer-events: all;
+  display: none;
+}
+#stations-information-button.visible {
+  display: unset;
+  animation: last-round-animation 2s 1 forwards ease-in-out;
+}
+
 .player-table-train-cars {
   display: flex;
   justify-content: center;
@@ -1202,6 +1322,10 @@
 }
 .player-table.left {
   flex-direction: column-reverse;
+}
+.player-table.left #stations-information-button {
+  top: -32px;
+  right: 0;
 }
 
 #score {

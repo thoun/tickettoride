@@ -1,6 +1,7 @@
 import { DestinationCompleteAnimation } from "../destination-animation";
 import { LongestPathAnimation } from "../longest-path-animation";
 import { MandalaRoutesAnimation } from "../mandala-routes-animation";
+import { RemainingStationsAnimation } from "../remaining-stations-animation";
 import { getBackgroundInlineStyleForDestination } from "../stock-utils";
 import { TicketToRideGame, TicketToRidePlayer, Destination, Route } from "../tickettoride.d";
 
@@ -239,6 +240,26 @@ export class EndScore {
         <div>${_('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.')}</div>
         <div class="globetrotter bonus-card"></div>
         `);
+    }
+    
+    /** 
+     * Show longest path animation for a player.
+     */ 
+    public showRemainingStations(playerColor: string, remainingStations: number, isFastEndScoring: boolean = false) {
+        if (isFastEndScoring) {
+            return;
+        }
+        
+        const newDac = new RemainingStationsAnimation(
+            this.game,
+            remainingStations,
+            playerColor,
+            {
+            }
+        );
+        
+
+        this.game.addAnimation(newDac);
     }
     
     /** 

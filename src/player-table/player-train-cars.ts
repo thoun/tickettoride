@@ -1,4 +1,4 @@
-import { Route, TicketToRideGame, TicketToRidePlayer, TrainCar } from "../tickettoride.d";
+import { City, Route, TicketToRideGame, TicketToRidePlayer, TrainCar } from "../tickettoride.d";
 
 export const CROSSHAIR_SIZE = 20;
 
@@ -9,6 +9,7 @@ export class PlayerTrainCars {
     public playerId: number;
     private left: boolean = true;
     private route: Route | null = null;
+    private city: City | null = null;
     private selectable: boolean = false;
     private selectedColor: number | null = null;
 
@@ -170,6 +171,8 @@ export class PlayerTrainCars {
             group.addEventListener('click', () => {
                 if (this.route) {
                     this.game.chooseActionState.clickedRouteColorChosen(this.route, type);
+                } else if (this.city) {
+                    this.game.chooseActionState.clickedCityColorChosen(this.city, type);
                 } else if (this.selectable) {
                     if (this.selectedColor === type) {
                         this.deselectColor(type);
@@ -272,7 +275,7 @@ export class PlayerTrainCars {
     /** 
      * Get the colors a player can use to claim a given route.
      */ 
-     setSelectableTrainCarColors(route: Route | null, possibleColors: number[] | null) {
+    setSelectableTrainCarColors(route: Route | null, possibleColors: number[] | null) {
         this.route = route;
 
         const groups = this.getGroups();
@@ -281,6 +284,24 @@ export class PlayerTrainCars {
             if (route) {
                 const color = Number(groupDiv.dataset.type);
                 groupDiv.classList.toggle('disabled', color != 0 && !possibleColors.includes(color));
+            } else {
+                groupDiv.classList.remove('disabled');
+            }
+        });
+    }
+
+    /** 
+     * Get the colors a player can use to claim a given city.
+     */ 
+    setSelectableTrainCarColorsForStation(city: City | null, possibleColors: number[] | null) {
+        this.city = city;
+
+        const groups = this.getGroups();
+
+        groups.forEach(groupDiv => {
+            if (city) {
+                const color = Number(groupDiv.dataset.type);
+                groupDiv.classList.toggle('disabled', !possibleColors.includes(color));
             } else {
                 groupDiv.classList.remove('disabled');
             }

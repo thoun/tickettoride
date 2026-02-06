@@ -1,16 +1,19 @@
 import { DistributionPopin, DistributionResult } from "../distribution-popin";
 import { getColor } from "../stock-utils";
-import { ClaimingRoute, Route, TicketToRideGame, TrainCar } from "../tickettoride.d";
+import { City, ClaimingRoute, Route, TicketToRideGame, TrainCar } from "../tickettoride.d";
 
 export const LOCOMOTIVE_TUNNEL = 0b01;
 export const LOCOMOTIVE_FERRY = 0b10;
 
 export interface EnteringChooseActionArgs {
     possibleRoutes: Route[];
+    possibleStations: City[];
     costForRoute: { [routeId: number]: { [color: number]: number[] } };
+    costForStation: { [color: number]: number[] };
     maxHiddenCardsPick: number;
     maxDestinationsPick: number;
     canTakeTrainCarCards: boolean;
+    canBuildStation: boolean;
     canPass: boolean;
     _private?: {
         trainCarsHand: TrainCar[];
@@ -30,6 +33,7 @@ export class ChooseActionState {
     protected args: EnteringChooseActionArgs;
 
     private claimingRoute: ClaimingRoute | null = null;
+    private cityToConfirm: { city: City, color: number } | null = null;
 
     private isTouch = window.matchMedia('(hover: none)').matches;
 
@@ -45,6 +49,7 @@ export class ChooseActionState {
         this.game.trainCarSelection.setSelectableTopDeck(isCurrentPlayerActive, args.maxHiddenCardsPick);
         
         this.game.map.setSelectableRoutes(isCurrentPlayerActive, args.possibleRoutes);
+        this.game.map.setSelectableStations(isCurrentPlayerActive, args.possibleStations);
 
         this.game.playerTable?.setDraggable(isCurrentPlayerActive);
         this.game.playerTable?.setSelectable(isCurrentPlayerActive);
@@ -59,7 +64,9 @@ export class ChooseActionState {
 
     public onLeavingState(args: EnteringChooseActionArgs, isCurrentPlayerActive: boolean) {
         this.game.map.setHoveredRoute(null);
+        this.game.map.setHoveredCity(null);
         this.game.map.setSelectableRoutes(false, []);
+        this.game.map.setSelectableStations(false, []);
         this.game.playerTable?.setDraggable(false);
         this.game.playerTable?.setSelectable(false);   
         this.game.playerTable?.setSelectableTrainCarColors(null);
@@ -72,16 +79,30 @@ export class ChooseActionState {
      */
     public setActionBarChooseAction(isCurrentPlayerActive: boolean): void {
 
-        if (!this.args.canTakeTrainCarCards) {
-            this.bga.statusBar.setTitle(isCurrentPlayerActive ?
-                    _('${you} must claim a route or draw destination tickets') :
-                    _('${actplayer} must claim a route or draw destination tickets'),
-                this.args);
+        if (this.args.canBuildStation) {
+            if (!this.args.canTakeTrainCarCards) {
+                this.bga.statusBar.setTitle(isCurrentPlayerActive ?
+                        _('${you} must claim a route, build a station or draw destination tickets') :
+                        _('${actplayer} must claim a route, build a station or draw destination tickets'),
+                    this.args);
+            } else {
+                this.bga.statusBar.setTitle(isCurrentPlayerActive ?
+                        _('${you} must draw train car cards, claim a route, build a station or draw destination tickets') :
+                        _('${actplayer} must draw train car cards, claim a route, build a station or draw destination tickets'),
+                    this.args);
+            }
         } else {
-            this.bga.statusBar.setTitle(isCurrentPlayerActive ?
-                    _('${you} must draw train car cards, claim a route or draw destination tickets') :
-                    _('${actplayer} must draw train car cards, claim a route or draw destination tickets'),
-                this.args);
+            if (!this.args.canTakeTrainCarCards) {
+                this.bga.statusBar.setTitle(isCurrentPlayerActive ?
+                        _('${you} must claim a route or draw destination tickets') :
+                        _('${actplayer} must claim a route or draw destination tickets'),
+                    this.args);
+            } else {
+                this.bga.statusBar.setTitle(isCurrentPlayerActive ?
+                        _('${you} must draw train car cards, claim a route or draw destination tickets') :
+                        _('${actplayer} must draw train car cards, claim a route or draw destination tickets'),
+                    this.args);
+            }
         }
 
         if (isCurrentPlayerActive) {
@@ -137,6 +158,52 @@ export class ChooseActionState {
         }
 
     }
+    
+    /**
+     * Sets the action bar (title and buttons) for the color station.
+     */
+    private setActionBarChooseColorStation(city: City, possibleColors: number[]) {
+        const confirmationQuestion = _("Choose color for the station on ${city}")
+            .replace('${city}', city.name);
+        this.bga.statusBar.setTitle(confirmationQuestion);
+
+        this.bga.statusBar.removeActionButtons();
+
+        possibleColors.forEach(color => {
+            const label = dojo.string.substitute(_("Use ${color}"), {
+                'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
+            });
+            this.bga.statusBar.addActionButton(label, () => this.clickedCityColorChosen(city, color));
+        });
+
+        this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelRouteClaim(), { color: 'secondary' });
+    }
+    
+    /**
+     * Sets the action bar (title and buttons) for Confirm city claim.
+     */
+    private setActionBarConfirmStation(city: City, color: number) {
+        const chooseActionArgs = this.game.gamedatas.gamestate.args as EnteringChooseActionArgs;
+        const colors = chooseActionArgs.costForStation[color].map(cardColor => `<div class="train-car-color icon" data-color="${cardColor}"></div>`);
+        const confirmationQuestion = _("Confirm station on ${city_name} with ${colors} ?")
+            .replace('${city_name}', this.game.getCityName(city.id))
+            .replace('${colors}', `<div class="color-cards">${colors.join('')}</div>`);
+        this.bga.statusBar.setTitle(confirmationQuestion);
+
+        this.bga.statusBar.removeActionButtons();
+
+        this.bga.statusBar.addActionButton(_("Confirm station"), () => this.confirmStation(), { autoclick: this.bga.userPreferences.get(207) != 2 });
+        this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelStation(), { color: 'secondary' });
+    }
+
+    /**
+     * Ask confirmation for claimed city.
+     */
+    public clickedCityColorChosen(city: City, color: number) {
+        this.cityToConfirm = { city, color };
+        this.game.map.setHoveredCity(city, true);
+        this.setActionBarConfirmStation(city, color);
+    }
 
     /**
      * Player cancels claimed route.
@@ -151,11 +218,31 @@ export class ChooseActionState {
     }
 
     /**
+     * Player cancels claimed city.
+     */
+    public cancelStation() {
+        this.setActionBarChooseAction(true);
+        this.game.map.setHoveredCity(null);
+        this.game.playerTable?.setSelectableTrainCarColors(null);
+        this.cityToConfirm = null;
+
+        document.querySelectorAll(`[id^="claimCityWithColor_button"]`).forEach(button => button.parentElement?.removeChild(button));
+    }
+
+    /**
      * Player confirms claimed route.
      */
     public confirmRouteClaim() {
         this.game.map.setHoveredRoute(null);
         this.claimRoute();
+    }
+
+    /**
+     * Player confirms claimed city.
+     */
+    public confirmStation() {
+        this.game.map.setHoveredCity(null);
+        this.buildStation(this.cityToConfirm.city.id, this.cityToConfirm.color);
     }
     
     /** 
@@ -187,6 +274,53 @@ export class ChooseActionState {
         }
 
         this.clickedRouteDoubleRouteConfirmed(route);
+    }
+
+    /** 
+     * Check if a route can be claimed with dragged cards.
+     */ 
+    public canClaimCity(city: City, cardsColor: number): boolean {
+        return this.args.possibleStations.some(ps => ps.id == city.id);
+    }
+    
+    /** 
+     * Handle city click.
+     */ 
+    public clickedCity(city: City): void { 
+        if(!this.bga.players.isCurrentPlayerActive()) {
+            return;
+        }
+
+        if(!this.canClaimCity(city, 0)) {
+            return;
+        }
+        
+        this.game.map.setHoveredCity(null);
+
+        document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
+        
+        const selectedColor = this.game.playerTable.getSelectedColor();
+
+        if (selectedColor !== null) {
+            this.clickedCityColorChosen(city, selectedColor);
+        } else {
+            const possibleColors: number[] = [];
+            const costForStation = this.args.costForStation;
+            if (costForStation) {
+                for (let i = 0; i <= 8; i++) {
+                    if (costForStation[i]) {
+                        possibleColors.push(i);
+                    }
+                }
+            }
+
+            if (possibleColors.length == 1) {
+                this.clickedCityColorChosen(city, possibleColors[0]);
+            } else if (possibleColors.length > 1) {
+                this.setActionBarChooseColorStation(city, possibleColors);
+                this.game.playerTable.setSelectableTrainCarColorsForStation(city, possibleColors);
+            }
+        }
     }
 
     private showDistributionPopin(route: Route): boolean {
@@ -301,6 +435,16 @@ export class ChooseActionState {
             routeId: this.claimingRoute.route.id,
             color: this.claimingRoute.color,
             distribution: this.claimingRoute.distribution,
+        });
+    }
+
+    /** 
+     * Claim a city.
+     */ 
+    public buildStation(cityId: number, color: number) {
+        this.bga.actions.performAction('actBuildStation', {
+            cityId,
+            color
         });
     }
     

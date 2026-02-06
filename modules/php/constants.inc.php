@@ -23,6 +23,11 @@ const RED = 7;
 const GREEN = 8;
 
 /*
+ * Building types
+ */
+const STATION = 1;
+
+/*
  * State constants
  */
 const ST_BGA_GAME_SETUP = 1;

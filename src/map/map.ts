@@ -1,6 +1,6 @@
 import { CROSSHAIR_SIZE } from "../player-table/player-train-cars";
 import { getColor } from "../stock-utils";
-import { Route, TicketToRideMap, TicketToRideGame, TicketToRidePlayer, ClaimedRoute, RouteSpace, Destination } from "../tickettoride.d";
+import { Route, TicketToRideMap, TicketToRideGame, TicketToRidePlayer, ClaimedRoute, RouteSpace, Destination, City, BuiltStation } from "../tickettoride.d";
 
 const DRAG_AUTO_ZOOM_DELAY = 2000;
 
@@ -23,6 +23,7 @@ class InMapZoomManager {
     private zoomed = false; // indicates if in-map zoom is active
 
     private hoveredRoute: Route;
+    private hoveredCity: City;
     private autoZoomTimeout: number;
     private dragClientX: number;
     private dragClientY: number;
@@ -141,6 +142,10 @@ class InMapZoomManager {
     setHoveredRoute(route: Route | null) {
         this.hoveredRoute = route;
     }
+
+    setHoveredCity(city: City | null) {
+        this.hoveredCity = city;
+    }
 }
 
 /** 
@@ -158,6 +163,7 @@ export class TtrMap {
     private crosshairShift: number = 0;
 
     private claimedRoutesIds = [];
+    private claimedCitiesIds = [];
 
     /** 
      * Place map corner illustration and borders, cities, routes, and bind events.
@@ -167,6 +173,7 @@ export class TtrMap {
         private map: TicketToRideMap,
         private players: TicketToRidePlayer[],
         claimedRoutes: ClaimedRoute[],
+        builtStations: BuiltStation[],
         illustration: number,
     ) {
         // map border
@@ -175,6 +182,7 @@ export class TtrMap {
             <div id="cities"></div>
             <div id="route-spaces"></div>
             <div id="train-cars"></div>
+            <div id="stations"></div>
         `);
         SIDES.forEach(side => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="side ${side}"></div>`));
         CORNERS.forEach(corner => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="corner ${corner}"></div>`));
@@ -190,8 +198,12 @@ export class TtrMap {
         });
 
         this.createRouteSpaces('route-spaces');
+        if (map.stations !== null) {
+            this.createCities('cities');
+        }
 
         this.setClaimedRoutes(claimedRoutes, null);
+        this.setBuiltStations(builtStations, null);
 
         this.resizedDiv = document.getElementById('resized') as HTMLDivElement;
         this.mapDiv = document.getElementById('map') as HTMLDivElement;
@@ -233,6 +245,26 @@ export class TtrMap {
             })
         );
     }
+
+    private createCities(destination: 'cities' | 'map-drag-overlay', shiftX: number = 0, shiftY: number = 0) {
+        Object.entries(this.map.cities).forEach(entry => {
+            const city = entry[1];
+            city.id = Number(entry[0]);
+            
+            dojo.place(`<div id="city${city.id}${destination === 'map-drag-overlay' ? '-drag' : ''}" class="city" 
+                style="transform: translate(${city.x + shiftX}px, ${city.y + shiftY}px); ${destination === 'map-drag-overlay' ? 'border: 2px solid red;' : ''}"
+                title="${this.game.getCityName(city.id)}"
+            ></div>`, destination);
+            const cityDiv = document.getElementById(`city${city.id}${destination === 'map-drag-overlay' ? '-drag' : ''}`);
+            if (!this.claimedCitiesIds.some(id => id == city.id)) {
+                if (destination == 'cities') {
+                    this.setCityClickEvents(cityDiv, city);
+                } else {
+                    this.setCityDragEvents(cityDiv, city);
+                }
+            }
+        });
+    }
     
     /** 
      * Handle dragging train car cards over a route.
@@ -251,6 +283,20 @@ export class TtrMap {
 
         this.setHoveredRoute(overRoute, canClaimRoute);
         if (canClaimRoute) {
+            e.preventDefault();
+        }
+    };
+    
+    /** 
+     * Handle dragging train car cards over a city.
+     */ 
+    private cityDragOver(e: DragEvent, city: City) {
+        const cardsColor = Number(this.mapDiv.dataset.dragColor);
+
+        let canClaimCity = this.game.chooseActionState.canClaimCity(city, cardsColor);
+
+        this.setHoveredCity(city, canClaimCity);
+        if (canClaimCity) {
             e.preventDefault();
         }
     };
@@ -280,6 +326,24 @@ export class TtrMap {
         
         this.game.chooseActionState.clickedRouteColorChosen(overRoute, cardsColor);
     };
+    
+    /** 
+     * Handle dropping train car cards over a city.
+     */ 
+    private cityDragDrop(e: DragEvent, city: City) {
+        e.preventDefault();
+
+        const mapDiv = document.getElementById('map');
+        if (mapDiv.dataset.dragColor == '') {
+            return;
+        }
+
+        this.setHoveredCity(null);
+        const cardsColor = Number(this.mapDiv.dataset.dragColor);
+        mapDiv.dataset.dragColor = '';
+        
+        this.game.chooseActionState.clickedCityColorChosen(city, cardsColor);
+    }
 
     /** 
      * Bind click events to route space.
@@ -301,6 +365,23 @@ export class TtrMap {
         spaceDiv.addEventListener('dragleave', e => this.setHoveredRoute(null));
         spaceDiv.addEventListener('drop', e => this.routeDragDrop(e, route));
     }
+
+    /** 
+     * Bind click events to vity.
+     */ 
+    private setCityClickEvents(spaceDiv: HTMLElement, city: City) {
+        spaceDiv.addEventListener('click', () => this.game.chooseActionState.clickedCity(city));
+    }
+
+    /** 
+     * Bind drag events to city.
+     */ 
+    private setCityDragEvents(cityDiv: HTMLElement, city: City) {
+        cityDiv.addEventListener('dragenter', e => this.cityDragOver(e, city));
+        cityDiv.addEventListener('dragover', e => this.cityDragOver(e, city));
+        cityDiv.addEventListener('dragleave', e => this.setHoveredRoute(null));
+        cityDiv.addEventListener('drop', e => this.cityDragDrop(e, city));
+    }
     
     /** 
      * Highlight selectable route spaces.
@@ -312,6 +393,17 @@ export class TtrMap {
             possibleRoutes.forEach(route => this.map.routes[route.id].spaces.forEach((_, index) => 
                 document.getElementById(`route-spaces-route${route.id}-space${index}`)?.classList.add('selectable'))
             );
+        }
+    }
+    
+    /** 
+     * Highlight selectable cities.
+     */ 
+    public setSelectableStations(selectable: boolean, possibleStations: City[]) {
+        dojo.query('.city').removeClass('selectable');
+
+        if (selectable) {
+            possibleStations?.forEach(city => document.getElementById(`city${city.id}`)?.classList.add('selectable'));
         }
     }
 
@@ -359,7 +451,37 @@ export class TtrMap {
         wagon.style.transform = `translate(${fromX + toX}px, ${fromY + toY}px)`;
         setTimeout(() => {
             wagon.style.transition = 'transform 0.5s';
-            wagon.style.transform = `translate(${toX}px, ${toY}px`;
+            wagon.style.transform = `translate(${toX}px, ${toY}px)`;
+        }, 0);
+    }
+
+    /** 
+     * Place stations claimed city.
+     * fromPlayerId is for animation (null for no animation)
+     */ 
+    public setBuiltStations(builtStations: BuiltStation[], fromPlayerId: number) {
+        builtStations.forEach(builtStation => {
+            this.claimedCitiesIds.push(builtStation.cityId);
+            const city = this.map.cities[builtStation.cityId];
+            const player = this.players.find(player => Number(player.id) == builtStation.playerId);
+            this.setStation(city, player, fromPlayerId, false);
+        });
+    }
+
+    private animateStationFromCounter(playerId: number, stationId: string, toX: number, toY: number) {
+        const station = document.getElementById(stationId);
+        const stationBR = station.getBoundingClientRect();
+
+        const fromBR = document.getElementById(`station-counter-${playerId}-wrapper`).getBoundingClientRect();
+            
+        const zoom = this.game.getZoom();
+        const fromX = (fromBR.x - stationBR.x) / zoom;
+        const fromY = (fromBR.y - stationBR.y) / zoom;
+
+        station.style.transform = `translate(${fromX + toX}px, ${fromY + toY}px)`;
+        setTimeout(() => {
+            station.style.transition = 'transform 0.5s';
+            station.style.transform = `translate(${toX}px, ${toY}px)`;
         }, 0);
     }
 
@@ -444,6 +566,26 @@ export class TtrMap {
             this.game.bga.gameui.disableNextMoveSound();
         } else {
             route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute));
+        }
+    }
+
+    /** 
+     * Place station on a city.
+     * Phantom is for dragging over a route : station is shown translucent.
+     */ 
+    private setStation(city: City, player: TicketToRidePlayer, fromPlayerId: number, phantom: boolean) {
+        const id = `station${city.id}${phantom ? '-phantom' : ''}`;
+        if (document.getElementById(id)) {
+            return;
+        }
+        let x = city.x;
+        let y = city.y;
+
+        const stationHtml = `<div id="${id}" class="station ${phantom ? 'phantom' : ''}" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}" style="transform: translate(${x}px, ${y}px)"></div>`;
+        dojo.place(stationHtml, 'stations');
+        
+        if (fromPlayerId) {
+            this.animateStationFromCounter(fromPlayerId, id, x, y);
         }
     }
 
@@ -567,6 +709,22 @@ export class TtrMap {
 
             // remove phantom wagons
             this.mapDiv.querySelectorAll('.wagon.phantom').forEach(spaceDiv => spaceDiv.parentElement.removeChild(spaceDiv));
+        }
+    }
+
+    /** 
+     * Highlight hovered city (when dragging train cars).
+     */ 
+    public setHoveredCity(city: City | null, valid: boolean | null = null) {
+        this.inMapZoomManager.setHoveredCity(city);
+
+        if (city) {
+            if (valid) {
+                this.setStation(city, this.game.getCurrentPlayer(), null, true);
+            }
+        } else {
+            // remove phantom stations
+            this.mapDiv.querySelectorAll('.station.phantom').forEach(spaceDiv => spaceDiv.parentElement.removeChild(spaceDiv));
         }
     }
 

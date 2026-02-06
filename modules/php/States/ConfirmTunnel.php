@@ -68,7 +68,8 @@ class ConfirmTunnel extends GameState {
         $distributionCards = $distribution ? Arrays::filter($this->game->trainCarManager->getPlayerHand($activePlayerId), fn($card) => in_array($card->id, $distribution)) : null;
 
         $this->game->applyClaimRoute($activePlayerId, $tunnelAttempt->routeId, $tunnelAttempt->color, $tunnelAttempt->extraCards, distributionCards: $distributionCards);
-        // applyClaimRoute handles the call to nextState
+
+        return NextPlayer::class;
     }
 
     #[PossibleAction]

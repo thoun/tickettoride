@@ -51,11 +51,17 @@ export interface ClaimedRoute {
     playerId: number;
 }
 
+export interface BuiltStation {
+    cityId: number;
+    playerId: number;
+}
+
 export interface TicketToRidePlayer extends Player {
     playerNo: number;
     trainCarsCount: number;
     destinationsCount: number;
     remainingTrainCarsCount: number;
+    remainingStations?: number;
 
     // for end score
     completedDestinations?: Destination[];
@@ -91,6 +97,7 @@ export interface TicketToRideMap {
     multilingualPdfRulesUrl?: string;
     rulesDifferences?: string[];
     vertical: boolean;
+    stations: number | null;
 }
 
 /**
@@ -112,6 +119,7 @@ export interface TicketToRideGamedatas {
 
     // Add here variables you set up in getAllDatas   
     claimedRoutes: ClaimedRoute[];
+    builtStations: BuiltStation[];
     visibleTrainCards: { [spot: number]: TrainCar | null };
 
     // private informations for current player only
@@ -136,6 +144,7 @@ export interface TicketToRideGame{
     trainCarSelection: TrainCarSelection;
     playerTable: PlayerTable | null;
     map: TtrMap;
+    stationCounters: Counter[];
     destinationCardCounters: Counter[];
 
     bga: Bga;
@@ -222,6 +231,12 @@ export interface NotifClaimedRouteArgs {
     remainingTrainCars: number;
 }
 
+export interface NotifBuiltStationArgs {
+    playerId: number;
+    city: City;
+    removeCards: TrainCar[];
+}
+
 export interface NotifDestinationCompletedArgs {
     playerId: number;
     destination: Destination;
@@ -262,4 +277,9 @@ export interface NotifMandalaRoutesArgs {
 export interface NotifBadgeArgs {
     playerId: number;
     length: number;
+}
+
+export interface NotifRemainingStationsArgs {
+    playerId: number;
+    remainingStations: number;
 }

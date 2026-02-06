@@ -4,7 +4,10 @@ namespace Bga\Games\TicketToRide\States;
 
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\StateType;
+use Bga\GameFrameworkPrototype\Helpers\Arrays;
 use Bga\Games\TicketToRide\Game;
+
+use function Bga\Games\TicketToRide\debug;
 
 class EndScore extends GameState {
     public function __construct(protected Game $game)
@@ -29,6 +32,26 @@ class EndScore extends GameState {
         $totalScore = [];
         foreach ($players as $playerId => $playerDb) {
             $totalScore[$playerId] = intval($playerDb['score']);
+        }
+
+        $useStationResult = [];
+        $playersRemainingStations = [];
+        foreach ($players as $playerId => $playerDb) {
+            $useStationResult[$playerId] = [0, [], [], []];
+            $playerStations = $this->game->buildingManager->getPlacedStations($playerId);
+            $usedStations = count($playerStations);
+            if ($usedStations > 0) {
+                $destinations = $this->game->destinationManager->getPlayerHand($playerId);
+                $uncompletedDestinations = Arrays::filter($destinations, fn($destination) => !boolval($this->game->getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id")));
+                
+                if (count($uncompletedDestinations) > 0) {
+                    $useStationResult[$playerId] = $this->game->buildingManager->useStations($playerId, $playerStations, $uncompletedDestinations);
+                }
+            }
+            if ($this->game->getMap()->stations !== null) {
+                $playersRemainingStations[$playerId] = $this->game->getMap()->stations - $usedStations;
+                $totalScore[$playerId] += 4 * $playersRemainingStations[$playerId];
+            }
         }
 
         // completed/failed destinations 
@@ -167,8 +190,18 @@ class EndScore extends GameState {
         foreach ($destinationsResults as $playerId => $destinations) {
 
             foreach ($destinations as $destination) {
-                $destinationRoutes = array_key_exists($destination->id, $routeByCompletedDestination) ? $routeByCompletedDestination[$destination->id] : $this->game->getDestinationRoutes($playerId, $destination);
-                $completed = $destinationRoutes != null;
+                $destinationRoutes = null;
+                $destinationStations = null;
+                $completed = boolval($this->game->getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
+                if ($completed) {
+                    $index = Arrays::findKey($useStationResult[$playerId][1], fn($d) => $d->id == $destination->id);
+                    if ($index !== null) {
+                        $destinationRoutes = $useStationResult[$playerId][2][$index];
+                        $destinationStations = $useStationResult[$playerId][3][$index];
+                    } else {
+                        $destinationRoutes = $this->game->getDestinationRoutes($playerId, $destination);
+                    }
+                }
                 $points = $pointsByDestination[$destination->id];
 
                 $this->notify->all('scoreDestination', clienttranslate('${player_name} reveals ${from} to ${to} destination'), [
@@ -178,6 +211,7 @@ class EndScore extends GameState {
                     'from' => $this->game->getCityName($destination->from),
                     'to' => $this->game->getLogTo($destination),
                     'destinationRoutes' => $destinationRoutes,
+                    'destinationStations' => $destinationStations,
                 ]);
                 
                 $message = clienttranslate('${player_name} ${gainsloses} ${absdelta} points with ${from} to ${to} destination');
@@ -253,6 +287,26 @@ class EndScore extends GameState {
                 ]);
 
                 $this->game->setStat(1, 'longestPathBonus', $playerId);
+            }
+        }
+
+        if ($this->game->getMap()->stations !== null) {
+            // stations
+            foreach ($players as $playerId => $playerDb) {
+                $remainingStations = $playersRemainingStations[$playerId];
+
+                $this->bga->notify->all('remainingStations', '', [
+                    'playerId' => $playerId,
+                    'remainingStations' => $remainingStations,
+                ]);
+
+                $points = 4 * $remainingStations;
+                $this->game->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with ${remainingStations} remaining station(s)'), [
+                    'points' => $points,
+                    'remainingStations' => $remainingStations,
+                ]);
+
+                $this->game->setStat($remainingStations, 'unusedStations', $playerId);
             }
         }
 
