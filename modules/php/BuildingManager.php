@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideEurope;
 
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
-use Bga\Games\TicketToRide\Objects\City;
-use Bga\Games\TicketToRide\Objects\Destination;
-use Bga\Games\TicketToRide\Objects\PlacedBuilding;
-use Bga\Games\TicketToRide\Objects\TrainCar;
+use Bga\Games\TicketToRideEurope\Objects\City;
+use Bga\Games\TicketToRideEurope\Objects\Destination;
+use Bga\Games\TicketToRideEurope\Objects\PlacedBuilding;
+use Bga\Games\TicketToRideEurope\Objects\TrainCar;
 
 class BuildingManager {
     protected \Bga\GameFramework\Bga $bga;

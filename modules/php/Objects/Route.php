@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide\Objects;
+namespace Bga\Games\TicketToRideEurope\Objects;
 
 /**
  * A route is a path from one city to another.
