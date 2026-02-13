@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide\Objects;
+namespace Bga\Games\TicketToRideEurope\Objects;
 
 /**
  * A DestinationCard is the graphic representation of a card (informations on it : from, to and points).
