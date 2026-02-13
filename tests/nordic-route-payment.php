@@ -1,7 +1,7 @@
 <?php
 
-namespace Bga\Games\TicketToRide {
-    use Bga\Games\TicketToRide\Objects\Map;
+namespace Bga\Games\TicketToRideEurope\ {
+    use Bga\Games\TicketToRideEurope\Objects\Map;
 
     class Game {
         public function __construct(private Map $map) {}
@@ -13,9 +13,9 @@ namespace Bga\Games\TicketToRide {
 }
 
 namespace {
-    use Bga\Games\TicketToRide\Game;
-    use Bga\Games\TicketToRide\MapManager;
-    use Bga\Games\TicketToRide\Objects\Map;
+    use Bga\Games\TicketToRideEurope\Game;
+    use Bga\Games\TicketToRideEurope\MapManager;
+    use Bga\Games\TicketToRideEurope\Objects\Map;
 
     require_once __DIR__.'/../modules/php/constants.inc.php';
     require_once __DIR__.'/../modules/php/framework-prototype/Helpers/Arrays.php';

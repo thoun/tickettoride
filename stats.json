@@ -80,6 +80,16 @@
             "name": "Longest continuous path",
             "type": "int"
         },
+        "builtStations": {
+            "id": 50,
+            "name": "Built stations",
+            "type": "int"
+        },
+        "unusedStations": {
+            "id": 51,
+            "name": "Unused stations",
+            "type": "int"
+        },
         "visibleCardsReplaced": {
             "id": 24,
             "name": "Visible cards replaced (three locomotives)",
@@ -167,6 +177,16 @@
             "name": "Longest continuous path",
             "type": "int"
         },
+        "builtStations": {
+            "id": 50,
+            "name": "Built stations",
+            "type": "int"
+        },
+        "unusedStations": {
+            "id": 51,
+            "name": "Unused stations",
+            "type": "int"
+        },
         "keptInitialDestinationCards": {
             "id": 33,
             "name": "Kept initial destination cards",
@@ -181,11 +201,7 @@
             "id": 44,
             "name": "Longest Continuous Path bonus",
             "type": "bool"
-        },
-        "globetrotterBonus": {
-            "id": 45,
-            "name": "Globetrotter bonus",
-            "type": "bool"
         }
     }
 }
+

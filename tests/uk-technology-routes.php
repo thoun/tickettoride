@@ -1,6 +1,6 @@
 <?php
 
-use Bga\Games\TicketToRide\Objects\Map;
+use Bga\Games\TicketToRideEurope\Objects\Map;
 
 function clienttranslate(string $text): string { return $text; }
 

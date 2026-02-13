@@ -1,6 +1,6 @@
 <?php
 
-use Bga\Games\TicketToRide\Objects\City;
+use Bga\Games\TicketToRideEurope\Objects\City;
 
 const UK_COUNTRY_ENGLAND = 1;
 const UK_COUNTRY_WALES = 2;

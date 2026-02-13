@@ -1,6 +1,6 @@
 <?php
 
-use Bga\Games\TicketToRide\Objects\DestinationCard;
+use Bga\Games\TicketToRideEurope\Objects\DestinationCard;
 
 /**
  * Destination tickets for the Pennsylvania map.

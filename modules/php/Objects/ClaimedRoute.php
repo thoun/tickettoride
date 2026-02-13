@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide\Objects;
+namespace Bga\Games\TicketToRideEurope\Objects;
 
 class ClaimedRoute {
     public int $routeId;

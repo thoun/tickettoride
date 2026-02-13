@@ -7,7 +7,7 @@
     "build:ts": "rollup -c",
     "build:distribution-test": "rollup -c misc/distribution-test.rollup.mjs",
     "watch:ts": "rollup -c -w",
-    "build:scss": "sass --no-source-map src/scss/Game.scss tickettoride.css"
+    "build:scss": "sass --no-source-map src/scss/Game.scss tickettorideeurope.css"
   },
   "author": "",
   "license": "ISC",
