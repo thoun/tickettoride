@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide\Objects;
+namespace Bga\Games\TicketToRideEurope\Objects;
 
 /**
  * A TrainCar is a physical card : a locomotive or a color card.

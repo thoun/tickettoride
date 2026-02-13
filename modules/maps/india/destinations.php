@@ -1,6 +1,6 @@
 <?php
 
-use Bga\Games\TicketToRide\Objects\DestinationCard;
+use Bga\Games\TicketToRideEurope\Objects\DestinationCard;
 
 function getBaseDestinations() {
   return [

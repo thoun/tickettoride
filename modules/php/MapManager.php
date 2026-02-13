@@ -1,9 +1,9 @@
 <?php
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideEurope;
 
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
-use Bga\Games\TicketToRide\Objects\Map;
+use Bga\Games\TicketToRideEurope\Objects\Map;
 
 class ConnectedCity {
     public int $city;

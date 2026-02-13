@@ -16,7 +16,7 @@
   *
   */
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideEurope;
 
 require_once('framework-prototype/Helpers/Arrays.php');
 
@@ -24,10 +24,10 @@ require_once('constants.inc.php');
 require_once(__DIR__.'/MapManager.php');
 
 use Bga\GameFramework\Table;
-use Bga\Games\TicketToRide\Objects\ClaimedRoute;
-use Bga\Games\TicketToRide\Objects\Destination;
-use Bga\Games\TicketToRide\Objects\Map;
-use Bga\Games\TicketToRide\States\DealInitialDestinations;
+use Bga\Games\TicketToRideEurope\Objects\ClaimedRoute;
+use Bga\Games\TicketToRideEurope\Objects\Destination;
+use Bga\Games\TicketToRideEurope\Objects\Map;
+use Bga\Games\TicketToRideEurope\States\DealInitialDestinations;
 
 const MAP_LIST = [
     1 => 'usa',
