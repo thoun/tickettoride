@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideEurope;
 
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
 
