@@ -13,7 +13,7 @@
 $gameinfos = [
 
 // Name of the game in English (will serve as the basis for translation) 
-'game_name' => "Ticket to Ride",          
+'game_name' => "Ticket to Ride: Europe",            
 
 // Game publisher (use empty string if there is no publisher)
 'publisher' => 'Days of Wonder',                     
@@ -25,7 +25,7 @@ $gameinfos = [
 'publisher_bgg_id' => 1027,
 
 // Board game geek ID of the game
-'bgg_id' => 9209,
+'bgg_id' => 14996,
 
 
 // Players configuration that can be played (ex: 2 to 4 players)
@@ -56,15 +56,15 @@ $gameinfos = [
 // the formula used to compute "player_score_aux". This description will be used as a tooltip to explain
 // the tie breaker to the players.
 // Note: if you are NOT using any tie breaker, leave the empty string.
-'tie_breaker_description' => totranslate("Most completed Destination Tickets, or Longest Continuous Path"),
-'tie_breaker_split' => [1000, 1],
+'tie_breaker_description' => totranslate("Most completed Destination Tickets, least number of Stations, or Longest Continuous Path"),
+'tie_breaker_split' => [1000, 100, 1],
 
 // If in the game, all losers are equal (no score to rank them or explicit in the rules that losers are not ranked between them), set this to true 
 // The game end result will display "Winner" for the 1st player and "Loser" for all other players
 'losers_not_ranked' => false,
 
 // Allow to rank solo games for games where it's the only available mode (ex: Thermopyles). Should be left to false for games where solo mode exists in addition to multiple players mode.
-'solo_mode_ranked' => false,                  
+'solo_mode_ranked' => false,
 
 // Is this game cooperative (all players wins together or loose together)
 'is_coop' => 0,
@@ -72,7 +72,7 @@ $gameinfos = [
 // Language dependency. If false or not set, there is no language dependency. If true, all players at the table must speak the same language.
 // If an array of shortcode languages such as array( 1 => 'en', 2 => 'fr', 3 => 'it' ) then all players at the table must speak the same language, and this language must be one of the listed languages.
 // NB: the default will be the first language in this list spoken by the player, so you should list them by popularity/preference.
-'language_dependency' => false,
+'language_dependency' => false, 
 
 // Colors attributed to players
 'player_colors' => ['e3001a', '41a62a', '0056aa', 'ffed00', 'af0ac2'],
@@ -96,4 +96,6 @@ $gameinfos = [
     //  minimum possible value: 320 (the lowest value you specify, the better the display is on mobile)
     'min' => 490, // under 490, player panels aren't on 2 columns on mobile
 ],
+
+    'take_translation_from' => 'tickettoride',
 ];

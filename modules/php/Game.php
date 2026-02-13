@@ -16,10 +16,10 @@
   *
   */
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideEurope;
 
 use Bga\GameFramework\Table;
-use Bga\Games\TicketToRide\States\DealInitialDestinations;
+use Bga\Games\TicketToRideEurope\States\DealInitialDestinations;
 
 require_once('framework-prototype/Helpers/Arrays.php');
 

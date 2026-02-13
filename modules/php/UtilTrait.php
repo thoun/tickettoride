@@ -1,6 +1,6 @@
 <?php
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideEurope;
 
 use Bga\GameFramework\Table;
 use Map;
@@ -58,7 +58,7 @@ trait UtilTrait {
 
     function getMapCode(): string {
         $mapOption = (int)$this->getUniqueValueFromDB("SELECT `global_value` FROM `global` where `global_id` = ".MAP_OPTION);
-        return MAP_LIST[$mapOption] ?? MAP_LIST[Table::getBgaEnvironment() === 'studio' ? 1 : 1];
+        return MAP_LIST[$mapOption] ?? MAP_LIST[Table::getBgaEnvironment() === 'studio' ? 2 : 2];
     }
 
     function getMap(): Map {

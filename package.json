@@ -6,7 +6,7 @@
   "scripts": {
     "build:ts": "rollup -c",
     "watch:ts": "rollup -c -w",
-    "build:scss": "sass --no-source-map src/tickettoride.scss tickettoride.css"
+    "build:scss": "sass --no-source-map src/tickettoride.scss tickettorideeurope.css"
   },
   "author": "",
   "license": "ISC",

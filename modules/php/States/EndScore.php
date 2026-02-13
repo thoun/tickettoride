@@ -1,11 +1,11 @@
 <?php
 
-namespace Bga\Games\TicketToRide\States;
+namespace Bga\Games\TicketToRideEurope\States;
 
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\StateType;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
-use Bga\Games\TicketToRide\Game;
+use Bga\Games\TicketToRideEurope\Game;
 
 use function Bga\Games\TicketToRide\debug;
 
