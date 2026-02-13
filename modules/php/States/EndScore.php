@@ -1,14 +1,12 @@
 <?php
 
-namespace Bga\Games\TicketToRide\States;
+namespace Bga\Games\TicketToRideEurope\States;
 
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\StateType;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
-use Bga\Games\TicketToRide\Game;
-use Bga\Games\TicketToRide\Objects\Destination;
-
-use function Bga\Games\TicketToRide\debug;
+use Bga\Games\TicketToRideEurope\Game;
+use Bga\Games\TicketToRideEurope\Objects\Destination;
 
 class EndScore extends GameState {
     public function __construct(protected Game $game)
