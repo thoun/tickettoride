@@ -1,8 +1,8 @@
 <?php
 
-use Bga\Games\TicketToRide\Game;
-use Bga\Games\TicketToRide\Objects\Map;
-use Bga\Games\TicketToRide\Objects\Route;
+use Bga\Games\TicketToRideEurope\Game;
+use Bga\Games\TicketToRideEurope\Objects\Map;
+use Bga\Games\TicketToRideEurope\Objects\Route;
 
 require_once(__DIR__.'/cities.php');
 require_once(__DIR__.'/routes.php');

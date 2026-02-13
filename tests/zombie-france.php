@@ -6,7 +6,7 @@ namespace Bga\GameFramework\States {
 namespace Bga\GameFramework {
     class StateType { const ACTIVE_PLAYER = 1; }
 }
-namespace Bga\Games\TicketToRide {
+namespace Bga\Games\TicketToRideEurope\ {
     class Game {
         public object $bga;
         public MapManager $mapManager;
@@ -46,11 +46,11 @@ namespace {
     require_once __DIR__.'/../modules/php/MapManager.php';
     require_once __DIR__.'/../modules/php/States/ChooseAction.php';
 
-    use Bga\Games\TicketToRide\Game;
-    use Bga\Games\TicketToRide\Objects\Map;
-    use Bga\Games\TicketToRide\Objects\Route;
-    use Bga\Games\TicketToRide\Objects\RouteSpace;
-    use Bga\Games\TicketToRide\States\ChooseAction;
+    use Bga\Games\TicketToRideEurope\Game;
+    use Bga\Games\TicketToRideEurope\Objects\Map;
+    use Bga\Games\TicketToRideEurope\Objects\Route;
+    use Bga\Games\TicketToRideEurope\Objects\RouteSpace;
+    use Bga\Games\TicketToRideEurope\States\ChooseAction;
 
     class ZombieChooseAction extends ChooseAction {
         public ?array $claim = null;

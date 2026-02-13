@@ -16,7 +16,7 @@
   *
   */
 
-namespace Bga\Games\TicketToRide;
+namespace Bga\Games\TicketToRideEurope;
 
 require_once('framework-prototype/Helpers/Arrays.php');
 
@@ -28,12 +28,12 @@ use Bga\GameFramework\Actions\CheckAction;
 use Bga\GameFramework\Components\Counters\CounterVisibility;
 use Bga\GameFramework\Components\Counters\PlayerCounter;
 use Bga\GameFramework\UserException;
-use Bga\Games\TicketToRide\States\ChooseAction;
-use Bga\Games\TicketToRide\Objects\ClaimedRoute;
-use Bga\Games\TicketToRide\Objects\Destination;
-use Bga\Games\TicketToRide\Objects\Map;
-use Bga\Games\TicketToRide\States\ChooseLegendaryCharacter;
-use Bga\Games\TicketToRide\States\DealInitialDestinations;
+use Bga\Games\TicketToRideEurope\States\ChooseAction;
+use Bga\Games\TicketToRideEurope\Objects\ClaimedRoute;
+use Bga\Games\TicketToRideEurope\Objects\Destination;
+use Bga\Games\TicketToRideEurope\Objects\Map;
+use Bga\Games\TicketToRideEurope\States\ChooseLegendaryCharacter;
+use Bga\Games\TicketToRideEurope\States\DealInitialDestinations;
 
 const MAP_LIST = [
     1 => 'usa',
@@ -535,7 +535,7 @@ class Game extends Table {
             return $nextState;
         }
         $this->bga->globals->set('CITY_MARKER_PLACEMENT', ['routeId' => $routeId, 'nextState' => $nextState]);
-        return \Bga\Games\TicketToRide\States\PlaceCityMarker::class;
+        return \Bga\Games\TicketToRideEurope\States\PlaceCityMarker::class;
     }
 
     function endTunnelAttempt(bool $storedTunnelAttempt): void {

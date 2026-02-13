@@ -6,7 +6,7 @@ namespace Bga\GameFramework\States {
 namespace Bga\GameFramework {
     class StateType { const ACTIVE_PLAYER = 1; }
 }
-namespace Bga\Games\TicketToRide {
+namespace Bga\Games\TicketToRideEurope\ {
     class Game {
         public object $trainCarManager;
         public object $legendaryCharacterManager;
@@ -63,10 +63,10 @@ namespace {
     require_once __DIR__.'/../modules/php/constants.inc.php';
     require_once __DIR__.'/../modules/php/States/ChooseAction.php';
     require_once __DIR__.'/../modules/php/States/DrawSecondCard.php';
-    use Bga\Games\TicketToRide\Game;
-    use Bga\Games\TicketToRide\States\ChooseAction;
-    use Bga\Games\TicketToRide\States\DrawSecondCard;
-    use Bga\Games\TicketToRide\States\NextPlayer;
+    use Bga\Games\TicketToRideEurope\Game;
+    use Bga\Games\TicketToRideEurope\States\ChooseAction;
+    use Bga\Games\TicketToRideEurope\States\DrawSecondCard;
+    use Bga\Games\TicketToRideEurope\States\NextPlayer;
 
     function check(bool $valid, string $message): void { if (!$valid) { throw new \RuntimeException($message); } }
     $red = (object)['id' => 10, 'type' => RED];

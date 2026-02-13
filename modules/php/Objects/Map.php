@@ -1,8 +1,8 @@
 <?php
 
-namespace Bga\Games\TicketToRide\Objects;
+namespace Bga\Games\TicketToRideEurope\Objects;
 
-use Bga\Games\TicketToRide\Game;
+use Bga\Games\TicketToRideEurope\Game;
 
 class Map {
     public const LOCOMOTIVE_TUNNEL = 0b01;
@@ -182,7 +182,7 @@ class Map {
     }
 
     /**
-     * @param \Bga\Games\TicketToRide\ConnectedNetwork[] $networks
+     * @param \Bga\Games\TicketToRideEurope\ConnectedNetwork[] $networks
      */
     function getRegionsBonusForNetworks(array $networks): int {
         if ($this->regionBonusPoints === null) {
@@ -199,7 +199,7 @@ class Map {
     }
 
     /**
-     * @param \Bga\Games\TicketToRide\ConnectedNetwork[] $networks
+     * @param \Bga\Games\TicketToRideEurope\ConnectedNetwork[] $networks
      * @return int[] region count by distinct network
      */
     private function getRegionsCountsForNetworks(array $networks): array {
