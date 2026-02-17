@@ -237,7 +237,7 @@ class DestinationManager {
             'player_name' => $this->game->getPlayerNameById($playerId),
             'destination' => $destination,
             'from' => $this->game->getCityName($destination->from),
-            'to' => $this->game->getCityName($destination->to),
+            'to' => $this->game->getLogTo($destination),
             'you' => clienttranslate('You'),
             'i18n' => ['you'],
             'destinationRoutes' => $destinationRoutes,
