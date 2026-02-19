@@ -7,7 +7,7 @@ function getBaseSmallDestinations() {
   return [
     1 => new DestinationCard(1, 29, 7), // Amsterdam Pampona 7
     2 => new DestinationCard(1, 45, 12), // Amsterdam Wilno 12
-    3 => new DestinationCard(2, 19, 10), // Angora  Kharov 10
+    3 => new DestinationCard(2, 19, 10), // Angora  Kharkov 10
     4 => new DestinationCard(3, 2, 5), // Athina Angora  5
     5 => new DestinationCard(3, 45, 11), // Athina	Wilno 11
     6 => new DestinationCard(4, 8, 8), // Barcelona Bruxelles 8
@@ -53,7 +53,7 @@ function get1912SmallDestinations() {
     101 => new DestinationCard(1, 29, 7), // Amsterdam Pampona 7
     102 => new DestinationCard(1, 42, 6), // Amsterdam Venezia 6
     103 => new DestinationCard(1, 45, 12), // Amsterdam Wilno 12
-    104 => new DestinationCard(2, 19, 10), // Angora  Kharov 10
+    104 => new DestinationCard(2, 19, 10), // Angora  Kharkov 10
     105 => new DestinationCard(3, 2, 5), // Athina Angora  5
     106 => new DestinationCard(3, 45, 11), // Athina	Wilno 11
     107 => new DestinationCard(4, 8, 8), // Barcelona Bruxelles 8
@@ -114,7 +114,7 @@ function get1912SmallDestinations() {
     162 => new DestinationCard(30, 44, 8), // Paris Wien  8
     163 => new DestinationCard(30, 46, 7), // Paris Zabrag  7
     164 => new DestinationCard(32, 9, 10), // Riga  Bucuresti 10
-    165 => new DestinationCard(32, 19, 10), // Riga  Kharov 10
+    165 => new DestinationCard(32, 19, 10), // Riga  Kharkov 10
     166 => new DestinationCard(33, 2, 11), // Roma Angora 11
     167 => new DestinationCard(33, 3, 6), // Roma Athena 6
     168 => new DestinationCard(33, 26, 17), // Roma Moskva 17
