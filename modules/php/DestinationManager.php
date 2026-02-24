@@ -140,6 +140,17 @@ class DestinationManager {
             throw new UserException("Selected cards are not available.");
         }
 
+        $destinationCards = $this->getDestinationsFromDb($this->destinations->getCards($ids));
+        foreach ($destinationCards as $destinationCard) {
+            if (!isset($countByType[$destinationCard->type])) {
+                $countByType[$destinationCard->type] = 0;
+            }
+            $countByType[$destinationCard->type]++;
+        }
+        if (($countByType[2] ?? 0) > 1) { // for Europe
+            throw new UserException(clienttranslate('You cannot keep more than one long route'));
+        }
+
         $this->destinations->moveCards($ids, 'hand', $playerId);
 
         $remainingCardsInPick = intval($this->destinations->countCardInLocation("pick$playerId"));
