@@ -52,7 +52,7 @@ class ChooseAction extends GameState {
                     $canClaimARoute = true;
                 }
             }
-            $costForRoute[$possibleRoute->id] = array_map(fn($cardCost) => $cardCost == null ? null : array_map(fn($card) => $card->type, $cardCost), $costByColor);
+            $costForRoute[$possibleRoute->id] = array_map(fn($cardCost) => $cardCost === null ? null : array_map(fn($card) => $card->type, $cardCost), $costByColor);
         }
 
         $canTakeTrainCarCards = $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true, true);
