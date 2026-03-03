@@ -42,7 +42,7 @@ class SwitzerlandMap extends Map {
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
         $this->minimumPlayerForDoubleRoutes = 3; // 4 means 2-3 players cant use double routes
 
-        $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2023/09/720114-T2RMC2-Rules_switzerland-ML-2017.pdf';
+        $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/staging-daysofwonder/uploads/2024/07/720114-T2RMC2-Rules_switzerland-ML-2017-5.pdf';
         $this->rulesDifferences = [
             clienttranslate('All players start with 40 trains instead of 45 trains.'),
             clienttranslate('Locomotives count as a simple card, so you can take 2 visible locomotives in one turn'),
