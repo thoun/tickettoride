@@ -9,6 +9,7 @@ use Bga\GameFramework\StateType;
 use Bga\GameFramework\UserException;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
 use Bga\Games\TicketToRide\Game;
+use Throwable;
 
 class ChooseAction extends GameState {
     public function __construct(protected Game $game)
@@ -256,13 +257,189 @@ class ChooseAction extends GameState {
     }
 
     function zombie(int $playerId, array $args) {
-        if ($args['canPass']) {
-            return $this->actPass($args);
+        try {
+            if ($args['canPass']) {
+                return $this->actPass($args);
+            }
+
+            $helpfulRouteAction = $this->tryClaimHelpfulRouteForDestination($playerId);
+            if ($helpfulRouteAction !== null) {
+                return $helpfulRouteAction;
+            }
+            
+            if ($this->game->getLowestTrainCarsCount() >= 8
+                && $this->game->destinationManager->getRemainingDestinationCardsInDeck() > 0
+                && $this->game->getUniqueIntValueFromDB("SELECT count(*) FROM `destination` WHERE `card_location` = 'hand' AND `card_location_arg` = $playerId AND `completed` = 0") == 0
+            ) {
+                return $this->actDrawDestinations($playerId);
+            }
+
+            return $this->actDrawDeckCards(2, $playerId);
+        } catch (Throwable $e) { // safe catch : if the zombie cannot play, just pass
+            return NextPlayer::class;
+        }
+    }
+
+    private function tryClaimHelpfulRouteForDestination(int $playerId): ?string {
+        $trainCarsHand = $this->game->trainCarManager->getPlayerHand($playerId);
+        $remainingTrainCars = $this->game->getRemainingTrainCarsCount($playerId);
+        $possibleRoutes = $this->game->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
+        if (count($possibleRoutes) === 0) {
+            return null;
         }
 
-        // TODO check if it can build a route that will help complete a ticket (and return)
-        // TODO if all tickets are completed and there is at least 8 train cars for each player, draw new tickets (and return)
+        $allRoutes = $this->game->getAllRoutes();
+        $claimedRoutes = $this->game->getClaimedRoutes();
+        $doubleRouteAllowed = $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForDoubleRoutes;
 
-        return $this->actDrawDeckCards(2, $playerId);
+        $playerClaimedRouteIds = [];
+        $claimedOwnersByPair = [];
+        foreach ($claimedRoutes as $claimedRoute) {
+            $playerClaimedRouteIds[$claimedRoute->routeId] = $claimedRoute->playerId;
+
+            $route = $allRoutes[$claimedRoute->routeId];
+            $pairKey = $this->getZombieRoutePairKey($route);
+            if (!array_key_exists($pairKey, $claimedOwnersByPair)) {
+                $claimedOwnersByPair[$pairKey] = [];
+            }
+            $claimedOwnersByPair[$pairKey][$claimedRoute->playerId] = true;
+        }
+
+        $adjacency = [];
+        foreach ($allRoutes as $route) {
+            $routeId = $route->id;
+            if (array_key_exists($routeId, $playerClaimedRouteIds)) {
+                if ($playerClaimedRouteIds[$routeId] !== $playerId) {
+                    continue;
+                }
+                $weight = 0;
+            } else {
+                $pairOwners = $claimedOwnersByPair[$this->getZombieRoutePairKey($route)] ?? [];
+                if ((!$doubleRouteAllowed && count($pairOwners) > 0) || array_key_exists($playerId, $pairOwners)) {
+                    continue;
+                }
+                $weight = 1;
+            }
+
+            $adjacency[$route->from][] = [$route->to, $weight];
+            $adjacency[$route->to][] = [$route->from, $weight];
+        }
+
+        $uncompletedDestinations = $this->game->destinationManager->getUncompletedDestinations($playerId);
+        foreach ($uncompletedDestinations as $destination) {
+            $fromCities = $this->getZombieDestinationCities($destination->from);
+            $toCities = [];
+            foreach (is_array($destination->to) ? $destination->to : [$destination->to] as $to) {
+                foreach ($this->getZombieDestinationCities($to) as $city) {
+                    $toCities[$city] = true;
+                }
+            }
+            $toCities = array_keys($toCities);
+
+            $distanceFrom = $this->getZombieMissingRouteDistances($fromCities, $adjacency);
+            $distanceTo = $this->getZombieMissingRouteDistances($toCities, $adjacency);
+
+            $bestMissingRoutes = null;
+            foreach ($toCities as $toCity) {
+                if (array_key_exists($toCity, $distanceFrom) && ($bestMissingRoutes === null || $distanceFrom[$toCity] < $bestMissingRoutes)) {
+                    $bestMissingRoutes = $distanceFrom[$toCity];
+                }
+            }
+            if ($bestMissingRoutes === null || $bestMissingRoutes === 0) {
+                continue;
+            }
+
+            foreach ($possibleRoutes as $possibleRoute) {
+                $helpsDestination =
+                    (array_key_exists($possibleRoute->from, $distanceFrom)
+                        && array_key_exists($possibleRoute->to, $distanceTo)
+                        && $distanceFrom[$possibleRoute->from] + 1 + $distanceTo[$possibleRoute->to] === $bestMissingRoutes)
+                    || (array_key_exists($possibleRoute->to, $distanceFrom)
+                        && array_key_exists($possibleRoute->from, $distanceTo)
+                        && $distanceFrom[$possibleRoute->to] + 1 + $distanceTo[$possibleRoute->from] === $bestMissingRoutes);
+
+                if (!$helpsDestination) {
+                    continue;
+                }
+
+                $color = $this->getZombieClaimColor($possibleRoute, $trainCarsHand, $remainingTrainCars);
+                if ($color !== null) {
+                    return $this->actClaimRoute($possibleRoute->id, $color, null, $playerId);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function getZombieClaimColor(object $route, array $trainCarsHand, int $remainingTrainCars): ?int {
+        $colorsToTest = $route->color > 0 ? [$route->color, 0] : [1,2,3,4,5,6,7,8,0];
+        if ($route->locomotives === $route->number) {
+            $colorsToTest = [0];
+        }
+
+        $bestColor = null;
+        $bestLocomotiveCount = PHP_INT_MAX;
+        foreach ($colorsToTest as $colorToTest) {
+            $cost = $this->game->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $colorToTest);
+            if ($cost === null) {
+                continue;
+            }
+
+            $locomotiveCount = Arrays::count($cost, fn($card) => $card->type == 0);
+            if ($bestColor === null || $locomotiveCount < $bestLocomotiveCount) {
+                $bestColor = $colorToTest;
+                $bestLocomotiveCount = $locomotiveCount;
+            }
+        }
+
+        return $bestColor;
+    }
+
+    private function getZombieDestinationCities(int $cityOrCountry): array {
+        if ($cityOrCountry < 0) {
+            return $this->game->getMap()->countriesEndPoints[$cityOrCountry];
+        }
+
+        return [$cityOrCountry];
+    }
+
+    private function getZombieMissingRouteDistances(array $startCities, array $adjacency): array {
+        $distances = [];
+        $queue = new \SplPriorityQueue();
+        $queue->setExtractFlags(\SplPriorityQueue::EXTR_BOTH);
+
+        foreach ($startCities as $startCity) {
+            if (array_key_exists($startCity, $distances)) {
+                continue;
+            }
+
+            $distances[$startCity] = 0;
+            $queue->insert($startCity, 0);
+        }
+
+        while (!$queue->isEmpty()) {
+            $current = $queue->extract();
+            $city = $current['data'];
+            $distance = -$current['priority'];
+
+            if ($distance > $distances[$city]) {
+                continue;
+            }
+
+            foreach ($adjacency[$city] ?? [] as [$nextCity, $weight]) {
+                $nextDistance = $distance + $weight;
+                if (!array_key_exists($nextCity, $distances) || $nextDistance < $distances[$nextCity]) {
+                    $distances[$nextCity] = $nextDistance;
+                    $queue->insert($nextCity, -$nextDistance);
+                }
+            }
+        }
+
+        return $distances;
+    }
+
+    private function getZombieRoutePairKey(object $route): string {
+        return min($route->from, $route->to).'-'.max($route->from, $route->to);
     }
 }
