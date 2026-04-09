@@ -325,6 +325,9 @@ class EndScore extends GameState {
             }
 
             $scoreAux = 1000 * $completedDestinationsCount[$playerId] + $playersLongestPaths[$playerId]->length;
+            if ($this->game->getMap()->stations !== null) {
+                $scoreAux += 100 * ($playersRemainingStations[$playerId] ?? 0);
+            }
             $this->game->DbQuery("UPDATE player SET `player_score_aux` = $scoreAux where `player_id` = $playerId");
         }
         // Mandala
