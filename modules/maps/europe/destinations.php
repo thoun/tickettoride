@@ -104,7 +104,7 @@ function get1912SmallDestinations() {
     152 => new DestinationCard(27, 35, 7), // Munchen Sarajevo  7
     153 => new DestinationCard(28, 12, 8), // Palermo Constantinople  8
     154 => new DestinationCard(29, 28, 12), // Pampluna Palermo 12
-    155 => new DestinationCard(30, 2, 13), // Paris Angora 13
+    155 => new DestinationCard(30, 2, 17), // Paris Angora 17
     156 => new DestinationCard(30, 3, 13), // Paris Athina 13
     157 => new DestinationCard(30, 5, 7), // Paris Berlin 7
     158 => new DestinationCard(30, 15, 7), // Paris Edinburgh 7
