@@ -17,6 +17,8 @@
         display: flex;
         height: 192px;
         margin-bottom: -20px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
         
         .deck-level {
             position: absolute;
@@ -106,6 +108,7 @@
     position: absolute;
     left: 0;
     top: 10px;
+    pointer-events: none;
 
     .inner {
         position: absolute;

@@ -35,6 +35,8 @@ export class TrainCarSelection {
     private trainCarGauge: Gauge;
     private destinationGauge: Gauge;
     private dblClickTimeout = null;
+    private maxHiddenCardsPick = 0;
+    private lastTapHandled = 0;
 
     /**
      * Init stocks and gauges.
@@ -47,17 +49,37 @@ export class TrainCarSelection {
         trainCarDeckMaxCount: number,
         destinationDeckMaxCount: number,
     ) {
-        document.getElementById('destination-deck-hidden-pile').addEventListener('click', () => this.game.drawDestinations());
+        this.bindTap(document.getElementById('destination-deck-hidden-pile'), () => this.game.drawDestinations());
 
-        document.getElementById('train-car-deck-hidden-pile1').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(1));
-        document.getElementById('train-car-deck-hidden-pile2').addEventListener('click', () => this.game.onHiddenTrainCarDeckClick(2));
+        this.bindTap(document.getElementById('train-car-deck-hidden-pile1'), event => {
+            event.stopPropagation();
+            this.onHiddenTrainCarDeckButtonTap(1);
+        });
+        this.bindTap(document.getElementById('train-car-deck-hidden-pile2'), event => {
+            event.stopPropagation();
+            this.onHiddenTrainCarDeckButtonTap(2);
+        });
 
-        document.getElementById('train-car-deck-hidden-pile').addEventListener('click', () => {
+        this.bindTap(document.getElementById('train-car-deck-hidden-pile'), () => {
+            const hiddenPile = document.getElementById('train-car-deck-hidden-pile');
+            if (!hiddenPile.classList.contains('selectable') || hiddenPile.classList.contains('buttonselection')) {
+                return;
+            }
+
+            if (this.maxHiddenCardsPick < 1) {
+                return;
+            }
+
+            if (this.maxHiddenCardsPick < 2) {
+                this.game.onHiddenTrainCarDeckClick(1);
+                return;
+            }
+
             if (this.dblClickTimeout) {
                 clearTimeout(this.dblClickTimeout);
                 this.dblClickTimeout = null;
                 this.game.onHiddenTrainCarDeckClick(2);
-            } else if (!dojo.hasClass('train-car-deck-hidden-pile', 'buttonselection')) {
+            } else {
                 this.dblClickTimeout = setTimeout(() => {
                     this.game.onHiddenTrainCarDeckClick(1);
                     this.dblClickTimeout = null;
@@ -82,9 +104,45 @@ export class TrainCarSelection {
      * Set selection of hidden cards deck.
      */ 
     public setSelectableTopDeck(selectable: boolean, number: number = 0) {
-        dojo.toggleClass('train-car-deck-hidden-pile', 'selectable', selectable);
-        dojo.toggleClass('train-car-deck-hidden-pile1', 'hidden', number < 1);
-        dojo.toggleClass('train-car-deck-hidden-pile2', 'hidden', number < 2);
+        this.maxHiddenCardsPick = selectable ? number : 0;
+        document.getElementById('train-car-deck-hidden-pile').classList.toggle('selectable', selectable);
+        document.getElementById('train-car-deck-hidden-pile1').classList.toggle('hidden', number < 1);
+        document.getElementById('train-car-deck-hidden-pile2').classList.toggle('hidden', number < 2);
+    }
+
+    private onHiddenTrainCarDeckButtonTap(number: number) {
+        if (!document.getElementById('train-car-deck-hidden-pile').classList.contains('selectable') || this.maxHiddenCardsPick < number) {
+            return;
+        }
+
+        this.game.onHiddenTrainCarDeckClick(number);
+    }
+
+    private bindTap(element: HTMLElement, handler: (event: Event) => void) {
+        if (window.PointerEvent) {
+            element.addEventListener('pointerup', event => {
+                if (event.pointerType === 'mouse' && event.button !== 0) {
+                    return;
+                }
+
+                this.lastTapHandled = Date.now();
+                handler(event);
+            });
+        } else {
+            element.addEventListener('touchend', event => {
+                event.preventDefault();
+                this.lastTapHandled = Date.now();
+                handler(event);
+            }, { passive: false });
+        }
+
+        element.addEventListener('click', event => {
+            if (Date.now() - this.lastTapHandled < 500) {
+                return;
+            }
+
+            handler(event);
+        });
     }
     
     /**
@@ -135,7 +193,7 @@ export class TrainCarSelection {
      * Make hidden train car cads selection buttons visible (user preference).
      */ 
     public setCardSelectionButtons(visible: boolean) {
-        dojo.toggleClass('train-car-deck-hidden-pile', 'buttonselection', visible);
+        document.getElementById('train-car-deck-hidden-pile').classList.toggle('buttonselection', visible);
     }
     
     /**

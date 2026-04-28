@@ -866,6 +866,8 @@
   display: flex;
   height: 192px;
   margin-bottom: -20px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 #train-car-deck .hidden-pile .deck-level {
   position: absolute;
@@ -987,6 +989,7 @@
   position: absolute;
   left: 0;
   top: 10px;
+  pointer-events: none;
 }
 .gauge .inner {
   position: absolute;
