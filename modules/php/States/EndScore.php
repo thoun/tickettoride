@@ -328,7 +328,7 @@ class EndScore extends GameState {
             if ($this->game->getMap()->stations !== null) {
                 $scoreAux += 100 * ($playersRemainingStations[$playerId] ?? 0);
             }
-            $this->game->DbQuery("UPDATE player SET `player_score_aux` = $scoreAux where `player_id` = $playerId");
+            $this->bga->playerScoreAux->set((int)$playerId, $scoreAux, null);
         }
         // Mandala
         if ($mandalaPoints !== null) {

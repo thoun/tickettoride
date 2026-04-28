@@ -568,7 +568,7 @@ export class TtrMap {
             route.spaces.forEach((space, spaceIndex) => {
                 setTimeout(() => {
                     this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute);
-                    this.game.bga.sounds.play(`ttr-placed-train-car`);
+                    this.game.bga.sounds.play(`placed-train-car`);
                 }, 200 * spaceIndex);
             });
             this.game.bga.gameui.disableNextMoveSound();

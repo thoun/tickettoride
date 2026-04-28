@@ -148,7 +148,7 @@ export class EndScore {
             `${destinationRoutes ? 'completed' : 'uncompleted'}-destination-counter-${playerId}`,
             {
                 change: () => {
-                    this.game.bga.sounds.play(`ttr-${destinationRoutes ? 'completed' : 'uncompleted'}-end`);
+                    this.game.bga.sounds.play(`${destinationRoutes ? 'completed' : 'uncompleted'}-end`);
                     this.game.bga.gameui.disableNextMoveSound();
                 },
 
@@ -194,7 +194,7 @@ export class EndScore {
             destination,
             {
                 end: () => {
-                    //this.game.bga.sounds.play(`ttr-longest-line-scoring`);
+                    //this.game.bga.sounds.play(`longest-line-scoring`);
                     //this.game.bga.gameui.disableNextMoveSound();
                 }
             }
@@ -219,7 +219,7 @@ export class EndScore {
             playerColor,
             {
                 end: () => {
-                    this.game.bga.sounds.play(`ttr-longest-line-scoring`);
+                    this.game.bga.sounds.play(`longest-line-scoring`);
                     this.game.bga.gameui.disableNextMoveSound();
                 }
             }
