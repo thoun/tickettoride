@@ -31,6 +31,7 @@ export class Game implements TicketToRideGame {
     private completedDestinationsCounter: Counter;
 
     private animations: WagonsAnimation[] = [];
+    private temporaryHighlightedDestinationTimeout: number | null = null;
 
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
@@ -356,7 +357,29 @@ export class Game implements TicketToRideGame {
      * Highlight destination (on destination mouse over).
      */ 
     public setHighligthedDestination(destination: Destination | null): void {
+        if (destination === null) {
+            this.clearTemporaryHighlightedDestinationTimeout();
+        }
         this.map.setHighligthedDestination(destination);
+    }
+
+    /** 
+     * Highlight destination for a short time (on destination click without hover support).
+     */ 
+    public setTemporaryHighligthedDestination(destination: Destination, duration: number = 1200): void {
+        this.clearTemporaryHighlightedDestinationTimeout();
+        this.map.setHighligthedDestination(destination, true);
+        this.temporaryHighlightedDestinationTimeout = window.setTimeout(() => {
+            this.temporaryHighlightedDestinationTimeout = null;
+            this.map.setHighligthedDestination(null);
+        }, duration);
+    }
+
+    private clearTemporaryHighlightedDestinationTimeout(): void {
+        if (this.temporaryHighlightedDestinationTimeout !== null) {
+            window.clearTimeout(this.temporaryHighlightedDestinationTimeout);
+            this.temporaryHighlightedDestinationTimeout = null;
+        }
     }
     
     /** 

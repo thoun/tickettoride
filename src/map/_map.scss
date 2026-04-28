@@ -155,6 +155,10 @@
   &[data-visible="true"] {
     opacity: 1;
   }
+
+  &[data-dismissible="true"] {
+    pointer-events: all;
+  }
 }
 
 #map-zoom {

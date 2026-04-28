@@ -45,16 +45,24 @@ export class DestinationSelection {
      */ 
     public setCards(destinations: Destination[], minimumDestinations: number, visibleColors: number[]) {
         dojo.removeClass('destination-deck', 'hidden');
+        const supportsHover = window.matchMedia('(hover: hover)').matches;
 
         destinations.forEach(destination => {
             this.destinations.addToStockWithId(destination.type * 1000 + destination.type_arg, ''+destination.id);
 
             const cardDiv = document.getElementById(`destination-stock_item_${destination.id}`);
             // when mouse hover destination, highlight it on the map
-            cardDiv.addEventListener('mouseenter', () => this.game.setHighligthedDestination(destination));
-            cardDiv.addEventListener('mouseleave', () => this.game.setHighligthedDestination(null));
+            if (supportsHover) {
+                cardDiv.addEventListener('mouseenter', () => this.game.setHighligthedDestination(destination));
+                cardDiv.addEventListener('mouseleave', () => this.game.setHighligthedDestination(null));
+            }
             // when destinatin is selected, another highlight on the map
-            cardDiv.addEventListener('click', () => this.game.setSelectedDestination(destination, this.destinations.getSelectedItems().some(item => Number(item.id) == destination.id)));
+            cardDiv.addEventListener('click', () => {
+                if (!supportsHover) {
+                    this.game.setTemporaryHighligthedDestination(destination);
+                }
+                this.game.setSelectedDestination(destination, this.destinations.getSelectedItems().some(item => Number(item.id) == destination.id));
+            });
         });
 
         this.minimumDestinations = minimumDestinations;
@@ -68,6 +76,7 @@ export class DestinationSelection {
      * Hide destination selector.
      */ 
     public hide() {
+        this.game.setHighligthedDestination(null);
         this.destinations.removeAll();
 
         dojo.addClass('destination-deck', 'hidden');

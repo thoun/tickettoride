@@ -210,6 +210,8 @@ export class TtrMap {
 
         this.inMapZoomManager = new InMapZoomManager(map);
 
+        document.getElementById('map-destination-highlight-shadow').addEventListener('click', () => this.game.setHighligthedDestination(null));
+
         this.game.setTooltipToClass(`train-car-deck-hidden-pile-tooltip`, `<strong>${_('Train cars deck')}</strong><br><br>
         ${_('Click here to pick one or two hidden train car cards')}`);
 
@@ -759,10 +761,11 @@ export class TtrMap {
     /** 
      * Highlight destination (on destination mouse over).
      */ 
-    public setHighligthedDestination(destination: Destination | null): void {
+    public setHighligthedDestination(destination: Destination | null, dismissible: boolean = false): void {
         const visible = Boolean(destination).toString();
         const shadow = document.getElementById('map-destination-highlight-shadow');
         shadow.dataset.visible = visible;
+        shadow.dataset.dismissible = (Boolean(destination) && dismissible).toString();
 
         let cities: (string | number)[];
         if (destination) {

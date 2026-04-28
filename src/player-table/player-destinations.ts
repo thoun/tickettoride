@@ -74,6 +74,8 @@ export class PlayerDestinations {
      * Add destinations to player's hand.
      */ 
     public addDestinations(destinations: Destination[], originStock?: Stock) {
+        const supportsHover = window.matchMedia('(hover: hover)').matches;
+
         destinations.forEach(destination => {
             let html = `
             <div id="destination-card-${destination.id}" class="destination-card" style="${getBackgroundInlineStyleForDestination(this.game.getMap(), destination)}"></div>
@@ -92,13 +94,20 @@ export class PlayerDestinations {
                 <div class="destination-card" style="${getBackgroundInlineStyleForDestination(destination)}"></div>
             `);*/
 
-            card.addEventListener('click', () => this.activateNextDestination(
-                this.destinationsDone.some(d => d.id == destination.id) ? this.destinationsDone : this.destinationsTodo
-            ));
+            card.addEventListener('click', () => {
+                if (!supportsHover) {
+                    this.game.setTemporaryHighligthedDestination(destination);
+                }
+                this.activateNextDestination(
+                    this.destinationsDone.some(d => d.id == destination.id) ? this.destinationsDone : this.destinationsTodo
+                );
+            });
             
             // highlight destination's cities on the map, on mouse over
-            card.addEventListener('mouseenter', () => this.game.setHighligthedDestination(destination));
-            card.addEventListener('mouseleave', () => this.game.setHighligthedDestination(null));
+            if (supportsHover) {
+                card.addEventListener('mouseenter', () => this.game.setHighligthedDestination(destination));
+                card.addEventListener('mouseleave', () => this.game.setHighligthedDestination(null));
+            }
 
             if (originStock) {
                 this.addAnimationFrom(card, document.getElementById(`${originStock.container_div.id}_item_${destination.id}`));

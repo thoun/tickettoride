@@ -401,6 +401,9 @@
 #map-destination-highlight-shadow[data-visible=true] {
   opacity: 1;
 }
+#map-destination-highlight-shadow[data-dismissible=true] {
+  pointer-events: all;
+}
 
 #map-zoom {
   position: relative;

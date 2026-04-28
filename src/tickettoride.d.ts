@@ -166,6 +166,7 @@ export interface TicketToRideGame{
     onHiddenTrainCarDeckClick(number: number): void;
     setActiveDestination(destination: Destination, previousDestination?: Destination): void;
     setHighligthedDestination(destination: Destination | null): void;
+    setTemporaryHighligthedDestination(destination: Destination, duration?: number): void;
     setSelectedDestination(destination: Destination, visible: boolean): void;
     addAnimation(animation: WagonsAnimation): void;
     endAnimation(ended: WagonsAnimation): void;

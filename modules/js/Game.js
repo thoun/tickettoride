@@ -11,6 +11,7 @@ class WagonsAnimation {
     }
     setWagonsVisibility(visible) {
         this.shadowDiv.dataset.visible = visible ? 'true' : 'false';
+        this.shadowDiv.dataset.dismissible = 'false';
         this.wagons.forEach(wagon => wagon.classList.toggle('highlight', visible));
     }
 }
@@ -145,6 +146,7 @@ class PlayerDestinations {
      * Add destinations to player's hand.
      */
     addDestinations(destinations, originStock) {
+        const supportsHover = window.matchMedia('(hover: hover)').matches;
         destinations.forEach(destination => {
             let html = `
             <div id="destination-card-${destination.id}" class="destination-card" style="${getBackgroundInlineStyleForDestination(this.game.getMap(), destination)}"></div>
@@ -160,10 +162,17 @@ class PlayerDestinations {
                 <div>${dojo.string.substitute(_('${from} to ${to}'), {from: this.game.getCityName(destinationInfos.from), to: this.game.getCityName(destinationInfos.to)})}, ${destinationInfos.points} ${_('points')}</div>
                 <div class="destination-card" style="${getBackgroundInlineStyleForDestination(destination)}"></div>
             `);*/
-            card.addEventListener('click', () => this.activateNextDestination(this.destinationsDone.some(d => d.id == destination.id) ? this.destinationsDone : this.destinationsTodo));
+            card.addEventListener('click', () => {
+                if (!supportsHover) {
+                    this.game.setTemporaryHighligthedDestination(destination);
+                }
+                this.activateNextDestination(this.destinationsDone.some(d => d.id == destination.id) ? this.destinationsDone : this.destinationsTodo);
+            });
             // highlight destination's cities on the map, on mouse over
-            card.addEventListener('mouseenter', () => this.game.setHighligthedDestination(destination));
-            card.addEventListener('mouseleave', () => this.game.setHighligthedDestination(null));
+            if (supportsHover) {
+                card.addEventListener('mouseenter', () => this.game.setHighligthedDestination(destination));
+                card.addEventListener('mouseleave', () => this.game.setHighligthedDestination(null));
+            }
             if (originStock) {
                 this.addAnimationFrom(card, document.getElementById(`${originStock.container_div.id}_item_${destination.id}`));
             }
@@ -384,14 +393,22 @@ class DestinationSelection {
      */
     setCards(destinations, minimumDestinations, visibleColors) {
         dojo.removeClass('destination-deck', 'hidden');
+        const supportsHover = window.matchMedia('(hover: hover)').matches;
         destinations.forEach(destination => {
             this.destinations.addToStockWithId(destination.type * 1000 + destination.type_arg, '' + destination.id);
             const cardDiv = document.getElementById(`destination-stock_item_${destination.id}`);
             // when mouse hover destination, highlight it on the map
-            cardDiv.addEventListener('mouseenter', () => this.game.setHighligthedDestination(destination));
-            cardDiv.addEventListener('mouseleave', () => this.game.setHighligthedDestination(null));
+            if (supportsHover) {
+                cardDiv.addEventListener('mouseenter', () => this.game.setHighligthedDestination(destination));
+                cardDiv.addEventListener('mouseleave', () => this.game.setHighligthedDestination(null));
+            }
             // when destinatin is selected, another highlight on the map
-            cardDiv.addEventListener('click', () => this.game.setSelectedDestination(destination, this.destinations.getSelectedItems().some(item => Number(item.id) == destination.id)));
+            cardDiv.addEventListener('click', () => {
+                if (!supportsHover) {
+                    this.game.setTemporaryHighligthedDestination(destination);
+                }
+                this.game.setSelectedDestination(destination, this.destinations.getSelectedItems().some(item => Number(item.id) == destination.id));
+            });
         });
         this.minimumDestinations = minimumDestinations;
         visibleColors.forEach((color, index) => {
@@ -402,6 +419,7 @@ class DestinationSelection {
      * Hide destination selector.
      */
     hide() {
+        this.game.setHighligthedDestination(null);
         this.destinations.removeAll();
         dojo.addClass('destination-deck', 'hidden');
     }
@@ -1162,6 +1180,7 @@ class TtrMap {
         this.resizedDiv = document.getElementById('resized');
         this.mapDiv = document.getElementById('map');
         this.inMapZoomManager = new InMapZoomManager(map);
+        document.getElementById('map-destination-highlight-shadow').addEventListener('click', () => this.game.setHighligthedDestination(null));
         this.game.setTooltipToClass(`train-car-deck-hidden-pile-tooltip`, `<strong>${_('Train cars deck')}</strong><br><br>
         ${_('Click here to pick one or two hidden train car cards')}`);
         this.game.setTooltip(`destination-deck-hidden-pile`, `<strong>${_('Destinations deck')}</strong><br><br>
@@ -1627,10 +1646,11 @@ class TtrMap {
     /**
      * Highlight destination (on destination mouse over).
      */
-    setHighligthedDestination(destination) {
+    setHighligthedDestination(destination, dismissible = false) {
         const visible = Boolean(destination).toString();
         const shadow = document.getElementById('map-destination-highlight-shadow');
         shadow.dataset.visible = visible;
+        shadow.dataset.dismissible = (Boolean(destination) && dismissible).toString();
         let cities;
         if (destination) {
             shadow.dataset.from = '' + destination.from;
@@ -2757,6 +2777,7 @@ class Game {
         this.trainCarCardCounters = [];
         this.destinationCardCounters = [];
         this.animations = [];
+        this.temporaryHighlightedDestinationTimeout = null;
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
         this.distributionCards = null;
         this.bga = bga;
@@ -3016,7 +3037,27 @@ class Game {
      * Highlight destination (on destination mouse over).
      */
     setHighligthedDestination(destination) {
+        if (destination === null) {
+            this.clearTemporaryHighlightedDestinationTimeout();
+        }
         this.map.setHighligthedDestination(destination);
+    }
+    /**
+     * Highlight destination for a short time (on destination click without hover support).
+     */
+    setTemporaryHighligthedDestination(destination, duration = 1200) {
+        this.clearTemporaryHighlightedDestinationTimeout();
+        this.map.setHighligthedDestination(destination, true);
+        this.temporaryHighlightedDestinationTimeout = window.setTimeout(() => {
+            this.temporaryHighlightedDestinationTimeout = null;
+            this.map.setHighligthedDestination(null);
+        }, duration);
+    }
+    clearTemporaryHighlightedDestinationTimeout() {
+        if (this.temporaryHighlightedDestinationTimeout !== null) {
+            window.clearTimeout(this.temporaryHighlightedDestinationTimeout);
+            this.temporaryHighlightedDestinationTimeout = null;
+        }
     }
     /**
      * Highlight cities of selected destination.
