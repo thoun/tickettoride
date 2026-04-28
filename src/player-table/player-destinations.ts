@@ -179,7 +179,7 @@ export class PlayerDestinations {
         if (this.selectedDestination && destinationList.some(d => d.id == this.selectedDestination.id) && destinationList.length > 1) {
             destinationList.splice(destinationList.length, 0, ...destinationList.splice(0, 1));
         }
-        this.selectedDestination = destinationList[0];
+        this.selectedDestination = destinationList[0] ?? null;
         this.game.setActiveDestination(this.selectedDestination, oldSelectedDestination);
 
         document.getElementById(`player-table-${this.playerId}-destinations-todo`).classList.toggle('front', destinationList == this.destinationsTodo);

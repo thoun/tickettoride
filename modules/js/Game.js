@@ -227,7 +227,7 @@ class PlayerDestinations {
         if (this.selectedDestination && destinationList.some(d => d.id == this.selectedDestination.id) && destinationList.length > 1) {
             destinationList.splice(destinationList.length, 0, ...destinationList.splice(0, 1));
         }
-        this.selectedDestination = destinationList[0];
+        this.selectedDestination = destinationList[0] ?? null;
         this.game.setActiveDestination(this.selectedDestination, oldSelectedDestination);
         document.getElementById(`player-table-${this.playerId}-destinations-todo`).classList.toggle('front', destinationList == this.destinationsTodo);
         document.getElementById(`player-table-${this.playerId}-destinations-done`).classList.toggle('front', destinationList == this.destinationsDone);
@@ -370,6 +370,7 @@ class DestinationSelection {
      */
     constructor(game, map) {
         this.game = game;
+        this.visibleDestinations = [];
         const DESTINATION_CARD_WIDTH = map.vertical ? CARD_HEIGHT : CARD_WIDTH;
         const DESTINATION_CARD_HEIGHT = map.vertical ? CARD_WIDTH : CARD_HEIGHT;
         // @ts-ignore
@@ -394,6 +395,7 @@ class DestinationSelection {
     setCards(destinations, minimumDestinations, visibleColors) {
         dojo.removeClass('destination-deck', 'hidden');
         const supportsHover = window.matchMedia('(hover: hover)').matches;
+        this.visibleDestinations = destinations;
         destinations.forEach(destination => {
             this.destinations.addToStockWithId(destination.type * 1000 + destination.type_arg, '' + destination.id);
             const cardDiv = document.getElementById(`destination-stock_item_${destination.id}`);
@@ -407,7 +409,6 @@ class DestinationSelection {
                 if (!supportsHover) {
                     this.game.setTemporaryHighligthedDestination(destination);
                 }
-                this.game.setSelectedDestination(destination, this.destinations.getSelectedItems().some(item => Number(item.id) == destination.id));
             });
         });
         this.minimumDestinations = minimumDestinations;
@@ -420,7 +421,9 @@ class DestinationSelection {
      */
     hide() {
         this.game.setHighligthedDestination(null);
+        this.game.map.clearDestinationChoiceMarkers();
         this.destinations.removeAll();
+        this.visibleDestinations = [];
         dojo.addClass('destination-deck', 'hidden');
     }
     /**
@@ -433,6 +436,8 @@ class DestinationSelection {
      * Toggle activation of confirm selection buttons, depending on minimumDestinations.
      */
     selectionChange() {
+        const selectedDestinationIds = new Set(this.destinations.getSelectedItems().map(item => Number(item.id)));
+        this.visibleDestinations.forEach(destination => this.game.setSelectedDestination(destination, selectedDestinationIds.has(destination.id)));
         document.getElementById('chooseInitialDestinations_button')?.classList.toggle('disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
         document.getElementById('chooseAdditionalDestinations_button')?.classList.toggle('disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
     }
@@ -488,7 +493,10 @@ class MandalaRoutesAnimation extends WagonsAnimation {
         this.routes = routes;
         this.actions = actions;
         this.cities = [];
-        [destination.from, destination.to].forEach(cityId => this.cities.push(document.getElementById(`city${cityId}`)));
+        const to = Array.isArray(destination.to) ? destination.to : [destination.to];
+        [destination.from, ...to]
+            .filter(cityId => cityId > 0)
+            .forEach(cityId => this.cities.push(document.getElementById(`city${cityId}`)));
     }
     animate() {
         return new Promise(resolve => {
@@ -1152,6 +1160,11 @@ class TtrMap {
         this.crosshairShift = 0;
         this.claimedRoutesIds = [];
         this.claimedCitiesIds = [];
+        this.activeDestinationCityIds = new Set();
+        this.highlightedDestinationCityIds = new Set();
+        this.toConnectCityIds = new Set();
+        this.selectableDestinationCityIdsByDestination = new Map();
+        this.selectedDestinationCityIdsByDestination = new Map();
         // map border
         document.getElementById('map').insertAdjacentHTML('afterbegin', `
             <div class="illustration" data-illustration="${illustration}"></div>
@@ -1329,7 +1342,7 @@ class TtrMap {
     setCityDragEvents(cityDiv, city) {
         cityDiv.addEventListener('dragenter', e => this.cityDragOver(e, city));
         cityDiv.addEventListener('dragover', e => this.cityDragOver(e, city));
-        cityDiv.addEventListener('dragleave', e => this.setHoveredRoute(null));
+        cityDiv.addEventListener('dragleave', e => this.setHoveredCity(null));
         cityDiv.addEventListener('drop', e => this.cityDragDrop(e, city));
     }
     /**
@@ -1572,15 +1585,10 @@ class TtrMap {
      * Highlight active destination.
      */
     setActiveDestination(destination, previousDestination = null) {
-        if (previousDestination) {
-            if (previousDestination.id === destination.id) {
-                return;
-            }
-            [previousDestination.from, previousDestination.to].filter(city => city > 0).forEach(city => document.getElementById(`city${city}`).dataset.selectedDestination = 'false');
+        if (previousDestination && destination && previousDestination.id === destination.id) {
+            return;
         }
-        if (destination) {
-            [destination.from, destination.to].filter(city => city > 0).forEach(city => document.getElementById(`city${city}`).dataset.selectedDestination = 'true');
-        }
+        this.replaceCityMarkerSet(this.activeDestinationCityIds, this.getDestinationCityIds(destination), 'selectedDestination');
     }
     /**
      * Highlight hovered route (when dragging train cars).
@@ -1622,26 +1630,27 @@ class TtrMap {
      * Highlight cities of selectable destination.
      */
     setSelectableDestination(destination, visible) {
-        [destination.from, destination.to].filter(city => city > 0).forEach(city => {
-            document.getElementById(`city${city}`).dataset.selectable = '' + visible;
-        });
+        this.setDestinationMarker(this.selectableDestinationCityIdsByDestination, destination, visible, 'selectable');
     }
     /**
      * Highlight cities of selected destination.
      */
     setSelectedDestination(destination, visible) {
-        [destination.from, destination.to].filter(city => city > 0).forEach(city => {
-            document.getElementById(`city${city}`).dataset.selected = '' + visible;
-        });
+        this.setDestinationMarker(this.selectedDestinationCityIdsByDestination, destination, visible, 'selected');
+    }
+    /**
+     * Clear destination markers used only while choosing new tickets.
+     */
+    clearDestinationChoiceMarkers() {
+        this.clearDestinationMarker(this.selectableDestinationCityIdsByDestination, 'selectable');
+        this.clearDestinationMarker(this.selectedDestinationCityIdsByDestination, 'selected');
     }
     /**
      * Highlight cities player must connect for its objectives.
      */
     setDestinationsToConnect(destinations) {
-        this.mapDiv.querySelectorAll(`.city[data-to-connect]`).forEach((city) => city.dataset.toConnect = 'false');
-        const cities = [];
-        destinations.forEach(destination => cities.push(destination.from, destination.to));
-        cities.filter(city => city > 0).forEach(city => document.getElementById(`city${city}`).dataset.toConnect = 'true');
+        const cities = destinations.flatMap(destination => this.getDestinationCityIds(destination));
+        this.replaceCityMarkerSet(this.toConnectCityIds, cities, 'toConnect');
     }
     /**
      * Highlight destination (on destination mouse over).
@@ -1651,16 +1660,50 @@ class TtrMap {
         const shadow = document.getElementById('map-destination-highlight-shadow');
         shadow.dataset.visible = visible;
         shadow.dataset.dismissible = (Boolean(destination) && dismissible).toString();
-        let cities;
+        const cities = this.getDestinationCityIds(destination);
         if (destination) {
             shadow.dataset.from = '' + destination.from;
             shadow.dataset.to = '' + destination.to;
-            cities = [destination.from, destination.to];
+        }
+        this.replaceCityMarkerSet(this.highlightedDestinationCityIds, cities, 'highlight');
+    }
+    getDestinationCityIds(destination) {
+        if (!destination) {
+            return [];
+        }
+        const to = Array.isArray(destination.to) ? destination.to : [destination.to];
+        return Array.from(new Set([destination.from, ...to].filter(cityId => Number(cityId) > 0)));
+    }
+    setDestinationMarker(markerMap, destination, visible, dataKey) {
+        if (visible) {
+            markerMap.set(destination.id, new Set(this.getDestinationCityIds(destination)));
         }
         else {
-            cities = [shadow.dataset.from, shadow.dataset.to];
+            markerMap.delete(destination.id);
         }
-        cities.filter(city => Number(city) > 0).forEach(city => document.getElementById(`city${city}`).dataset.highlight = visible);
+        this.renderCityMarkers(this.getCityIdsFromDestinationMarker(markerMap), dataKey);
+    }
+    clearDestinationMarker(markerMap, dataKey) {
+        markerMap.clear();
+        this.renderCityMarkers(new Set(), dataKey);
+    }
+    getCityIdsFromDestinationMarker(markerMap) {
+        const cityIds = new Set();
+        markerMap.forEach(markerCityIds => markerCityIds.forEach(cityId => cityIds.add(cityId)));
+        return cityIds;
+    }
+    replaceCityMarkerSet(markerSet, cityIds, dataKey) {
+        markerSet.clear();
+        cityIds.forEach(cityId => markerSet.add(cityId));
+        this.renderCityMarkers(markerSet, dataKey);
+    }
+    renderCityMarkers(markerCityIds, dataKey) {
+        Object.keys(this.map.cities).forEach(cityId => {
+            const cityDiv = document.getElementById(`city${cityId}`);
+            if (cityDiv) {
+                cityDiv.dataset[dataKey] = markerCityIds.has(Number(cityId)).toString();
+            }
+        });
     }
     /**
      * Create the crosshair target when drag starts over the drag overlay.
@@ -2881,9 +2924,7 @@ class Game {
             case 'chooseInitialDestinations':
             case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
-                const mapDiv = document.getElementById('map');
-                mapDiv.querySelectorAll(`.city[data-selectable]`).forEach((city) => city.dataset.selectable = 'false');
-                mapDiv.querySelectorAll(`.city[data-selected]`).forEach((city) => city.dataset.selected = 'false');
+                this.map.clearDestinationChoiceMarkers();
                 break;
             case 'multiChooseInitialDestinations':
                 this.destinationSelection.hide();

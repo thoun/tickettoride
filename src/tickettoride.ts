@@ -172,9 +172,7 @@ export class Game implements TicketToRideGame {
         switch (stateName) {
             case 'privateChooseInitialDestinations': case 'chooseInitialDestinations': case 'chooseAdditionalDestinations':
                 this.destinationSelection.hide();
-                const mapDiv = document.getElementById('map');
-                mapDiv.querySelectorAll(`.city[data-selectable]`).forEach((city: HTMLElement) => city.dataset.selectable = 'false');
-                mapDiv.querySelectorAll(`.city[data-selected]`).forEach((city: HTMLElement) => city.dataset.selected = 'false');
+                this.map.clearDestinationChoiceMarkers();
                 break;
             case 'multiChooseInitialDestinations':
                 this.destinationSelection.hide();
@@ -349,7 +347,7 @@ export class Game implements TicketToRideGame {
     /** 
      * Highlight active destination.
      */ 
-    public setActiveDestination(destination: Destination, previousDestination: Destination = null): void {
+    public setActiveDestination(destination: Destination | null, previousDestination: Destination = null): void {
         this.map.setActiveDestination(destination, previousDestination);
     }
 

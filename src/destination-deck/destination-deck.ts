@@ -12,6 +12,7 @@ export class DestinationSelection {
     public destinations: Stock;
     /** Minimum number of selected destinations to enable the confirm selection button */ 
     public minimumDestinations: number;
+    private visibleDestinations: Destination[] = [];
 
     /**
      * Init stock.
@@ -46,6 +47,7 @@ export class DestinationSelection {
     public setCards(destinations: Destination[], minimumDestinations: number, visibleColors: number[]) {
         dojo.removeClass('destination-deck', 'hidden');
         const supportsHover = window.matchMedia('(hover: hover)').matches;
+        this.visibleDestinations = destinations;
 
         destinations.forEach(destination => {
             this.destinations.addToStockWithId(destination.type * 1000 + destination.type_arg, ''+destination.id);
@@ -61,7 +63,6 @@ export class DestinationSelection {
                 if (!supportsHover) {
                     this.game.setTemporaryHighligthedDestination(destination);
                 }
-                this.game.setSelectedDestination(destination, this.destinations.getSelectedItems().some(item => Number(item.id) == destination.id));
             });
         });
 
@@ -77,7 +78,9 @@ export class DestinationSelection {
      */ 
     public hide() {
         this.game.setHighligthedDestination(null);
+        this.game.map.clearDestinationChoiceMarkers();
         this.destinations.removeAll();
+        this.visibleDestinations = [];
 
         dojo.addClass('destination-deck', 'hidden');
     }
@@ -93,6 +96,9 @@ export class DestinationSelection {
      * Toggle activation of confirm selection buttons, depending on minimumDestinations.
      */ 
     public selectionChange() {
+        const selectedDestinationIds = new Set(this.destinations.getSelectedItems().map(item => Number(item.id)));
+        this.visibleDestinations.forEach(destination => this.game.setSelectedDestination(destination, selectedDestinationIds.has(destination.id)));
+
         document.getElementById('chooseInitialDestinations_button')?.classList.toggle('disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
         document.getElementById('chooseAdditionalDestinations_button')?.classList.toggle('disabled', this.destinations.getSelectedItems().length < this.minimumDestinations);
     }

@@ -165,6 +165,12 @@ export class TtrMap {
     private claimedRoutesIds = [];
     private claimedCitiesIds = [];
 
+    private activeDestinationCityIds = new Set<number>();
+    private highlightedDestinationCityIds = new Set<number>();
+    private toConnectCityIds = new Set<number>();
+    private selectableDestinationCityIdsByDestination = new Map<number, Set<number>>();
+    private selectedDestinationCityIdsByDestination = new Map<number, Set<number>>();
+
     /** 
      * Place map corner illustration and borders, cities, routes, and bind events.
      */ 
@@ -381,7 +387,7 @@ export class TtrMap {
     private setCityDragEvents(cityDiv: HTMLElement, city: City) {
         cityDiv.addEventListener('dragenter', e => this.cityDragOver(e, city));
         cityDiv.addEventListener('dragover', e => this.cityDragOver(e, city));
-        cityDiv.addEventListener('dragleave', e => this.setHoveredRoute(null));
+        cityDiv.addEventListener('dragleave', e => this.setHoveredCity(null));
         cityDiv.addEventListener('drop', e => this.cityDragDrop(e, city));
     }
     
@@ -667,22 +673,12 @@ export class TtrMap {
     /** 
      * Highlight active destination.
      */ 
-    public setActiveDestination(destination: Destination, previousDestination: Destination = null) {
-        if (previousDestination) {
-            if (previousDestination.id === destination.id) {
-                return;
-            }
-
-            [previousDestination.from, previousDestination.to].filter(city => city > 0).forEach(city => 
-                document.getElementById(`city${city}`).dataset.selectedDestination = 'false'
-            );
+    public setActiveDestination(destination: Destination | null, previousDestination: Destination = null) {
+        if (previousDestination && destination && previousDestination.id === destination.id) {
+            return;
         }
 
-        if (destination) {
-            [destination.from, destination.to].filter(city => city > 0).forEach(city => 
-                document.getElementById(`city${city}`).dataset.selectedDestination = 'true'
-            );
-        }
+        this.replaceCityMarkerSet(this.activeDestinationCityIds, this.getDestinationCityIds(destination), 'selectedDestination');
     }
 
     /** 
@@ -734,28 +730,30 @@ export class TtrMap {
      * Highlight cities of selectable destination.
      */ 
     public setSelectableDestination(destination: Destination, visible: boolean): void {
-        [destination.from, destination.to].filter(city => city > 0).forEach(city => {
-            document.getElementById(`city${city}`).dataset.selectable = ''+visible;
-        });
+        this.setDestinationMarker(this.selectableDestinationCityIdsByDestination, destination, visible, 'selectable');
     }
 
     /** 
      * Highlight cities of selected destination.
      */ 
     public setSelectedDestination(destination: Destination, visible: boolean): void {
-        [destination.from, destination.to].filter(city => city > 0).forEach(city => {
-            document.getElementById(`city${city}`).dataset.selected = ''+visible;
-        });
+        this.setDestinationMarker(this.selectedDestinationCityIdsByDestination, destination, visible, 'selected');
+    }
+
+    /**
+     * Clear destination markers used only while choosing new tickets.
+     */
+    public clearDestinationChoiceMarkers(): void {
+        this.clearDestinationMarker(this.selectableDestinationCityIdsByDestination, 'selectable');
+        this.clearDestinationMarker(this.selectedDestinationCityIdsByDestination, 'selected');
     }
 
     /** 
      * Highlight cities player must connect for its objectives.
      */ 
     public setDestinationsToConnect(destinations: Destination[]): void {
-        this.mapDiv.querySelectorAll(`.city[data-to-connect]`).forEach((city: HTMLElement) => city.dataset.toConnect = 'false');
-        const cities = [];
-        destinations.forEach(destination => cities.push(destination.from, destination.to));
-        cities.filter(city => city > 0).forEach(city => document.getElementById(`city${city}`).dataset.toConnect = 'true');
+        const cities = destinations.flatMap(destination => this.getDestinationCityIds(destination));
+        this.replaceCityMarkerSet(this.toConnectCityIds, cities, 'toConnect');
     }
 
     /** 
@@ -767,15 +765,59 @@ export class TtrMap {
         shadow.dataset.visible = visible;
         shadow.dataset.dismissible = (Boolean(destination) && dismissible).toString();
 
-        let cities: (string | number)[];
+        const cities = this.getDestinationCityIds(destination);
         if (destination) {
             shadow.dataset.from = ''+destination.from;
             shadow.dataset.to = ''+destination.to;
-            cities = [destination.from, destination.to];
-        } else {
-            cities = [shadow.dataset.from, shadow.dataset.to];
         }
-        cities.filter(city => Number(city) > 0).forEach(city => document.getElementById(`city${city}`).dataset.highlight = visible);
+
+        this.replaceCityMarkerSet(this.highlightedDestinationCityIds, cities, 'highlight');
+    }
+
+    private getDestinationCityIds(destination: Destination | null): number[] {
+        if (!destination) {
+            return [];
+        }
+
+        const to = Array.isArray(destination.to) ? destination.to : [destination.to];
+        return Array.from(new Set([destination.from, ...to].filter(cityId => Number(cityId) > 0)));
+    }
+
+    private setDestinationMarker(markerMap: Map<number, Set<number>>, destination: Destination, visible: boolean, dataKey: keyof DOMStringMap): void {
+        if (visible) {
+            markerMap.set(destination.id, new Set(this.getDestinationCityIds(destination)));
+        } else {
+            markerMap.delete(destination.id);
+        }
+
+        this.renderCityMarkers(this.getCityIdsFromDestinationMarker(markerMap), dataKey);
+    }
+
+    private clearDestinationMarker(markerMap: Map<number, Set<number>>, dataKey: keyof DOMStringMap): void {
+        markerMap.clear();
+        this.renderCityMarkers(new Set(), dataKey);
+    }
+
+    private getCityIdsFromDestinationMarker(markerMap: Map<number, Set<number>>): Set<number> {
+        const cityIds = new Set<number>();
+        markerMap.forEach(markerCityIds => markerCityIds.forEach(cityId => cityIds.add(cityId)));
+        return cityIds;
+    }
+
+    private replaceCityMarkerSet(markerSet: Set<number>, cityIds: number[], dataKey: keyof DOMStringMap): void {
+        markerSet.clear();
+        cityIds.forEach(cityId => markerSet.add(cityId));
+
+        this.renderCityMarkers(markerSet, dataKey);
+    }
+
+    private renderCityMarkers(markerCityIds: Set<number>, dataKey: keyof DOMStringMap): void {
+        Object.keys(this.map.cities).forEach(cityId => {
+            const cityDiv = document.getElementById(`city${cityId}`) as HTMLElement | null;
+            if (cityDiv) {
+                cityDiv.dataset[dataKey] = markerCityIds.has(Number(cityId)).toString();
+            }
+        });
     }
 
     /** 

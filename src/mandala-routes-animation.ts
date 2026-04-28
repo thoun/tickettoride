@@ -16,7 +16,10 @@ export class MandalaRoutesAnimation extends WagonsAnimation {
         },
     ) {
         super(game, routes);
-        [destination.from, destination.to].forEach(cityId => this.cities.push(document.getElementById(`city${cityId}`)));
+        const to = Array.isArray(destination.to) ? destination.to : [destination.to];
+        [destination.from, ...to]
+            .filter(cityId => cityId > 0)
+            .forEach(cityId => this.cities.push(document.getElementById(`city${cityId}`)));
     }
 
     public animate(): Promise<WagonsAnimation> {

@@ -17,8 +17,8 @@ export interface TrainCar extends Card {
 
 export interface Destination extends Card {
     from: number;
-    to: number;
-    points: number;
+    to: number | number[];
+    points: number | number[];
 }
 
 export interface RouteSpace {
@@ -164,7 +164,7 @@ export interface TicketToRideGame{
     drawDestinations(): void;
     onVisibleTrainCarCardClick(itemId: number): void;
     onHiddenTrainCarDeckClick(number: number): void;
-    setActiveDestination(destination: Destination, previousDestination?: Destination): void;
+    setActiveDestination(destination: Destination | null, previousDestination?: Destination): void;
     setHighligthedDestination(destination: Destination | null): void;
     setTemporaryHighligthedDestination(destination: Destination, duration?: number): void;
     setSelectedDestination(destination: Destination, visible: boolean): void;
