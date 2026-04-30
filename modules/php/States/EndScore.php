@@ -87,7 +87,6 @@ class EndScore extends GameState {
                     } else {
                         $points = -min($destination->points);
                     }
-                    $totalScore[$playerId] += $points;
                 } else {
                     $points = $completed ? $destination->points : -$destination->points;
                 }
@@ -198,6 +197,8 @@ class EndScore extends GameState {
                     if ($index !== null) {
                         $destinationRoutes = $useStationResult[$playerId][2][$index];
                         $destinationStations = $useStationResult[$playerId][3][$index];
+                    } else if (array_key_exists($destination->id, $routeByCompletedDestination)) {
+                        $destinationRoutes = $routeByCompletedDestination[$destination->id];
                     } else {
                         $destinationRoutes = $this->game->mapManager->getDestinationRoutes($playerId, $destination);
                     }

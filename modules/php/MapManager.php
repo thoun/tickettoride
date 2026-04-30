@@ -105,8 +105,12 @@ class MapManager {
         $claimedRoutes = $this->game->getClaimedRoutes($playerId);
 
         if (is_array($destination->to)) {
-            // multiple destination possibilities, test from the top-most points to the bottom-most points
-            foreach ($destination->to as $to) {
+            // Multiple destination possibilities: test the highest-scoring destinations first.
+            $destinationIndexes = array_keys($destination->to);
+            usort($destinationIndexes, fn($index1, $index2) => ($destination->points[$index2] <=> $destination->points[$index1]) ?: ($index1 <=> $index2));
+
+            foreach ($destinationIndexes as $index) {
+                $to = $destination->to[$index];
                 $routes = $this->getShortestRoutesToLinkCitiesOrCountries($claimedRoutes, $destination->from, $to);
                 if ($routes !== null) {
                     return $routes;

@@ -89,7 +89,7 @@ trait DebugUtilTrait {
 
         $this->bga->notify->all('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
             'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
+            'player_name' => $this->getPlayerNameById($playerId),
             'points' => $points,
             'route' => $route,
             'from' => $this->getCityName($route->from),

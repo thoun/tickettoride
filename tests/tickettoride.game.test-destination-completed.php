@@ -7,9 +7,15 @@ define("APP_GAMEMODULE_PATH", "../misc/"); // include path to stubs, which defin
 require_once ('../tickettoride.game.php');
 
 class TicketToRideTestDestinationCompleted extends Game { // this is your game class defined in ggg.game.php
+    private ?string $forcedMapCode = null;
+
     function __construct() {
         // parent::__construct();
         include '../material.inc.php';// this is how this normally included, from constructor
+    }
+
+    function getMapCode(): string {
+        return $this->forcedMapCode ?? parent::getMapCode();
     }
 
     function getClaimedRoutes($playerId = null) {
@@ -50,6 +56,20 @@ class TicketToRideTestDestinationCompleted extends Game { // this is your game c
             $routes = [
                 50, //10 to 28, 
                 100, //3 to 28
+            ];
+            return array_map(function($route) use ($playerId) {
+                return new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]);
+            }, $routes);
+        } else if ($playerId === 5) {
+            $routes = [
+                29, // Bern to Neuchatel
+                88, // Neuchatel to La Chaux-de-Fonds
+                76, // La Chaux-de-Fonds to France
+                26, // Bern to Luzern
+                25, // Luzern to Olten
+                1, // Olten to Zurich
+                2, // St Gallen to Zurich
+                79, // St Gallen to Osterreich
             ];
             return array_map(function($route) use ($playerId) {
                 return new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]);
@@ -113,11 +133,34 @@ class TicketToRideTestDestinationCompleted extends Game { // this is your game c
         }
     }
 
+    function testMultiToDestinationUsesHighestScoringTo() {
+        $this->forcedMapCode = 'switzerland';
+        unset($this->map);
+
+        $destination = (object)[
+            'from' => 4,
+            'to' => [-1, -3],
+            'points' => [5, 11],
+        ];
+
+        $result = $this->mapManager->getDestinationRoutes(5, $destination);
+        $lastRoute = $result[count($result) - 1] ?? null;
+        $equal = $lastRoute !== null && $lastRoute->id == 79;
+
+        if ($equal) {
+            echo "Test5: PASSED\n";
+        } else {
+            echo "Test5: FAILED\n";
+            echo "Expected route ending at Osterreich, value: ".($lastRoute === null ? 'null' : $lastRoute->id)."\n";
+        }
+    }
+
     function testAll() {
         $this->testDestinationCompletedNo();
         $this->testDestinationCompletedYes();
         $this->testDestinationCompletedYes2();
         $this->testDestinationCompletedYes3();
+        $this->testMultiToDestinationUsesHighestScoringTo();
     }
 }
 
