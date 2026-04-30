@@ -398,9 +398,13 @@ class Game extends Table {
         return $expansion !== null ? $this->tableOptions->get($expansion) : 0;
     }
 
-    function getMapCode(): string {
-        $mapOption = (int)$this->getUniqueValueFromDB("SELECT `global_value` FROM `global` where `global_id` = ".MAP_OPTION);
-        return MAP_LIST[$mapOption] ?? MAP_LIST[Table::getBgaEnvironment() === 'studio' ? 1 : 1];
+    function getMapCode(): string { 
+        //if (Table::getBgaEnvironment() === 'studio') { return 5; }
+        return MAP_LIST[match (__NAMESPACE__) {
+            'Bga\\Games\\TicketToRide' => 1,
+            'Bga\\Games\\TicketToRideEurope' => 2,
+            default => (int)$this->getUniqueValueFromDB("SELECT `global_value` FROM `global` where `global_id` = ".MAP_OPTION),
+        }];
     }
 
     function getMap(): Map {
