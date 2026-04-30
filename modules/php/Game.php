@@ -18,9 +18,6 @@
 
 namespace Bga\Games\TicketToRide;
 
-use Bga\GameFramework\Table;
-use Bga\Games\TicketToRide\States\DealInitialDestinations;
-
 require_once('framework-prototype/Helpers/Arrays.php');
 
 require_once('constants.inc.php');
@@ -31,12 +28,24 @@ require_once(__DIR__.'/objects/destination.php');
 require_once(__DIR__.'/objects/train-car.php');
 require_once(__DIR__.'/objects/tunnel-attempt.php');
 
+use Bga\GameFramework\Table;
+use Bga\Games\TicketToRide\States\DealInitialDestinations;
+use Map;
+use ClaimedRoute;
+
+const MAP_LIST = [
+    1 => 'usa',
+    2 => 'europe',
+    3 => 'switzerland',
+    4 => 'india',
+    5 => 'nordiccountries',
+];
+
 /*
  * Game main class.
  * For readability, main sections (util, action, state, args) have been splited into Traits with the section name on modules/php directory.
  */
 class Game extends Table {
-    use UtilTrait;
     use MapTrait;
     use DebugUtilTrait;
 
@@ -278,7 +287,7 @@ class Game extends Table {
         return 100 * ($this->getMap()->trainCarsPerPlayer - $this->getLowestTrainCarsCount()) / $this->getMap()->trainCarsPerPlayer;
     }
 
-    function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null) {
+    function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null): void {
         $route = $this->getAllRoutes()[$routeId];
         $cardCost = $route->number + $extraCardCost;
         
@@ -320,7 +329,7 @@ class Game extends Table {
         $this->trainCarManager->checkVisibleTrainCarCards();
     }
 
-    function endTunnelAttempt(bool $storedTunnelAttempt) {
+    function endTunnelAttempt(bool $storedTunnelAttempt): void {
         // put back tunnel cards
         $this->trainCarManager->trainCars->moveAllCardsInLocation('tunnel', 'discard');
 
@@ -329,19 +338,22 @@ class Game extends Table {
         }
     }
 
-    function getLogTo(\Destination $destination) {
+    function getLogTo(\Destination $destination): string {
         return is_array($destination->to) ? implode(' / ', array_map(fn($to) => $this->getCityName($to), $destination->to)) : $this->getCityName($destination->to);
     }
 
-    function getCityName(int $id) {
+    function getCityName(int $id): string {
         return $this->getMap()->cities[$id]->name;
     }
 
-    function getPlayersIds() {
+    /**
+     * @return int[]
+     */
+    function getPlayersIds(): array {
         return array_keys($this->loadPlayersBasicInfos());
     }
 
-    function incScore(int $playerId, int $delta, $message = null, $messageArgs = []) {
+    function incScore(int $playerId, int $delta, ?string $message = null, array $messageArgs = []): void {
         $this->playerScore->inc($playerId, $delta, null);
 
         $this->notify->all('points', $message !== null ? $message : '', [
@@ -352,8 +364,79 @@ class Game extends Table {
         ] + $messageArgs);
     }
 
-    function getUniqueIntValueFromDB(string $sql) {
+    function getUniqueIntValueFromDB(string $sql): int {
         return intval($this->getUniqueValueFromDB($sql));
+    }
+
+    /**
+     * Save (insert or update) any object/array as variable.
+     */
+    function setGlobalVariable(string $name, mixed $obj): void {
+        $jsonObj = json_encode($obj);
+        $this->DbQuery("INSERT INTO `global_variables`(`name`, `value`)  VALUES ('$name', '$jsonObj') ON DUPLICATE KEY UPDATE `value` = '$jsonObj'");
+    }
+
+    /**
+     * Return a variable object/array.
+     * To force object/array type, set $asArray to false/true.
+     */
+    function getGlobalVariable(string $name, ?bool $asArray = null): mixed {
+        $json_obj = $this->getUniqueValueFromDB("SELECT `value` FROM `global_variables` where `name` = '$name'");
+        if ($json_obj) {
+            $object = json_decode($json_obj, $asArray);
+            return $object;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Delete a variable object/array.
+     */
+    function deleteGlobalVariable(string $name): void {
+        $this->DbQuery("DELETE FROM `global_variables` where `name` = '$name'");
+    }
+
+    function getExpansionOption(): int {
+        $expansion = $this->getMap()->expansion;
+        return $expansion !== null ? $this->tableOptions->get($expansion) : 0;
+    }
+
+    function getMapCode(): string {
+        $mapOption = (int)$this->getUniqueValueFromDB("SELECT `global_value` FROM `global` where `global_id` = ".MAP_OPTION);
+        return MAP_LIST[$mapOption] ?? MAP_LIST[Table::getBgaEnvironment() === 'studio' ? 1 : 1];
+    }
+
+    function getMap(): Map {
+        if (!isset($this->map)) {
+            $mapCode = $this->getMapCode();
+
+            require_once(__DIR__.'/../maps/'.$mapCode.'/map.php');
+
+            $this->map = getMap();
+            $this->map->code = $mapCode;
+        }
+        return $this->map;
+    }
+
+    function getLowestTrainCarsCount(): int {
+        return $this->getUniqueIntValueFromDB("SELECT min(`player_remaining_train_cars`) FROM player");
+    }
+
+    function getRemainingTrainCarsCount(int $playerId): int {
+        return $this->getUniqueIntValueFromDB("SELECT `player_remaining_train_cars` FROM player WHERE player_id = $playerId");
+    }
+
+    /**
+     * @return ClaimedRoute[]
+     */
+    function getClaimedRoutes(?int $playerId = null): array {
+        $sql = "SELECT route_id, player_id FROM claimed_routes ";
+        if ($playerId !== null) {
+            $sql .= "WHERE player_id = $playerId ";
+        }
+        $dbResults = $this->getCollectionFromDB($sql);
+        return array_map(fn($dbResult) => new \ClaimedRoute($dbResult), array_values($dbResults));
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:

@@ -10,6 +10,11 @@ function debug(...$debugData) {
 }
 
 trait DebugUtilTrait {
+    readonly public \Bga\GameFramework\Bga $bga;
+
+    public DestinationManager $destinationManager;
+    public TrainCarManager $trainCarManager;
+    public BuildingManager $buildingManager;
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
@@ -22,13 +27,13 @@ trait DebugUtilTrait {
 
         //$this->debugSetDestinationInHand(7, 2343492);
 
-        //$this->debugClaimAllRoutes(2343492, 1);
-        //$this->debugClaimAllRoutes(2343492, 0.3);
-        //$this->debugClaimAllRoutes(2343493, 0.2);
-        //$this->debugSetLastTurn();
-        //$this->debugClaimRoutes(2343492, [94, 37, 32, 59, 22, 20, 77, 11, 79, 68, 55]);
+        //$this->debug_ClaimAllRoutes(2343492, 1);
+        //$this->debug_ClaimAllRoutes(2343492, 0.3);
+        //$this->debug_ClaimAllRoutes(2343493, 0.2);
+        //$this->debug_SetLastTurn();
+        //$this->debug_ClaimRoutes(2343492, [94, 37, 32, 59, 22, 20, 77, 11, 79, 68, 55]);
 
-        //$this->debugSetRemainingTrainCarDeck(1);
+        //$this->debug_SetRemainingTrainCarDeck(1);
 
         //self::DbQuery("update `traincar` set card_location='hand', card_location_arg=2343492 WHERE `card_type` LIKE '0'");
 
@@ -82,7 +87,7 @@ trait DebugUtilTrait {
         $route = $this->getMap()->routes[$routeId];
         $points = $this->getMap()->routePoints[$route->number];
 
-        $this->notify->all('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
+        $this->bga->notify->all('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'points' => $points,
@@ -99,14 +104,14 @@ trait DebugUtilTrait {
     function debug_ClaimAllRoutes($playerId, $ratio = 0.1) {
         foreach($this->getMap()->routes as $id => $route) {
             if ((bga_rand(0, count($this->getMap()->routes)-1) / (float)count($this->getMap()->routes)) < $ratio) {
-                $this->debugClaimRoute($playerId, $id);
+                $this->debug_ClaimRoute($playerId, $id);
             }
         }
     }
 
     function debug_ClaimRoutes($playerId, $routesIds) {
         foreach($routesIds as $routeId) {
-            $this->debugClaimRoute($playerId, $routeId);
+            $this->debug_ClaimRoute($playerId, $routeId);
         }
     }
 
@@ -134,18 +139,7 @@ trait DebugUtilTrait {
         $this->gamestate->jumpToState(ST_PLAYER_CHOOSE_ACTION);
     }
 
-    function debug_playToEndGame() {
-        $count = 0;
-        while ($this->gamestate->getCurrentMainStateId() < 99 && $count < 20) {
-            $count++;
-            foreach($this->gamestate->getActivePlayerList() as $playerId) {
-                $playerId = (int)$playerId;
-                try {
-                    $this->gamestate->runStateClassZombie($this->gamestate->getCurrentState($playerId), $playerId);
-                } catch (\Throwable $e) {
-                    $count = 100;
-                }
-            }
-        }
+    function debug_playMoves(int $moves = 10) {
+        $this->bga->debug->playUntil(fn(int $count) => $this->gamestate->getCurrentMainStateId() == 99 || $count >= $moves);
     }
 }
