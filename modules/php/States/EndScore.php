@@ -77,7 +77,7 @@ class EndScore extends GameState {
                     if ($completed) {
                         foreach ($destination->to as $index => $to) {
                             if ($destination->points[$index] > $points) {
-                                $route = $this->game->getShortestRoutesToLinkCitiesOrCountries($claimedRoutes, $destination->from, $to);
+                                $route = $this->game->mapManager->getShortestRoutesToLinkCitiesOrCountries($claimedRoutes, $destination->from, $to);
                                 if ($route !== null) {
                                     $points = $destination->points[$index];
                                     $routeByCompletedDestination[$destination->id] = $route;
@@ -113,7 +113,7 @@ class EndScore extends GameState {
         $bestLongestPath = null;
 
         foreach ($players as $playerId => $playerDb) {
-            $longestPath = $this->game->getLongestPath($playerId);
+            $longestPath = $this->game->mapManager->getLongestPath($playerId);
             $playersLongestPaths[$playerId] = $longestPath;
         }
 
@@ -156,9 +156,9 @@ class EndScore extends GameState {
         if ($mandalaPoints !== null) {
             foreach ($destinationsResults as $playerId => $destinations) {
                 $playerMandalas = [];
-                $completedDestinations = array_values(array_filter($destinations, fn($destination) => (array_key_exists($destination->id, $routeByCompletedDestination) ? $routeByCompletedDestination[$destination->id] : $this->game->getDestinationRoutes($playerId, $destination)) != null));
+                $completedDestinations = array_values(array_filter($destinations, fn($destination) => (array_key_exists($destination->id, $routeByCompletedDestination) ? $routeByCompletedDestination[$destination->id] : $this->game->mapManager->getDestinationRoutes($playerId, $destination)) != null));
                 foreach ($completedDestinations as $destination) {
-                    $distinctRoutes = $this->game->getDistinctRoutes($playerId, $destination);
+                    $distinctRoutes = $this->game->mapManager->getDistinctRoutes($playerId, $destination);
                     $distinctRoutesCount = count($distinctRoutes);
                     if ($distinctRoutesCount >= 2) {
                         $playerMandalas[] = $destination;
@@ -199,7 +199,7 @@ class EndScore extends GameState {
                         $destinationRoutes = $useStationResult[$playerId][2][$index];
                         $destinationStations = $useStationResult[$playerId][3][$index];
                     } else {
-                        $destinationRoutes = $this->game->getDestinationRoutes($playerId, $destination);
+                        $destinationRoutes = $this->game->mapManager->getDestinationRoutes($playerId, $destination);
                     }
                 }
                 $points = $pointsByDestination[$destination->id];

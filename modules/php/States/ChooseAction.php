@@ -33,7 +33,7 @@ class ChooseAction extends GameState {
         $remainingTrainCars = 99;
         $realRemainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
 
-        $possibleRoutes = $this->game->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars);
         $maxHiddenCardsPick = min(2, $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true));
         $maxDestinationsPick = min($this->game->getMap()->getAdditionalDestinationCardNumber($this->game->getExpansionOption()), $this->game->destinationManager->getRemainingDestinationCardsInDeck());
 
@@ -47,7 +47,7 @@ class ChooseAction extends GameState {
             }
             $costByColor = [];
             foreach($colorsToTest as $colorToTest) {
-                $costByColor[$colorToTest] = $this->game->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest);
+                $costByColor[$colorToTest] = $this->game->mapManager->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest);
 
                 if (!$canClaimARoute && $costByColor[$colorToTest] != null && count($costByColor[$colorToTest]) <= $realRemainingTrainCars) {
                     $canClaimARoute = true;
@@ -150,7 +150,7 @@ class ChooseAction extends GameState {
     
     #[PossibleAction]
     public function actClaimRoute(int $routeId, int $color, #[IntArrayParam()] ?array $distribution, int $activePlayerId) {
-        $route = $this->game->getAllRoutes()[$routeId];
+        $route = $this->game->mapManager->getAllRoutes()[$routeId];
 
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
         if ($remainingTrainCars < $route->number) {
@@ -164,13 +164,13 @@ class ChooseAction extends GameState {
         
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
         $distributionCards = $distribution ? Arrays::filter($trainCarsHand, fn($card) => in_array($card->id, $distribution)) : null;
-        $colorAndLocomotiveCards = $this->game->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, distributionCards: $distributionCards);
+        $colorAndLocomotiveCards = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, distributionCards: $distributionCards);
         
         if ($colorAndLocomotiveCards == null || count($colorAndLocomotiveCards) < $route->number) {
             throw new UserException("Not enough cards to claim the route.");
         }
 
-        $possibleRoutes = $this->game->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars);
         if (!Arrays::some($possibleRoutes, fn($possibleRoute) => $possibleRoute->id == $routeId)) {
             throw new UserException("You can't claim this route");
         }
@@ -283,12 +283,12 @@ class ChooseAction extends GameState {
     private function tryClaimHelpfulRouteForDestination(int $playerId): ?string {
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($playerId);
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($playerId);
-        $possibleRoutes = $this->game->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
         if (count($possibleRoutes) === 0) {
             return null;
         }
 
-        $allRoutes = $this->game->getAllRoutes();
+        $allRoutes = $this->game->mapManager->getAllRoutes();
         $claimedRoutes = $this->game->getClaimedRoutes();
         $doubleRouteAllowed = $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForDoubleRoutes;
 
@@ -381,7 +381,7 @@ class ChooseAction extends GameState {
         $bestColor = null;
         $bestLocomotiveCount = PHP_INT_MAX;
         foreach ($colorsToTest as $colorToTest) {
-            $cost = $this->game->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $colorToTest);
+            $cost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $colorToTest);
             if ($cost === null) {
                 continue;
             }

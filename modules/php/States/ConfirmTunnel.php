@@ -28,15 +28,15 @@ class ConfirmTunnel extends GameState {
     function getArgs(int $activePlayerId) {
         $tunnelAttempt = $this->game->getGlobalVariable(TUNNEL_ATTEMPT);
 
-        $route = $this->game->getAllRoutes()[$tunnelAttempt->routeId];
+        $route = $this->game->mapManager->getAllRoutes()[$tunnelAttempt->routeId];
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);        
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
-        $tunnelCost = $this->game->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, $tunnelAttempt->extraCards);
+        $tunnelCost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, $tunnelAttempt->extraCards);
         $canPay = $tunnelCost != null;
 
         $extraCards = null;
         if ($canPay) {
-            $routeCost = $this->game->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color);
+            $routeCost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color);
             $extraCards = array_values(array_filter($tunnelCost, fn($tunnelCard) => !Arrays::some($routeCost, fn($routeCard) => $routeCard->id == $tunnelCard->id)));
         }
 

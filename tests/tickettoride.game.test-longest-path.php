@@ -1,8 +1,11 @@
 <?php
+
+use Bga\Games\TicketToRide\Game;
+
 define("APP_GAMEMODULE_PATH", "../misc/"); // include path to stubs, which defines "table.game.php" and other classes
 require_once ('../tickettoride.game.php');
 
-class TicketToRideTestLongestPath extends TicketToRide { // this is your game class defined in ggg.game.php
+class TicketToRideTestLongestPath extends Game { // this is your game class defined in ggg.game.php
     function __construct() {
         // parent::__construct();
         include '../material.inc.php';// this is how this normally included, from constructor
@@ -43,7 +46,7 @@ class TicketToRideTestLongestPath extends TicketToRide { // this is your game cl
     // class tests
     function testLongestPath() {
 
-        $longestPath = $this->getLongestPath(1);
+        $longestPath = $this->mapManager->getLongestPath(1);
 
         $expected = 13;
         $equal = $longestPath->length == $expected;
@@ -58,7 +61,7 @@ class TicketToRideTestLongestPath extends TicketToRide { // this is your game cl
 
     function testLongestPathWithFork() {
 
-        $longestPath = $this->getLongestPath(2);
+        $longestPath = $this->mapManager->getLongestPath(2);
 
         $expected = 41;
         $equal = $longestPath->length == $expected;

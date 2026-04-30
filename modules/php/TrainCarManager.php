@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Bga\Games\TicketToRide;
 
 use Bga\GameFramework\Components\Deck;
+use Bga\GameFramework\SystemException;
 
 class TrainCarManager {
 
@@ -23,6 +24,7 @@ class TrainCarManager {
      * Create cards, place 5 on table, and check revealed cards are valid.
      */
     public function createTrainCars() {
+        $trainCars = [];
         for ($color = 0; $color <= 8; $color++) {
             $trainCars[] = [ 'type' => $color, 'type_arg' => null, 'nbr' => ($color == 0 ? $this->game->getMap()->numberOfLocomotiveCards : $this->game->getMap()->numberOfColoredCards)];
         }
@@ -272,12 +274,12 @@ class TrainCarManager {
     /**
      * Transforms a TrainCar Db object to TrainCar class.
      */
-    private function getTrainCarFromDb($dbObject): ?\TrainCar {
+    private function getTrainCarFromDb(?array $dbObject): ?\TrainCar {
         if ($dbObject === null) {
             return null;
         }
         if (!$dbObject || !array_key_exists('id', $dbObject)) {
-            throw new \BgaSystemException("Train car doesn't exists ".json_encode($dbObject));
+            throw new SystemException("Train car doesn't exists ".json_encode($dbObject));
         }
         return new \TrainCar($dbObject);
     }
@@ -285,7 +287,7 @@ class TrainCarManager {
     /**
      * Transforms a TrainCar Db object array to TrainCar class array.
      * 
-     * @return TrainCar[]
+     * @return \TrainCar[]
      */
     private function getTrainCarsFromDb(array $dbObjects): ?array {
         return array_map(fn($dbObject) => $this->getTrainCarFromDb($dbObject), array_values($dbObjects));

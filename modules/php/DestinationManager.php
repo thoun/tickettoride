@@ -123,7 +123,7 @@ class DestinationManager {
      * 
      * @return \Destination[]
      */
-    private function pickDestinationCards($playerId, int $number, string $from = 'deck'): array {
+    private function pickDestinationCards(int $playerId, int $number, string $from = 'deck'): array {
         $cards = $this->getDestinationsFromDb($this->destinations->pickCardsForLocation($number, $from, "pick$playerId"));
         return $cards;
     }
@@ -141,6 +141,7 @@ class DestinationManager {
         }
 
         $destinationCards = $this->getDestinationsFromDb($this->destinations->getCards($ids));
+        $countByType = [];
         foreach ($destinationCards as $destinationCard) {
             if (!isset($countByType[$destinationCard->type])) {
                 $countByType[$destinationCard->type] = 0;
@@ -229,7 +230,7 @@ class DestinationManager {
 
         foreach($handDestinations as $destination) {
             if (!in_array($destination->id, $alreadyCompleted)) {
-                $destinationRoutes = $this->game->getDestinationRoutes($playerId, $destination);
+                $destinationRoutes = $this->game->mapManager->getDestinationRoutes($playerId, $destination);
                 if ($destinationRoutes != null) {
                     $this->markCompletedDestination($playerId, $destination, $destinationRoutes);
                 }

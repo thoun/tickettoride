@@ -29,7 +29,7 @@ class BuildingManager {
     /**
      * Return placed buildings on cities.
      * 
-     * @return PlacedBuilding[]
+     * @return \PlacedBuilding[]
      */
     function getPlacedBuildings(?int $playerId = null, ?int $buildingType = null): array {
         $sql = "SELECT `city_id`, `player_id`, `building_type` FROM `placed_buildings` ";
@@ -46,7 +46,7 @@ class BuildingManager {
     /**
      * Return placed stations on cities.
      * 
-     * @return PlacedBuilding[]
+     * @return \PlacedBuilding[]
      */
     function getPlacedStations(?int $playerId = null): array {
         if ($this->game->getMap()->stations === null) {
@@ -58,7 +58,7 @@ class BuildingManager {
     /**
      * Return the cities where a station can be placed.
      * 
-     * @return City[]
+     * @return \City[]
      */
     function claimableStations(): array {
         $cities = $this->game->getMap()->cities;
@@ -77,15 +77,15 @@ class BuildingManager {
     /**
      * Return if the player can pay for a station, given the cost (placed stations + 1) and a selected color
      * 
-     * @param TrainCar[] $trainCarsHand
-     * @return int[]|null
+     * @param \TrainCar[] $trainCarsHand
+     * @return \TrainCar[]|null
      */
     function canPayForStation(array $trainCarsHand, int $cardCost, ?int $color = null): ?array {
         $colorsToTest = $color !== null ? [$color] : [0, 1,2,3,4,5,6,7,8];
         $locomotiveCards = array_filter($trainCarsHand, fn($card) => $card->type == 0);
 
-        foreach ($colorsToTest as $color) {
-            $colorCards = $color == 0 ? [] : array_filter($trainCarsHand, fn($card) => $card->type == $color);
+        foreach ($colorsToTest as $colorToTest) {
+            $colorCards = $colorToTest == 0 ? [] : array_filter($trainCarsHand, fn($card) => $card->type == $colorToTest);
 
             $colorCardCount = min($cardCost, count($colorCards));
             $locomotiveCardsCount = min($cardCost - $colorCardCount, count($locomotiveCards));
@@ -131,8 +131,8 @@ class BuildingManager {
     /**
      * Find the best use for stations, at the end of a game, to complete
      * 
-     * @param PlacedBuilding[] $stations
-     * @param Destination[] $uncompletedDestinations
+     * @param \PlacedBuilding[] $stations
+     * @param \Destination[] $uncompletedDestinations
      */
     function useStations(int $playerId, array $stations, array $uncompletedDestinations): array {
         $allRoutes = $this->game->getClaimedRoutes();
@@ -178,7 +178,7 @@ class BuildingManager {
         $completedDestinationsStations = [];
 
         foreach ($uncompletedDestinations as $destination) {
-            $withRoutes = $this->game->getShortestRoutesToLinkCitiesOrCountries($routes, $destination->from, $destination->to);
+            $withRoutes = $this->game->mapManager->getShortestRoutesToLinkCitiesOrCountries($routes, $destination->from, $destination->to);
             if ($withRoutes !== null) {
                 $completedDestinations[] = $destination;
                 $completedDestinationsRoutes[] = $withRoutes;
@@ -200,7 +200,7 @@ class BuildingManager {
     /**
      * Get the possible array combinations, to find all possibilities of stations usage.
      */
-    function getArrayCombinations($arrays, $currentIndex = 0, $currentCombination = []) {
+    function getArrayCombinations(array $arrays, int $currentIndex = 0, array $currentCombination = []) {
         if ($currentIndex == count($arrays)) {
             return [$currentCombination];
         }

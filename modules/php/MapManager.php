@@ -26,7 +26,11 @@ class LongestPath {
     } 
 }
 
-trait MapTrait {
+class MapManager {
+    function __construct(
+        protected Game $game,
+    ) {}
+
 
     /**
      * List routes a player can claim. Player can claim only if :
@@ -36,7 +40,7 @@ trait MapTrait {
      */
     public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars) {
         $allRoutes = $this->getAllRoutes();
-        $claimedRoutes = $this->getClaimedRoutes();
+        $claimedRoutes = $this->game->getClaimedRoutes();
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
 
         // remove routes already claimed
@@ -79,7 +83,7 @@ trait MapTrait {
      * Get the longest continuous path for a player. Returns a LongestPath object.
      */
     public function getLongestPath(int $playerId) {
-        $claimedRoutes = $this->getClaimedRoutes($playerId);
+        $claimedRoutes = $this->game->getClaimedRoutes($playerId);
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
 
         $longestPath = new LongestPath(0, []);
@@ -99,7 +103,7 @@ trait MapTrait {
      * Indicates if destination is completed (continuous path linking both cities).
      */
     public function getDestinationRoutes(int $playerId, object $destination) {
-        $claimedRoutes = $this->getClaimedRoutes($playerId);
+        $claimedRoutes = $this->game->getClaimedRoutes($playerId);
 
         if (is_array($destination->to)) {
             // multiple destination possibilities, test from the top-most points to the bottom-most points
@@ -120,20 +124,20 @@ trait MapTrait {
         $tos = [];
 
         if ($from < 0) {
-            $froms = array_merge($froms, $this->getMap()->countriesEndPoints[$from]);
+            $froms = array_merge($froms, $this->game->getMap()->countriesEndPoints[$from]);
         } else {
             $froms[] = $from;
         }
 
         if ($to < 0) {
-            $tos = array_merge($tos, $this->getMap()->countriesEndPoints[$to]);
+            $tos = array_merge($tos, $this->game->getMap()->countriesEndPoints[$to]);
         } else {
             $tos[] = $to;
         }
 
-        foreach ($froms as $from) {
-            foreach ($tos as $to) {
-                $routes = $this->getShortestRoutesToLinkCities($claimedRoutes, $from, $to);
+        foreach ($froms as $iFrom) {
+            foreach ($tos as $iTo) {
+                $routes = $this->getShortestRoutesToLinkCities($claimedRoutes, $iFrom, $iTo);
                 if ($routes !== null) {
                     return $routes;
                 }
@@ -170,7 +174,7 @@ trait MapTrait {
      * @return ConnectedCity[]
      */
     public function getDistinctRoutes(int $playerId, object $destination): array {
-        $claimedRoutes = $this->getClaimedRoutes($playerId);
+        $claimedRoutes = $this->game->getClaimedRoutes($playerId);
 
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
 
@@ -197,13 +201,13 @@ trait MapTrait {
     }
 
     public function getAllRoutes() {
-        $allRoutes = $this->getMap()->routes;
+        $allRoutes = $this->game->getMap()->routes;
         array_walk($allRoutes, function(&$route, $id) { $route->id = $id; });
         return $allRoutes;
     }
     
     private function isDoubleRouteAllowed() {
-        return $this->getPlayerCount() >= $this->getMap()->minimumPlayerForDoubleRoutes;
+        return $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForDoubleRoutes;
     }
 
     /**
@@ -235,7 +239,7 @@ trait MapTrait {
 
         $locomotiveCards = array_filter($trainCarsHand, fn($card) => $card->type == 0);
 
-        $locomotiveRestriction = $this->getMap()->locomotiveUsageRestriction;
+        $locomotiveRestriction = $this->game->getMap()->locomotiveUsageRestriction;
         $canUseRestrictedLocomotiveAsJoker = 
             $locomotiveRestriction === 0
             || (($locomotiveRestriction & \Map::LOCOMOTIVE_TUNNEL) !== 0 && $route->tunnel)
@@ -279,12 +283,12 @@ trait MapTrait {
             }
         } else {
             // route is gray, check for each possible color
-            foreach ($colorsToTest as $color) {
-                $colorCards = array_filter($trainCarsHand, fn($card) => $card->type == $color);
+            foreach ($colorsToTest as $colorToTest) {
+                $colorCards = array_filter($trainCarsHand, fn($card) => $card->type == $colorToTest);
 
                 $locomotiveCardsCount = 0;
                 $colorCardCount = 0;
-                if ($color === 0) { // pay with locomotives only
+                if ($colorToTest === 0) { // pay with locomotives only
                     $colorCards = [];
                     $locomotiveCardsCount = $cardCost;
                 } else {
@@ -365,10 +369,10 @@ trait MapTrait {
 
         $recursiveConnectedCities = $connectedCities; // copy
         $newVisitedCitiesIds = array_merge($visitedCitiesIds, array_map(fn ($cc) => $cc->city, $connectedCities));
-        foreach ($connectedCities as $connectedCity) {
+        foreach ($connectedCities as $iConnectedCity) {
             $recursiveConnectedCities = array_merge(
                 $recursiveConnectedCities, 
-                $this->getAccessibleCitiesFrom($connectedCity, $newVisitedCitiesIds, $playerClaimedRoutesIds)
+                $this->getAccessibleCitiesFrom($iConnectedCity, $newVisitedCitiesIds, $playerClaimedRoutesIds)
             );
         }
 

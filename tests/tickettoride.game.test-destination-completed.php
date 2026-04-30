@@ -1,8 +1,11 @@
 <?php
+
+use Bga\Games\TicketToRide\Game;
+
 define("APP_GAMEMODULE_PATH", "../misc/"); // include path to stubs, which defines "table.game.php" and other classes
 require_once ('../tickettoride.game.php');
 
-class TicketToRideTestDestinationCompleted extends TicketToRide { // this is your game class defined in ggg.game.php
+class TicketToRideTestDestinationCompleted extends Game { // this is your game class defined in ggg.game.php
     function __construct() {
         // parent::__construct();
         include '../material.inc.php';// this is how this normally included, from constructor
@@ -57,7 +60,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
     // class tests
     function testDestinationCompletedNo() {
 
-        $result = $this->getDestinationRoutes(1, $this->getMap()->destinations[1][20]);
+        $result = $this->mapManager->getDestinationRoutes(1, $this->getMap()->destinations[1][20]);
 
         $equal = $result == null;
 
@@ -71,7 +74,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
 
     function testDestinationCompletedYes() {
 
-        $result = $this->getDestinationRoutes(2, $this->getMap()->destinations[1][20]);
+        $result = $this->mapManager->getDestinationRoutes(2, $this->getMap()->destinations[1][20]);
 
         $equal = $result != null;
 
@@ -84,7 +87,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
     }
 
     function testDestinationCompletedYes2() {
-        $result = $this->getDestinationRoutes(3, $this->getMap()->destinations[1][7]);
+        $result = $this->mapManager->getDestinationRoutes(3, $this->getMap()->destinations[1][7]);
 
         $equal = $result != null;
 
@@ -97,7 +100,7 @@ class TicketToRideTestDestinationCompleted extends TicketToRide { // this is you
     }
 
     function testDestinationCompletedYes3() {
-        $result = $this->getDestinationRoutes(4, $this->getMap()->destinations[1][3]);
+        $result = $this->mapManager->getDestinationRoutes(4, $this->getMap()->destinations[1][3]);
 
         $equal = $result != null;
 

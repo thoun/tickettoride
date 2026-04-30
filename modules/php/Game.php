@@ -27,6 +27,7 @@ require_once(__DIR__.'/objects/building.php');
 require_once(__DIR__.'/objects/destination.php');
 require_once(__DIR__.'/objects/train-car.php');
 require_once(__DIR__.'/objects/tunnel-attempt.php');
+require_once(__DIR__.'/MapManager.php');
 
 use Bga\GameFramework\Table;
 use Bga\Games\TicketToRide\States\DealInitialDestinations;
@@ -43,12 +44,11 @@ const MAP_LIST = [
 
 /*
  * Game main class.
- * For readability, main sections (util, action, state, args) have been splited into Traits with the section name on modules/php directory.
  */
 class Game extends Table {
-    use MapTrait;
     use DebugUtilTrait;
 
+    public MapManager $mapManager;
     public DestinationManager $destinationManager;
     public TrainCarManager $trainCarManager;
     public BuildingManager $buildingManager;
@@ -62,6 +62,7 @@ class Game extends Table {
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
         ]));
 
+        $this->mapManager = new MapManager($this);
         $this->destinationManager = new DestinationManager($this);
         $this->trainCarManager = new TrainCarManager($this);
         $this->buildingManager = new BuildingManager($this);
@@ -187,7 +188,7 @@ class Game extends Table {
             'map' => [
                 'code' => $this->getMap()->code,
                 'cities' => $this->getMap()->cities,
-                'routes' => $this->getAllRoutes(),
+                'routes' => $this->mapManager->getAllRoutes(),
                 'destinations' => $this->getMap()->destinations,
                 'bigCities' => $this->getMap()->getBigCities($expansionOption),
                 'illustration' => $expansionOption,
@@ -238,7 +239,7 @@ class Game extends Table {
             if ($isEnd) {
                 $player['completedDestinations'] = $this->destinationManager->getCompletedDestinations($playerId);
                 $player['uncompletedDestinations'] = $this->destinationManager->getUncompletedDestinations($playerId);
-                $player['longestPathLength'] = $this->getLongestPath($playerId)->length;
+                $player['longestPathLength'] = $this->mapManager->getLongestPath($playerId)->length;
             } else {
                 $player['completedDestinations'] = [];
                 $player['uncompletedDestinations'] = [];
@@ -288,12 +289,12 @@ class Game extends Table {
     }
 
     function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null): void {
-        $route = $this->getAllRoutes()[$routeId];
+        $route = $this->mapManager->getAllRoutes()[$routeId];
         $cardCost = $route->number + $extraCardCost;
         
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
         $trainCarsHand = $this->trainCarManager->getPlayerHand($playerId);
-        $cardsToRemove = $distributionCards ?? $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost);
+        $cardsToRemove = $distributionCards ?? $this->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost);
 
         $this->trainCarManager->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
 
