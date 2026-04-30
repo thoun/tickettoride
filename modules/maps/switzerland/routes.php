@@ -1,6 +1,7 @@
 <?php
 
-require_once(__DIR__.'/../../php/objects/route.php');
+use Bga\Games\TicketToRide\Objects\Route;
+use Bga\Games\TicketToRide\Objects\RouteSpace;
 
 /**
  * Route on the map. 

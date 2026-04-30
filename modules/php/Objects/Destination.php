@@ -1,16 +1,6 @@
 <?php
 
-/**
- * A DestinationCard is the graphic representation of a card (informations on it : from, to and points).
- */
-class DestinationCard {  
-    public function __construct(
-        public int $from, 
-        public int|array $to, 
-        public int|array $points
-    ) {
-    } 
-}
+namespace Bga\Games\TicketToRide\Objects;
 
 /**
  * A Destination is a physical card. It contains informations from matching DestinationCard, with technical informations like id and location.
@@ -38,6 +28,5 @@ class Destination extends DestinationCard {
         $this->from = $destinationCard->from;
         $this->to = $destinationCard->to;
         $this->points = $destinationCard->points;
-    } 
+    }
 }
-?>

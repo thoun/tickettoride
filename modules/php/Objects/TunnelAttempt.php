@@ -1,5 +1,7 @@
 <?php
 
+namespace Bga\Games\TicketToRide\Objects;
+
 /**
  * When a player asks to place a tunnel route, we store corresponding informations, the time needed to ask if he wants to pay the extra cards.
  */
@@ -11,7 +13,5 @@ class TunnelAttempt {
         public array $tunnelCards,
         public ?array $distribution = null,
     ) {
-    } 
+    }
 }
-
-?>

@@ -1,5 +1,7 @@
 <?php
 
+namespace Bga\Games\TicketToRide\Objects;
+
 class Map {
     public const LOCOMOTIVE_TUNNEL = 0b01;
     public const LOCOMOTIVE_FERRY = 0b10;
@@ -34,48 +36,48 @@ class Map {
         public array $routes,
         public array $destinations,
         /**
-        * Points scored for claimed routes.
-        */
+         * Points scored for claimed routes.
+         */
         public array $routePoints =  [
-           1 => 1,
-           2 => 2,
-           3 => 4,
-           4 => 7,
-           5 => 10,
-           6 => 15,
-           8 => 21,
+            1 => 1,
+            2 => 2,
+            3 => 4,
+            4 => 7,
+            5 => 10,
+            6 => 15,
+            8 => 21,
         ],
     ) {
-    } 
-    
+    }
+
     /**
      * Return if Globetrotter bonus card is used for the game.
      */
     function isGlobetrotterBonusActive(int $expansionValue): bool {
         return false;
     }
-    
+
     /**
      * Return if Longest Path bonus card is used for the game.
      */
     function isLongestPathBonusActive(int $expansionValue): bool {
         return true;
     }
-    
+
     /**
      * Return the number of destinations cards shown at the beginning, for each deck.
      */
     function getInitialDestinationPick(int $expansionValue): array {
         return ['deck' => 3];
     }
-    
+
     /**
      * Return the minimum number of destinations cards to keep at the beginning.
      */
     function getInitialDestinationMinimumKept(int $expansionValue): int {
         return 2;
     }
-    
+
     /**
      * Return the number of destinations cards shown at pick destination action.
      */
@@ -90,7 +92,7 @@ class Map {
     function getPreloadImages(int $expansionValue): array {
         return ['destinations-1-0.jpg'];
     }
-    
+
     /**
      * List the destination tickets that will be used for the game.
      */
@@ -102,4 +104,3 @@ class Map {
         ];
     }
 }
-?>

@@ -1,5 +1,7 @@
 <?php
 
+namespace Bga\Games\TicketToRide\Objects;
+
 class PlacedBuilding {
     public int $cityId;
     public int $playerId;
@@ -9,6 +11,5 @@ class PlacedBuilding {
         $this->cityId = intval($db['city_id']);
         $this->playerId = intval($db['player_id']);
         $this->buildingType = intval($db['building_type']);
-    } 
+    }
 }
-?>

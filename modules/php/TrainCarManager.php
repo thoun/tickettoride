@@ -5,6 +5,7 @@ namespace Bga\Games\TicketToRide;
 
 use Bga\GameFramework\Components\Deck;
 use Bga\GameFramework\SystemException;
+use Bga\Games\TicketToRide\Objects\TrainCar;
 
 class TrainCarManager {
 
@@ -274,20 +275,20 @@ class TrainCarManager {
     /**
      * Transforms a TrainCar Db object to TrainCar class.
      */
-    private function getTrainCarFromDb(?array $dbObject): ?\TrainCar {
+    private function getTrainCarFromDb(?array $dbObject): ?TrainCar {
         if ($dbObject === null) {
             return null;
         }
         if (!$dbObject || !array_key_exists('id', $dbObject)) {
             throw new SystemException("Train car doesn't exists ".json_encode($dbObject));
         }
-        return new \TrainCar($dbObject);
+        return new TrainCar($dbObject);
     }
 
     /**
      * Transforms a TrainCar Db object array to TrainCar class array.
      * 
-     * @return \TrainCar[]
+     * @return TrainCar[]
      */
     private function getTrainCarsFromDb(array $dbObjects): ?array {
         return array_map(fn($dbObject) => $this->getTrainCarFromDb($dbObject), array_values($dbObjects));
@@ -298,14 +299,14 @@ class TrainCarManager {
     }
     
     /**
-     * @return \TrainCar[]
+     * @return TrainCar[]
      */
     public function getPlayerHand(int $playerId): array {
         return $this->getTrainCarsFromDb($this->trainCars->getCardsInLocation('hand', $playerId));
     }
 
     /**
-     * @return \TrainCar[]
+     * @return TrainCar[]
      */
     public function pickCardsForTunnel(int $pickedCardCount): array {
         return $this->getTrainCarsFromDb($this->trainCars->pickCardsForLocation($pickedCardCount, 'deck', 'tunnel'));

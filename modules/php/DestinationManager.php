@@ -6,6 +6,7 @@ namespace Bga\Games\TicketToRide;
 use Bga\GameFramework\Components\Deck;
 use Bga\GameFramework\SystemException;
 use Bga\GameFramework\UserException;
+use Bga\Games\TicketToRide\Objects\Destination;
 
 class DestinationManager {
 
@@ -23,17 +24,17 @@ class DestinationManager {
     /**
      * Transforms a Destination Db object to Destination class.
      */    
-    /*private but used for DebugUtilTrait*/ function getDestinationFromDb(?array $dbObject): \Destination {
+    /*private but used for DebugUtilTrait*/ function getDestinationFromDb(?array $dbObject): Destination {
         if (!$dbObject || !array_key_exists('id', $dbObject)) {
             throw new SystemException("Destination doesn't exists ".json_encode($dbObject));
         }
-        return new \Destination($dbObject, $this->game->getMap()->destinations);
+        return new Destination($dbObject, $this->game->getMap()->destinations);
     }
 
     /**
      * Transforms a Destination Db object array to Destination class array.
      * 
-     * @return \Destination[] 
+     * @return Destination[]
      */    
     private function getDestinationsFromDb(array $dbObjects): array {
         return array_map(fn($dbObject) => $this->getDestinationFromDb($dbObject), array_values($dbObjects));
@@ -56,7 +57,7 @@ class DestinationManager {
     /**
      * Pick destination cards for beginning choice.
      * 
-     * @return \Destination[]
+     * @return Destination[]
      */
     public function pickInitialDestinationCards(int $playerId): array {
         $expansionOption = $this->game->getExpansionOption();
@@ -81,7 +82,7 @@ class DestinationManager {
     /**
      * Pick destination cards for pick destination action.
      * 
-     * @return \Destination[]
+     * @return Destination[]
      */
     public function pickAdditionalDestinationCards(int $playerId): array {
 		return $this->pickDestinationCards($playerId, $this->game->getMap()->getAdditionalDestinationCardNumber($this->game->getExpansionOption()));
@@ -98,7 +99,7 @@ class DestinationManager {
     /**
      * Get destination picked cards (cards player can choose).
      * 
-     * @return \Destination[]
+     * @return Destination[]
      */
     public function getPickedDestinationCards(int $playerId): array {
         $cards = $this->getDestinationsFromDb($this->destinations->getCardsInLocation("pick$playerId"));
@@ -121,7 +122,7 @@ class DestinationManager {
     /**
      * place a number of destinations cards to pick$playerId.
      * 
-     * @return \Destination[]
+     * @return Destination[]
      */
     private function pickDestinationCards(int $playerId, int $number, string $from = 'deck'): array {
         $cards = $this->getDestinationsFromDb($this->destinations->pickCardsForLocation($number, $from, "pick$playerId"));
@@ -186,21 +187,21 @@ class DestinationManager {
     }
     
     /**
-     * @return \Destination[]
+     * @return Destination[]
      */
     public function getPlayerHand(int $playerId): array {
         return $this->getDestinationsFromDb($this->destinations->getCardsInLocation('hand', $playerId));
     }
     
     /**
-     * @return \Destination[]
+     * @return Destination[]
      */
     public function getCompletedDestinations(int $playerId): array {
         return $this->getDestinationsFromDb($this->destinations->getCards($this->getCompletedDestinationsIds($playerId)));
     }
     
     /**
-     * @return \Destination[]
+     * @return Destination[]
      */
     public function getUncompletedDestinations(int $playerId): array {
         return $this->getDestinationsFromDb($this->destinations->getCards($this->getUncompletedDestinationsIds($playerId)));

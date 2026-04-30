@@ -9,6 +9,7 @@ use Bga\GameFramework\StateType;
 use Bga\GameFramework\UserException;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
 use Bga\Games\TicketToRide\Game;
+use Bga\Games\TicketToRide\Objects\TunnelAttempt;
 use Throwable;
 
 class ChooseAction extends GameState {
@@ -200,7 +201,7 @@ class ChooseAction extends GameState {
                 ]);
                 
                 if ($extraCards > 0) { // if the player can't afford, we still ask to hide the fact he can't
-                    $this->game->setGlobalVariable(TUNNEL_ATTEMPT, new \TunnelAttempt($routeId, $color, $extraCards, $tunnelCards, $distribution));
+                    $this->game->setGlobalVariable(TUNNEL_ATTEMPT, new TunnelAttempt($routeId, $color, $extraCards, $tunnelCards, $distribution));
                     $this->gamestate->nextState('tunnel'); 
                     return;
                 } else {

@@ -1,6 +1,7 @@
 <?php
 
 use Bga\Games\TicketToRide\Game;
+use Bga\Games\TicketToRide\Objects\ClaimedRoute;
 
 define("APP_GAMEMODULE_PATH", "../misc/"); // include path to stubs, which defines "table.game.php" and other classes
 require_once ('../tickettoride.game.php');

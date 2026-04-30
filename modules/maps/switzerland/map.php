@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__.'/../../php/objects/map.php');
+use Bga\Games\TicketToRide\Objects\Map;
 
 require_once(__DIR__.'/cities.php');
 require_once(__DIR__.'/routes.php');

@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__.'/../../php/objects/destination.php');
+use Bga\Games\TicketToRide\Objects\DestinationCard;
 
 
 function getBaseSmallDestinations() {

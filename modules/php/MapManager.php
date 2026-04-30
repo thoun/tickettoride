@@ -3,8 +3,7 @@
 namespace Bga\Games\TicketToRide;
 
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
-
-require_once(__DIR__.'/objects/route.php');
+use Bga\Games\TicketToRide\Objects\Map;
 
 class ConnectedCity {
     public int $city;
@@ -242,8 +241,8 @@ class MapManager {
         $locomotiveRestriction = $this->game->getMap()->locomotiveUsageRestriction;
         $canUseRestrictedLocomotiveAsJoker = 
             $locomotiveRestriction === 0
-            || (($locomotiveRestriction & \Map::LOCOMOTIVE_TUNNEL) !== 0 && $route->tunnel)
-            || (($locomotiveRestriction & \Map::LOCOMOTIVE_FERRY) !== 0 && $route->locomotives > 0);
+            || (($locomotiveRestriction & Map::LOCOMOTIVE_TUNNEL) !== 0 && $route->tunnel)
+            || (($locomotiveRestriction & Map::LOCOMOTIVE_FERRY) !== 0 && $route->locomotives > 0);
         $forbidLocomotiveAsJoker = !$canUseRestrictedLocomotiveAsJoker;
 
         if ($distributionCards) {

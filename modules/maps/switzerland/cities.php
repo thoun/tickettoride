@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__.'/../../php/objects/city.php');
+use Bga\Games\TicketToRide\Objects\City;
 
 /**
  * Cities in the map (by alphabetical order).

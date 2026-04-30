@@ -4,6 +4,10 @@ declare(strict_types=1);
 namespace Bga\Games\TicketToRide;
 
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
+use Bga\Games\TicketToRide\Objects\City;
+use Bga\Games\TicketToRide\Objects\Destination;
+use Bga\Games\TicketToRide\Objects\PlacedBuilding;
+use Bga\Games\TicketToRide\Objects\TrainCar;
 
 class BuildingManager {
     protected \Bga\GameFramework\Bga $bga;
@@ -29,7 +33,7 @@ class BuildingManager {
     /**
      * Return placed buildings on cities.
      * 
-     * @return \PlacedBuilding[]
+     * @return PlacedBuilding[]
      */
     function getPlacedBuildings(?int $playerId = null, ?int $buildingType = null): array {
         $sql = "SELECT `city_id`, `player_id`, `building_type` FROM `placed_buildings` ";
@@ -40,13 +44,13 @@ class BuildingManager {
             $sql .= ($playerId !== null ? 'AND' : 'WHERE')." `building_type` = $buildingType ";
         }
         $dbResults = $this->game->getCollectionFromDB($sql);
-        return Arrays::map(array_values($dbResults), fn($dbResult) => new \PlacedBuilding($dbResult));
+        return Arrays::map(array_values($dbResults), fn($dbResult) => new PlacedBuilding($dbResult));
     }
 
     /**
      * Return placed stations on cities.
      * 
-     * @return \PlacedBuilding[]
+     * @return PlacedBuilding[]
      */
     function getPlacedStations(?int $playerId = null): array {
         if ($this->game->getMap()->stations === null) {
@@ -58,7 +62,7 @@ class BuildingManager {
     /**
      * Return the cities where a station can be placed.
      * 
-     * @return \City[]
+     * @return City[]
      */
     function claimableStations(): array {
         $cities = $this->game->getMap()->cities;
@@ -77,8 +81,8 @@ class BuildingManager {
     /**
      * Return if the player can pay for a station, given the cost (placed stations + 1) and a selected color
      * 
-     * @param \TrainCar[] $trainCarsHand
-     * @return \TrainCar[]|null
+     * @param TrainCar[] $trainCarsHand
+     * @return TrainCar[]|null
      */
     function canPayForStation(array $trainCarsHand, int $cardCost, ?int $color = null): ?array {
         $colorsToTest = $color !== null ? [$color] : [0, 1,2,3,4,5,6,7,8];
@@ -131,8 +135,8 @@ class BuildingManager {
     /**
      * Find the best use for stations, at the end of a game, to complete
      * 
-     * @param \PlacedBuilding[] $stations
-     * @param \Destination[] $uncompletedDestinations
+     * @param PlacedBuilding[] $stations
+     * @param Destination[] $uncompletedDestinations
      */
     function useStations(int $playerId, array $stations, array $uncompletedDestinations): array {
         $allRoutes = $this->game->getClaimedRoutes();

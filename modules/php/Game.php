@@ -21,18 +21,13 @@ namespace Bga\Games\TicketToRide;
 require_once('framework-prototype/Helpers/Arrays.php');
 
 require_once('constants.inc.php');
-require_once(__DIR__.'/objects/map.php');
-require_once(__DIR__.'/objects/route.php');
-require_once(__DIR__.'/objects/building.php');
-require_once(__DIR__.'/objects/destination.php');
-require_once(__DIR__.'/objects/train-car.php');
-require_once(__DIR__.'/objects/tunnel-attempt.php');
 require_once(__DIR__.'/MapManager.php');
 
 use Bga\GameFramework\Table;
+use Bga\Games\TicketToRide\Objects\ClaimedRoute;
+use Bga\Games\TicketToRide\Objects\Destination;
+use Bga\Games\TicketToRide\Objects\Map;
 use Bga\Games\TicketToRide\States\DealInitialDestinations;
-use Map;
-use ClaimedRoute;
 
 const MAP_LIST = [
     1 => 'usa',
@@ -53,7 +48,7 @@ class Game extends Table {
     public TrainCarManager $trainCarManager;
     public BuildingManager $buildingManager;
 
-    public \Map $map;
+    public Map $map;
 
 	function __construct() {
         parent::__construct();
@@ -339,7 +334,7 @@ class Game extends Table {
         }
     }
 
-    function getLogTo(\Destination $destination): string {
+    function getLogTo(Destination $destination): string {
         return is_array($destination->to) ? implode(' / ', array_map(fn($to) => $this->getCityName($to), $destination->to)) : $this->getCityName($destination->to);
     }
 
@@ -437,7 +432,7 @@ class Game extends Table {
             $sql .= "WHERE player_id = $playerId ";
         }
         $dbResults = $this->getCollectionFromDB($sql);
-        return array_map(fn($dbResult) => new \ClaimedRoute($dbResult), array_values($dbResults));
+        return array_map(fn($dbResult) => new ClaimedRoute($dbResult), array_values($dbResults));
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:

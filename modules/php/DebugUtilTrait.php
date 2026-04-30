@@ -10,7 +10,7 @@ function debug(...$debugData) {
 }
 
 trait DebugUtilTrait {
-    readonly public \Bga\GameFramework\Bga $bga;
+    var \Bga\GameFramework\Bga $bga;
 
     public DestinationManager $destinationManager;
     public TrainCarManager $trainCarManager;
