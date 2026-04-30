@@ -54,6 +54,7 @@ class NordicCountriesMap extends Map {
             clienttranslate('All unselected tickets will be discarded from the deck.'),
             clienttranslate('You can spend any set of 3 cards to replace a locomotive on ferries.'),
             clienttranslate('You can spend any set of 4 cards to replace a color card on the Murmansk-Lieksa route.'),
+            clienttranslate('There is no longest path bonus, but a 10 points Globetrotter bonus for the most completed tickets'),
         ];
 
         $this->vertical = true;
