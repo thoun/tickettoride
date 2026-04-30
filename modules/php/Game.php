@@ -194,6 +194,7 @@ class Game extends Table {
                 'rulesDifferences' => $this->getMap()->rulesDifferences,
                 'vertical' => $this->getMap()->vertical,
                 'stations' => $this->getMap()->stations,
+                'pointsForGlobetrotter' => $this->getMap()->pointsForGlobetrotter,
             ],
         ];
     
@@ -399,7 +400,7 @@ class Game extends Table {
     }
 
     function getMapCode(): string { 
-        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[3]; }
+        //if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[5]; }
         return MAP_LIST[match (__NAMESPACE__) {
             'Bga\\Games\\TicketToRide' => 1,
             'Bga\\Games\\TicketToRideEurope' => 2,

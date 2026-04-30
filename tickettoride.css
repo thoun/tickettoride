@@ -1363,9 +1363,13 @@
 }
 #score #table-wrapper table tr td.player-name .bonus-card-icons {
   position: absolute;
-  right: 0;
   z-index: 25;
+  right: 0;
+  top: 0;
+  bottom: 0;
   display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 #score #table-wrapper table tr td.destinations {
   width: 100px;

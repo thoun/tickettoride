@@ -98,6 +98,7 @@ export interface TicketToRideMap {
     rulesDifferences?: string[];
     vertical: boolean;
     stations: number | null;
+    pointsForGlobetrotter: number | null;
 }
 
 /**

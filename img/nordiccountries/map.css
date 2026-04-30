@@ -6,3 +6,12 @@
 .train-car-card, .icon.train-car-color {
     background-image: url("./train-cards.jpg");
 }
+
+.bonus-card.globetrotter {
+    width: 161px;
+    height: 250px;
+    background: url('./bonus-card-globetrotter.png'); 
+}
+.bonus-card.bonus-card-icon {
+    margin: -132px -70px;
+}

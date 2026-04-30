@@ -734,7 +734,7 @@ class EndScore {
         document.getElementById(`bonus-card-icons-${playerId}`).insertAdjacentHTML('beforeend', `<div id="globetrotter-bonus-card-${playerId}" class="globetrotter bonus-card bonus-card-icon"></div>`);
         this.game.setTooltip(`globetrotter-bonus-card-${playerId}`, `
         <div><strong>${_('Most Completed Tickets')} : ${length}</strong></div>
-        <div>${_('The player who completed the most Destination tickets receives this special bonus card and adds 15 points to his score.')}</div>
+        <div>${_('The player who completed the most Destination tickets receives this special bonus card and adds ${points} points to his score.').replace('${points}', `${this.game.getMap().pointsForGlobetrotter ?? 15}`)}</div>
         <div class="globetrotter bonus-card"></div>
         `);
     }
