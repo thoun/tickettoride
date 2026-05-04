@@ -125,9 +125,13 @@ export class TrainCarSelection {
                     return;
                 }
 
-                this.lastTapHandled = Date.now();
+                if (event.pointerType !== 'mouse') {
+                    event.preventDefault();
+                }
                 handler(event);
             });
+
+            return;
         } else {
             element.addEventListener('touchend', event => {
                 event.preventDefault();

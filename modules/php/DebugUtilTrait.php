@@ -12,9 +12,9 @@ function debug(...$debugData) {
 trait DebugUtilTrait {
     //readonly public \Bga\GameFramework\Bga $bga;
 
-    public DestinationManager $destinationManager;
-    public TrainCarManager $trainCarManager;
-    public BuildingManager $buildingManager;
+    //public DestinationManager $destinationManager;
+    //public TrainCarManager $trainCarManager;
+    //public BuildingManager $buildingManager;
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions

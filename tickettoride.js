@@ -1162,9 +1162,12 @@ var TrainCarSelection = /** @class */ (function () {
                 if (event.pointerType === 'mouse' && event.button !== 0) {
                     return;
                 }
-                _this.lastTapHandled = Date.now();
+                if (event.pointerType !== 'mouse') {
+                    event.preventDefault();
+                }
                 handler(event);
             });
+            return;
         }
         else {
             element.addEventListener('touchend', function (event) {
