@@ -19,7 +19,6 @@ export abstract class WagonsAnimation {
 
     protected setWagonsVisibility(visible: boolean) {
         this.shadowDiv.dataset.visible = visible ? 'true' : 'false';
-        this.shadowDiv.dataset.dismissible = 'false';
         this.wagons.forEach(wagon => wagon.classList.toggle('highlight', visible));
     }
 

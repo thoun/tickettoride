@@ -147,17 +147,12 @@
   right: 0;
   bottom: 0;
   z-index: 5;
-  pointer-events: none;
   background: #00000099;
   opacity: 0;
   transition: opacity 0.2s;
 
   &[data-visible="true"] {
     opacity: 1;
-  }
-
-  &[data-dismissible="true"] {
-    pointer-events: all;
   }
 }
 

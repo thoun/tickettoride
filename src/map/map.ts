@@ -759,11 +759,10 @@ export class TtrMap {
     /** 
      * Highlight destination (on destination mouse over).
      */ 
-    public setHighligthedDestination(destination: Destination | null, dismissible: boolean = false): void {
+    public setHighligthedDestination(destination: Destination | null): void {
         const visible = Boolean(destination).toString();
         const shadow = document.getElementById('map-destination-highlight-shadow');
         shadow.dataset.visible = visible;
-        shadow.dataset.dismissible = (Boolean(destination) && dismissible).toString();
 
         const cities = this.getDestinationCityIds(destination);
         if (destination) {
