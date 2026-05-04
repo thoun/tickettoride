@@ -871,7 +871,7 @@ export class Game implements TicketToRideGame {
                         ${url ? `
                         <p class="block-buttons">
                             ${_('Multilingual rulebook:')}
-                            <button id="show-rulebook" style="width: auto;" class="bgabutton bgabutton_blue">${_('Show rulebook')}</button>
+                            `/*<button id="show-rulebook" style="width: auto;" class="bgabutton bgabutton_blue">${_('Show rulebook')}</button>*/+`
                             <a href="${url}" target="_blank" class="bgabutton bgabutton_blue">${_('Open rulebook in a new tab')}</a>
                         </p>
                         <div id="rulebook-iframe"></div>
@@ -885,9 +885,9 @@ export class Game implements TicketToRideGame {
         document.getElementById(`popin_showMapRulebook_close`).addEventListener(`click`, () => this.closePopin());
         document.getElementById(`popin_showMapRulebook_underlay`).addEventListener(`click`, () => this.closePopin());
 
-        if (url) {
+        /*if (url) {
             document.getElementById(`show-rulebook`).addEventListener(`click`, () => this.viewRulebook(url));
-        }
+        }*/
     }
 
     private viewRulebook(url: string) {
