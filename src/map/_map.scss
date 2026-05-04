@@ -150,9 +150,11 @@
   background: #00000099;
   opacity: 0;
   transition: opacity 0.2s;
+  pointer-events: none;
 
   &[data-visible="true"] {
     opacity: 1;
+    pointer-events: all;
   }
 }
 
