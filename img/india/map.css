@@ -1,3 +1,22 @@
 #map {
     background-image: url('./map.jpg');
 }
+
+.mandala-count {
+    background: white;
+    border-radius: 5px;
+    color: #794699;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 2px;
+    gap: 2px;
+}
+
+.mandala-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    background: url('./mandala-icon.png');
+    background-size: contain;
+}

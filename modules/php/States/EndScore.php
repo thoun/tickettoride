@@ -350,7 +350,12 @@ class EndScore extends GameState {
                     max(array_keys($mandalaPoints)),
                     count($playerMandalas),
                 );
-                $points =  $mandalaPoints[$completedMandalas];                
+                $points = $mandalaPoints[$completedMandalas];
+
+                $this->notify->all('mandalaCount', '', [
+                    'playerId' => $playerId,
+                    'length' => count($playerMandalas),
+                ]);
                 
                 $message = clienttranslate('${player_name} gains ${delta} points for ${number} completed Grand Tour(s) (Mandala)');
                 $this->game->incScore($playerId, $points, $message, [

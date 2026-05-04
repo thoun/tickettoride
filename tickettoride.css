@@ -1341,6 +1341,7 @@
   background: url("img/score-background.jpg");
   background-size: 100% 100%;
   padding: 5px;
+  width: 640px;
 }
 #score #table-wrapper table {
   border: 2px solid rgba(255, 255, 255, 0.5019607843);
@@ -1355,6 +1356,7 @@
 }
 #score #table-wrapper table tr td.player-name {
   width: 170px;
+  min-width: 170px;
   font-weight: bold;
   text-overflow: ellipsis;
   position: relative;
@@ -1371,6 +1373,7 @@
 }
 #score #table-wrapper table tr td.destinations {
   width: 100px;
+  min-width: 100px;
 }
 #score #table-wrapper table tr td.destinations .icons-grid {
   pointer-events: none;
@@ -1395,7 +1398,7 @@
 #score #table-wrapper table tr td.train {
   position: relative;
   overflow: hidden;
-  width: 300px;
+  width: 100%;
 }
 #score #table-wrapper table tr td.train .train-image {
   position: absolute;
@@ -1425,6 +1428,7 @@
   font-weight: bold;
   color: white;
   width: 60px;
+  min-width: 60px;
 }
 #score #table-wrapper table tr.highlight td {
   color: black;

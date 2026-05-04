@@ -40,6 +40,9 @@ export class EndScore {
                         <div id="uncompleted-destination-counter-${player.id}" class="icon uncompleted-destination"></div>
                     </div>
                 </td>
+                ${game.getMap().code === 'india' ? `
+                    <td id="mandala-count-${player.id}"></td>
+                ` : ``}
                 <td id="train-score-${player.id}" class="train">
                     <div id="train-image-${player.id}" class="train-image" data-player-color="${player.color}"></div>
                 </td>
@@ -240,6 +243,10 @@ export class EndScore {
         <div>${_('The player who completed the most Destination tickets receives this special bonus card and adds ${points} points to his score.').replace('${points}', `${this.game.getMap().pointsForGlobetrotter ?? 15}`)}</div>
         <div class="globetrotter bonus-card"></div>
         `);
+    }
+
+    public setMandalaCount(playerId: number, length: number) {
+        document.getElementById(`mandala-count-${playerId}`).insertAdjacentHTML('afterbegin', `<div class="mandala-count">${length} <div class="mandala-icon"></div></div>`);
     }
     
     /** 

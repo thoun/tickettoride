@@ -411,7 +411,7 @@ export class Game implements TicketToRideGame {
      */ 
     public setTemporaryHighligthedDestination(destination: Destination, duration: number = 1200): void {
         this.clearTemporaryHighlightedDestinationTimeout();
-        this.map.setHighligthedDestination(destination, true);
+        this.map.setHighligthedDestination(destination);
         this.temporaryHighlightedDestinationTimeout = window.setTimeout(() => {
             this.temporaryHighlightedDestinationTimeout = null;
             this.map.setHighligthedDestination(null);
@@ -597,6 +597,7 @@ export class Game implements TicketToRideGame {
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['remainingStations', skipEndOfGameAnimations ? 1 : 1500],
+            ['mandalaCount', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestinationGrandTour', skipEndOfGameAnimations ? 1 : 2000],
             ['highlightWinnerScore', 1],
         ];
@@ -787,6 +788,13 @@ export class Game implements TicketToRideGame {
      */ 
     notif_longestPath(notif: Notif<NotifLongestPathArgs>) {
         this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length, this.isFastEndScoring());
+    }
+
+    /** 
+     * Add Mandala count for end score.
+     */ 
+    notif_mandalaCount(notif: Notif<NotifBadgeArgs>) {
+        this.endScore?.setMandalaCount(notif.args.playerId, notif.args.length);
     }
 
     /** 

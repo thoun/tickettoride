@@ -588,6 +588,9 @@ class EndScore {
                         <div id="uncompleted-destination-counter-${player.id}" class="icon uncompleted-destination"></div>
                     </div>
                 </td>
+                ${game.getMap().code === 'india' ? `
+                    <td id="mandala-count-${player.id}"></td>
+                ` : ``}
                 <td id="train-score-${player.id}" class="train">
                     <div id="train-image-${player.id}" class="train-image" data-player-color="${player.color}"></div>
                 </td>
@@ -736,6 +739,9 @@ class EndScore {
         <div>${_('The player who completed the most Destination tickets receives this special bonus card and adds ${points} points to his score.').replace('${points}', `${this.game.getMap().pointsForGlobetrotter ?? 15}`)}</div>
         <div class="globetrotter bonus-card"></div>
         `);
+    }
+    setMandalaCount(playerId, length) {
+        document.getElementById(`mandala-count-${playerId}`).insertAdjacentHTML('afterbegin', `<div class="mandala-count">${length} <div class="mandala-icon"></div></div>`);
     }
     /**
      * Show longest path animation for a player.
@@ -3183,7 +3189,7 @@ class Game {
      */
     setTemporaryHighligthedDestination(destination, duration = 1200) {
         this.clearTemporaryHighlightedDestinationTimeout();
-        this.map.setHighligthedDestination(destination, true);
+        this.map.setHighligthedDestination(destination);
         this.temporaryHighlightedDestinationTimeout = window.setTimeout(() => {
             this.temporaryHighlightedDestinationTimeout = null;
             this.map.setHighligthedDestination(null);
@@ -3347,6 +3353,7 @@ class Game {
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['remainingStations', skipEndOfGameAnimations ? 1 : 1500],
+            ['mandalaCount', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestinationGrandTour', skipEndOfGameAnimations ? 1 : 2000],
             ['highlightWinnerScore', 1],
         ];
@@ -3516,6 +3523,12 @@ class Game {
      */
     notif_longestPath(notif) {
         this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length, this.isFastEndScoring());
+    }
+    /**
+     * Add Mandala count for end score.
+     */
+    notif_mandalaCount(notif) {
+        this.endScore?.setMandalaCount(notif.args.playerId, notif.args.length);
     }
     /**
      * Animate mandala routes for end score.
