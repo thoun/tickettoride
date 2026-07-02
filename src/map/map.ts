@@ -1,4 +1,5 @@
 import { CROSSHAIR_SIZE } from "../player-table/player-train-cars";
+import { ChooseActionState, EnteringChooseActionArgs } from "../states/ChooseAction";
 import { getColor } from "../stock-utils";
 import { Route, TicketToRideMap, TicketToRideGame, TicketToRidePlayer, ClaimedRoute, RouteSpace, Destination, City, BuiltStation } from "../tickettoride.d";
 
@@ -419,12 +420,13 @@ export class TtrMap {
      * Place train cars on claimed routes.
      * fromPlayerId is for animation (null for no animation)
      */ 
-    public setClaimedRoutes(claimedRoutes: ClaimedRoute[], fromPlayerId: number) {
+    public setClaimedRoutes(claimedRoutes: ClaimedRoute[], fromPlayerId: number | null, shifted: boolean = false) {
         claimedRoutes.forEach(claimedRoute => {
             this.claimedRoutesIds.push(claimedRoute.routeId);
             const route = this.map.routes[claimedRoute.routeId];
             const player = this.players.find(player => Number(player.id) == claimedRoute.playerId);
-            this.setWagons(route, player, fromPlayerId, false);
+            const routeShifted = shifted || (player.legendaryCharacter === 1 && player.legendaryCharacterState === `used:${claimedRoute.routeId}`);
+            this.setWagons(route, player, fromPlayerId, false, routeShifted);
 
             if (this.game.isDoubleRouteForbidden()) {
                 const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
@@ -468,7 +470,7 @@ export class TtrMap {
      * fromPlayerId is for animation (null for no animation)
      */ 
     public setBuiltStations(builtStations: BuiltStation[], fromPlayerId: number) {
-        builtStations.forEach(builtStation => {
+        builtStations?.forEach(builtStation => {
             this.claimedCitiesIds.push(builtStation.cityId);
             const city = this.map.cities[builtStation.cityId];
             const player = this.players.find(player => Number(player.id) == builtStation.playerId);
@@ -498,8 +500,8 @@ export class TtrMap {
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */ 
-    private setWagon(route: Route, space: RouteSpace, spaceIndex: number, player: TicketToRidePlayer, fromPlayerId: number, phantom: boolean, isLowestFromDoubleHorizontalRoute: boolean) {
-        const id = `wagon-route${route.id}-space${spaceIndex}${phantom ? '-phantom' : ''}`;
+    private setWagon(route: Route, space: RouteSpace, spaceIndex: number, player: TicketToRidePlayer, fromPlayerId: number, phantom: boolean, isLowestFromDoubleHorizontalRoute: boolean, shift: { x: number, y: number } = undefined) {
+        const id = `wagon-route${route.id}-space${spaceIndex}${shift ? '-shifted' : ''}${phantom ? '-phantom' : ''}`;
         if (document.getElementById(id)) {
             return;
         }
@@ -518,12 +520,17 @@ export class TtrMap {
         const angleClassNumber = Math.round(angleOnOne * 36);
 
         const alreadyPlacedWagons = Array.from(document.querySelectorAll('.wagon')) as HTMLDivElement[];
-        const xy = x + y;
 
         if (isLowestFromDoubleHorizontalRoute) { // we shift a little the train car to let the other route visible
             x += 10 * Math.abs(Math.sin(angle * Math.PI / 180));
             y += 10 * Math.abs(Math.cos(angle * Math.PI / 180));
         }
+        if (shift) {
+            x += shift.x;
+            y += shift.y;
+        }
+
+        const xy = x + y;
 
         const wagonHtml = `<div id="${id}" class="wagon angle${angleClassNumber} ${phantom ? 'phantom' : ''} ${space.top ? 'top' : ''}" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}" data-xy="${xy}" style="transform: translate(${x}px, ${y}px)"></div>`;
         // we consider a wagon must be more visible than another if its X + Y is > as the other
@@ -549,31 +556,41 @@ export class TtrMap {
         }
     }
 
+    private getShift(route: Route) {
+        const from = this.map.cities[route.from];
+        const to = this.map.cities[route.to];
+        const shift = 20;
+
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const length = Math.hypot(dx, dy);
+
+        const x = (-dy / length) * shift;
+        const y = (dx / length) * shift;
+
+        return { x, y };
+    }
+
     /** 
      * Place train cars on a route.
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */ 
-    private setWagons(route: Route, player: TicketToRidePlayer, fromPlayerId: number, phantom: boolean) {
-        if (!phantom) {
-            route.spaces.forEach((space, spaceIndex) => {
-                const spaceDiv = document.getElementById(`route-spaces-route${route.id}-space${spaceIndex}`);
-                spaceDiv?.parentElement.removeChild(spaceDiv);
-            });
-        }
+    private setWagons(route: Route, player: TicketToRidePlayer, fromPlayerId: number, phantom: boolean, shifted: boolean = false) {
+        const shift = shifted ? this.getShift(route) : undefined;
 
         const isLowestFromDoubleHorizontalRoute = this.isLowestFromDoubleHorizontalRoute(route);
 
         if (fromPlayerId) {
             route.spaces.forEach((space, spaceIndex) => {
                 setTimeout(() => {
-                    this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute);
+                    this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute, shift);
                     this.game.bga.sounds.play(`placed-train-car`);
                 }, 200 * spaceIndex);
             });
             this.game.bga.gameui.disableNextMoveSound();
         } else {
-            route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute));
+            route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute, shift));
         }
     }
 
@@ -696,7 +713,9 @@ export class TtrMap {
             });
 
             if (valid) {
-                this.setWagons(route, player || this.game.getCurrentPlayer(), null, true);
+                const chooseActionArgs = this.game.bga.states.getCurrentMainStateName() === 'chooseAction' ? this.game.gamedatas.gamestate.args as EnteringChooseActionArgs : null;
+                const shifted = chooseActionArgs && chooseActionArgs.legendaryCharacter === 1 && chooseActionArgs.legendaryCharacterState === 'using';
+                this.setWagons(route, player || this.game.getCurrentPlayer(), null, true, shifted);
             }
 
         } else {

@@ -1,6 +1,7 @@
 import { DistributionPopin, DistributionResult } from "../distribution-popin";
 import { getColor } from "../stock-utils";
-import { City, ClaimingRoute, Route, TicketToRideGame, TrainCar } from "../tickettoride.d";
+import { Game } from "../tickettoride";
+import { City, ClaimingRoute, Route, TrainCar } from "../tickettoride.d";
 
 export const LOCOMOTIVE_TUNNEL = 0b01;
 export const LOCOMOTIVE_FERRY = 0b10;
@@ -18,6 +19,8 @@ export interface EnteringChooseActionArgs {
     _private?: {
         trainCarsHand: TrainCar[];
     }
+    legendaryCharacter?: number;
+    legendaryCharacterState?: any | null;
 }
 
 /**
@@ -28,7 +31,7 @@ export interface EnteringChooseActionArgs {
  * - ask confirmation
  */
 export class ChooseActionState {
-    protected game: TicketToRideGame;
+    protected game: Game;
     protected bga: Bga;
     protected args: EnteringChooseActionArgs;
 
@@ -37,7 +40,7 @@ export class ChooseActionState {
 
     private isTouch = window.matchMedia('(hover: none)').matches;
 
-    constructor(game: TicketToRideGame, bga: Bga) {
+    constructor(game: Game, bga: Bga) {
         this.game = game;
         this.bga = bga;
     }
@@ -116,6 +119,22 @@ export class ChooseActionState {
             if (this.args.canPass) {
                 // Pass (only in case of no possible action)
                 this.bga.statusBar.addActionButton(_("Pass"), () => this.bga.actions.performAction('actPass'));
+            }
+
+            // character 2 is a passive one used at the end of the game
+            if (this.args.legendaryCharacter && this.args.legendaryCharacter !== 2) {
+                if (!this.args.legendaryCharacterState) {
+                    this.bga.statusBar.addActionButton(
+                        _("Use ${character_name} special rule").replace('${character_name}', this.game.legendaryCharacterManager.getCharacterName(this.args.legendaryCharacter)), 
+                        () => this.bga.actions.performAction('actUseLegendaryCharacter')
+                    );
+                } else if (this.args.legendaryCharacterState === 'using') {
+                    this.bga.statusBar.addActionButton(
+                        _("Cancel ${character_name} special rule").replace('${character_name}', this.game.legendaryCharacterManager.getCharacterName(this.args.legendaryCharacter)), 
+                        () => this.bga.actions.performAction('actCancelLegendaryCharacter'),
+                        { color: 'secondary' }
+                    );
+                }
             }
         }
     }
@@ -249,7 +268,7 @@ export class ChooseActionState {
      * Handle route click.
      */ 
     public clickedRoute(route: Route): void { 
-        if(!this.bga.players.isCurrentPlayerActive()) {
+        if(!this.bga.players.isCurrentPlayerActive() || this.bga.states.getCurrentMainStateName() !== 'chooseAction') {
             return;
         }
 

@@ -21,43 +21,45 @@
 -- Example 1: create a standard "card" table to be used with the "Deck" tools (see example game "hearts"):
 
 CREATE TABLE IF NOT EXISTS `traincar` (
-  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `card_id` INT unsigned NOT NULL AUTO_INCREMENT,
   `card_type` varchar(16) NOT NULL,
-  `card_type_arg` int(11) NOT NULL,
+  `card_type_arg` INT NOT NULL,
   `card_location` varchar(16) NOT NULL,
-  `card_location_arg` int(11) NOT NULL,
+  `card_location_arg` INT NOT NULL,
   PRIMARY KEY (`card_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
 
 -- completed destinations are persisted to avoid costly recomputations (a completed destination cannot be "uncompleted")
 CREATE TABLE IF NOT EXISTS `destination` (
-  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `card_id` INT unsigned NOT NULL AUTO_INCREMENT,
   `card_type` varchar(16) NOT NULL,
-  `card_type_arg` int(11) NOT NULL,
+  `card_type_arg` INT NOT NULL,
   `card_location` varchar(16) NOT NULL,
-  `card_location_arg` int(11) NOT NULL,
+  `card_location_arg` INT NOT NULL,
   `completed` TINYINT unsigned NOT NULL DEFAULT FALSE,
   PRIMARY KEY (`card_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `claimed_routes` (
   `route_id` TINYINT unsigned NOT NULL,
-  `player_id` int(11) NOT NULL,
+  `player_id` INT NOT NULL,
   PRIMARY KEY (`route_id`, `player_id`)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
 
 ALTER TABLE `player` ADD `player_remaining_train_cars` INT UNSIGNED NOT NULL;
+ALTER TABLE `player` ADD `player_legendary_character` TINYINT UNSIGNED NULL;
+ALTER TABLE `player` ADD `player_legendary_character_state` JSON NULL;
 
 CREATE TABLE IF NOT EXISTS `global_variables` (
   `name` varchar(50) NOT NULL,
   `value` json,
   PRIMARY KEY (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `placed_buildings` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id` INT unsigned NOT NULL AUTO_INCREMENT,
   `city_id` TINYINT unsigned NOT NULL,
-  `player_id` int(11) NOT NULL,
+  `player_id` INT NOT NULL,
   `building_type` tinyint NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;

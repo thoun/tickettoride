@@ -20,6 +20,8 @@ class NextPlayer extends GameState {
         $this->game->incStat(1, 'turnsNumber');
         $this->game->incStat(1, 'turnsNumber', $activePlayerId);
 
+        $this->game->legendaryCharacterManager->onEndTurn();
+
         $lastTurn = intval($this->game->getGameStateValue(LAST_TURN));
 
         // check if it was last action from player who started last turn

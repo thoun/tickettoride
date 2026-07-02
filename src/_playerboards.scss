@@ -23,7 +23,7 @@
 
   .player-name, .player-name a {
     color: white !important; // to override inline color
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5) !important;
   }
   .player_score_value {
     font-weight: bold;
@@ -98,6 +98,18 @@
     padding: 2px;
     text-align: center;
     border-radius: 8px;
+  }
+
+  .legendary-character-card-wrapper {
+    width: 33px;
+    height: 33px;
+
+    .legendary-character-card {
+      width: 22px;
+      height: 33px;
+      border-radius: 1px;
+      cursor: pointer;
+    }
   }
 }
 

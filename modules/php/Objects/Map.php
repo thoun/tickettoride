@@ -31,6 +31,11 @@ class Map {
     public ?int $stations = null;
     public ?array $mandalaPoints = null;
 
+    /**
+     * @param City[] $cities
+     * @param Route[] $routes
+     * @param DestinationCard[] $destinations
+     */
     public function __construct(
         public array $cities,
         public array $routes,

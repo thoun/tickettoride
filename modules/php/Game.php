@@ -27,6 +27,7 @@ use Bga\GameFramework\Table;
 use Bga\Games\TicketToRide\Objects\ClaimedRoute;
 use Bga\Games\TicketToRide\Objects\Destination;
 use Bga\Games\TicketToRide\Objects\Map;
+use Bga\Games\TicketToRide\States\ChooseLegendaryCharacter;
 use Bga\Games\TicketToRide\States\DealInitialDestinations;
 
 const MAP_LIST = [
@@ -47,6 +48,7 @@ class Game extends Table {
     public DestinationManager $destinationManager;
     public TrainCarManager $trainCarManager;
     public BuildingManager $buildingManager;
+    public LegendaryCharacterManager $legendaryCharacterManager;
 
     public Map $map;
 
@@ -61,6 +63,15 @@ class Game extends Table {
         $this->destinationManager = new DestinationManager($this);
         $this->trainCarManager = new TrainCarManager($this);
         $this->buildingManager = new BuildingManager($this);
+        $this->legendaryCharacterManager = new LegendaryCharacterManager($this);
+
+        $this->bga->notify->addDecorator(function(string $message, array $args) {
+            if (isset($args['playerId']) && !isset($args['player_name']) && str_contains($message, '${player_name}')) {
+                $args['player_name'] = $this->getPlayerNameById($args['playerId']);
+            }
+            
+            return $args;
+        });
 	}
 
     /*
@@ -158,7 +169,14 @@ class Game extends Table {
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
-        return DealInitialDestinations::class;
+        $legendaryCharacterActive = $this->legendaryCharacterManager->isActive();
+        if ($legendaryCharacterActive) {
+            $this->activePrevPlayer(); // start by the last one
+        }
+
+        return $legendaryCharacterActive ?
+          ChooseLegendaryCharacter::class :
+          DealInitialDestinations::class;
 
         /************ End of the game initialization *****/
     }
@@ -172,11 +190,12 @@ class Game extends Table {
         _ when the game starts
         _ when a player refreshes the game page (F5)
     */
-    protected function getAllDatas(): array {
+    protected function getAllDatas(int $currentPlayerId): array {
         $stateName = $this->gamestate->getCurrentMainState()->name; 
         $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
 
         $expansionOption = $this->getExpansionOption();
+        $legendaryCharacterActive = $this->legendaryCharacterManager->isActive();
         //var_dump($this->map);
 
         $result = [
@@ -197,8 +216,6 @@ class Game extends Table {
                 'pointsForGlobetrotter' => $this->getMap()->pointsForGlobetrotter,
             ],
         ];
-    
-        $currentPlayerId = $this->getCurrentPlayerId();    // !! We must only return informations visible by this player !!
     
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
@@ -231,6 +248,10 @@ class Game extends Table {
             if ($remainingStations !== null) {
                 $player['remainingStations'] = $remainingStations;
             }
+            if ($legendaryCharacterActive) {
+                $player['legendaryCharacter'] = $this->legendaryCharacterManager->getPlayerCharacter($playerId);
+                $player['legendaryCharacterState'] = $this->legendaryCharacterManager->getPlayerCharacterState($playerId);
+            }
 
             if ($isEnd) {
                 $player['completedDestinations'] = $this->destinationManager->getCompletedDestinations($playerId);
@@ -248,6 +269,7 @@ class Game extends Table {
         $result['trainCarDeckMaxCount'] = intval($this->getUniqueValueFromDB("select count(*) from `traincar`"));
         $result['destinationDeckMaxCount'] = intval($this->getUniqueValueFromDB("select count(*) from `destination`"));          
 
+        $result['legendaryCharactersExpansionActive'] = $legendaryCharacterActive;
         $result['isGlobetrotterBonusActive'] = $this->getMap()->isGlobetrotterBonusActive($expansionOption);
         $result['isLongestPathBonusActive'] = $this->getMap()->isLongestPathBonusActive($expansionOption);
         
@@ -284,7 +306,7 @@ class Game extends Table {
         return 100 * ($this->getMap()->trainCarsPerPlayer - $this->getLowestTrainCarsCount()) / $this->getMap()->trainCarsPerPlayer;
     }
 
-    function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null): void {
+    function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null, bool $shifted = false): void {
         $route = $this->mapManager->getAllRoutes()[$routeId];
         $cardCost = $route->number + $extraCardCost;
         
@@ -314,6 +336,7 @@ class Game extends Table {
             'removeCards' => $cardsToRemove,
             'colors' => array_map(fn($card) => $card->type, $cardsToRemove),
             'remainingTrainCars' => $this->getRemainingTrainCarsCount($playerId),
+            'shifted' => $shifted,
         ]);
 
         $this->playerStats->inc('claimedRoutes', 1, $playerId, updateTableStat: true);
@@ -436,7 +459,7 @@ class Game extends Table {
         if ($playerId !== null) {
             $sql .= "WHERE player_id = $playerId ";
         }
-        $dbResults = $this->getCollectionFromDB($sql);
+        $dbResults = $this->getObjectListFromDB($sql);
         return array_map(fn($dbResult) => new ClaimedRoute($dbResult), array_values($dbResults));
     }
     

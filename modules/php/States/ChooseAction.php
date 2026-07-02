@@ -28,13 +28,24 @@ class ChooseAction extends GameState {
     }
 
     function getArgs(int $activePlayerId) {
+        $legendaryCharacter = null;
+        $legendaryCharacterState = null;
+        $opponentRoutesInsteadOfFreeOnes = false;
+
+        if ($this->game->legendaryCharacterManager->isActive()) {
+            $legendaryCharacter = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId);
+            $legendaryCharacterState = $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId);
+
+            $opponentRoutesInsteadOfFreeOnes = $legendaryCharacter === 1 && $legendaryCharacterState === 'using';
+        }
+
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
         // we don't limit claimable routes to the number of remaining train cars, because the players don't understand why they can't claim the route
         // so instead they'll get an error when they try to claim the route, saying they don't have enough train cars left
         $remainingTrainCars = 99;
         $realRemainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
 
-        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes);
         $maxHiddenCardsPick = min(2, $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true));
         $maxDestinationsPick = min($this->game->getMap()->getAdditionalDestinationCardNumber($this->game->getExpansionOption()), $this->game->destinationManager->getRemainingDestinationCardsInDeck());
 
@@ -103,6 +114,11 @@ class ChooseAction extends GameState {
             ];
         }
 
+        if ($this->game->legendaryCharacterManager->isActive()) {
+            $args['legendaryCharacter'] = $legendaryCharacter;
+            $args['legendaryCharacterState'] = $legendaryCharacterState;
+        }
+
         return $args;
     }
 
@@ -159,8 +175,29 @@ class ChooseAction extends GameState {
             return;
         }
 
-        if ($this->game->getUniqueIntValueFromDB( "SELECT count(*) FROM `claimed_routes` WHERE `route_id` = $routeId") > 0) {
-            throw new UserException("Route is already claimed.");
+        $legendaryCharacter = null;
+        $legendaryCharacterState = null;
+        $opponentRoutesInsteadOfFreeOnes = false;
+
+        if ($this->game->legendaryCharacterManager->isActive()) {
+            $legendaryCharacter = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId);
+            $legendaryCharacterState = $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId);
+            $opponentRoutesInsteadOfFreeOnes = $legendaryCharacter === 1 && $legendaryCharacterState === 'using';
+        }
+
+        $alreadyClaimedPlayerId = $this->game->getUniqueIntValueFromDB( "SELECT `player_id` FROM `claimed_routes` WHERE `route_id` = $routeId");
+        if ($opponentRoutesInsteadOfFreeOnes) {
+            if ($alreadyClaimedPlayerId === 0) {
+                throw new UserException("Route is not already claimed.");
+            }
+            if ($alreadyClaimedPlayerId === $activePlayerId) {
+                throw new UserException("Route is already claimed by you.");
+            }
+            $this->game->legendaryCharacterManager->setPlayerCharacterState($activePlayerId, 'used:'.$routeId);
+        } else {
+            if ($alreadyClaimedPlayerId > 0) {
+                throw new UserException("Route is already claimed.");
+            }
         }
         
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
@@ -171,7 +208,7 @@ class ChooseAction extends GameState {
             throw new UserException("Not enough cards to claim the route.");
         }
 
-        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes);
         if (!Arrays::some($possibleRoutes, fn($possibleRoute) => $possibleRoute->id == $routeId)) {
             throw new UserException("You can't claim this route");
         }
@@ -211,7 +248,7 @@ class ChooseAction extends GameState {
             }
         }
 
-        $this->game->applyClaimRoute($activePlayerId, $routeId, $color, 0, distributionCards: $distributionCards);
+        $this->game->applyClaimRoute($activePlayerId, $routeId, $color, 0, distributionCards: $distributionCards, shifted: $opponentRoutesInsteadOfFreeOnes);
 
         return NextPlayer::class;
     }
@@ -255,6 +292,35 @@ class ChooseAction extends GameState {
         }
 
         return NextPlayer::class;
+    }
+
+    #[PossibleAction]
+    public function actUseLegendaryCharacter(int $activePlayerId, array $args) {
+        $legendaryCharacter = $args['legendaryCharacter'];
+        $legendaryCharacterState = $args['legendaryCharacterState'];
+        if ($legendaryCharacterState !== null) {
+            throw new UserException("Already activated");
+        }
+
+        switch ($legendaryCharacter) {
+            case 1: 
+                $this->game->legendaryCharacterManager->setPlayerCharacterState($activePlayerId, 'using');
+                break;
+            default: throw new UserException("Impossible to activate the Legendary character special rule");
+        }
+
+        return self::class;
+    }
+
+    #[PossibleAction]
+    public function actCancelLegendaryCharacter(int $activePlayerId, array $args) {
+        $legendaryCharacterState = $args['legendaryCharacterState'];
+        if ($legendaryCharacterState !== 'using') {
+            throw new UserException("Not activated");
+        }
+
+        $this->game->legendaryCharacterManager->setPlayerCharacterState($activePlayerId, null);
+        return self::class;
     }
 
     function zombie(int $playerId, array $args) {

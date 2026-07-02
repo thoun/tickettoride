@@ -62,6 +62,8 @@ export interface TicketToRidePlayer extends Player {
     destinationsCount: number;
     remainingTrainCarsCount: number;
     remainingStations?: number;
+    legendaryCharacter?: number;
+    legendaryCharacterState?: any | null;
 
     // for end score
     completedDestinations?: Destination[];
@@ -136,6 +138,7 @@ export interface TicketToRideGamedatas {
     lastTurn: boolean;
     bestScore: number;
 
+    legendaryCharactersExpansionActive: boolean;
     isGlobetrotterBonusActive: boolean;
     isLongestPathBonusActive: boolean;
     showTurnOrder: boolean;
@@ -231,6 +234,7 @@ export interface NotifClaimedRouteArgs {
     route: Route;
     removeCards: TrainCar[];
     remainingTrainCars: number;
+    shifted: false;
 }
 
 export interface NotifBuiltStationArgs {
@@ -284,4 +288,9 @@ export interface NotifBadgeArgs {
 export interface NotifRemainingStationsArgs {
     playerId: number;
     remainingStations: number;
+}
+
+export interface NotifChooseCharacterArgs {
+    playerId: number;
+    character: number;
 }

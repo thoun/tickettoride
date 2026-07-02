@@ -37,13 +37,18 @@ class MapManager {
      * - it is not already claimed
      * - player count allows it (if double route)
      */
-    public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars) {
+    public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars, bool $opponentRoutesInsteadOfFreeOnes = false) {
         $allRoutes = $this->getAllRoutes();
         $claimedRoutes = $this->game->getClaimedRoutes();
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
 
-        // remove routes already claimed
-        $claimableRoutes = array_filter($allRoutes, fn($route) => !in_array($route->id, $claimedRoutesIds));
+        $claimableRoutes = [];
+        if ($opponentRoutesInsteadOfFreeOnes) {
+            $claimableRoutes = array_filter($allRoutes, fn($route) => Arrays::some($claimedRoutes, fn($claimedRoute) => $claimedRoute->routeId === $route->id && $claimedRoute->playerId !== $playerId));
+        } else {
+            // remove routes already claimed
+            $claimableRoutes = array_filter($allRoutes, fn($route) => !in_array($route->id, $claimedRoutesIds));
+        }
 
         // remove routes user can't pay
         $claimableRoutes = array_values(array_filter($claimableRoutes, fn($unclaimedRoute) => 
@@ -203,6 +208,7 @@ class MapManager {
         return [$validConnections[0]];
     }
 
+    /** */
     public function getAllRoutes() {
         $allRoutes = $this->game->getMap()->routes;
         array_walk($allRoutes, function(&$route, $id) { $route->id = $id; });

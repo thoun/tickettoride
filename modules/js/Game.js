@@ -766,6 +766,45 @@ class EndScore {
     }
 }
 
+class LegendaryCharacterManager {
+    getCardHTML(character, settings) {
+        return `
+        <div${settings.id ? ` id="${settings.id}"` : ``} class="legendary-character-card" data-character="${character}">${settings.text ?? true ? `
+            <div class="timing bga-autofit">${this.getTiming(character)}</div>
+            <div class="description bga-autofit bga-autofit__start">${this.getDescription(character)}</div>
+        ` : ``}</div>
+        `;
+    }
+    getTooltipHTML(character) {
+        return `
+        <h3>${this.getCharacterName(character)}</h3>
+        <div><strong>${this.getTiming(character)}</strong></div>
+        <div>${this.getDescription(character)}</div>
+        `;
+    }
+    getCharacterName(character) {
+        switch (character) {
+            case 1: return 'Phileas FOGG';
+            case 2: return 'Irene ADLER';
+            case 3: return 'Mina HARKER';
+            case 4: return 'Captain NEMO';
+            case 5: return 'Arsène LUPIN';
+        }
+    }
+    getTiming(character) {
+        return character === 3 ? /*TODOLC_*/ ('Once per turn') : /*TODOLC_*/ ('Once per game');
+    }
+    getDescription(character) {
+        switch (character) {
+            case 1: return /*TODOLC_*/ ('On your turn, you can claim a route that has already been claimed by another player, following normal Claim Routes rules as if the route was available. You must use a set of the required number of train cards of the color of the route. Place your trains next to the train cars already on the route.\nThis counts as your turn.').replace('\n', '<br>');
+            case 2: return /*TODOLC_*/ ('At the end of the game, before calculating the final scores, discard up to 2 incomplete tickets.\nThese tickets do not count against your score.').replace('\n', '<br>');
+            case 3: return /*TODOLC_*/ ('During your turn, when you play train cards, you can play 1 set of 2 train cards of any 1 color to count as a locomotive.').replace('\n', '<br>');
+            case 4: return /*TODOLC_*/ ('On your turn, you can play up to 7 train cards to claim as many routes with them as possible, following normal Claim Routes rules. The routes must form a continuous path. Each train card can only be used for 1 route.\nThis counts as your turn.').replace('\n', '<br>');
+            case 5: return /*TODOLC_*/ ('When you claim a route, you can ignore its color and claim it as if it was a gray route. You still have to claim it using a set of train cards of any 1 color.').replace('\n', '<br>');
+        }
+    }
+}
+
 const CROSSHAIR_SIZE = 20;
 /**
  * Player's train car cards.
@@ -1372,12 +1411,13 @@ class TtrMap {
      * Place train cars on claimed routes.
      * fromPlayerId is for animation (null for no animation)
      */
-    setClaimedRoutes(claimedRoutes, fromPlayerId) {
+    setClaimedRoutes(claimedRoutes, fromPlayerId, shifted = false) {
         claimedRoutes.forEach(claimedRoute => {
             this.claimedRoutesIds.push(claimedRoute.routeId);
             const route = this.map.routes[claimedRoute.routeId];
             const player = this.players.find(player => Number(player.id) == claimedRoute.playerId);
-            this.setWagons(route, player, fromPlayerId, false);
+            const routeShifted = shifted || (player.legendaryCharacter === 1 && player.legendaryCharacterState === `used:${claimedRoute.routeId}`);
+            this.setWagons(route, player, fromPlayerId, false, routeShifted);
             if (this.game.isDoubleRouteForbidden()) {
                 const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
                 if (otherRoute) {
@@ -1414,7 +1454,7 @@ class TtrMap {
      * fromPlayerId is for animation (null for no animation)
      */
     setBuiltStations(builtStations, fromPlayerId) {
-        builtStations.forEach(builtStation => {
+        builtStations?.forEach(builtStation => {
             this.claimedCitiesIds.push(builtStation.cityId);
             const city = this.map.cities[builtStation.cityId];
             const player = this.players.find(player => Number(player.id) == builtStation.playerId);
@@ -1439,8 +1479,8 @@ class TtrMap {
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */
-    setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute) {
-        const id = `wagon-route${route.id}-space${spaceIndex}${phantom ? '-phantom' : ''}`;
+    setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute, shift = undefined) {
+        const id = `wagon-route${route.id}-space${spaceIndex}${shift ? '-shifted' : ''}${phantom ? '-phantom' : ''}`;
         if (document.getElementById(id)) {
             return;
         }
@@ -1457,11 +1497,15 @@ class TtrMap {
         const angleOnOne = (Math.acos(-2 * angle / 180 + 1) / Math.PI) * EASE_WEIGHT + (angle / 180 * (1 - EASE_WEIGHT));
         const angleClassNumber = Math.round(angleOnOne * 36);
         const alreadyPlacedWagons = Array.from(document.querySelectorAll('.wagon'));
-        const xy = x + y;
         if (isLowestFromDoubleHorizontalRoute) { // we shift a little the train car to let the other route visible
             x += 10 * Math.abs(Math.sin(angle * Math.PI / 180));
             y += 10 * Math.abs(Math.cos(angle * Math.PI / 180));
         }
+        if (shift) {
+            x += shift.x;
+            y += shift.y;
+        }
+        const xy = x + y;
         const wagonHtml = `<div id="${id}" class="wagon angle${angleClassNumber} ${phantom ? 'phantom' : ''} ${space.top ? 'top' : ''}" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}" data-xy="${xy}" style="transform: translate(${x}px, ${y}px)"></div>`;
         // we consider a wagon must be more visible than another if its X + Y is > as the other
         if (!alreadyPlacedWagons.length) {
@@ -1484,30 +1528,36 @@ class TtrMap {
             this.animateWagonFromCounter(fromPlayerId, id, x, y);
         }
     }
+    getShift(route) {
+        const from = this.map.cities[route.from];
+        const to = this.map.cities[route.to];
+        const shift = 20;
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const length = Math.hypot(dx, dy);
+        const x = (-dy / length) * shift;
+        const y = (dx / length) * shift;
+        return { x, y };
+    }
     /**
      * Place train cars on a route.
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */
-    setWagons(route, player, fromPlayerId, phantom) {
-        if (!phantom) {
-            route.spaces.forEach((space, spaceIndex) => {
-                const spaceDiv = document.getElementById(`route-spaces-route${route.id}-space${spaceIndex}`);
-                spaceDiv?.parentElement.removeChild(spaceDiv);
-            });
-        }
+    setWagons(route, player, fromPlayerId, phantom, shifted = false) {
+        const shift = shifted ? this.getShift(route) : undefined;
         const isLowestFromDoubleHorizontalRoute = this.isLowestFromDoubleHorizontalRoute(route);
         if (fromPlayerId) {
             route.spaces.forEach((space, spaceIndex) => {
                 setTimeout(() => {
-                    this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute);
+                    this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute, shift);
                     this.game.bga.sounds.play(`placed-train-car`);
                 }, 200 * spaceIndex);
             });
             this.game.bga.gameui.disableNextMoveSound();
         }
         else {
-            route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute));
+            route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, player, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute, shift));
         }
     }
     /**
@@ -1607,7 +1657,9 @@ class TtrMap {
                 cityDiv.dataset.valid = valid.toString();
             });
             if (valid) {
-                this.setWagons(route, player || this.game.getCurrentPlayer(), null, true);
+                const chooseActionArgs = this.game.bga.states.getCurrentMainStateName() === 'chooseAction' ? this.game.gamedatas.gamestate.args : null;
+                const shifted = chooseActionArgs && chooseActionArgs.legendaryCharacter === 1 && chooseActionArgs.legendaryCharacterState === 'using';
+                this.setWagons(route, player || this.game.getCurrentPlayer(), null, true, shifted);
             }
         }
         else {
@@ -2124,6 +2176,15 @@ class ChooseActionState {
                 // Pass (only in case of no possible action)
                 this.bga.statusBar.addActionButton(_("Pass"), () => this.bga.actions.performAction('actPass'));
             }
+            // character 2 is a passive one used at the end of the game
+            if (this.args.legendaryCharacter && this.args.legendaryCharacter !== 2) {
+                if (!this.args.legendaryCharacterState) {
+                    this.bga.statusBar.addActionButton(_("Use ${character_name} special rule").replace('${character_name}', this.game.legendaryCharacterManager.getCharacterName(this.args.legendaryCharacter)), () => this.bga.actions.performAction('actUseLegendaryCharacter'));
+                }
+                else if (this.args.legendaryCharacterState === 'using') {
+                    this.bga.statusBar.addActionButton(_("Cancel ${character_name} special rule").replace('${character_name}', this.game.legendaryCharacterManager.getCharacterName(this.args.legendaryCharacter)), () => this.bga.actions.performAction('actCancelLegendaryCharacter'), { color: 'secondary' });
+                }
+            }
         }
     }
     setActionBarAskDoubleRoad(clickedRoute, otherRoute) {
@@ -2235,7 +2296,7 @@ class ChooseActionState {
      * Handle route click.
      */
     clickedRoute(route) {
-        if (!this.bga.players.isCurrentPlayerActive()) {
+        if (!this.bga.players.isCurrentPlayerActive() || this.bga.states.getCurrentMainStateName() !== 'chooseAction') {
             return;
         }
         const needToCheckDoubleRoute = this.askDoubleRouteActive();
@@ -2446,6 +2507,37 @@ class ChooseActionState {
     askDoubleRouteActive() {
         const preferenceValue = this.bga.userPreferences.get(209);
         return preferenceValue === 1;
+    }
+}
+
+class ChooseLegendaryCharacterState {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+    }
+    /**
+     * Show selectable characters.
+     */
+    onEnteringState(args, isCurrentPlayerActive) {
+        document.getElementById('legendary-character-selection-popin')?.remove();
+        const popin = document.createElement('div');
+        popin.id = 'legendary-character-selection-popin';
+        document.getElementById('map-and-borders').insertAdjacentElement('beforeend', popin);
+        args.remainingCharacters.forEach(character => {
+            const id = `legendary-character-card-${character}-selection`;
+            const cardHTML = this.game.legendaryCharacterManager.getCardHTML(character, { id });
+            popin.insertAdjacentHTML('beforeend', cardHTML);
+            const cardElement = document.getElementById(id);
+            this.game.setTooltip(id, this.game.legendaryCharacterManager.getTooltipHTML(character));
+            cardElement.addEventListener('click', () => this.chooseCharacter(character));
+        });
+        popin.classList.toggle('selectable', isCurrentPlayerActive);
+    }
+    onLeavingState(args, isCurrentPlayerActive) {
+        document.getElementById('legendary-character-selection-popin')?.remove();
+    }
+    chooseCharacter(character) {
+        this.bga.actions.performAction('actChooseCharacter', { character });
     }
 }
 
@@ -2868,6 +2960,8 @@ class TrainCarSelection {
     }
 }
 
+const BgaAutofit = await globalThis.importEsmLib('bga-autofit', '1.x');
+
 const ANIMATION_MS = 500;
 class Game {
     constructor(bga) {
@@ -2879,13 +2973,15 @@ class Game {
         this.animations = [];
         this.temporaryHighlightedDestinationTimeout = null;
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
-        this.distributionCards = null;
         this.bga = bga;
+        this.ChooseLegendaryCharacterState = new ChooseLegendaryCharacterState(this, bga);
         this.chooseActionState = new ChooseActionState(this, bga);
+        this.bga.states.register('ChooseLegendaryCharacter', this.ChooseLegendaryCharacterState);
         this.bga.states.register('chooseAction', this.chooseActionState);
         this.bga.states.register('drawSecondCard', new DrawSecondCardState(this, bga));
         this.bga.states.register('confirmTunnel', new ConfirmTunnelState(this, bga));
         this.bga.userPreferences.onChange = (id, val) => this.onUserPreferenceChanged(id, val);
+        this.legendaryCharacterManager = new LegendaryCharacterManager();
     }
     /*
         setup:
@@ -2954,6 +3050,9 @@ class Game {
             `${map.code}/map.jpg`,
             ...map.preloadImages.map(filename => `${map.code}/${filename}`)
         ]);
+        if (gamedatas.legendaryCharactersExpansionActive) {
+            this.bga.images.preloadImages(['legendary-characters/legendary-characters.webp']);
+        }
         console.log("Starting game setup");
         this.gamedatas = gamedatas;
         console.log('gamedatas', gamedatas);
@@ -2979,6 +3078,7 @@ class Game {
         if (this.gamedatas.map.vertical) {
             document.body.classList.add('vertical-map');
         }
+        BgaAutofit.init();
         console.log("Ending game setup");
     }
     ///////////////////////////////////////////////////
@@ -3157,6 +3257,9 @@ class Game {
             }
             if (gamedatas.showTurnOrder && Number(gamedatas.gamestate.id) < 30) { // don't show turn order if game is already started (refresh or TB game)
                 this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `<div class="player-turn-order">${_('Player ${number}').replace('${number}', `<strong>${player.playerNo}</strong>`)}</div>`);
+            }
+            if (player.legendaryCharacter) {
+                this.setCharacter(playerId, player.legendaryCharacter);
             }
         });
         this.setTooltipToClass('train-car-counter', _("Remaining train cars"));
@@ -3348,6 +3451,7 @@ class Game {
             ['notEnoughTrainCars', 1],
             ['lastTurn', 1],
             ['bestScore', 1],
+            ['chooseCharacter', 1],
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
@@ -3426,7 +3530,7 @@ class Game {
         this.map.setClaimedRoutes([{
                 playerId,
                 routeId: route.id
-            }], playerId);
+            }], playerId, notif.args.shifted ?? false);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
         }
@@ -3556,6 +3660,27 @@ class Game {
         this.bga.sounds.play(`scoring-end`);
         this.bga.gameui.disableNextMoveSound();
     }
+    notif_chooseCharacter(notif) {
+        const { playerId, character } = notif.args;
+        this.setCharacter(playerId, character);
+    }
+    setCharacter(playerId, character) {
+        const pp = this.bga.playerPanels.getElement(playerId);
+        if (!pp.querySelector('.legendary-character-card')) {
+            const id = `legendary-character-card-${character}-pp-thumbnail`;
+            pp.querySelector('.counters').insertAdjacentHTML('beforeend', `
+                <div class="legendary-character-card-wrapper">${this.legendaryCharacterManager.getCardHTML(character, { id, text: false })}</div>
+            `);
+            document.getElementById(id).addEventListener('click', () => this.showCharacterPopin(character));
+        }
+    }
+    showCharacterPopin(character) {
+        const myDlg = new ebg.popindialog();
+        myDlg.create('characterPopin');
+        //myDlg.setTitle(this.getScenarioName(scenario));
+        myDlg.setContent(this.legendaryCharacterManager.getCardHTML(character, {}));
+        myDlg.show();
+    }
     bgaFormatText(log, args) {
         try {
             if (log && args && !args.processed) {
@@ -3566,7 +3691,7 @@ class Game {
                     args.colors = args.colors.map(color => `<div class="train-car-color icon" data-color="${color}"></div>`).join('');
                 }
                 // make cities names in bold 
-                ['from', 'to', 'count', 'extraCards', 'pickedCards'].forEach(field => {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }
@@ -3619,18 +3744,6 @@ class Game {
         /*if (url) {
             document.getElementById(`show-rulebook`).addEventListener(`click`, () => this.viewRulebook(url));
         }*/
-    }
-    viewRulebook(url) {
-        const rulebookContainer = document.getElementById(`rulebook-iframe`);
-        const show = rulebookContainer.innerHTML === '';
-        if (show) {
-            const html = `<iframe src="${url}" style="width: 100%; height: 60vh"></iframe>`;
-            rulebookContainer.innerHTML = html;
-        }
-        else {
-            rulebookContainer.innerHTML = '';
-        }
-        document.getElementById(`show-rulebook`).innerHTML = show ? _('Hide rulebook') : _('Show rulebook');
     }
     closePopin() {
         document.getElementById('popin_showMapRulebook_container').remove();

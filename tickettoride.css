@@ -72,7 +72,7 @@
 }
 .player-board .player-name, .player-board .player-name a {
   color: white !important;
-  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) !important;
 }
 .player-board .player_score_value {
   font-weight: bold;
@@ -136,6 +136,16 @@
   padding: 2px;
   text-align: center;
   border-radius: 8px;
+}
+.player-board .legendary-character-card-wrapper {
+  width: 33px;
+  height: 33px;
+}
+.player-board .legendary-character-card-wrapper .legendary-character-card {
+  width: 22px;
+  height: 33px;
+  border-radius: 1px;
+  cursor: pointer;
 }
 
 @keyframes train-car-low-count-animation {
@@ -1485,6 +1495,63 @@
     transform: scale(0.15);
   }
 }
+#legendary-character-selection-popin {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+#legendary-character-selection-popin.selectable .legendary-character-card {
+  cursor: pointer;
+}
+
+.legendary-character-card {
+  display: inline-block;
+  width: 218px;
+  height: 330px;
+  position: relative;
+  color: white;
+  border-radius: 10px;
+  box-shadow: 0 0 8px 1px black;
+  background-size: auto 100%;
+  background-image: url("img/legendary-characters/legendary-characters.webp");
+}
+.legendary-character-card[data-character="1"] {
+  background-position-x: 0%;
+}
+.legendary-character-card[data-character="2"] {
+  background-position-x: 25%;
+}
+.legendary-character-card[data-character="3"] {
+  background-position-x: 50%;
+}
+.legendary-character-card[data-character="4"] {
+  background-position-x: 75%;
+}
+.legendary-character-card[data-character="5"] {
+  background-position-x: 100%;
+}
+.legendary-character-card .timing {
+  position: absolute;
+  font-weight: bold;
+  font-style: italic;
+  top: 60px;
+  left: 52px;
+  height: 30px;
+  right: 52px;
+}
+.legendary-character-card .description {
+  position: absolute;
+  top: 108px;
+  left: 19px;
+  right: 60px;
+  bottom: 20px;
+}
+
 /* make space between buttons on touch devices */
 @media (hover: none) {
   #page-title .action-button.bgabutton, #page-title .bgabutton {

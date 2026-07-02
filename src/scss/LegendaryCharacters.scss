@@ -1,0 +1,53 @@
+#legendary-character-selection-popin {
+    position: absolute;
+    inset: 0;
+    background: #FFFFFF66;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+
+    &.selectable {
+        .legendary-character-card {
+            cursor: pointer;
+        }
+    }
+}
+
+.legendary-character-card {
+    display: inline-block;
+    width: 218px;
+    height: 330px;
+    position: relative;
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 8px 1px black;
+
+    background-size: auto 100%;
+    background-image: url('img/legendary-characters/legendary-characters.webp');
+
+    @for $character from 1 through 5 {
+        &[data-character="#{$character}"] {
+            background-position-x: #{($character - 1) * 100% / 4};  
+        }
+    }
+
+    .timing {
+        position: absolute;
+        font-weight: bold;
+        font-style: italic;
+        top: 60px;
+        left: 52px;
+        height: 30px;
+        right: 52px;
+    }
+
+    .description {
+        position: absolute;
+        top: 108px;
+        left: 19px;
+        right: 60px;
+        bottom: 20px;
+    }
+}

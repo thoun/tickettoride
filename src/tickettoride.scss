@@ -10,6 +10,7 @@ $playerColors: "0056aa", "41a62a", "af0ac2", "e3001a", "ffed00";
 @import 'destination-deck/destination-deck';
 @import 'player-table/player-table';
 @import 'end-score/end-score';
+@import 'scss/LegendaryCharacters';
 
 /* make space between buttons on touch devices */
 @media (hover: none) {

@@ -1,14 +1,16 @@
 import { DestinationSelection } from "./destination-deck/destination-deck";
 import { EndScore } from "./end-score/end-score";
+import { LegendaryCharacterManager } from "./ts/LegendaryCharactersManager";
 import { TtrMap } from "./map/map";
 import { PlayerTable } from "./player-table/player-table";
 import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseAction";
+import { ChooseLegendaryCharacterState } from "./ts/States/ChooseLegendaryCharacter";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
-import { getColor } from "./stock-utils";
-import { City, ClaimingRoute, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar } from "./tickettoride.d";
+import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar } from "./tickettoride.d";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
+import { BgaAutofit } from "./ts/libs";
 
 const ANIMATION_MS = 500;
 
@@ -17,6 +19,7 @@ export class Game implements TicketToRideGame {
     public gamedatas: TicketToRideGamedatas;
 
     public chooseActionState: ChooseActionState;
+    public ChooseLegendaryCharacterState: ChooseLegendaryCharacterState;
 
     public map: TtrMap;
     public trainCarSelection: TrainCarSelection;
@@ -29,23 +32,26 @@ export class Game implements TicketToRideGame {
     private trainCarCardCounters: Counter[] = [];
     public destinationCardCounters: Counter[] = [];
     private completedDestinationsCounter: Counter;
+    public legendaryCharacterManager: LegendaryCharacterManager;
 
     private animations: WagonsAnimation[] = [];
     private temporaryHighlightedDestinationTimeout: number | null = null;
 
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
-    private distributionCards: number[][] = null;
-
     constructor(bga: Bga) {
         this.bga = bga;
 
+        this.ChooseLegendaryCharacterState = new ChooseLegendaryCharacterState(this, bga);
         this.chooseActionState = new ChooseActionState(this, bga);
+        this.bga.states.register('ChooseLegendaryCharacter', this.ChooseLegendaryCharacterState);
         this.bga.states.register('chooseAction', this.chooseActionState);
         this.bga.states.register('drawSecondCard', new DrawSecondCardState(this, bga));
         this.bga.states.register('confirmTunnel', new ConfirmTunnelState(this, bga));
 
         this.bga.userPreferences.onChange = (id, val) => this.onUserPreferenceChanged(id, val);
+
+        this.legendaryCharacterManager = new LegendaryCharacterManager();
     }
     
     /*
@@ -120,6 +126,9 @@ export class Game implements TicketToRideGame {
             `${map.code}/map.jpg`,
             ...map.preloadImages.map(filename => `${map.code}/${filename}`)
         ]);
+        if (gamedatas.legendaryCharactersExpansionActive) {
+            this.bga.images.preloadImages(['legendary-characters/legendary-characters.webp']);
+        }
 
         console.log("Starting game setup");
         
@@ -166,6 +175,8 @@ export class Game implements TicketToRideGame {
         if (this.gamedatas.map.vertical) {
             document.body.classList.add('vertical-map');
         }
+
+        BgaAutofit.init();
 
         console.log("Ending game setup");
     }
@@ -374,6 +385,10 @@ export class Game implements TicketToRideGame {
 
             if (gamedatas.showTurnOrder && Number(gamedatas.gamestate.id) < 30) { // don't show turn order if game is already started (refresh or TB game)
                 this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `<div class="player-turn-order">${_('Player ${number}').replace('${number}', `<strong>${player.playerNo}</strong>`)}</div>`);
+            }
+
+            if (player.legendaryCharacter) {
+                this.setCharacter(playerId, player.legendaryCharacter);
             }
         });
 
@@ -592,6 +607,7 @@ export class Game implements TicketToRideGame {
             ['notEnoughTrainCars', 1],
             ['lastTurn', 1],
             ['bestScore', 1],
+            ['chooseCharacter', 1],
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
@@ -680,7 +696,7 @@ export class Game implements TicketToRideGame {
         this.map.setClaimedRoutes([{
             playerId,
             routeId: route.id
-        }], playerId);
+        }], playerId, notif.args.shifted ?? false);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
         }
@@ -828,6 +844,31 @@ export class Game implements TicketToRideGame {
         this.bga.gameui.disableNextMoveSound();
     }
 
+    notif_chooseCharacter(notif: Notif<NotifChooseCharacterArgs>) {
+        const { playerId, character } = notif.args;
+        
+        this.setCharacter(playerId, character);
+    }
+
+    private setCharacter(playerId: number, character: number) {
+        const pp = this.bga.playerPanels.getElement(playerId);
+        if (!pp.querySelector('.legendary-character-card')) {
+            const id = `legendary-character-card-${character}-pp-thumbnail`;
+            pp.querySelector('.counters').insertAdjacentHTML('beforeend', `
+                <div class="legendary-character-card-wrapper">${this.legendaryCharacterManager.getCardHTML(character, { id, text: false })}</div>
+            `);
+            document.getElementById(id).addEventListener('click', () => this.showCharacterPopin(character));
+        }
+    }
+
+    private showCharacterPopin(character: number) {
+        const myDlg = new ebg.popindialog();
+        myDlg.create('characterPopin');
+        //myDlg.setTitle(this.getScenarioName(scenario));
+        myDlg.setContent(this.legendaryCharacterManager.getCardHTML(character, {}));
+        myDlg.show();
+    }
+
     public bgaFormatText(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
@@ -839,7 +880,7 @@ export class Game implements TicketToRideGame {
                 }
 
                 // make cities names in bold 
-                ['from', 'to', 'count', 'extraCards', 'pickedCards'].forEach(field => {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }
@@ -896,18 +937,6 @@ export class Game implements TicketToRideGame {
         /*if (url) {
             document.getElementById(`show-rulebook`).addEventListener(`click`, () => this.viewRulebook(url));
         }*/
-    }
-
-    private viewRulebook(url: string) {
-        const rulebookContainer = document.getElementById(`rulebook-iframe`);
-        const show = rulebookContainer.innerHTML === '';
-        if (show) {
-            const html = `<iframe src="${url}" style="width: 100%; height: 60vh"></iframe>`;
-            rulebookContainer.innerHTML = html;
-        } else {
-            rulebookContainer.innerHTML = '';
-        }
-        document.getElementById(`show-rulebook`).innerHTML = show ? _('Hide rulebook') : _('Show rulebook');
     }
 
     private closePopin() {

@@ -35,13 +35,13 @@ trait DebugUtilTrait {
 
         //$this->debug_SetRemainingTrainCarDeck(1);
 
-        //self::DbQuery("update `traincar` set card_location='hand', card_location_arg=2343492 WHERE `card_type` LIKE '0'");
+        //$this->DbQuery("update `traincar` set card_location='hand', card_location_arg=2343492 WHERE `card_type` LIKE '0'");
 
         //$this->gamestate->changeActivePlayer(2343492);
     }
 
     function debug_allLocos(int $playerId) {
-        self::DbQuery("update `traincar` set card_location = 'hand', card_location_arg = $playerId WHERE `card_type` LIKE '0'");
+        $this->DbQuery("update `traincar` set card_location = 'hand', card_location_arg = $playerId WHERE `card_type` LIKE '0'");
     }
 
     function debug_SetDestinationInHand(int $cardType, int $playerId) {
@@ -82,7 +82,7 @@ trait DebugUtilTrait {
     }
 
     function debug_ClaimRoute(int $playerId, int $routeId) {
-        self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
+        $this->DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
 
         $route = $this->getMap()->routes[$routeId];
         $points = $this->getMap()->routePoints[$route->number];
@@ -121,10 +121,10 @@ trait DebugUtilTrait {
     }
 
     function debug_SetLastTurn() {
-        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = ".$this->getMap()->trainCarsNumberToStartLastTurn);
+        $this->DbQuery("UPDATE player SET `player_remaining_train_cars` = ".$this->getMap()->trainCarsNumberToStartLastTurn);
     }
     function debug_NoTrainCar() {
-        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = 0");
+        $this->DbQuery("UPDATE player SET `player_remaining_train_cars` = 0");
     }
 
     // select all 3 destinations for each player
