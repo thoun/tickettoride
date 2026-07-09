@@ -48,6 +48,10 @@ export class PlayerTable {
         this.playerDestinations.addDestinations(destinations, originStock);
     }
 
+    public removeDestination(destination: Destination) {
+        this.playerDestinations.removeDestination(destination);
+    }
+
     public markDestinationComplete(destination: Destination, destinationRoutes?: Route[]) {
         this.playerDestinations.markDestinationComplete(destination, destinationRoutes);
     }

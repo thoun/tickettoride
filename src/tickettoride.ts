@@ -7,7 +7,7 @@ import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseActi
 import { ChooseLegendaryCharacterState } from "./ts/States/ChooseLegendaryCharacter";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
-import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar } from "./tickettoride.d";
+import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar } from "./tickettoride.d";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 import { BgaAutofit } from "./ts/libs";
@@ -608,6 +608,7 @@ export class Game implements TicketToRideGame {
             ['lastTurn', 1],
             ['bestScore', 1],
             ['chooseCharacter', 1],
+            ['discardDestination', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
@@ -776,8 +777,19 @@ export class Game implements TicketToRideGame {
         this.endScore?.setBestScore(notif.args.bestScore);
     }
 
+    /**
+     * Remove destinations discarded by Irene Adler before end scoring.
+     */
+    notif_discardDestination(notif: Notif<NotifDiscardDestinationArgs>) {
+        const { playerId, destination } = notif.args;
+        this.destinationCardCounters[playerId].incValue(-1);
+        if (playerId === this.bga.players.getCurrentPlayerId()) {
+            this.playerTable?.removeDestination(destination);
+        }
+    }
+
     /** 
-     * Animate a destination for end score.
+     * Animate a destination for end score. 
      */ 
     notif_scoreDestination(notif: Notif<NotifDestinationCompletedArgs>) {
         const playerId = notif.args.playerId;

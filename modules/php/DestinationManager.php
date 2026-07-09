@@ -181,6 +181,10 @@ class DestinationManager {
             ],
         ]);
     } 
+
+    public function discardDestination(Destination $destination) {
+        $this->destinations->moveCard($destination->id, 'discard');
+    }
     
     public function getPlayerHandCount(int $playerId): int {
         return intval($this->destinations->countCardInLocation('hand', $playerId));

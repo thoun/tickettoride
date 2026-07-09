@@ -6,6 +6,7 @@ use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\StateType;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
 use Bga\Games\TicketToRide\Game;
+use Bga\Games\TicketToRide\Objects\Destination;
 
 use function Bga\Games\TicketToRide\debug;
 
@@ -17,6 +18,45 @@ class EndScore extends GameState {
             type: StateType::GAME,
             name: 'endScore',
         );
+    }
+
+    /**
+     * @param Destination[] $uncompletedDestinations 
+     * @return Destination[] the new list of uncompleted destinations
+     */
+    private function legendaryCharacterDiscardDestinations(int $playerId, array $uncompletedDestinations): array {
+        if (!$this->game->legendaryCharacterManager->isActive() || $this->game->legendaryCharacterManager->getPlayerCharacter($playerId) !== 2 || empty($uncompletedDestinations)) {
+            return $uncompletedDestinations;
+        }
+
+        $uncompletedDestinationWithPenalty = Arrays::map($uncompletedDestinations, fn($destination) => [
+            'destination' => $destination,
+            'penalty' => is_array($destination->to) ? min($destination->points) : $destination->points,
+        ]);
+
+        usort($uncompletedDestinationWithPenalty, function(array $left, array $right) {
+            $penaltyComparison = $right['penalty'] <=> $left['penalty'];
+            if ($penaltyComparison !== 0) {
+                return $penaltyComparison;
+            }
+
+            return $left['destination']->id <=> $right['destination']->id;
+        });
+
+        $discardedDestinations = Arrays::map(array_slice($uncompletedDestinationWithPenalty, 0, 2), fn($entry) => $entry['destination']);
+        
+        foreach ($discardedDestinations as $destination) {
+            $this->game->destinationManager->discardDestination($destination);
+            $this->notify->all('discardDestination', /*TODOLC clienttranslate*/('${player_name} discards ${from} to ${to} incomplete destination with ${character_name}'), [
+                'playerId' => $playerId,
+                'destination' => $destination,
+                'from' => $this->game->getCityName($destination->from),
+                'to' => $this->game->getLogTo($destination),
+                'character_name' => $this->game->legendaryCharacterManager->getCharacterName(2),
+            ]);
+        }
+
+        return Arrays::filter($uncompletedDestinations, fn($destination) => !Arrays::some($discardedDestinations, fn($dd) => $destination->id === $dd->id));
     }
 
     function onEnteringState() {
@@ -38,15 +78,14 @@ class EndScore extends GameState {
         $playersRemainingStations = [];
         foreach ($players as $playerId => $playerDb) {
             $useStationResult[$playerId] = [0, [], [], []];
+            $destinations = $this->game->destinationManager->getPlayerHand($playerId);
+            $uncompletedDestinations = Arrays::filter($destinations, fn($destination) => !boolval($this->game->getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id")));
+            $uncompletedDestinations = $this->legendaryCharacterDiscardDestinations($playerId, $uncompletedDestinations);
+
             $playerStations = $this->game->buildingManager->getPlacedStations($playerId);
             $usedStations = count($playerStations);
-            if ($usedStations > 0) {
-                $destinations = $this->game->destinationManager->getPlayerHand($playerId);
-                $uncompletedDestinations = Arrays::filter($destinations, fn($destination) => !boolval($this->game->getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id")));
-                
-                if (count($uncompletedDestinations) > 0) {
-                    $useStationResult[$playerId] = $this->game->buildingManager->useStations($playerId, $playerStations, $uncompletedDestinations);
-                }
+            if ($usedStations > 0 && count($uncompletedDestinations) > 0) {
+                $useStationResult[$playerId] = $this->game->buildingManager->useStations($playerId, $playerStations, $uncompletedDestinations);
             }
             if ($this->game->getMap()->stations !== null) {
                 $playersRemainingStations[$playerId] = $this->game->getMap()->stations - $usedStations;

@@ -181,6 +181,28 @@ class PlayerDestinations {
         this.destinationColumnsUpdated();
     }
     /**
+     * Remove a destination from the player's hand.
+     */
+    removeDestination(destination) {
+        const todoIndex = this.destinationsTodo.findIndex(d => d.id == destination.id);
+        if (todoIndex !== -1) {
+            this.destinationsTodo.splice(todoIndex, 1);
+        }
+        const doneIndex = this.destinationsDone.findIndex(d => d.id == destination.id);
+        if (doneIndex !== -1) {
+            this.destinationsDone.splice(doneIndex, 1);
+        }
+        const card = document.getElementById(`destination-card-${destination.id}`);
+        if (card) {
+            card.parentElement?.removeChild(card);
+        }
+        if (this.selectedDestination?.id == destination.id) {
+            this.activateNextDestination(this.destinationsTodo.length > 0 ? this.destinationsTodo : this.destinationsDone);
+            return;
+        }
+        this.destinationColumnsUpdated();
+    }
+    /**
      * Mark destination as complete (place it on the "complete" column).
      */
     markDestinationCompleteNoAnimation(destination) {
@@ -1864,6 +1886,9 @@ class PlayerTable {
     addDestinations(destinations, originStock) {
         this.playerDestinations.addDestinations(destinations, originStock);
     }
+    removeDestination(destination) {
+        this.playerDestinations.removeDestination(destination);
+    }
     markDestinationComplete(destination, destinationRoutes) {
         this.playerDestinations.markDestinationComplete(destination, destinationRoutes);
     }
@@ -3452,6 +3477,7 @@ class Game {
             ['lastTurn', 1],
             ['bestScore', 1],
             ['chooseCharacter', 1],
+            ['discardDestination', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
@@ -3599,6 +3625,16 @@ class Game {
     notif_bestScore(notif) {
         this.gamedatas.bestScore = notif.args.bestScore;
         this.endScore?.setBestScore(notif.args.bestScore);
+    }
+    /**
+     * Remove destinations discarded by Irene Adler before end scoring.
+     */
+    notif_discardDestination(notif) {
+        const { playerId, destination } = notif.args;
+        this.destinationCardCounters[playerId].incValue(-1);
+        if (playerId === this.bga.players.getCurrentPlayerId()) {
+            this.playerTable?.removeDestination(destination);
+        }
     }
     /**
      * Animate a destination for end score.

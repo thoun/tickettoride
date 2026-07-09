@@ -267,6 +267,11 @@ export interface NotifScoreDestinationArgs {
     points: number;
 }
 
+export interface NotifDiscardDestinationArgs {
+    playerId: number;
+    destination: Destination;
+}
+
 export interface NotifLongestPathArgs {
     playerId: number;
     length: number;

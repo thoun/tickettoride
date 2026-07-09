@@ -121,6 +121,33 @@ export class PlayerDestinations {
         this.destinationColumnsUpdated();
     }
 
+    /**
+     * Remove a destination from the player's hand.
+     */
+    public removeDestination(destination: Destination) {
+        const todoIndex = this.destinationsTodo.findIndex(d => d.id == destination.id);
+        if (todoIndex !== -1) {
+            this.destinationsTodo.splice(todoIndex, 1);
+        }
+
+        const doneIndex = this.destinationsDone.findIndex(d => d.id == destination.id);
+        if (doneIndex !== -1) {
+            this.destinationsDone.splice(doneIndex, 1);
+        }
+
+        const card = document.getElementById(`destination-card-${destination.id}`);
+        if (card) {
+            card.parentElement?.removeChild(card);
+        }
+
+        if (this.selectedDestination?.id == destination.id) {
+            this.activateNextDestination(this.destinationsTodo.length > 0 ? this.destinationsTodo : this.destinationsDone);
+            return;
+        }
+
+        this.destinationColumnsUpdated();
+    }
+
     /** 
      * Mark destination as complete (place it on the "complete" column).
      */ 
