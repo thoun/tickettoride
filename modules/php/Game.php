@@ -309,10 +309,20 @@ class Game extends Table {
     function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null, bool $shifted = false): void {
         $route = $this->mapManager->getAllRoutes()[$routeId];
         $cardCost = $route->number + $extraCardCost;
+
+        $considerAllRoutesGray = false;
+        if ($this->legendaryCharacterManager->isActive()) {
+            $legendaryCharacter = $this->legendaryCharacterManager->getPlayerCharacter($playerId);
+            $legendaryCharacterState = $this->legendaryCharacterManager->getPlayerCharacterState($playerId);
+            $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
+            if ($considerAllRoutesGray) {
+                $this->legendaryCharacterManager->setPlayerCharacterState($playerId, 'used');
+            }
+        }
         
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
         $trainCarsHand = $this->trainCarManager->getPlayerHand($playerId);
-        $cardsToRemove = $distributionCards ?? $this->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost);
+        $cardsToRemove = $distributionCards ?? $this->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost, considerAllRoutesGray: $considerAllRoutesGray);
 
         $this->trainCarManager->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
 

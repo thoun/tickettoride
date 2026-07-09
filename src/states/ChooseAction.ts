@@ -155,9 +155,11 @@ export class ChooseActionState {
      */
     public clickedRouteColorChosen(route: Route, color: number) {
         const selectedColor = this.game.playerTable.getSelectedColor();
-        if (route.color !== 0 && selectedColor !== null && selectedColor !== 0 && route.color !== selectedColor) {
+        const routeColor = this.getConsideredRouteColor(route);
+        if (routeColor !== 0 && selectedColor !== null && selectedColor !== 0 && routeColor !== selectedColor) {
             const otherRoute = Object.values(this.game.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
-            if (otherRoute.color === selectedColor) {
+            const otherRouteColor = this.getConsideredRouteColor(otherRoute);
+            if (otherRouteColor === selectedColor) {
                 this.clickedRouteColorChosen(otherRoute, selectedColor);
             }
             return;
@@ -274,8 +276,10 @@ export class ChooseActionState {
 
         const needToCheckDoubleRoute = this.askDoubleRouteActive();
 
+        const routeColor = this.getConsideredRouteColor(route);
         const otherRoute = Object.values(this.game.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
-        let askDoubleRouteColor = needToCheckDoubleRoute && otherRoute && otherRoute.color != route.color && this.canClaimRoute(route, 0) && this.canClaimRoute(otherRoute, 0);
+        const otherRouteColor = this.getConsideredRouteColor(otherRoute);
+        let askDoubleRouteColor = needToCheckDoubleRoute && otherRoute && otherRouteColor != routeColor && this.canClaimRoute(route, 0) && this.canClaimRoute(otherRoute, 0);
         if (askDoubleRouteColor) {
             const selectedColor = this.game.playerTable.getSelectedColor();
             if (selectedColor) {
@@ -354,7 +358,8 @@ export class ChooseActionState {
         document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
         const showDistributionPopin = this.showDistributionPopin(route);
 
-        if ((route.color === 0 || route.tunnel || showDistributionPopin) && this.game.playerTable.getSelectedColor() === null) {
+        const routeColor = this.getConsideredRouteColor(route);
+        if ((routeColor === 0 || route.tunnel || showDistributionPopin) && this.game.playerTable.getSelectedColor() === null) {
             const possibleColors: number[] = [];
             const costForRoute = this.args.costForRoute[route.id];
             if (costForRoute) {
@@ -379,7 +384,7 @@ export class ChooseActionState {
             }
         }
 
-        this.clickedRouteColorChosen(route, this.game.playerTable.getSelectedColor() ?? route.color);
+        this.clickedRouteColorChosen(route, this.game.playerTable.getSelectedColor() ?? routeColor);
     }
     
     /**
@@ -501,11 +506,19 @@ export class ChooseActionState {
      * Check if a route can be claimed with dragged cards.
      */ 
     public canClaimRoute(route: Route, cardsColor: number): boolean {
+        const routeColor = this.getConsideredRouteColor(route);
         return (
-            route.color == 0 || cardsColor == 0 || route.color == cardsColor
+            routeColor == 0 || cardsColor == 0 || routeColor == cardsColor
         ) && (
             this.args.possibleRoutes.some(pr => pr.id == route.id)
         );
+    }
+
+    private getConsideredRouteColor(route: { color: number }): number {
+        if (this.args.legendaryCharacter === 5 && this.args.legendaryCharacterState === 'using') {
+            return 0;
+        }
+        return route.color;
     }
 
     /**

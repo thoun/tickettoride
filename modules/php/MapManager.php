@@ -37,7 +37,7 @@ class MapManager {
      * - it is not already claimed
      * - player count allows it (if double route)
      */
-    public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars, bool $opponentRoutesInsteadOfFreeOnes = false) {
+    public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars, bool $opponentRoutesInsteadOfFreeOnes = false, bool $considerAllRoutesGray = false) {
         $allRoutes = $this->getAllRoutes();
         $claimedRoutes = $this->game->getClaimedRoutes();
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
@@ -52,7 +52,7 @@ class MapManager {
 
         // remove routes user can't pay
         $claimableRoutes = array_values(array_filter($claimableRoutes, fn($unclaimedRoute) => 
-           $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars) !== null
+           $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars, considerAllRoutesGray: $considerAllRoutesGray) !== null
         ));
 
         $doubleRouteAllowed = $this->isDoubleRouteAllowed();
@@ -224,22 +224,24 @@ class MapManager {
      * If player cannot pay, returns null.
      * If player can pay return cards to pay for the route.
      */
-    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0, ?array $distributionCards = null): ?array {
+    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0, ?array $distributionCards = null, bool $considerAllRoutesGray = false): ?array {
         $cardCost = $route->number + $extraCardsCost;
 
         if ($remainingTrainCars < $route->number) {
             return null; // not enough remaining meeples
         }
 
-        if ($color != null && $color > 0 && $route->color > 0 && $color != $route->color) {
+        $routeColor = $considerAllRoutesGray ? 0 : $route->color;
+
+        if ($color != null && $color > 0 && $routeColor > 0 && $color != $routeColor) {
             return null; // we try to pay with a color that doesn't match the route color
         }
 
         $colorsToTest = [1,2,3,4,5,6,7,8];
         if ($color > 0) {
             $colorsToTest = [$color];
-        } else if ($route->color > 0) {
-            $colorsToTest = [$route->color];
+        } else if ($routeColor > 0) {
+            $colorsToTest = [$routeColor];
         }
         // if all route spaces are locomotives, you can only pay it with locomotives
         if ($route->locomotives === $route->number) {

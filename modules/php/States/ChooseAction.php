@@ -31,12 +31,14 @@ class ChooseAction extends GameState {
         $legendaryCharacter = null;
         $legendaryCharacterState = null;
         $opponentRoutesInsteadOfFreeOnes = false;
+        $considerAllRoutesGray = false;
 
         if ($this->game->legendaryCharacterManager->isActive()) {
             $legendaryCharacter = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId);
             $legendaryCharacterState = $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId);
 
             $opponentRoutesInsteadOfFreeOnes = $legendaryCharacter === 1 && $legendaryCharacterState === 'using';
+            $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
         }
 
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
@@ -45,21 +47,22 @@ class ChooseAction extends GameState {
         $remainingTrainCars = 99;
         $realRemainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
 
-        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray);
         $maxHiddenCardsPick = min(2, $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true));
         $maxDestinationsPick = min($this->game->getMap()->getAdditionalDestinationCardNumber($this->game->getExpansionOption()), $this->game->destinationManager->getRemainingDestinationCardsInDeck());
 
         $canClaimARoute = false;
         $costForRoute = [];
         foreach($possibleRoutes as $possibleRoute) {
-            $colorsToTest = $possibleRoute->color > 0 ? [0, $possibleRoute->color] : [0,1,2,3,4,5,6,7,8];
+            $possibleRouteColor = $considerAllRoutesGray ? 0 : $possibleRoute->color;
+            $colorsToTest = $possibleRouteColor > 0 ? [0, $possibleRouteColor] : [0,1,2,3,4,5,6,7,8];
             // if all route spaces are locomotives, you can only pay it with locomotives
             if ($possibleRoute->locomotives === $possibleRoute->number) {
                 $colorsToTest = [0];
             }
             $costByColor = [];
             foreach($colorsToTest as $colorToTest) {
-                $costByColor[$colorToTest] = $this->game->mapManager->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest);
+                $costByColor[$colorToTest] = $this->game->mapManager->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest, considerAllRoutesGray: $considerAllRoutesGray);
 
                 if (!$canClaimARoute && $costByColor[$colorToTest] != null && count($costByColor[$colorToTest]) <= $realRemainingTrainCars) {
                     $canClaimARoute = true;
@@ -178,11 +181,13 @@ class ChooseAction extends GameState {
         $legendaryCharacter = null;
         $legendaryCharacterState = null;
         $opponentRoutesInsteadOfFreeOnes = false;
+        $considerAllRoutesGray = false;
 
         if ($this->game->legendaryCharacterManager->isActive()) {
             $legendaryCharacter = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId);
             $legendaryCharacterState = $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId);
             $opponentRoutesInsteadOfFreeOnes = $legendaryCharacter === 1 && $legendaryCharacterState === 'using';
+            $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
         }
 
         $alreadyClaimedPlayerId = $this->game->getUniqueIntValueFromDB( "SELECT `player_id` FROM `claimed_routes` WHERE `route_id` = $routeId");
@@ -202,13 +207,13 @@ class ChooseAction extends GameState {
         
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
         $distributionCards = $distribution ? Arrays::filter($trainCarsHand, fn($card) => in_array($card->id, $distribution)) : null;
-        $colorAndLocomotiveCards = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, distributionCards: $distributionCards);
+        $colorAndLocomotiveCards = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray);
         
         if ($colorAndLocomotiveCards == null || count($colorAndLocomotiveCards) < $route->number) {
             throw new UserException("Not enough cards to claim the route.");
         }
 
-        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray);
         if (!Arrays::some($possibleRoutes, fn($possibleRoute) => $possibleRoute->id == $routeId)) {
             throw new UserException("You can't claim this route");
         }
@@ -304,6 +309,9 @@ class ChooseAction extends GameState {
 
         switch ($legendaryCharacter) {
             case 1: 
+                $this->game->legendaryCharacterManager->setPlayerCharacterState($activePlayerId, 'using');
+                break;
+            case 5: 
                 $this->game->legendaryCharacterManager->setPlayerCharacterState($activePlayerId, 'using');
                 break;
             default: throw new UserException("Impossible to activate the Legendary character special rule");
