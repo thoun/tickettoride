@@ -311,10 +311,12 @@ class Game extends Table {
         $cardCost = $route->number + $extraCardCost;
 
         $considerAllRoutesGray = false;
+        $pairSetAsLocomotive = null;
         if ($this->legendaryCharacterManager->isActive()) {
             $legendaryCharacter = $this->legendaryCharacterManager->getPlayerCharacter($playerId);
             $legendaryCharacterState = $this->legendaryCharacterManager->getPlayerCharacterState($playerId);
             $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
+            $pairSetAsLocomotive = $this->legendaryCharacterManager->getCharacter3UsingColor($playerId);
             if ($considerAllRoutesGray) {
                 $this->legendaryCharacterManager->setPlayerCharacterState($playerId, 'used');
             }
@@ -323,7 +325,7 @@ class Game extends Table {
         
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
         $trainCarsHand = $this->trainCarManager->getPlayerHand($playerId);
-        $cardsToRemove = $distributionCards ?? $this->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost, considerAllRoutesGray: $considerAllRoutesGray);
+        $cardsToRemove = $this->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
 
         $this->trainCarManager->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
 

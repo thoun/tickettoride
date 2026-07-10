@@ -75,6 +75,19 @@ class LegendaryCharacterManager {
         $this->game->DbQuery("UPDATE `player` SET `player_legendary_character_state` = ".($stateJson === null ? 'NULL' : "'".$this->game->escapeStringForDB($stateJson)."'")." WHERE `player_id` = $playerId");
     }
 
+    public function getCharacter3UsingColor(int $playerId): ?int {
+        if ($this->getPlayerCharacter($playerId) !== 3) {
+            return null;
+        }
+
+        $state = $this->getPlayerCharacterState($playerId);
+        if (!is_string($state) || !preg_match('/^using:([1-8])$/', $state, $matches)) {
+            return null;
+        }
+
+        return (int)$matches[1];
+    }
+
     /**
      * Character 4 keeps the routes claimed during its optional extra-route
      * sequence in the state itself: using:routeId[:routeId...].

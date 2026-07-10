@@ -37,7 +37,7 @@ class MapManager {
      * - it is not already claimed
      * - player count allows it (if double route)
      */
-    public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars, bool $opponentRoutesInsteadOfFreeOnes = false, bool $considerAllRoutesGray = false) {
+    public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars, bool $opponentRoutesInsteadOfFreeOnes = false, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null) {
         $allRoutes = $this->getAllRoutes();
         $claimedRoutes = $this->game->getClaimedRoutes();
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
@@ -52,7 +52,7 @@ class MapManager {
 
         // remove routes user can't pay
         $claimableRoutes = array_values(array_filter($claimableRoutes, fn($unclaimedRoute) => 
-           $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars, considerAllRoutesGray: $considerAllRoutesGray) !== null
+           $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive) !== null
         ));
 
         $doubleRouteAllowed = $this->isDoubleRouteAllowed();
@@ -224,7 +224,51 @@ class MapManager {
      * If player cannot pay, returns null.
      * If player can pay return cards to pay for the route.
      */
-    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0, ?array $distributionCards = null, bool $considerAllRoutesGray = false): ?array {
+    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0, ?array $distributionCards = null, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null): ?array {
+        if ($pairSetAsLocomotive !== null) {
+            // Do not consume the selected pair when the route can already be
+            // paid with cards of that same color, without locomotives.
+            if ($route->color === $pairSetAsLocomotive && $route->locomotives === 0) {
+                $normalPayment = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardsCost, $distributionCards, $considerAllRoutesGray);
+                if ($normalPayment !== null && !Arrays::some($normalPayment, fn($card) => $card->type === 0)) {
+                    return $normalPayment;
+                }
+            }
+
+            $pairCards = array_values(array_filter($trainCarsHand, fn($card) => $card->type === $pairSetAsLocomotive));
+            $pairCards = array_slice($pairCards, 0, 2);
+            $pairCardIds = array_map(fn($card) => $card->id, $pairCards);
+            $pairIsSelected = $distributionCards === null || count(array_intersect($pairCardIds, array_map(fn($card) => $card->id, $distributionCards))) === 2;
+
+            if (count($pairCards) === 2 && $pairIsSelected) {
+                $virtualLocomotive = clone $pairCards[0];
+                $virtualLocomotive->id = -$pairCards[0]->id;
+                $virtualLocomotive->type = 0;
+
+                $paymentHand = array_values(array_filter($trainCarsHand, fn($card) => !in_array($card->id, $pairCardIds)));
+                $paymentHand[] = $virtualLocomotive;
+                $paymentDistribution = $distributionCards === null ? null : array_values(array_filter($distributionCards, fn($card) => !in_array($card->id, $pairCardIds)));
+                if ($paymentDistribution !== null) {
+                    $paymentDistribution[] = $virtualLocomotive;
+                }
+
+                $payment = $this->canPayForRoute($route, $paymentHand, $remainingTrainCars, $color, $extraCardsCost, $paymentDistribution, $considerAllRoutesGray);
+                if ($payment === null) {
+                    return null;
+                }
+
+                $result = [];
+                foreach ($payment as $card) {
+                    if ($card->id === $virtualLocomotive->id) {
+                        $result = array_merge($result, $pairCards);
+                    } else {
+                        $result[] = $card;
+                    }
+                }
+                return $result;
+            }
+        }
+
         $cardCost = $route->number + $extraCardsCost;
 
         if ($remainingTrainCars < $route->number) {

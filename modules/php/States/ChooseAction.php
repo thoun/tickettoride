@@ -32,6 +32,7 @@ class ChooseAction extends GameState {
         $legendaryCharacterState = null;
         $opponentRoutesInsteadOfFreeOnes = false;
         $considerAllRoutesGray = false;
+        $pairSetAsLocomotive = null;
 
         if ($this->game->legendaryCharacterManager->isActive()) {
             $legendaryCharacter = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId);
@@ -39,6 +40,7 @@ class ChooseAction extends GameState {
 
             $opponentRoutesInsteadOfFreeOnes = $legendaryCharacter === 1 && $legendaryCharacterState === 'using';
             $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
+            $pairSetAsLocomotive = $this->game->legendaryCharacterManager->getCharacter3UsingColor($activePlayerId);
         }
 
         $usingCharacter4 = $legendaryCharacter === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0;
@@ -49,7 +51,7 @@ class ChooseAction extends GameState {
         $remainingTrainCars = 99;
         $realRemainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
 
-        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
         $possibleRoutes = $this->game->legendaryCharacterManager->filterCharacter4Routes($activePlayerId, $possibleRoutes);
         $maxHiddenCardsPick = min(2, $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true));
         $maxDestinationsPick = min($this->game->getMap()->getAdditionalDestinationCardNumber($this->game->getExpansionOption()), $this->game->destinationManager->getRemainingDestinationCardsInDeck());
@@ -65,7 +67,7 @@ class ChooseAction extends GameState {
             }
             $costByColor = [];
             foreach($colorsToTest as $colorToTest) {
-                $costByColor[$colorToTest] = $this->game->mapManager->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest, considerAllRoutesGray: $considerAllRoutesGray);
+                $costByColor[$colorToTest] = $this->game->mapManager->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
 
                 if (!$canClaimARoute && $costByColor[$colorToTest] != null && count($costByColor[$colorToTest]) <= $realRemainingTrainCars) {
                     $canClaimARoute = true;
@@ -133,6 +135,12 @@ class ChooseAction extends GameState {
         if ($this->game->legendaryCharacterManager->isActive()) {
             $args['legendaryCharacter'] = $legendaryCharacter;
             $args['legendaryCharacterState'] = $legendaryCharacterState;
+            if ($legendaryCharacter === 3) {
+                $args['_private'][$activePlayerId]['legendaryCharacter3Colors'] = array_values(array_filter(
+                    array_unique(array_map(fn($card) => $card->type, $trainCarsHand)),
+                    fn($color) => $color > 0 && count(array_filter($trainCarsHand, fn($card) => $card->type === $color)) >= 2,
+                ));
+            }
         }
 
         return $args;
@@ -198,12 +206,14 @@ class ChooseAction extends GameState {
         $legendaryCharacterState = null;
         $opponentRoutesInsteadOfFreeOnes = false;
         $considerAllRoutesGray = false;
+        $pairSetAsLocomotive = null;
 
         if ($this->game->legendaryCharacterManager->isActive()) {
             $legendaryCharacter = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId);
             $legendaryCharacterState = $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId);
             $opponentRoutesInsteadOfFreeOnes = $legendaryCharacter === 1 && $legendaryCharacterState === 'using';
             $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
+            $pairSetAsLocomotive = $this->game->legendaryCharacterManager->getCharacter3UsingColor($activePlayerId);
         }
 
         $alreadyClaimedPlayerId = $this->game->getUniqueIntValueFromDB( "SELECT `player_id` FROM `claimed_routes` WHERE `route_id` = $routeId");
@@ -223,13 +233,13 @@ class ChooseAction extends GameState {
         
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
         $distributionCards = $distribution ? Arrays::filter($trainCarsHand, fn($card) => in_array($card->id, $distribution)) : null;
-        $colorAndLocomotiveCards = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray);
+        $colorAndLocomotiveCards = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
         
         if ($colorAndLocomotiveCards == null || count($colorAndLocomotiveCards) < $route->number) {
             throw new UserException("Not enough cards to claim the route.");
         }
 
-        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
         $possibleRoutes = $this->game->legendaryCharacterManager->filterCharacter4Routes($activePlayerId, $possibleRoutes);
         if (!Arrays::some($possibleRoutes, fn($possibleRoute) => $possibleRoute->id == $routeId)) {
             throw new UserException("You can't claim this route");
@@ -327,7 +337,7 @@ class ChooseAction extends GameState {
     }
 
     #[PossibleAction]
-    public function actUseLegendaryCharacter(int $activePlayerId, array $args) {
+    public function actUseLegendaryCharacter(int $activePlayerId, array $args, ?int $color = null) {
         $legendaryCharacter = $args['legendaryCharacter'];
         $legendaryCharacterState = $args['legendaryCharacterState'];
         if ($legendaryCharacterState !== null) {
@@ -337,6 +347,13 @@ class ChooseAction extends GameState {
         switch ($legendaryCharacter) {
             case 1: 
                 $this->game->legendaryCharacterManager->setPlayerCharacterState($activePlayerId, 'using');
+                break;
+            case 3:
+                $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
+                if ($color === null || $color === 0 || count(array_filter($trainCarsHand, fn($card) => $card->type === $color)) < 2) {
+                    throw new UserException("You don't have two train cards of this color");
+                }
+                $this->game->legendaryCharacterManager->setPlayerCharacterState($activePlayerId, 'using:'.$color);
                 break;
             case 5: 
                 $this->game->legendaryCharacterManager->setPlayerCharacterState($activePlayerId, 'using');
@@ -350,7 +367,10 @@ class ChooseAction extends GameState {
     #[PossibleAction]
     public function actCancelLegendaryCharacter(int $activePlayerId, array $args) {
         $legendaryCharacterState = $args['legendaryCharacterState'];
-        if ($legendaryCharacterState !== 'using') {
+        $isCharacter3Using = $args['legendaryCharacter'] === 3
+            && is_string($legendaryCharacterState)
+            && preg_match('/^using:[1-8]$/', $legendaryCharacterState) === 1;
+        if ($legendaryCharacterState !== 'using' && !$isCharacter3Using) {
             throw new UserException("Not activated");
         }
 

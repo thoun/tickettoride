@@ -2213,11 +2213,18 @@ class ChooseActionState {
                 this.bga.statusBar.addActionButton(_("Pass"), () => this.bga.actions.performAction('actPass'));
             }
             // character 2 is a passive one used at the end of the game
-            if (this.args.legendaryCharacter && this.args.legendaryCharacter !== 2 && this.args.legendaryCharacter !== 4) {
+            if (this.args.legendaryCharacter === 3 && !this.args.legendaryCharacterState) {
+                (this.args._private?.legendaryCharacter3Colors ?? []).forEach(color => {
+                    const colorIcon = `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`;
+                    const locomotiveIcon = `<div class="train-car-color icon" data-color="0"></div> ${getColor(0, 'train-car')}`;
+                    this.bga.statusBar.addActionButton(_('Use 2 ${color} as ${locomotive}').replace('${color}', colorIcon).replace('${locomotive}', locomotiveIcon), () => this.bga.actions.performAction('actUseLegendaryCharacter', { color }));
+                });
+            }
+            else if (this.args.legendaryCharacter && this.args.legendaryCharacter !== 2 && this.args.legendaryCharacter !== 4) {
                 if (!this.args.legendaryCharacterState) {
                     this.bga.statusBar.addActionButton(_("Use ${character_name} special rule").replace('${character_name}', this.game.legendaryCharacterManager.getCharacterName(this.args.legendaryCharacter)), () => this.bga.actions.performAction('actUseLegendaryCharacter'));
                 }
-                else if (this.args.legendaryCharacterState === 'using') {
+                else if (this.args.legendaryCharacterState === 'using' || (this.args.legendaryCharacter === 3 && typeof this.args.legendaryCharacterState === 'string' && this.args.legendaryCharacterState.startsWith('using:'))) {
                     this.bga.statusBar.addActionButton(_("Cancel ${character_name} special rule").replace('${character_name}', this.game.legendaryCharacterManager.getCharacterName(this.args.legendaryCharacter)), () => this.bga.actions.performAction('actCancelLegendaryCharacter'), { color: 'secondary' });
                 }
             }
