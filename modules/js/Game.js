@@ -2144,6 +2144,13 @@ class ChooseActionState {
      */
     onEnteringState(args, isCurrentPlayerActive) {
         this.game.trainCarSelection.setSelectableTopDeck(isCurrentPlayerActive, args.maxHiddenCardsPick);
+        const usingCharacter4 = args.legendaryCharacter === 4 && typeof args.legendaryCharacterState === 'string' && args.legendaryCharacterState.startsWith('using:');
+        if (usingCharacter4) {
+            this.game.trainCarSelection.setSelectableVisibleCards([]);
+        }
+        else {
+            this.game.trainCarSelection.removeSelectableVisibleCards();
+        }
         this.game.map.setSelectableRoutes(isCurrentPlayerActive, args.possibleRoutes);
         this.game.map.setSelectableStations(isCurrentPlayerActive, args.possibleStations);
         this.game.playerTable?.setDraggable(isCurrentPlayerActive);
@@ -2163,6 +2170,7 @@ class ChooseActionState {
         this.game.playerTable?.setDraggable(false);
         this.game.playerTable?.setSelectable(false);
         this.game.playerTable?.setSelectableTrainCarColors(null);
+        this.game.trainCarSelection.removeSelectableVisibleCards();
         document.getElementById('destination-deck-hidden-pile').classList.remove('selectable');
         Array.from(document.getElementsByClassName('train-car-group hide')).forEach(group => group.classList.remove('hide'));
     }
@@ -2170,7 +2178,10 @@ class ChooseActionState {
      * Sets the action bar (title and buttons) for Choose action.
      */
     setActionBarChooseAction(isCurrentPlayerActive) {
-        if (this.args.canBuildStation) {
+        if (this.args.legendaryCharacter === 4 && typeof this.args.legendaryCharacterState === 'string' && this.args.legendaryCharacterState.startsWith('using:')) {
+            this.bga.statusBar.setTitle(isCurrentPlayerActive ? _('You may claim more routes') : _('${actplayer} may claim more routes'), this.args);
+        }
+        else if (this.args.canBuildStation) {
             if (!this.args.canTakeTrainCarCards) {
                 this.bga.statusBar.setTitle(isCurrentPlayerActive ?
                     _('${you} must claim a route, build a station or draw destination tickets') :
@@ -2202,7 +2213,7 @@ class ChooseActionState {
                 this.bga.statusBar.addActionButton(_("Pass"), () => this.bga.actions.performAction('actPass'));
             }
             // character 2 is a passive one used at the end of the game
-            if (this.args.legendaryCharacter && this.args.legendaryCharacter !== 2) {
+            if (this.args.legendaryCharacter && this.args.legendaryCharacter !== 2 && this.args.legendaryCharacter !== 4) {
                 if (!this.args.legendaryCharacterState) {
                     this.bga.statusBar.addActionButton(_("Use ${character_name} special rule").replace('${character_name}', this.game.legendaryCharacterManager.getCharacterName(this.args.legendaryCharacter)), () => this.bga.actions.performAction('actUseLegendaryCharacter'));
                 }
@@ -2229,7 +2240,7 @@ class ChooseActionState {
         const routeColor = this.getConsideredRouteColor(route);
         if (routeColor !== 0 && selectedColor !== null && selectedColor !== 0 && routeColor !== selectedColor) {
             const otherRoute = Object.values(this.game.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
-            const otherRouteColor = this.getConsideredRouteColor(otherRoute);
+            const otherRouteColor = otherRoute ? this.getConsideredRouteColor(otherRoute) : null;
             if (otherRouteColor === selectedColor) {
                 this.clickedRouteColorChosen(otherRoute, selectedColor);
             }
@@ -2329,7 +2340,7 @@ class ChooseActionState {
         const needToCheckDoubleRoute = this.askDoubleRouteActive();
         const routeColor = this.getConsideredRouteColor(route);
         const otherRoute = Object.values(this.game.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
-        const otherRouteColor = this.getConsideredRouteColor(otherRoute);
+        const otherRouteColor = otherRoute ? this.getConsideredRouteColor(otherRoute) : null;
         let askDoubleRouteColor = needToCheckDoubleRoute && otherRoute && otherRouteColor != routeColor && this.canClaimRoute(route, 0) && this.canClaimRoute(otherRoute, 0);
         if (askDoubleRouteColor) {
             const selectedColor = this.game.playerTable.getSelectedColor();
@@ -3419,6 +3430,10 @@ class Game {
      * Pick destinations.
      */
     drawDestinations() {
+        const args = this.gamedatas.gamestate.args;
+        if (this.gamedatas.gamestate.name === 'chooseAction' && args.legendaryCharacter === 4 && typeof args.legendaryCharacterState === 'string' && args.legendaryCharacterState.startsWith('using:')) {
+            return;
+        }
         const confirmation = this.bga.userPreferences.get(206) !== 2;
         if (confirmation && this.gamedatas.gamestate.args.maxDestinationsPick) {
             this.bga.dialogs.confirmation(_('Are you sure you want to take new destinations?')).then(result => {
@@ -3444,6 +3459,10 @@ class Game {
      * Pick hidden train car(s).
      */
     onHiddenTrainCarDeckClick(number) {
+        const args = this.gamedatas.gamestate.args;
+        if (this.gamedatas.gamestate.name === 'chooseAction' && args.legendaryCharacter === 4 && typeof args.legendaryCharacterState === 'string' && args.legendaryCharacterState.startsWith('using:')) {
+            return;
+        }
         const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'actDrawSecondDeckCard' : 'actDrawDeckCards';
         this.bga.actions.performAction(action, {
             number
@@ -3453,6 +3472,10 @@ class Game {
      * Pick visible train car.
      */
     onVisibleTrainCarCardClick(id) {
+        const args = this.gamedatas.gamestate.args;
+        if (this.gamedatas.gamestate.name === 'chooseAction' && args.legendaryCharacter === 4 && typeof args.legendaryCharacterState === 'string' && args.legendaryCharacterState.startsWith('using:')) {
+            return;
+        }
         const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'actDrawSecondTableCard' : 'actDrawTableCard';
         this.bga.actions.performAction(action, {
             id

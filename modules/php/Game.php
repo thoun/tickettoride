@@ -318,6 +318,7 @@ class Game extends Table {
             if ($considerAllRoutesGray) {
                 $this->legendaryCharacterManager->setPlayerCharacterState($playerId, 'used');
             }
+            $this->legendaryCharacterManager->onCharacter4RouteClaim($playerId, $routeId);
         }
         
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);

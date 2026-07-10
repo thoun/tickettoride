@@ -527,6 +527,10 @@ export class Game implements TicketToRideGame {
      * Pick destinations.
      */ 
     public drawDestinations() {
+        const args = this.gamedatas.gamestate.args;
+        if (this.gamedatas.gamestate.name === 'chooseAction' && args.legendaryCharacter === 4 && typeof args.legendaryCharacterState === 'string' && args.legendaryCharacterState.startsWith('using:')) {
+            return;
+        }
         const confirmation = this.bga.userPreferences.get(206) !== 2;
 
         if (confirmation && this.gamedatas.gamestate.args.maxDestinationsPick) {
@@ -555,6 +559,10 @@ export class Game implements TicketToRideGame {
      * Pick hidden train car(s).
      */ 
     public onHiddenTrainCarDeckClick(number: number) {
+        const args = this.gamedatas.gamestate.args;
+        if (this.gamedatas.gamestate.name === 'chooseAction' && args.legendaryCharacter === 4 && typeof args.legendaryCharacterState === 'string' && args.legendaryCharacterState.startsWith('using:')) {
+            return;
+        }
         const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'actDrawSecondDeckCard' : 'actDrawDeckCards';
         
         this.bga.actions.performAction(action, {
@@ -566,6 +574,10 @@ export class Game implements TicketToRideGame {
      * Pick visible train car.
      */ 
     public onVisibleTrainCarCardClick(id: number) {
+        const args = this.gamedatas.gamestate.args;
+        if (this.gamedatas.gamestate.name === 'chooseAction' && args.legendaryCharacter === 4 && typeof args.legendaryCharacterState === 'string' && args.legendaryCharacterState.startsWith('using:')) {
+            return;
+        }
         const action = this.gamedatas.gamestate.name === 'drawSecondCard' ? 'actDrawSecondTableCard' : 'actDrawTableCard';
 
         this.bga.actions.performAction(action, {

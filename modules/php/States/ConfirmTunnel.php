@@ -69,6 +69,14 @@ class ConfirmTunnel extends GameState {
 
         $this->game->applyClaimRoute($activePlayerId, $tunnelAttempt->routeId, $tunnelAttempt->color, $tunnelAttempt->extraCards, distributionCards: $distributionCards);
 
+        if ($this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0) {
+            if ($this->game->legendaryCharacterManager->character4CanClaimAnotherRoute($activePlayerId)) {
+                return ChooseAction::class;
+            }
+
+            $this->game->legendaryCharacterManager->onCharacter4Pass($activePlayerId);
+        }
+
         return NextPlayer::class;
     }
 

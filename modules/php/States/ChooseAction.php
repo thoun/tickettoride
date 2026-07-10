@@ -41,6 +41,8 @@ class ChooseAction extends GameState {
             $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
         }
 
+        $usingCharacter4 = $legendaryCharacter === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0;
+
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
         // we don't limit claimable routes to the number of remaining train cars, because the players don't understand why they can't claim the route
         // so instead they'll get an error when they try to claim the route, saying they don't have enough train cars left
@@ -48,6 +50,7 @@ class ChooseAction extends GameState {
         $realRemainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
 
         $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray);
+        $possibleRoutes = $this->game->legendaryCharacterManager->filterCharacter4Routes($activePlayerId, $possibleRoutes);
         $maxHiddenCardsPick = min(2, $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true));
         $maxDestinationsPick = min($this->game->getMap()->getAdditionalDestinationCardNumber($this->game->getExpansionOption()), $this->game->destinationManager->getRemainingDestinationCardsInDeck());
 
@@ -92,6 +95,16 @@ class ChooseAction extends GameState {
 
         $canPass = !$canClaimARoute && !$canBuildStation && $maxDestinationsPick == 0 && $canTakeTrainCarCards == 0;
 
+        if ($usingCharacter4) {
+            $maxDestinationsPick = 0;
+            $maxHiddenCardsPick = 0;
+            $canTakeTrainCarCards = false;
+            $canBuildStation = false;
+            $possibleStations = [];
+            $costForStation = [];
+            $canPass = true;
+        }
+
         $args = [
             'possibleRoutes' => $possibleRoutes,
             'possibleStations' => $possibleStations,
@@ -127,6 +140,7 @@ class ChooseAction extends GameState {
 
     #[PossibleAction]
     public function actDrawDeckCards(int $number, int $activePlayerId) { 
+        $this->assertCharacter4DoesNotDraw($activePlayerId);
         $drawNumber = $this->game->trainCarManager->drawTrainCarCardsFromDeck($activePlayerId, $number);
 
         $this->game->incStat($drawNumber, 'collectedTrainCarCards');
@@ -139,6 +153,7 @@ class ChooseAction extends GameState {
     
     #[PossibleAction]
     public function actDrawTableCard(int $id, int $activePlayerId) { 
+        $this->assertCharacter4DoesNotDraw($activePlayerId);
         $card = $this->game->trainCarManager->drawTrainCarCardsFromTable($activePlayerId, $id);
 
         $this->game->incStat(1, 'collectedTrainCarCards');
@@ -155,6 +170,7 @@ class ChooseAction extends GameState {
     
     #[PossibleAction]
     public function actDrawDestinations(int $activePlayerId) {
+        $this->assertCharacter4DoesNotDraw($activePlayerId);
         $remainingDestinationsCardsInDeck = $this->game->destinationManager->getRemainingDestinationCardsInDeck();
         if ($remainingDestinationsCardsInDeck == 0) {
             throw new UserException(clienttranslate("You can't take new Destination cards because the deck is empty"));
@@ -214,6 +230,7 @@ class ChooseAction extends GameState {
         }
 
         $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray);
+        $possibleRoutes = $this->game->legendaryCharacterManager->filterCharacter4Routes($activePlayerId, $possibleRoutes);
         if (!Arrays::some($possibleRoutes, fn($possibleRoute) => $possibleRoute->id == $routeId)) {
             throw new UserException("You can't claim this route");
         }
@@ -255,6 +272,14 @@ class ChooseAction extends GameState {
 
         $this->game->applyClaimRoute($activePlayerId, $routeId, $color, 0, distributionCards: $distributionCards, shifted: $opponentRoutesInsteadOfFreeOnes);
 
+        if ($legendaryCharacter === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0) {
+            if ($this->game->legendaryCharacterManager->character4CanClaimAnotherRoute($activePlayerId)) {
+                return self::class;
+            }
+
+            $this->game->legendaryCharacterManager->onCharacter4Pass($activePlayerId);
+        }
+
         return NextPlayer::class;
     }
   	
@@ -291,10 +316,12 @@ class ChooseAction extends GameState {
     }
     
     #[PossibleAction]
-    public function actPass(array $args) {
+    public function actPass(int $activePlayerId, array $args) {
         if (!$args['canPass']) {
             throw new UserException("You cannot pass");
         }
+
+        $this->game->legendaryCharacterManager->onCharacter4Pass($activePlayerId);
 
         return NextPlayer::class;
     }
@@ -331,10 +358,16 @@ class ChooseAction extends GameState {
         return self::class;
     }
 
+    private function assertCharacter4DoesNotDraw(int $playerId): void {
+        if (count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($playerId)) > 0) {
+            throw new UserException("You must claim another route or pass");
+        }
+    }
+
     function zombie(int $playerId, array $args) {
         try {
             if ($args['canPass']) {
-                return $this->actPass($args);
+                return $this->actPass($playerId, $args);
             }
 
             $helpfulRouteAction = $this->tryClaimHelpfulRouteForDestination($playerId);
