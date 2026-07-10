@@ -224,7 +224,6 @@ class ChooseAction extends GameState {
             if ($alreadyClaimedPlayerId === $activePlayerId) {
                 throw new UserException("Route is already claimed by you.");
             }
-            $this->game->legendaryCharacterManager->setPlayerCharacterState($activePlayerId, 'used:'.$routeId);
         } else {
             if ($alreadyClaimedPlayerId > 0) {
                 throw new UserException("Route is already claimed.");

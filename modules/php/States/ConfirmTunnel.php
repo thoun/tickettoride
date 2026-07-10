@@ -31,13 +31,16 @@ class ConfirmTunnel extends GameState {
         $route = $this->game->mapManager->getAllRoutes()[$tunnelAttempt->routeId];
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);        
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
+        $legendaryCharacter = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId);
+        $legendaryCharacterState = $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId);
+        $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
         $pairSetAsLocomotive = $this->game->legendaryCharacterManager->getCharacter3UsingColor($activePlayerId);
-        $tunnelCost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, $tunnelAttempt->extraCards, pairSetAsLocomotive: $pairSetAsLocomotive);
+        $tunnelCost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, $tunnelAttempt->extraCards, pairSetAsLocomotive: $pairSetAsLocomotive, considerAllRoutesGray: $considerAllRoutesGray);
         $canPay = $tunnelCost != null;
 
         $extraCards = null;
         if ($canPay) {
-            $routeCost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, pairSetAsLocomotive: $pairSetAsLocomotive);
+            $routeCost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, pairSetAsLocomotive: $pairSetAsLocomotive, considerAllRoutesGray: $considerAllRoutesGray);
             $extraCards = array_values(array_filter($tunnelCost, fn($tunnelCard) => !Arrays::some($routeCost, fn($routeCard) => $routeCard->id == $tunnelCard->id)));
         }
 
@@ -68,7 +71,9 @@ class ConfirmTunnel extends GameState {
 
         $distributionCards = $distribution ? Arrays::filter($this->game->trainCarManager->getPlayerHand($activePlayerId), fn($card) => in_array($card->id, $distribution)) : null;
 
-        $this->game->applyClaimRoute($activePlayerId, $tunnelAttempt->routeId, $tunnelAttempt->color, $tunnelAttempt->extraCards, distributionCards: $distributionCards);
+        $shifted = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 1
+            && $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId) === 'using';
+        $this->game->applyClaimRoute($activePlayerId, $tunnelAttempt->routeId, $tunnelAttempt->color, $tunnelAttempt->extraCards, distributionCards: $distributionCards, shifted: $shifted);
 
         if ($this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0) {
             if ($this->game->legendaryCharacterManager->character4CanClaimAnotherRoute($activePlayerId)) {
@@ -84,6 +89,11 @@ class ConfirmTunnel extends GameState {
     #[PossibleAction]
     public function actSkipTunnel(int $activePlayerId) {
         $this->game->endTunnelAttempt(true);
+
+        if ($this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 1
+            && $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId) === 'using') {
+            $this->game->legendaryCharacterManager->setPlayerCharacterState($activePlayerId, null);
+        }
 
         $this->notify->all('log', clienttranslate('${player_name} skip tunnel claim'), [
             'playerId' => $activePlayerId,
