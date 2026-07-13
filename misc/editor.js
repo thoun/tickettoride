@@ -1,5 +1,4 @@
 const COLORS = ['GRAY', 'PINK', 'WHITE', 'BLUE', 'YELLOW', 'ORANGE', 'BLACK', 'RED', 'GREEN'];
-const VERTICAL_MAPS = ['india', 'nordiccountries'];
 
 let MAP = localStorage.getItem('BGA_TTR_EDITOR_MAP') ?? 'usa';
 let selectedCity = null;
@@ -23,9 +22,22 @@ async function load() {
     MAP = (document.getElementById('map-code')).value;
     localStorage.setItem('BGA_TTR_EDITOR_MAP', MAP);
     const mapDiv = document.getElementById('map');
-    mapDiv.style.backgroundImage = `url('../img/${MAP}/map.jpg')`;
-    if (VERTICAL_MAPS.includes(MAP)) {
-        mapDiv.classList.add('vertical');
+    //mapDiv.style.backgroundImage = `url('../img/${MAP}/map.webp'), url('../img/${MAP}/map.jpg')`;
+    const mapUrl = `../img/${MAP}/map.webp`;
+    mapDiv.style.backgroundImage = `url('${mapUrl}')`;
+
+    // Use the actual map dimensions instead of maintaining a map-name list.
+    // This also keeps the editor working for newly added maps and non-standard
+    // image sizes.
+    const mapImage = new Image();
+    await new Promise(resolve => {
+        mapImage.onload = resolve;
+        mapImage.onerror = resolve;
+        mapImage.src = mapUrl;
+    });
+    if (mapImage.naturalWidth > 0 && mapImage.naturalHeight > 0) {
+        mapDiv.style.width = `${mapImage.naturalWidth}px`;
+        mapDiv.style.height = `${mapImage.naturalHeight}px`;
     }
     const root = await (window).showDirectoryPicker();
     const modulesHandle = await root.getDirectoryHandle('modules');
@@ -83,6 +95,16 @@ async function load() {
     selectedRouteLocomotivesInput.addEventListener('change', () => {
         if (selectedSpace) {
             getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.locomotives = selectedRouteLocomotivesInput.value);
+            updateRouteClasses(Number(selectedSpace.dataset.routeId));
+            this.updateRoutesExport();
+        }
+    });
+
+    const selectedRouteMountainInput = document.getElementById('route-mountain');
+    selectedRouteMountainInput.addEventListener('change', () => {
+        if (selectedSpace) {
+            getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.mountain = selectedRouteMountainInput.value);
+            updateRouteClasses(Number(selectedSpace.dataset.routeId));
             this.updateRoutesExport();
         }
     });
@@ -94,16 +116,25 @@ async function load() {
 }
 
 function parseCities(text) {
-    const matches = text.match(/(-?\d+).*'(.*)'.*(\d+).*(\d+)/g);
-    matches?.forEach(lineMatch => {
-        const match = lineMatch.match(/(-?\d+).*'(.*)'.*?(\d+).*?(\d+)/);
-        if (match) {
-            const id = Number(match[1]);
-            const city = match[2];
-            const x = Number(match[3]);
-            const y = Number(match[4]);
-            addCity(id, city, x, y);
+    extractConstructorCalls(text, 'City').forEach(({prefix, argumentsText}) => {
+        const idMatch = prefix.match(/(-?\d+)\s*=>\s*$/);
+        if (!idMatch) {
+            return;
         }
+
+        const argumentsList = splitTopLevelArguments(argumentsText);
+        if (argumentsList.length < 3) {
+            return;
+        }
+
+        const city = parsePhpString(argumentsList[0]);
+        const x = Number(argumentsList[1]);
+        const y = Number(argumentsList[2]);
+        if (city === null || !Number.isFinite(x) || !Number.isFinite(y)) {
+            return;
+        }
+
+        addCity(Number(idMatch[1]), city, x, y, argumentsList.slice(3));
     });
 }
 
@@ -124,42 +155,187 @@ function parseCities(text) {
         }
     });
 }*/
+function splitTopLevelArguments(text) {
+    const result = [];
+    let currentArgument = '';
+    let depth = 0;
+    let quote = null;
+    let escaped = false;
+
+    for (const character of text) {
+        if (quote !== null) {
+            currentArgument += character;
+            if (escaped) {
+                escaped = false;
+            } else if (character === '\\') {
+                escaped = true;
+            } else if (character === quote) {
+                quote = null;
+            }
+        } else if (character === '"' || character === "'") {
+            quote = character;
+            currentArgument += character;
+        } else if (['[', '(', '{'].includes(character)) {
+            depth++;
+            currentArgument += character;
+        } else if (character === ']' || character === ')' || character === '}') {
+            depth--;
+            currentArgument += character;
+        } else if (character === ',' && depth === 0) {
+            if (currentArgument.trim()) {
+                result.push(currentArgument.trim());
+            }
+            currentArgument = '';
+        } else {
+            currentArgument += character;
+        }
+    }
+
+    if (currentArgument.trim()) {
+        result.push(currentArgument.trim());
+    }
+
+    return result;
+}
+
+function extractConstructorCalls(text, constructorName) {
+    const calls = [];
+    const constructorPattern = new RegExp(`new\\s+${constructorName}\\s*\\(`, 'g');
+    let match;
+
+    while ((match = constructorPattern.exec(text)) !== null) {
+        const openingParenthesis = text.indexOf('(', match.index);
+        let depth = 1;
+        let quote = null;
+        let escaped = false;
+        let closingParenthesis = openingParenthesis + 1;
+
+        for (; closingParenthesis < text.length && depth > 0; closingParenthesis++) {
+            const character = text[closingParenthesis];
+            if (quote !== null) {
+                if (escaped) {
+                    escaped = false;
+                } else if (character === '\\') {
+                    escaped = true;
+                } else if (character === quote) {
+                    quote = null;
+                }
+            } else if (character === '"' || character === "'") {
+                quote = character;
+            } else if (character === '(') {
+                depth++;
+            } else if (character === ')') {
+                depth--;
+            }
+        }
+
+        if (depth !== 0) {
+            continue;
+        }
+
+        const prefix = text.slice(Math.max(0, text.lastIndexOf('\n', match.index) + 1), match.index);
+        calls.push({prefix, argumentsText: text.slice(openingParenthesis + 1, closingParenthesis - 1)});
+        constructorPattern.lastIndex = closingParenthesis;
+    }
+
+    return calls;
+}
+
+function parsePhpString(value) {
+    const trimmedValue = value.trim();
+    if (trimmedValue.length < 2) {
+        return null;
+    }
+
+    const quote = trimmedValue[0];
+    if ((quote !== "'" && quote !== '"') || trimmedValue[trimmedValue.length - 1] !== quote) {
+        return null;
+    }
+
+    return trimmedValue.slice(1, -1).replace(new RegExp(`\\\\${quote}`, 'g'), quote).replace(/\\\\/g, '\\');
+}
+
+function parseRouteArguments(text) {
+    const routeArgumentNames = ['tunnel', 'locomotives', 'canPayWithAnySetOfCards', 'mountain', 'stockShares'];
+    const result = {
+        tunnel: false,
+        locomotives: 0,
+        mountain: 0,
+        additionalArguments: [],
+    };
+    let positionalArgumentIndex = 0;
+    const normalizedText = text.trim().replace(/^,\s*/, '');
+
+    splitTopLevelArguments(normalizedText).forEach(argument => {
+        const namedArgumentMatch = argument.match(/^([a-zA-Z_]\w*)\s*:\s*([\s\S]*)$/);
+        const name = namedArgumentMatch?.[1] ?? routeArgumentNames[positionalArgumentIndex++];
+        const value = namedArgumentMatch?.[2] ?? argument;
+
+        switch (name) {
+            case 'tunnel':
+                result.tunnel = value.trim() === 'true';
+                break;
+            case 'locomotives':
+                result.locomotives = Number(value);
+                break;
+            case 'mountain':
+                result.mountain = Number(value);
+                break;
+            default:
+                // Keep parameters the editor does not know about, such as
+                // stockShares, so exporting a route does not discard them.
+                result.additionalArguments.push(namedArgumentMatch ? argument : `${name}: ${value}`);
+        }
+    });
+
+    return result;
+}
+
 function parseRoutes(text) {
     const lines = text.split('\n');
-
 
     let id = null;
     let from = null;
     let to = null;
     let color = null;
     let routes = null;
-    let tunnel = null;
-    let locomotives = null;
 
-    lines.forEach((line, index) => {
-        const routeStartMatch = line.match(/(\d+).*?(-?\d+).*?(-?\d+).*?(\w+).*\[/);
+    lines.forEach(line => {
+        const routeStartMatch = line.match(/^\s*(-?\d+)\s*=>\s*new Route\(\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(\w+)\s*,\s*\[\s*$/);
         if (routeStartMatch) {
             id = Number(routeStartMatch[1]);
             from = Number(routeStartMatch[2]);
             to = Number(routeStartMatch[3]);
             color = routeStartMatch[4];
             routes = [];
-            tunnel = null;
-            locomotives = null;
-        } else {
+            return;
+        }
 
-            const routeSpaceMatch = line.match(/(\d+).*?(\d+).*?(-?\d+)/);
-            if (routeSpaceMatch) {
-                routes.push(routeSpaceMatch.slice(1,4).map(Number));
-            } else if (id !== null) {
-                const routeEndMatch = line.match(/\].*(true)?.*(\d+)?/);
-                if (routeEndMatch) {
-                    tunnel = routeEndMatch[1] === 'true';
-                    locomotives = routeEndMatch[2] ? Number(routeEndMatch[2]) : 0;
-                    addRoute(id, from, to, color, routes, tunnel, locomotives);
-                    id = null; // end of current route
-                }
-            }
+        if (id === null) {
+            return;
+        }
+
+        const routeSpaceMatch = line.match(/^\s*new RouteSpace\(\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)/);
+        if (routeSpaceMatch) {
+            routes.push(routeSpaceMatch.slice(1, 4).map(Number));
+            return;
+        }
+
+        const routeEndMatch = line.match(/^\s*\](.*)\),?\s*(?:\/\/.*)?$/);
+        if (routeEndMatch) {
+            const routeArguments = parseRouteArguments(routeEndMatch[1]);
+            addRoute(
+                id,
+                from,
+                to,
+                color,
+                routes,
+                routeArguments.tunnel,
+                routeArguments.locomotives,
+                routeArguments.mountain,
+                routeArguments.additionalArguments,
+            );
+            id = null;
         }
     });
 }
@@ -170,11 +346,12 @@ function addOptionToSelect(id, name, selectId) {
     `);
 }
 
-function addCity(id, name, x, y) {
+function addCity(id, name, x, y, additionalArguments = []) {
     document.getElementById('cities').insertAdjacentHTML('beforeend', 
         `<div id="city-${id}" class="city" data-id="${id}" data-name="${name}" data-x="${x}" data-y="${y}" style="--x: ${x}px; --y: ${y}px;">${name}</div>`
     )
     const elem = document.getElementById(`city-${id}`);
+    elem.dataset.additionalArguments = JSON.stringify(additionalArguments);
     elem.addEventListener('click', e => {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -187,12 +364,13 @@ function addCity(id, name, x, y) {
     addOptionToSelect(id, name, 'new-route-to');
 }
 
-function addRoute(id, from, to, color, spaces, tunnel, locomotives) {
+function addRoute(id, from, to, color, spaces, tunnel, locomotives, mountain, additionalArguments = []) {
     spaces.forEach((space, index) => {
         document.getElementById('route-spaces').insertAdjacentHTML('beforeend', 
-            `<div id="route-spaces-route${id}-space${index}" class="route-space ${tunnel ? 'tunnel' : ''} ${index < locomotives ? 'locomotive'  :''}" data-x="${space[0]}" data-y="${space[1]}" data-a="${space[2]}" style="--x: ${space[0]}px; --y: ${space[1]}px; --a: ${space[2]}deg;" data-tunnel="${tunnel ? 'true' : 'false'}" data-locomotives="${locomotives}" data-route-id="${id}" data-space-index="${index}" data-from="${from}" data-to="${to}" data-color="${color}">${color}</div>`
+            `<div id="route-spaces-route${id}-space${index}" class="route-space ${tunnel ? 'tunnel' : ''} ${index < locomotives ? 'locomotive' : ''} ${index < mountain ? 'mountain' : ''}" data-x="${space[0]}" data-y="${space[1]}" data-a="${space[2]}" style="--x: ${space[0]}px; --y: ${space[1]}px; --a: ${space[2]}deg;" data-tunnel="${tunnel ? 'true' : 'false'}" data-locomotives="${locomotives}" data-mountain="${mountain}" data-route-id="${id}" data-space-index="${index}" data-from="${from}" data-to="${to}" data-color="${color}">${color}</div>`
         );
         const elem = document.getElementById(`route-spaces-route${id}-space${index}`);
+        elem.dataset.additionalArguments = JSON.stringify(additionalArguments);
         elem.addEventListener('click', e => {
             e.preventDefault();
             e.stopImmediatePropagation();
@@ -215,6 +393,7 @@ function unselectSpace() {
     document.getElementById('route-color').value = '';
     document.getElementById('route-tunnel').checked = false;
     document.getElementById('route-locomotives').value = '';
+    document.getElementById('route-mountain').value = '';
     document.querySelectorAll('.selected-other-route').forEach(elem => elem.classList.remove('selected-other-route'));
 }
 
@@ -243,6 +422,7 @@ function spaceClick(elem) {
         document.getElementById('route-color').value = elem.dataset.color;
         document.getElementById('route-tunnel').checked = elem.dataset.tunnel === 'true';
         document.getElementById('route-locomotives').value = elem.dataset.locomotives;
+        document.getElementById('route-mountain').value = elem.dataset.mountain;
 
         getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).filter(oe => oe != elem).forEach(oe => oe.classList.add('selected-other-route'));
         document.getElementById(`city-${elem.dataset.from}`).classList.add('selected');
@@ -328,13 +508,20 @@ function rotateSelectedSpace(key, multiplier) {
 
 function updateCitiesExport() {
     let php = Array.from(document.querySelectorAll('.city')).map(elem => 
-        `    ${elem.dataset.id} => new City('${elem.dataset.name}', ${elem.dataset.x}, ${elem.dataset.y}),`
+        `    ${elem.dataset.id} => new City('${elem.dataset.name}', ${elem.dataset.x}, ${elem.dataset.y}${JSON.parse(elem.dataset.additionalArguments ?? '[]').map(argument => `, ${argument}`).join('')}),`
     ).join('\n');
     document.getElementById('cities-export').value = php;
 }
 
 function getSpacesOfRoute(routeId) {
     return Array.from(document.querySelectorAll(`[id^="route-spaces-route${routeId}-space"]`));
+}
+
+function updateRouteClasses(routeId) {
+    getSpacesOfRoute(routeId).forEach((space, index) => {
+        space.classList.toggle('locomotive', index < Number(space.dataset.locomotives));
+        space.classList.toggle('mountain', index < Number(space.dataset.mountain));
+    });
 }
 
 function updateRoutesExport() {
@@ -346,9 +533,22 @@ function updateRoutesExport() {
             const from = Math.min(Number(firstSpace.dataset.from), Number(firstSpace.dataset.to));
             const to = Math.max(Number(firstSpace.dataset.from), Number(firstSpace.dataset.to));
             const locomotives = Number(firstSpace.dataset.locomotives);
+            const mountain = Number(firstSpace.dataset.mountain);
+            const additionalArguments = JSON.parse(firstSpace.dataset.additionalArguments ?? '[]');
+            const routeArguments = [];
+            if (firstSpace.dataset.tunnel === 'true') {
+                routeArguments.push('tunnel: true');
+            }
+            if (locomotives > 0) {
+                routeArguments.push(`locomotives: ${locomotives}`);
+            }
+            if (mountain > 0) {
+                routeArguments.push(`mountain: ${mountain}`);
+            }
+            routeArguments.push(...additionalArguments);
             php += `    ${id} => new Route(${from}, ${to}, ${firstSpace.dataset.color}, [\n`;
             spaces.forEach(space => php += `      new RouteSpace(${space.dataset.x}, ${space.dataset.y}, ${space.dataset.a}),\n`),
-            php += `    ]${firstSpace.dataset.tunnel === 'true' ? `, tunnel: ${firstSpace.dataset.tunnel}` : ''}${locomotives > 0 ? `, locomotives: ${locomotives}` : '' }),\n`;
+            php += `    ]${routeArguments.map(argument => `, ${argument}`).join('')}),\n`;
         }
     }
     document.getElementById('routes-export').value = php;
@@ -394,6 +594,8 @@ function createNewRoute() {
 
     const selectedRouteLocomotivesInput = document.getElementById('new-route-locomotives');
 
+    const selectedRouteMountainInput = document.getElementById('new-route-mountain');
+
     const angle = Math.floor(Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI);
     const routeCenterX = (toX + fromX) / 2;
     const routeCenterY = (toY + fromY) / 2;
@@ -407,6 +609,6 @@ function createNewRoute() {
         routes.push([x, y, angle]);
     }
 
-    addRoute(id, selectedRouteFromInput.value, selectedRouteToInput.value, selectedRouteColorInput.value, routes, selectedRouteTunnelInput.checked, selectedRouteLocomotivesInput.value);    
+    addRoute(id, selectedRouteFromInput.value, selectedRouteToInput.value, selectedRouteColorInput.value, routes, selectedRouteTunnelInput.checked, selectedRouteLocomotivesInput.value, selectedRouteMountainInput.value);
     this.updateRoutesExport();
 }

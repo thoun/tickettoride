@@ -9,6 +9,7 @@ class City {
         public string $name,
         public int $x,
         public int $y,
+        public ?int $country = null,
     ) {
     }
 }

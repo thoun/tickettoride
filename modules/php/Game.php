@@ -36,6 +36,19 @@ const MAP_LIST = [
     3 => 'switzerland',
     4 => 'india',
     5 => 'nordiccountries',
+    6 => 'teamasia',
+    7 => 'legendaryasia',
+    8 => 'africa',
+    9 => 'netherlands',
+    10 => 'uk',
+    11 => 'pensylvania',
+    12 => 'france',
+    13 => 'oldwest',
+    14 => 'poland',
+    15 => 'italy',
+    16 => 'japan',
+    17 => 'iberia',
+    18 => 'southkorea',
 ];
 
 /*

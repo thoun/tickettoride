@@ -22,6 +22,8 @@ class Route {
         public bool $tunnel = false,
         public int $locomotives = 0,
         public ?int $canPayWithAnySetOfCards = null,
+        public int $mountain = 0,
+        public array $stockShares = [],
     ) {
         $this->number = count($spaces);
     }
