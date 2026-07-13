@@ -26,10 +26,11 @@
 
     background-size: auto 100%;
     background-image: url('img/legendary-characters/legendary-characters.webp');
+    background-position-x: 0%;
 
     @for $character from 1 through 5 {
         &[data-character="#{$character}"] {
-            background-position-x: #{($character - 1) * 100% / 4};  
+            background-position-x: #{$character * 100% / 5};  
         }
     }
 

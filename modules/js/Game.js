@@ -3314,7 +3314,7 @@ class Game {
                 this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `<div class="player-turn-order">${_('Player ${number}').replace('${number}', `<strong>${player.playerNo}</strong>`)}</div>`);
             }
             if (player.legendaryCharacter) {
-                this.setCharacter(playerId, player.legendaryCharacter);
+                this.setCharacter(playerId, player.legendaryCharacter, player.legendaryCharacterState);
             }
         });
         this.setTooltipToClass('train-car-counter', _("Remaining train cars"));
@@ -3519,6 +3519,7 @@ class Game {
             ['lastTurn', 1],
             ['bestScore', 1],
             ['chooseCharacter', 1],
+            ['useCharacter', 1],
             ['discardDestination', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
@@ -3742,13 +3743,22 @@ class Game {
         const { playerId, character } = notif.args;
         this.setCharacter(playerId, character);
     }
-    setCharacter(playerId, character) {
+    notif_useCharacter(notif) {
+        const { playerId } = notif.args;
+        const elem = document.getElementById(`legendary-character-card-wrapper-${playerId}`)?.querySelector('[data-character]');
+        if (elem) {
+            elem.dataset.character = '0';
+        }
+    }
+    setCharacter(playerId, character, legendaryCharacterState) {
         const pp = this.bga.playerPanels.getElement(playerId);
         if (!pp.querySelector('.legendary-character-card')) {
             const id = `legendary-character-card-${character}-pp-thumbnail`;
+            const used = legendaryCharacterState?.startsWith('used');
             pp.querySelector('.counters').insertAdjacentHTML('beforeend', `
-                <div class="legendary-character-card-wrapper">${this.legendaryCharacterManager.getCardHTML(character, { id, text: false })}</div>
+                <div id="legendary-character-card-wrapper-${playerId}" class="legendary-character-card-wrapper">${this.legendaryCharacterManager.getCardHTML((character !== 3 && used ? 0 : character), { id, text: false })}</div>
             `);
+            this.setTooltip(`legendary-character-card-wrapper-${playerId}`, this.legendaryCharacterManager.getTooltipHTML(character));
             document.getElementById(id).addEventListener('click', () => this.showCharacterPopin(character));
         }
     }

@@ -73,6 +73,14 @@ class LegendaryCharacterManager {
     public function setPlayerCharacterState(int $playerId, mixed $state): void {
         $stateJson = $state !== null ? Json::encode($state) : null;
         $this->game->DbQuery("UPDATE `player` SET `player_legendary_character_state` = ".($stateJson === null ? 'NULL' : "'".$this->game->escapeStringForDB($stateJson)."'")." WHERE `player_id` = $playerId");
+
+        $character = $this->getPlayerCharacter($playerId);
+
+        if ($character !== 3 && is_string($state) && str_starts_with($state, 'used')) {
+            $this->game->notify->all('useCharacter', '', [
+                'playerId' => $playerId,
+            ]);
+        }
     }
 
     public function getCharacter3UsingColor(int $playerId): ?int {
