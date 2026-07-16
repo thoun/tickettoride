@@ -639,6 +639,7 @@ class EndScore {
         // if we are at reload of end state, we display values, else we wait for notifications
         if (fromReload) {
             const longestPath = Math.max(...players.map(player => player.longestPathLength));
+            const mostConnectedCities = Math.max(...players.map(player => player.mostConnectedCities));
             this.setBestScore(bestScore);
             const maxCompletedDestinations = players.map(player => player.completedDestinations.length).reduce((a, b) => (a > b) ? a : b, 0);
             players.forEach(player => {
@@ -650,6 +651,9 @@ class EndScore {
                 }
                 if (this.game.isGlobetrotterBonusActive() && player.completedDestinations.length == maxCompletedDestinations) {
                     this.setGlobetrotterWinner(player.id, maxCompletedDestinations);
+                }
+                if (this.game.getMap().pointsForMostConnectedCities !== null && player.mostConnectedCities == mostConnectedCities) {
+                    this.setMostConnectedCitiesWinner(player.id, mostConnectedCities);
                 }
                 this.updateDestinationsTooltip(player);
             });
@@ -784,6 +788,14 @@ class EndScore {
         <div><strong>${_('Longest path')} : ${length}</strong></div>
         <div>${_('The player who has the Longest Continuous Path of routes receives this special bonus card and adds 10 points to his score.')}</div>
         <div class="longest-path bonus-card"></div>
+        `);
+    }
+    setMostConnectedCitiesWinner(playerId, length) {
+        document.getElementById(`bonus-card-icons-${playerId}`).insertAdjacentHTML('beforeend', `<div id="most-connected-cities-bonus-card-${playerId}" class="most-connected-cities bonus-card bonus-card-icon"></div>`);
+        this.game.setTooltip(`most-connected-cities-bonus-card-${playerId}`, `
+        <div><strong>${_('Asian Explorer')} : ${length}</strong></div>
+        <div>${_('The player who connected the most cities in one continuous network receives this special bonus card and adds ${points} points to his score.').replace('${points}', `${this.game.getMap().pointsForMostConnectedCities ?? 10}`)}</div>
+        <div class="most-connected-cities bonus-card"></div>
         `);
     }
 }
@@ -3724,6 +3736,9 @@ class Game {
      */
     notif_longestPathWinner(notif) {
         this.endScore?.setLongestPathWinner(notif.args.playerId, notif.args.length);
+    }
+    notif_mostConnectedCitiesWinner(notif) {
+        this.endScore?.setMostConnectedCitiesWinner(notif.args.playerId, notif.args.length);
     }
     /**
      * Animate remaining stations for end score.

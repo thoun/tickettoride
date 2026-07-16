@@ -104,6 +104,54 @@ class MapManager {
     }
 
     /**
+     * Get the number of distinct cities in the player's largest connected network.
+     * A city is counted once, even when the network contains branches or loops.
+     */
+    public function getMostConnectedCities(int $playerId): int {
+        $claimedRoutes = $this->game->getClaimedRoutes($playerId);
+        if (empty($claimedRoutes)) {
+            return 0;
+        }
+
+        $routesByCity = [];
+        foreach ($claimedRoutes as $claimedRoute) {
+            $route = $this->getAllRoutes()[$claimedRoute->routeId];
+            $routesByCity[$route->from][] = $route;
+            $routesByCity[$route->to][] = $route;
+        }
+
+        $visitedCities = [];
+        $largestNetwork = 0;
+        foreach (array_keys($routesByCity) as $startingCity) {
+            if (array_key_exists($startingCity, $visitedCities)) {
+                continue;
+            }
+
+            $networkSize = 0;
+            $citiesToVisit = [$startingCity];
+            while (!empty($citiesToVisit)) {
+                $city = array_pop($citiesToVisit);
+                if (array_key_exists($city, $visitedCities)) {
+                    continue;
+                }
+
+                $visitedCities[$city] = true;
+                $networkSize++;
+                foreach ($routesByCity[$city] as $route) {
+                    $otherCity = $route->from == $city ? $route->to : $route->from;
+                    if (!array_key_exists($otherCity, $visitedCities)) {
+                        $citiesToVisit[] = $otherCity;
+                    }
+                }
+            }
+
+            $largestNetwork = max($largestNetwork, $networkSize);
+        }
+
+        return $largestNetwork;
+    }
+
+    /**
      * Indicates if destination is completed (continuous path linking both cities).
      */
     public function getDestinationRoutes(int $playerId, object $destination) {

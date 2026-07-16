@@ -63,6 +63,7 @@ class EndScore extends GameState {
         $expansionOption = $this->game->getExpansionOption();
         $isGlobetrotterBonusActive = $this->game->getMap()->isGlobetrotterBonusActive($expansionOption);
         $isLongestPathBonusActive = $this->game->getMap()->isLongestPathBonusActive($expansionOption);
+        $isMostConnectedCitiesBonusActive = $this->game->getMap()->pointsForMostConnectedCities !== null;
         $mandalaPoints = $this->game->getMap()->mandalaPoints;
 
         $sql = "SELECT player_id id, player_score score FROM player ORDER BY player_no ASC";
@@ -167,6 +168,25 @@ class EndScore extends GameState {
             
             foreach ($longestPathWinners as $playerId) {
                 $totalScore[$playerId] += $this->game->getMap()->pointsForLongestPath;
+            }
+        }
+
+        // Asian Explorer: largest continuous network of distinct cities
+        $playersMostConnectedCities = [];
+        $mostConnectedCitiesWinners = [];
+        $bestMostConnectedCities = null;
+        if ($isMostConnectedCitiesBonusActive) {
+            foreach ($players as $playerId => $playerDb) {
+                $playersMostConnectedCities[$playerId] = $this->game->mapManager->getMostConnectedCities($playerId);
+            }
+            $mostConnectedCitiesBySize = [];
+            foreach ($playersMostConnectedCities as $playerId => $size) {
+                $mostConnectedCitiesBySize[$size][] = $playerId;
+            }
+            $bestMostConnectedCities = max(array_keys($mostConnectedCitiesBySize));
+            $mostConnectedCitiesWinners = $mostConnectedCitiesBySize[$bestMostConnectedCities];
+            foreach ($mostConnectedCitiesWinners as $playerId) {
+                $totalScore[$playerId] += $this->game->getMap()->pointsForMostConnectedCities;
             }
         }
 
@@ -327,6 +347,30 @@ class EndScore extends GameState {
                 ]);
 
                 $this->game->setStat(1, 'longestPathBonus', $playerId);
+            }
+        }
+
+        // Asian Explorer
+        if ($isMostConnectedCitiesBonusActive) {
+            foreach ($players as $playerId => $playerDb) {
+                $this->notify->all('mostConnectedCities', /* TODOMAPS clienttranslate*/('${player_name} connected ${cities} cities in their largest network'), [
+                    'playerId' => $playerId,
+                    'player_name' => $this->game->getPlayerNameById($playerId),
+                    'length' => $playersMostConnectedCities[$playerId],
+                    'cities' => $playersMostConnectedCities[$playerId],
+                ]);
+            }
+
+            foreach ($mostConnectedCitiesWinners as $playerId) {
+                $points = $this->game->getMap()->pointsForMostConnectedCities;
+                $this->game->incScore($playerId, $points, /* TODOMAPS clienttranslate*/('${player_name} gains ${delta} points with Asian Explorer : ${cities} connected cities'), [
+                    'points' => $points,
+                    'cities' => $bestMostConnectedCities,
+                ]);
+                $this->notify->all('mostConnectedCitiesWinner', '', [
+                    'playerId' => $playerId,
+                    'length' => $bestMostConnectedCities,
+                ]);
             }
         }
 

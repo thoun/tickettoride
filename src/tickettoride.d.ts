@@ -69,6 +69,7 @@ export interface TicketToRidePlayer extends Player {
     completedDestinations?: Destination[];
     uncompletedDestinations?: Destination[];
     longestPathLength: number;
+    mostConnectedCities: number;
 }
 
 export interface City {
@@ -101,6 +102,7 @@ export interface TicketToRideMap {
     vertical: boolean;
     stations: number | null;
     pointsForGlobetrotter: number | null;
+    pointsForMostConnectedCities: number | null;
 }
 
 /**

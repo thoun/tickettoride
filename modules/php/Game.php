@@ -227,6 +227,7 @@ class Game extends Table {
                 'vertical' => $this->getMap()->vertical,
                 'stations' => $this->getMap()->stations,
                 'pointsForGlobetrotter' => $this->getMap()->pointsForGlobetrotter,
+                'pointsForMostConnectedCities' => $this->getMap()->pointsForMostConnectedCities,
             ],
         ];
     
@@ -270,6 +271,9 @@ class Game extends Table {
                 $player['completedDestinations'] = $this->destinationManager->getCompletedDestinations($playerId);
                 $player['uncompletedDestinations'] = $this->destinationManager->getUncompletedDestinations($playerId);
                 $player['longestPathLength'] = $this->mapManager->getLongestPath($playerId)->length;
+                if ($this->getMap()->pointsForMostConnectedCities !== null) {
+                    $player['mostConnectedCities'] = $this->mapManager->getMostConnectedCities($playerId);
+                }
             } else {
                 $player['completedDestinations'] = [];
                 $player['uncompletedDestinations'] = [];

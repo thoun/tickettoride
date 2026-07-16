@@ -852,6 +852,10 @@ export class Game implements TicketToRideGame {
         this.endScore?.setLongestPathWinner(notif.args.playerId, notif.args.length);
     }
 
+    notif_mostConnectedCitiesWinner(notif: Notif<NotifBadgeArgs>) {
+        this.endScore?.setMostConnectedCitiesWinner(notif.args.playerId, notif.args.length);
+    }
+
     /** 
      * Animate remaining stations for end score.
      */ 

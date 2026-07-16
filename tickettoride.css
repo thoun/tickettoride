@@ -1479,6 +1479,9 @@
 .bonus-card.longest-path {
   background: url("img/bonus-card-longest-path.png");
 }
+.bonus-card.most-connected-cities {
+  background: url("img/legendaryasia/asian-explorer-bonus-card.webp");
+}
 .bonus-card.bonus-card-icon {
   transform-origin: center center;
   margin: -90px -106px;
