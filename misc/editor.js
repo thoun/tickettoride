@@ -1,4 +1,4 @@
-const COLORS = ['GRAY', 'PINK', 'WHITE', 'BLUE', 'YELLOW', 'ORANGE', 'BLACK', 'RED', 'GREEN'];
+const COLORS = ['TRACKBED', 'GRAY', 'PINK', 'WHITE', 'BLUE', 'YELLOW', 'ORANGE', 'BLACK', 'RED', 'GREEN'];
 
 let MAP = localStorage.getItem('BGA_TTR_EDITOR_MAP') ?? 'usa';
 let selectedCity = null;
@@ -347,8 +347,9 @@ function addOptionToSelect(id, name, selectId) {
 }
 
 function addCity(id, name, x, y, additionalArguments = []) {
+    const isVirtual = Number(id) < 0;
     document.getElementById('cities').insertAdjacentHTML('beforeend', 
-        `<div id="city-${id}" class="city" data-id="${id}" data-name="${name}" data-x="${x}" data-y="${y}" style="--x: ${x}px; --y: ${y}px;">${name}</div>`
+        `<div id="city-${id}" class="city ${isVirtual ? 'virtual-city' : ''}" data-id="${id}" data-name="${name}" data-x="${x}" data-y="${y}" style="--x: ${x}px; --y: ${y}px;">${name}</div>`
     )
     const elem = document.getElementById(`city-${id}`);
     elem.dataset.additionalArguments = JSON.stringify(additionalArguments);
@@ -358,10 +359,12 @@ function addCity(id, name, x, y, additionalArguments = []) {
         cityClick(elem);
     });
 
-    addOptionToSelect(id, name, 'route-from');
-    addOptionToSelect(id, name, 'new-route-from');
-    addOptionToSelect(id, name, 'route-to');
-    addOptionToSelect(id, name, 'new-route-to');
+    if (!isVirtual) {
+        addOptionToSelect(id, name, 'route-from');
+        addOptionToSelect(id, name, 'new-route-from');
+        addOptionToSelect(id, name, 'route-to');
+        addOptionToSelect(id, name, 'new-route-to');
+    }
 }
 
 function addRoute(id, from, to, color, spaces, tunnel, locomotives, mountain, additionalArguments = []) {
@@ -547,7 +550,7 @@ function updateRoutesExport() {
             }
             routeArguments.push(...additionalArguments);
             php += `    ${id} => new Route(${from}, ${to}, ${firstSpace.dataset.color}, [\n`;
-            spaces.forEach(space => php += `      new RouteSpace(${space.dataset.x}, ${space.dataset.y}, ${space.dataset.a}),\n`),
+            spaces.forEach(space => php += `        new RouteSpace(${space.dataset.x}, ${space.dataset.y}, ${space.dataset.a}),\n`),
             php += `    ]${routeArguments.map(argument => `, ${argument}`).join('')}),\n`;
         }
     }

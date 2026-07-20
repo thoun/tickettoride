@@ -321,6 +321,7 @@ function setupDestinationCards(map, stock) {
         stock.addItemType(destination.uniqueId, -1000 * destination.type + destination.typeArg, file, (destination.typeArg % 100) - 1);
     });
 }
+const TRACKBED = -1;
 const GRAY = 0;
 const PINK = 1;
 const WHITE = 2;

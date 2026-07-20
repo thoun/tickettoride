@@ -49,6 +49,7 @@ const MAP_LIST = [
     16 => 'japan',
     17 => 'iberia',
     18 => 'southkorea',
+    19 => 'germany',
 ];
 
 /*

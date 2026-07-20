@@ -1,0 +1,7 @@
+#map {
+    background-image: url('./map.webp');
+}
+
+.train-car-card, .icon.train-car-color {
+    background-image: url('./train-cards.jpg');
+}

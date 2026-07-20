@@ -12,6 +12,7 @@ const SHOW_TURN_ORDER_OPTION = 110;
 /* 
  * Colors 
  */
+const TRACKBED = -1;
 const GRAY = 0;
 const PINK = 1;
 const WHITE = 2;

@@ -26,6 +26,10 @@
     white-space: nowrap;
 }
 
+.city.virtual-city {
+    display: none;
+}
+
 .selected {
     outline: 5px dashed lightgreen;
 }
@@ -45,10 +49,14 @@
     height: 16px;
     transform: translate(var(--x), var(--y)) rotate(var(--a));
     color: black;
+    text-shadow: 0 0 1px white, 0 0 2px white, 0 0 1px white, 0 0 2px white;
+    overflow: hidden;
+    font-size: bold;
 }
 
-.route-space[data-color="BLACK"] {
+.route-space[data-color="BLACK"], .route-space[data-color="TRACKBED"] {
     color: white;
+    text-shadow: 0 0 1px black, 0 0 2px black, 0 0 1px black, 0 0 2px black;
 }
 
 .route-space.tunnel {

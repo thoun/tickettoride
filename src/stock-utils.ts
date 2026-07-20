@@ -20,6 +20,7 @@ export function setupDestinationCards(map: TicketToRideMap, stock: Stock) {
     });
 }
 
+const TRACKBED = -1;
 const GRAY = 0;
 const PINK = 1;
 const WHITE = 2;
