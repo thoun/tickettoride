@@ -22,7 +22,6 @@ async function load() {
     MAP = (document.getElementById('map-code')).value;
     localStorage.setItem('BGA_TTR_EDITOR_MAP', MAP);
     const mapDiv = document.getElementById('map');
-    //mapDiv.style.backgroundImage = `url('../img/${MAP}/map.webp'), url('../img/${MAP}/map.jpg')`;
     const mapUrl = `../img/${MAP}/map.webp`;
     mapDiv.style.backgroundImage = `url('${mapUrl}')`;
 
