@@ -1,6 +1,8 @@
 <?php
 
+use Bga\Games\TicketToRide\Game;
 use Bga\Games\TicketToRide\Objects\Map;
+use Bga\Games\TicketToRide\Objects\Route;
 
 require_once(__DIR__.'/cities.php');
 require_once(__DIR__.'/routes.php');
@@ -91,6 +93,40 @@ class LegendaryAsiaMap extends Map {
             'deck' => $smallDestinations,
             'deckbig' => $bigDestinations,
         ];
+    }
+
+    function setup(Game $game): void {
+        foreach ($game->getPlayersIds() as $playerId) {
+            $game->bga->globals->set("MOUNTAIN_TRAINS_{$playerId}", 0);
+        }
+    }
+
+    function getPlayerMapSpecificData(Game $game, int $playerId): array {
+        return [
+            'mountainTrains' => $game->bga->globals->get("MOUNTAIN_TRAINS_{$playerId}", 0),
+        ];
+    }
+    
+    function onClaimRoute(Game $game, int $playerId, Route $route): void {
+        if ($route->mountain <= 0) {
+            return;
+        }
+        $game->removeTrainCars($playerId, $route->mountain);
+        $playerMountainCars = $game->bga->globals->inc("MOUNTAIN_TRAINS_{$playerId}", $route->mountain);
+        $points = $route->mountain * 2;
+
+        $game->bga->notify->all('addMountainTrains', /*TODOMAPS clienttranslate*/('${player_name} discards ${number} train cars when claiming mountain route from ${from} to ${to} and gains ${points} points'), [
+            'playerId' => $playerId,
+            'player_name' => $game->getPlayerNameById($playerId),
+            'points' => $points,
+            'route' => $route,
+            'from' => $game->getCityName($route->from),
+            'to' => $game->getCityName($route->to),
+            'number' => $route->mountain,
+            'mountainCars' => $playerMountainCars,
+            'remainingTrainCars' => $game->getRemainingTrainCarsCount($playerId),
+        ]);
+        $game->incScore($playerId, $points);
     }
 }
 

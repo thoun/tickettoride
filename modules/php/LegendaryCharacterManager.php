@@ -22,7 +22,7 @@ class LegendaryCharacterManager {
 
     public function isActive(): bool {
         //return $this->game->tableOptions->get(LEGENDARY_CHARACTERS_EXPANSION_OPTION) === 1; // TODOLC
-        return Game::getBgaEnvironment() === 'studio';
+        return false;//Game::getBgaEnvironment() === 'studio';
     }
 
     public function getAllCharacters(): array {

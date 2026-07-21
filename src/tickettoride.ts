@@ -7,7 +7,7 @@ import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseActi
 import { ChooseLegendaryCharacterState } from "./ts/States/ChooseLegendaryCharacter";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
-import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar } from "./tickettoride.d";
+import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs } from "./tickettoride.d";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 import { BgaAutofit } from "./ts/libs";
@@ -123,7 +123,7 @@ export class Game implements TicketToRideGame {
         document.getElementById(`score`).insertAdjacentHTML(`beforebegin`, `<link rel="stylesheet" type="text/css" href="${g_gamethemeurl}img/${map.code}/map.css"/>`);
 
         this.bga.images.preloadImages([
-            `${map.code}/map.jpg`,
+            `${map.code}/map.webp`,
             ...map.preloadImages.map(filename => `${map.code}/${filename}`)
         ]);
         if (gamedatas.legendaryCharactersExpansionActive) {
@@ -609,6 +609,7 @@ export class Game implements TicketToRideGame {
         const notifs = [
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
+            ['addMountainTrains', 1],
             ['builtStation', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
             ['points', 1],
@@ -626,6 +627,7 @@ export class Game implements TicketToRideGame {
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
+            ['mostConnectedCitiesWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['remainingStations', skipEndOfGameAnimations ? 1 : 1500],
             ['mandalaCount', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestinationGrandTour', skipEndOfGameAnimations ? 1 : 2000],
@@ -714,6 +716,13 @@ export class Game implements TicketToRideGame {
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
         }
+    }
+
+    notif_addMountainTrains(notif: Notif<NotifAddMountainTrainsArgs>) {
+        const playerId = notif.args.playerId;
+
+        this.trainCarCounters[playerId].toValue(notif.args.remainingTrainCars);
+        this.map.setMountainTrains(playerId, notif.args.mountainCars); 
     }
 
     /** 

@@ -180,6 +180,8 @@ class Game extends Table {
         // give 4 to each player
         $this->trainCarManager->giveInitialTrainCarCards(array_keys($players));
 
+        $this->getMap()->setup($this);
+
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
@@ -279,6 +281,7 @@ class Game extends Table {
                 $player['completedDestinations'] = [];
                 $player['uncompletedDestinations'] = [];
             }
+            $player['mapSpecificData'] = $this->getMap()->getPlayerMapSpecificData($this, $playerId);
         }
 
         // deck counters
@@ -324,6 +327,10 @@ class Game extends Table {
         return 100 * ($this->getMap()->trainCarsPerPlayer - $this->getLowestTrainCarsCount()) / $this->getMap()->trainCarsPerPlayer;
     }
 
+    function removeTrainCars(int $playerId, int $number) {
+        $this->DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $number WHERE player_id = $playerId");
+    }
+
     function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null, bool $shifted = false): void {
         $route = $this->mapManager->getAllRoutes()[$routeId];
         $cardCost = $route->number + $extraCardCost;
@@ -353,13 +360,13 @@ class Game extends Table {
         $this->trainCarManager->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
 
         // save claimed route
-        self::DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
+        $this->DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
 
         // update score
         $points = $this->getMap()->routePoints[$route->number];
         $this->incScore($playerId, $points);
 
-        self::DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $route->number WHERE player_id = $playerId");
+        $this->removeTrainCars($playerId, $route->number);
         
         $this->notify->all('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
             'playerId' => $playerId,
@@ -378,6 +385,8 @@ class Game extends Table {
         $this->playerStats->inc('claimedRoutes', 1, $playerId, updateTableStat: true);
         $this->playerStats->inc('playedTrainCars', $route->number, $playerId, updateTableStat: true);
         $this->playerStats->inc('pointsWithClaimedRoutes', $points, $playerId, updateTableStat: true);
+
+        $this->getMap()->onClaimRoute($this, $playerId, $route);
 
         $this->destinationManager->checkCompletedDestinations($playerId);
 
@@ -459,7 +468,7 @@ class Game extends Table {
     }
 
     function getMapCode(): string { 
-        //if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[4]; }
+        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[7]; }
         return MAP_LIST[match (__NAMESPACE__) {
             'Bga\\Games\\TicketToRide' => 1,
             'Bga\\Games\\TicketToRideEurope' => 2,

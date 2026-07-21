@@ -197,7 +197,7 @@ class ChooseAction extends GameState {
         $route = $this->game->mapManager->getAllRoutes()[$routeId];
 
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
-        if ($remainingTrainCars < $route->number) {
+        if ($remainingTrainCars < ($route->number + $route->mountain)) {
             $this->notify->player($activePlayerId, 'notEnoughTrainCars', '', []);
             return;
         }

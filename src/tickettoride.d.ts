@@ -56,6 +56,10 @@ export interface BuiltStation {
     playerId: number;
 }
 
+interface PlayerMapSpecificData {
+    mountainTrains?: number;
+}
+
 export interface TicketToRidePlayer extends Player {
     playerNo: number;
     trainCarsCount: number;
@@ -64,6 +68,7 @@ export interface TicketToRidePlayer extends Player {
     remainingStations?: number;
     legendaryCharacter?: number;
     legendaryCharacterState?: any | null;
+    mapSpecificData: PlayerMapSpecificData;
 
     // for end score
     completedDestinations?: Destination[];
@@ -237,6 +242,12 @@ export interface NotifClaimedRouteArgs {
     removeCards: TrainCar[];
     remainingTrainCars: number;
     shifted: false;
+}
+
+export interface NotifAddMountainTrainsArgs {
+    playerId: number;
+    mountainCars: number;
+    remainingTrainCars: number;
 }
 
 export interface NotifBuiltStationArgs {

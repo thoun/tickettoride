@@ -857,6 +857,32 @@
   pointer-events: all;
 }
 
+.mountain-train-car-counters {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 300px;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.mountain-train-car-counters .mountain-train-car-counter {
+  display: grid;
+  grid-template-columns: repeat(2, 48px);
+  justify-items: center;
+  align-items: center;
+  color: white;
+  text-shadow: 0 0 1px black, 0 0 1px black, 0 0 2px black, 0 0 2px black, 0 0 3px black, 0 0 3px black, 0 0 4px black, 0 0 4px black;
+  font-size: 32px;
+  font-weight: bold;
+}
+.mountain-train-car-counters .mountain-train-car-counter .icon.train {
+  width: 48px;
+  height: 48px;
+}
+
 #train-car-deck {
   position: relative;
   width: 250px;

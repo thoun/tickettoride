@@ -1244,6 +1244,8 @@ class TtrMap {
         this.toConnectCityIds = new Set();
         this.selectableDestinationCityIdsByDestination = new Map();
         this.selectedDestinationCityIdsByDestination = new Map();
+        // map specific
+        this.mountainCarCounters = [];
         // map border
         document.getElementById('map').insertAdjacentHTML('afterbegin', `
             <div class="illustration" data-illustration="${illustration}"></div>
@@ -1277,6 +1279,7 @@ class TtrMap {
         ${_('Click here to pick one or two hidden train car cards')}`);
         this.game.setTooltip(`destination-deck-hidden-pile`, `<strong>${_('Destinations deck')}</strong><br><br>
         ${_('Click here to take three new destination cards (keep at least one)')}`);
+        this.setMapSpecificData();
     }
     createRouteSpaces(destination, shiftX = 0, shiftY = 0) {
         Object.values(this.map.routes).filter(route => !this.claimedRoutesIds.includes(route.id)).forEach(route => route.spaces.forEach((space, spaceIndex) => {
@@ -1864,6 +1867,28 @@ class TtrMap {
         const preference = Number(this.game.bga.userPreferences.get(203));
         const outline = preference === 1 || (preference === 2 && this.mapDiv?.getBoundingClientRect().width < 1000);
         this.mapDiv.dataset.bigShadows = outline.toString();
+    }
+    setMapSpecificData() {
+        if (this.map.code === 'legendaryasia') {
+            this.mapDiv.insertAdjacentHTML('afterbegin', `
+                <div class="mountain-train-car-counters">
+                    ${this.players.map(player => `
+                        <div class="mountain-train-car-counter">
+                            <div class="icon train" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> <span id="mountain-train-car-counter-${player.id}"></span>
+                        </div>
+                    `).join('')}
+                </div>
+            `);
+            this.players.forEach(player => {
+                const playerId = Number(player.id);
+                this.mountainCarCounters[playerId] = new ebg.counter();
+                this.mountainCarCounters[playerId].create(`mountain-train-car-counter-${playerId}`);
+                this.mountainCarCounters[playerId].setValue(player.mapSpecificData.mountainTrains);
+            });
+        }
+    }
+    setMountainTrains(playerId, number) {
+        this.mountainCarCounters[playerId].toValue(number);
     }
 }
 
@@ -3115,7 +3140,7 @@ class Game {
         Object.entries(map.destinations).forEach(typeEntry => Object.entries(typeEntry[1]).forEach(entry => entry[1].id = Number(entry[0])));
         document.getElementById(`score`).insertAdjacentHTML(`beforebegin`, `<link rel="stylesheet" type="text/css" href="${g_gamethemeurl}img/${map.code}/map.css"/>`);
         this.bga.images.preloadImages([
-            `${map.code}/map.jpg`,
+            `${map.code}/map.webp`,
             ...map.preloadImages.map(filename => `${map.code}/${filename}`)
         ]);
         if (gamedatas.legendaryCharactersExpansionActive) {
@@ -3521,6 +3546,7 @@ class Game {
         const notifs = [
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
+            ['addMountainTrains', 1],
             ['builtStation', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
             ['points', 1],
@@ -3538,6 +3564,7 @@ class Game {
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
+            ['mostConnectedCitiesWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['remainingStations', skipEndOfGameAnimations ? 1 : 1500],
             ['mandalaCount', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestinationGrandTour', skipEndOfGameAnimations ? 1 : 2000],
@@ -3616,6 +3643,11 @@ class Game {
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
         }
+    }
+    notif_addMountainTrains(notif) {
+        const playerId = notif.args.playerId;
+        this.trainCarCounters[playerId].toValue(notif.args.remainingTrainCars);
+        this.map.setMountainTrains(playerId, notif.args.mountainCars);
     }
     /**
      * Update built stations.

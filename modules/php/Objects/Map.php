@@ -2,6 +2,8 @@
 
 namespace Bga\Games\TicketToRide\Objects;
 
+use Bga\Games\TicketToRide\Game;
+
 class Map {
     public const LOCOMOTIVE_TUNNEL = 0b01;
     public const LOCOMOTIVE_FERRY = 0b10;
@@ -109,4 +111,12 @@ class Map {
             'deck' => $destinations
         ];
     }
+
+    function setup(Game $game): void {}
+
+    function getPlayerMapSpecificData(Game $game, int $playerId): array {
+        return [];
+    }
+    
+    function onClaimRoute(Game $game, int $playerId, Route $route): void {}
 }

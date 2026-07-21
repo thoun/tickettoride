@@ -4,6 +4,7 @@ namespace Bga\Games\TicketToRide;
 
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
 use Bga\Games\TicketToRide\Objects\Map;
+use Bga\Games\TicketToRide\Objects\Route;
 
 class ConnectedCity {
     public int $city;
@@ -256,8 +257,10 @@ class MapManager {
         return [$validConnections[0]];
     }
 
-    /** */
-    public function getAllRoutes() {
+    /**
+     * @return Route[]
+     */
+    public function getAllRoutes(): array {
         $allRoutes = $this->game->getMap()->routes;
         array_walk($allRoutes, function(&$route, $id) { $route->id = $id; });
         return $allRoutes;
@@ -319,7 +322,7 @@ class MapManager {
 
         $cardCost = $route->number + $extraCardsCost;
 
-        if ($remainingTrainCars < $route->number) {
+        if ($remainingTrainCars < ($route->number + $route->mountain)) {
             return null; // not enough remaining meeples
         }
 

@@ -1,7 +1,7 @@
 import { CROSSHAIR_SIZE } from "../player-table/player-train-cars";
 import { ChooseActionState, EnteringChooseActionArgs } from "../states/ChooseAction";
 import { getColor } from "../stock-utils";
-import { Route, TicketToRideMap, TicketToRideGame, TicketToRidePlayer, ClaimedRoute, RouteSpace, Destination, City, BuiltStation } from "../tickettoride.d";
+import { Route, TicketToRideMap, TicketToRideGame, TicketToRidePlayer, ClaimedRoute, RouteSpace, Destination, City, BuiltStation, PlayerMapSpecificData } from "../tickettoride.d";
 
 const DRAG_AUTO_ZOOM_DELAY = 2000;
 
@@ -172,6 +172,9 @@ export class TtrMap {
     private selectableDestinationCityIdsByDestination = new Map<number, Set<number>>();
     private selectedDestinationCityIdsByDestination = new Map<number, Set<number>>();
 
+    // map specific
+    private mountainCarCounters: Counter[] = [];
+
     /** 
      * Place map corner illustration and borders, cities, routes, and bind events.
      */ 
@@ -224,6 +227,8 @@ export class TtrMap {
 
         this.game.setTooltip(`destination-deck-hidden-pile`, `<strong>${_('Destinations deck')}</strong><br><br>
         ${_('Click here to take three new destination cards (keep at least one)')}`);
+
+        this.setMapSpecificData();
     }
 
     private createRouteSpaces(destination: 'route-spaces' | 'map-drag-overlay', shiftX: number = 0, shiftY: number = 0) {
@@ -913,5 +918,29 @@ export class TtrMap {
         const preference = Number(this.game.bga.userPreferences.get(203));
         const outline = preference === 1 || (preference === 2 && this.mapDiv?.getBoundingClientRect().width < 1000);
         this.mapDiv.dataset.bigShadows = outline.toString();
+    }
+    
+    public setMapSpecificData() {
+        if (this.map.code === 'legendaryasia') {
+            this.mapDiv.insertAdjacentHTML('afterbegin', `
+                <div class="mountain-train-car-counters">
+                    ${this.players.map(player => `
+                        <div class="mountain-train-car-counter">
+                            <div class="icon train" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> <span id="mountain-train-car-counter-${player.id}"></span>
+                        </div>
+                    `).join('')}
+                </div>
+            `);
+            this.players.forEach(player => {
+                const playerId = Number(player.id);
+                this.mountainCarCounters[playerId] = new ebg.counter();
+                this.mountainCarCounters[playerId].create(`mountain-train-car-counter-${playerId}`);
+                this.mountainCarCounters[playerId].setValue(player.mapSpecificData.mountainTrains);
+            });            
+        }
+    }
+    
+    public setMountainTrains(playerId: number, number: number) {
+        this.mountainCarCounters[playerId].toValue(number);
     }
 }
