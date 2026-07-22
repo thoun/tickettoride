@@ -40,6 +40,7 @@ class LegendaryAsiaMap extends Map {
         );
 
         $this->trainCarsPerPlayer = 45;
+        $this->unusedInitialDestinationsGoToDeckBottom = false;
         $this->pointsForLongestPath = null;
         $this->pointsForGlobetrotter = null;
         $this->pointsForMostConnectedCities = 10; // TODOMAPS implement and show on the front side
