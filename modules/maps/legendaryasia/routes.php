@@ -106,12 +106,12 @@ function getRoutes() {
         19 => new Route(24, 37, RED, [
             new RouteSpace(1209, 243, 33),
             new RouteSpace(1258, 280, 41),
-            new RouteSpace(1290, 345, 49),
+            new RouteSpace(1302, 325, 49),
         ], mountain: 1),
         20 => new Route(24, 37, ORANGE, [
             new RouteSpace(1223, 223, 33),
             new RouteSpace(1272, 261, 41),
-            new RouteSpace(1304, 325, 49),
+            new RouteSpace(1319, 306, 49),
         ], mountain: 1),
         21 => new Route(15, 38, GRAY, [
             new RouteSpace(1644, 178, -78),
@@ -483,5 +483,6 @@ function getRoutes() {
             new RouteSpace(1151, 762, -66),
             new RouteSpace(1125, 820, -66),
         ], mountain: 1),
+
     ];
 }

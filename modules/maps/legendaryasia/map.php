@@ -43,7 +43,7 @@ class LegendaryAsiaMap extends Map {
         $this->unusedInitialDestinationsGoToDeckBottom = false;
         $this->pointsForLongestPath = null;
         $this->pointsForGlobetrotter = null;
-        $this->pointsForMostConnectedCities = 10; // TODOMAPS implement and show on the front side
+        $this->pointsForMostConnectedCities = 10;
         $this->minimumPlayerForDoubleRoutes = 4;
 
         $this->rulesDifferences = [
