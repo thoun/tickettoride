@@ -164,7 +164,7 @@ export class ChooseActionState {
 
         this.bga.statusBar.removeActionButtons();
         [clickedRoute, otherRoute].forEach(route => {
-            this.bga.statusBar.addActionButton(`<div class="train-car-color icon" data-color="${route.color}"></div> ${getColor(route.color, 'train-car')}`, () => this.clickedRouteDoubleRouteConfirmed(route));
+            this.bga.statusBar.addActionButton(`<div class="train-car-color icon" data-color="${route.color}"></div> ${getColor(route.color, 'route')}`, () => this.clickedRouteDoubleRouteConfirmed(route));
         });
         this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelRouteClaim(), { color: 'secondary' });
     }
