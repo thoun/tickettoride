@@ -75,9 +75,9 @@ function getRoutes() {
             new RouteSpace(1055, 45, 3),
         ]),
         13 => new Route(12, 17, BLUE, [
-            new RouteSpace(932, 60, 1),
-            new RouteSpace(994, 63, 2),
-            new RouteSpace(1057, 70, 2),
+            new RouteSpace(932, 61, 3),
+            new RouteSpace(994, 64, 3),
+            new RouteSpace(1057, 68, 3),
         ], mountain: 1),
         14 => new Route(10, 17, BLACK, [
             new RouteSpace(863, 105, -87),
@@ -334,7 +334,7 @@ function getRoutes() {
             new RouteSpace(671, 972, 50),
             new RouteSpace(718, 1015, 36),
         ], locomotives: 1),
-        68 => new Route(6, 9, GREEN, [
+        68 => new Route(7, 9, GREEN, [
             new RouteSpace(859, 742, -42),
             new RouteSpace(812, 790, -50),
             new RouteSpace(780, 848, -72),
@@ -408,12 +408,12 @@ function getRoutes() {
         86 => new Route(11, 19, GRAY, [
             new RouteSpace(1237, 710, 9),
         ]),
-        87 => new Route(11, 39, GREEN, [
+        87 => new Route(19, 39, GREEN, [
             new RouteSpace(1235, 525, 60),
             new RouteSpace(1262, 582, 68),
             new RouteSpace(1281, 643, 76),
         ]),
-        88 => new Route(11, 39, WHITE, [
+        88 => new Route(19, 39, WHITE, [
             new RouteSpace(1257, 516, 60),
             new RouteSpace(1284, 573, 68),
             new RouteSpace(1304, 634, 76),
@@ -434,7 +434,7 @@ function getRoutes() {
         92 => new Route(16, 31, ORANGE, [
             new RouteSpace(1477, 536, 0),
             new RouteSpace(1542, 531, -10),
-            new RouteSpace(1602, 510, -20),
+            new RouteSpace(1606, 514, -21),
             new RouteSpace(1661, 485, -33),
         ], locomotives: 1),
         93 => new Route(16, 30, GRAY, [
