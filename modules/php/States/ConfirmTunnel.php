@@ -31,10 +31,14 @@ class ConfirmTunnel extends GameState {
         $route = $this->game->mapManager->getAllRoutes()[$tunnelAttempt->routeId];
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);        
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
-        $legendaryCharacter = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId);
-        $legendaryCharacterState = $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId);
-        $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
-        $pairSetAsLocomotive = $this->game->legendaryCharacterManager->getCharacter3UsingColor($activePlayerId);
+        $considerAllRoutesGray = false;
+        $pairSetAsLocomotive = null;
+        if ($this->game->legendaryCharacterManager->isActive()) {
+            $legendaryCharacter = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId);
+            $legendaryCharacterState = $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId);
+            $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
+            $pairSetAsLocomotive = $this->game->legendaryCharacterManager->getCharacter3UsingColor($activePlayerId);
+        }
         $tunnelCost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, $tunnelAttempt->extraCards, pairSetAsLocomotive: $pairSetAsLocomotive, considerAllRoutesGray: $considerAllRoutesGray);
         $canPay = $tunnelCost != null;
 
