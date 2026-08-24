@@ -75,11 +75,15 @@ class ConfirmTunnel extends GameState {
 
         $distributionCards = $distribution ? Arrays::filter($this->game->trainCarManager->getPlayerHand($activePlayerId), fn($card) => in_array($card->id, $distribution)) : null;
 
-        $shifted = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 1
+        $shifted = $this->game->legendaryCharacterManager->isActive()
+            && $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 1
             && $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId) === 'using';
         $this->game->applyClaimRoute($activePlayerId, $tunnelAttempt->routeId, $tunnelAttempt->color, $tunnelAttempt->extraCards, distributionCards: $distributionCards, shifted: $shifted);
 
-        if ($this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0) {
+        if ($this->game->legendaryCharacterManager->isActive() 
+            && $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 4 
+            && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0
+        ) {
             if ($this->game->legendaryCharacterManager->character4CanClaimAnotherRoute($activePlayerId)) {
                 return ChooseAction::class;
             }
@@ -94,7 +98,8 @@ class ConfirmTunnel extends GameState {
     public function actSkipTunnel(int $activePlayerId) {
         $this->game->endTunnelAttempt(true);
 
-        if ($this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 1
+        if ($this->game->legendaryCharacterManager->isActive()
+            && $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 1
             && $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId) === 'using') {
             $this->game->legendaryCharacterManager->setPlayerCharacterState($activePlayerId, null);
         }
