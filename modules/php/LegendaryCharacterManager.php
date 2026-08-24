@@ -64,7 +64,7 @@ class LegendaryCharacterManager {
     public function setCharacter(int $playerId, int $character): void {
         $this->game->DbQuery("UPDATE `player` SET `player_legendary_character` = $character WHERE `player_id` = $playerId");
 
-        $this->game->notify->all('chooseCharacter', /*TODOLC clienttranslate*/('${player_name} chooses ${character_name}'), [
+        $this->game->notify->all('chooseCharacter', clienttranslate('${player_name} chooses ${character_name}'), [
             'playerId' => $playerId,
             'character' => $character,
         ]);

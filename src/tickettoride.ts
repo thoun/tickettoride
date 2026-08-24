@@ -949,8 +949,6 @@ export class Game implements TicketToRideGame {
 
     private createRulesPopin()  {
         const url = this.gamedatas.map.multilingualPdfRulesUrl;
-        //`https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2023/09/720114-T2RMC2-Rules_switzerland-ML-2017.pdf`; // TODO
-
         let html = `
         <div id="popin_showMapRulebook_container" class="tickettoride_popin_container">
             <div id="popin_showMapRulebook_underlay" class="tickettoride_popin_underlay"></div>

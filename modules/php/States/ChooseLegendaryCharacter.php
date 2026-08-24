@@ -16,8 +16,8 @@ class ChooseLegendaryCharacter extends GameState {
         parent::__construct($game,
             id: ST_PLAYER_CHOOSE_LEGENDARY_CHARACTER,
             type: StateType::ACTIVE_PLAYER,
-            description: /* TODOLC clienttranslate*/('${actplayer} must choose a Legendary character'),
-            descriptionMyTurn: /* TODOLC clienttranslate*/('${you} must choose a Legendary character'),
+            description: clienttranslate('${actplayer} must choose a Legendary character'),
+            descriptionMyTurn: clienttranslate('${you} must choose a Legendary character'),
         );
     }
 

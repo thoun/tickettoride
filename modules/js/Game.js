@@ -827,15 +827,15 @@ class LegendaryCharacterManager {
         }
     }
     getTiming(character) {
-        return character === 3 ? /*TODOLC_*/ ('Once per turn') : /*TODOLC_*/ ('Once per game');
+        return character === 3 ? _('Once per turn') : _('Once per game');
     }
     getDescription(character) {
         switch (character) {
-            case 1: return /*TODOLC_*/ ('On your turn, you can claim a route that has already been claimed by another player, following normal Claim Routes rules as if the route was available. You must use a set of the required number of train cards of the color of the route. Place your trains next to the train cars already on the route.\nThis counts as your turn.').replace('\n', '<br>');
-            case 2: return /*TODOLC_*/ ('At the end of the game, before calculating the final scores, discard up to 2 incomplete tickets.\nThese tickets do not count against your score.').replace('\n', '<br>');
-            case 3: return /*TODOLC_*/ ('During your turn, when you play train cards, you can play 1 set of 2 train cards of any 1 color to count as a locomotive.').replace('\n', '<br>');
-            case 4: return /*TODOLC_*/ ('On your turn, you can play up to 7 train cards to claim as many routes with them as possible, following normal Claim Routes rules. The routes must form a continuous path. Each train card can only be used for 1 route.\nThis counts as your turn.').replace('\n', '<br>');
-            case 5: return /*TODOLC_*/ ('When you claim a route, you can ignore its color and claim it as if it was a gray route. You still have to claim it using a set of train cards of any 1 color.').replace('\n', '<br>');
+            case 1: return _('On your turn, you can claim a route that has already been claimed by another player, following normal Claim Routes rules as if the route was available. You must use a set of the required number of train cards of the color of the route. Place your trains next to the train cars already on the route.\nThis counts as your turn.').replace('\n', '<br>');
+            case 2: return _('At the end of the game, before calculating the final scores, discard up to 2 incomplete tickets.\nThese tickets do not count against your score.').replace('\n', '<br>');
+            case 3: return _('During your turn, when you play train cards, you can play 1 set of 2 train cards of any 1 color to count as a locomotive.').replace('\n', '<br>');
+            case 4: return _('On your turn, you can play up to 7 train cards to claim as many routes with them as possible, following normal Claim Routes rules. The routes must form a continuous path. Each train card can only be used for 1 route.\nThis counts as your turn.').replace('\n', '<br>');
+            case 5: return _('When you claim a route, you can ignore its color and claim it as if it was a gray route. You still have to claim it using a set of train cards of any 1 color.').replace('\n', '<br>');
         }
     }
 }
@@ -3846,7 +3846,6 @@ class Game {
     }
     createRulesPopin() {
         const url = this.gamedatas.map.multilingualPdfRulesUrl;
-        //`https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2023/09/720114-T2RMC2-Rules_switzerland-ML-2017.pdf`; // TODO
         let html = `
         <div id="popin_showMapRulebook_container" class="tickettoride_popin_container">
             <div id="popin_showMapRulebook_underlay" class="tickettoride_popin_underlay"></div>

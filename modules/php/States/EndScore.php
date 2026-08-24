@@ -47,7 +47,7 @@ class EndScore extends GameState {
         
         foreach ($discardedDestinations as $destination) {
             $this->game->destinationManager->discardDestination($destination);
-            $this->notify->all('discardDestination', /*TODOLC clienttranslate*/('${player_name} discards ${from} to ${to} incomplete destination with ${character_name}'), [
+            $this->notify->all('discardDestination', clienttranslate('${player_name} discards ${from} to ${to} incomplete destination with ${character_name}'), [
                 'playerId' => $playerId,
                 'destination' => $destination,
                 'from' => $this->game->getCityName($destination->from),
@@ -353,7 +353,7 @@ class EndScore extends GameState {
         // Asian Explorer
         if ($isMostConnectedCitiesBonusActive) {
             foreach ($players as $playerId => $playerDb) {
-                $this->notify->all('mostConnectedCities', /* TODOMAPS clienttranslate*/('${player_name} connected ${cities} cities in their largest network'), [
+                $this->notify->all('mostConnectedCities', /clienttranslate('${player_name} connected ${cities} cities in their largest network'), [
                     'playerId' => $playerId,
                     'player_name' => $this->game->getPlayerNameById($playerId),
                     'length' => $playersMostConnectedCities[$playerId],
@@ -363,7 +363,7 @@ class EndScore extends GameState {
 
             foreach ($mostConnectedCitiesWinners as $playerId) {
                 $points = $this->game->getMap()->pointsForMostConnectedCities;
-                $this->game->incScore($playerId, $points, /* TODOMAPS clienttranslate*/('${player_name} gains ${delta} points with Asian Explorer : ${cities} connected cities'), [
+                $this->game->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with Asian Explorer : ${cities} connected cities'), [
                     'points' => $points,
                     'cities' => $bestMostConnectedCities,
                 ]);
