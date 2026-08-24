@@ -455,12 +455,12 @@ function getRoutes() {
             new RouteSpace(1577, 665, -15),
             new RouteSpace(1516, 678, -5),
         ], locomotives: 1),
-        96 => new Route(19, 28, YELLOW, [
+        96 => new Route(11, 28, YELLOW, [
             new RouteSpace(1196, 756, 68),
             new RouteSpace(1211, 819, 85),
             new RouteSpace(1202, 883, -69),
         ]),
-        97 => new Route(19, 28, ORANGE, [
+        97 => new Route(11, 28, ORANGE, [
             new RouteSpace(1223, 755, 68),
             new RouteSpace(1236, 818, 87),
             new RouteSpace(1229, 885, -68),
