@@ -103,7 +103,7 @@ class LegendaryCharacterManager {
      * @return int[]
      */
     public function getCharacter4UsingRouteIds(int $playerId): array {
-        if ($this->getPlayerCharacter($playerId) !== 4) {
+        if (!$this->isActive() || $this->getPlayerCharacter($playerId) !== 4) {
             return [];
         }
 

@@ -353,7 +353,7 @@ class EndScore extends GameState {
         // Asian Explorer
         if ($isMostConnectedCitiesBonusActive) {
             foreach ($players as $playerId => $playerDb) {
-                $this->notify->all('mostConnectedCities', /clienttranslate('${player_name} connected ${cities} cities in their largest network'), [
+                $this->notify->all('mostConnectedCities', clienttranslate('${player_name} connected ${cities} cities in their largest network'), [
                     'playerId' => $playerId,
                     'player_name' => $this->game->getPlayerNameById($playerId),
                     'length' => $playersMostConnectedCities[$playerId],

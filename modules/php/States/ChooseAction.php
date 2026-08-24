@@ -33,6 +33,7 @@ class ChooseAction extends GameState {
         $opponentRoutesInsteadOfFreeOnes = false;
         $considerAllRoutesGray = false;
         $pairSetAsLocomotive = null;
+        $usingCharacter4 = false;
 
         if ($this->game->legendaryCharacterManager->isActive()) {
             $legendaryCharacter = $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId);
@@ -41,9 +42,9 @@ class ChooseAction extends GameState {
             $opponentRoutesInsteadOfFreeOnes = $legendaryCharacter === 1 && $legendaryCharacterState === 'using';
             $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
             $pairSetAsLocomotive = $this->game->legendaryCharacterManager->getCharacter3UsingColor($activePlayerId);
-        }
 
-        $usingCharacter4 = $legendaryCharacter === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0;
+            $usingCharacter4 = $legendaryCharacter === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0;
+        }
 
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
         // we don't limit claimable routes to the number of remaining train cars, because the players don't understand why they can't claim the route
@@ -52,7 +53,9 @@ class ChooseAction extends GameState {
         $realRemainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
 
         $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
-        $possibleRoutes = $this->game->legendaryCharacterManager->filterCharacter4Routes($activePlayerId, $possibleRoutes);
+        if ($legendaryCharacter === 4) {
+            $possibleRoutes = $this->game->legendaryCharacterManager->filterCharacter4Routes($activePlayerId, $possibleRoutes);
+        }
         $maxHiddenCardsPick = min(2, $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true));
         $maxDestinationsPick = min($this->game->getMap()->getAdditionalDestinationCardNumber($this->game->getExpansionOption()), $this->game->destinationManager->getRemainingDestinationCardsInDeck());
 
