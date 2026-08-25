@@ -230,7 +230,7 @@ function getRoutes() {
             new RouteSpace(155, 627, -71),
             new RouteSpace(139, 688, -78),
         ]),
-        46 => new Route(32, 35, BLACK, [
+        46 => new Route(32, 35, WHITE, [
             new RouteSpace(327, 511, 60),
             new RouteSpace(359, 566, 60),
         ], mountain: 2),
@@ -306,7 +306,7 @@ function getRoutes() {
             new RouteSpace(566, 718, 61),
             new RouteSpace(604, 770, 45),
         ]),
-        63 => new Route(13, 21, YELLOW, [
+        63 => new Route(21, 32, YELLOW, [
             new RouteSpace(355, 642, -48),
             new RouteSpace(307, 686, -37),
             new RouteSpace(252, 719, -26),
@@ -373,7 +373,7 @@ function getRoutes() {
             new RouteSpace(1069, 710, -2),
             new RouteSpace(1133, 707, -3),
         ], mountain: 2),
-        77 => new Route(20, 26, WHITE, [
+        77 => new Route(20, 26, GRAY, [
             new RouteSpace(1022, 762, 86),
         ], mountain: 1),
         78 => new Route(5, 26, GREEN, [
