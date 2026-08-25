@@ -25,7 +25,7 @@ function getBaseSmallDestinations() {
         8 => new DestinationCard(16, 19, 7), // Kobe - Macau
         9 => new DestinationCard(17, 24, 9), // Krasnoyarsk - Peking
         10 => new DestinationCard(17, 29, 8), // Krasnoyarsk - Samarkand
-        11 => new DestinationCard(18, 5, 12), // Lhasa - Bangkok
+        11 => new DestinationCard(18, 5, 7), // Lhasa - Bangkok
         12 => new DestinationCard(19, 33, 6), // Macau - Singapore
         13 => new DestinationCard(22, 2, 7), // Moscow - Ankara
         14 => new DestinationCard(22, 21, 10), // Moscow - Mecca
