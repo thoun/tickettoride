@@ -25,6 +25,22 @@
             }
         ],
         "default": 0
+    },    
+    
+    "105": {
+        "name": "Legendary characters",
+        "values": {
+            "0": {
+                "name": "Disabled"
+            },
+            "1": {
+                "name": "Enabled",
+                "tmdisplay": "Legendary characters",
+                "description": "Each player pick a character before playing, with a special rule.",
+                "alpha": true
+            }
+        },
+        "default": 0
     },
     
     "110": {
@@ -40,6 +56,7 @@
                 "tmdisplay": "Turn order determined before selecting tickets"
             }
         },
-        "default": 1
+        "default": 1,
+        "type": "additional"
     }
 }
