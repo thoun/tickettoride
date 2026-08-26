@@ -35,7 +35,7 @@ class UsaMap extends Map {
             ]
         );
 
-        $this->expansion = EXPANSION1910_OPTION; // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
+        $this->expansion = EXPANSION19xx_OPTION; // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
 
         $this->bigCities = [
             5, // Chicago',

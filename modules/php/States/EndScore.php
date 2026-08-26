@@ -81,13 +81,18 @@ class EndScore extends GameState {
             $useStationResult[$playerId] = [0, [], [], []];
             $destinations = $this->game->destinationManager->getPlayerHand($playerId);
             $uncompletedDestinations = Arrays::filter($destinations, fn($destination) => !boolval($this->game->getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id")));
-            $uncompletedDestinations = $this->legendaryCharacterDiscardDestinations($playerId, $uncompletedDestinations);
 
             $playerStations = $this->game->buildingManager->getPlacedStations($playerId);
             $usedStations = count($playerStations);
             if ($usedStations > 0 && count($uncompletedDestinations) > 0) {
                 $useStationResult[$playerId] = $this->game->buildingManager->useStations($playerId, $playerStations, $uncompletedDestinations);
+                // refresh $uncompletedDestinations after stations applied, for Irene Adler power
+                $uncompletedDestinations = Arrays::filter($uncompletedDestinations, fn($destination) => !boolval($this->game->getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id")));
             }
+
+            // Irene Adler only discards tickets that remain incomplete after stations have been used.
+            $this->legendaryCharacterDiscardDestinations($playerId, $uncompletedDestinations);
+
             if ($this->game->getMap()->stations !== null) {
                 $playersRemainingStations[$playerId] = $this->game->getMap()->stations - $usedStations;
                 $totalScore[$playerId] += 4 * $playersRemainingStations[$playerId];
