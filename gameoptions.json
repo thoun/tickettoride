@@ -36,8 +36,7 @@
             "1": {
                 "name": "Enabled",
                 "tmdisplay": "Legendary characters",
-                "description": "Each player pick a character before playing, with a special rule.",
-                "alpha": true
+                "description": "Each player pick a character before playing, with a special rule."
             }
         },
         "default": 0
