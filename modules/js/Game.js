@@ -507,6 +507,48 @@ class LongestPathAnimation extends WagonsAnimation {
 }
 
 /**
+ * Highlights all routes and cities in a player's largest connected network.
+ */
+class MostConnectedCitiesAnimation extends WagonsAnimation {
+    constructor(game, routes, cityIds, length, playerColor, actions) {
+        super(game, routes);
+        this.length = length;
+        this.playerColor = playerColor;
+        this.actions = actions;
+        this.cities = cityIds
+            .map(cityId => document.getElementById(`city${cityId}`))
+            .filter((city) => city !== null);
+    }
+    animate() {
+        return new Promise(resolve => {
+            document.getElementById('map').insertAdjacentHTML('beforeend', `
+            <div id="most-connected-cities-animation" style="color: #${this.playerColor};${this.getPosition()}">${this.length}</div>
+            `);
+            this.cities.forEach(city => city.dataset.highlight = 'true');
+            this.setWagonsVisibility(true);
+            setTimeout(() => this.endAnimation(resolve), 1900);
+        });
+    }
+    endAnimation(resolve) {
+        this.setWagonsVisibility(false);
+        this.cities.forEach(city => city.dataset.highlight = 'false');
+        document.getElementById('most-connected-cities-animation')?.remove();
+        resolve(this);
+        this.game.endAnimation(this);
+        this.actions.end?.();
+    }
+    getPosition() {
+        if (this.cities.length === 0) {
+            return 'left: 100px; top: 100px;';
+        }
+        const positions = this.cities.map(city => this.game.getMap().cities[Number(city.id.replace('city', ''))]);
+        const x = positions.reduce((sum, city) => sum + city.x, 0) / positions.length;
+        const y = positions.reduce((sum, city) => sum + city.y, 0) / positions.length;
+        return `left: ${x}px; top: ${y}px;`;
+    }
+}
+
+/**
  * Longest path animation : wagons used by longest path are highlighted, and length is displayed over the map.
  */
 class MandalaRoutesAnimation extends WagonsAnimation {
@@ -755,6 +797,13 @@ class EndScore {
             }
         });
         this.game.addAnimation(newDac);
+    }
+    /** Show the largest connected-city network for a player. */
+    showMostConnectedCities(playerColor, routes, cities, length, isFastEndScoring = false) {
+        if (isFastEndScoring) {
+            return;
+        }
+        this.game.addAnimation(new MostConnectedCitiesAnimation(this.game, routes, cities, length, playerColor, {}));
     }
     /**
      * Add Globetrotter badge to the Globetrotter winner(s).
@@ -3569,6 +3618,7 @@ class Game {
             ['discardDestination', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
+            ['mostConnectedCities', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['mostConnectedCitiesWinner', skipEndOfGameAnimations ? 1 : 1500],
@@ -3758,6 +3808,9 @@ class Game {
      */
     notif_longestPath(notif) {
         this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length, this.isFastEndScoring());
+    }
+    notif_mostConnectedCities(notif) {
+        this.endScore?.showMostConnectedCities(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.connectedCities, notif.args.length, this.isFastEndScoring());
     }
     /**
      * Add Mandala count for end score.

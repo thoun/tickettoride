@@ -182,11 +182,11 @@ class EndScore extends GameState {
         $bestMostConnectedCities = null;
         if ($isMostConnectedCitiesBonusActive) {
             foreach ($players as $playerId => $playerDb) {
-                $playersMostConnectedCities[$playerId] = $this->game->mapManager->getMostConnectedCities($playerId);
+                $playersMostConnectedCities[$playerId] = $this->game->mapManager->getLargestConnectedNetwork($playerId);
             }
             $mostConnectedCitiesBySize = [];
-            foreach ($playersMostConnectedCities as $playerId => $size) {
-                $mostConnectedCitiesBySize[$size][] = $playerId;
+            foreach ($playersMostConnectedCities as $playerId => $network) {
+                $mostConnectedCitiesBySize[count($network->cities)][] = $playerId;
             }
             $bestMostConnectedCities = max(array_keys($mostConnectedCitiesBySize));
             $mostConnectedCitiesWinners = $mostConnectedCitiesBySize[$bestMostConnectedCities];
@@ -361,8 +361,10 @@ class EndScore extends GameState {
                 $this->notify->all('mostConnectedCities', clienttranslate('${player_name} connected ${cities} cities in their largest network'), [
                     'playerId' => $playerId,
                     'player_name' => $this->game->getPlayerNameById($playerId),
-                    'length' => $playersMostConnectedCities[$playerId],
-                    'cities' => $playersMostConnectedCities[$playerId],
+                    'length' => count($playersMostConnectedCities[$playerId]->cities),
+                    'cities' => count($playersMostConnectedCities[$playerId]->cities),
+                    'connectedCities' => $playersMostConnectedCities[$playerId]->cities,
+                    'routes' => $playersMostConnectedCities[$playerId]->routes,
                 ]);
             }
 

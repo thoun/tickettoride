@@ -292,6 +292,13 @@ export interface NotifLongestPathArgs {
     routes: Route[];
 }
 
+export interface NotifMostConnectedCitiesArgs {
+    playerId: number;
+    length: number;
+    connectedCities: number[];
+    routes: Route[];
+}
+
 export interface NotifMandalaRoutesArgs {
     playerId: number;
     destination: Destination;

@@ -1,5 +1,6 @@
 import { DestinationCompleteAnimation } from "../destination-animation";
 import { LongestPathAnimation } from "../longest-path-animation";
+import { MostConnectedCitiesAnimation } from "../most-connected-cities-animation";
 import { MandalaRoutesAnimation } from "../mandala-routes-animation";
 import { RemainingStationsAnimation } from "../remaining-stations-animation";
 import { getBackgroundInlineStyleForDestination } from "../stock-utils";
@@ -234,6 +235,14 @@ export class EndScore {
         
 
         this.game.addAnimation(newDac);
+    }
+
+    /** Show the largest connected-city network for a player. */
+    public showMostConnectedCities(playerColor: string, routes: Route[], cities: number[], length: number, isFastEndScoring: boolean = false) {
+        if (isFastEndScoring) {
+            return;
+        }
+        this.game.addAnimation(new MostConnectedCitiesAnimation(this.game, routes, cities, length, playerColor, {}));
     }
     
     /** 

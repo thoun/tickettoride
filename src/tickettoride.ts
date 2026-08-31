@@ -7,7 +7,7 @@ import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseActi
 import { ChooseLegendaryCharacterState } from "./ts/States/ChooseLegendaryCharacter";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
-import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs } from "./tickettoride.d";
+import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifMostConnectedCitiesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs } from "./tickettoride.d";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 import { BgaAutofit } from "./ts/libs";
@@ -625,6 +625,7 @@ export class Game implements TicketToRideGame {
             ['discardDestination', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestination', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPath', skipEndOfGameAnimations ? 1 : 2000],
+            ['mostConnectedCities', skipEndOfGameAnimations ? 1 : 2000],
             ['longestPathWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['globetrotterWinner', skipEndOfGameAnimations ? 1 : 1500],
             ['mostConnectedCitiesWinner', skipEndOfGameAnimations ? 1 : 1500],
@@ -838,6 +839,10 @@ export class Game implements TicketToRideGame {
      */ 
     notif_longestPath(notif: Notif<NotifLongestPathArgs>) {
         this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length, this.isFastEndScoring());
+    }
+
+    notif_mostConnectedCities(notif: Notif<NotifMostConnectedCitiesArgs>) {
+        this.endScore?.showMostConnectedCities(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.connectedCities, notif.args.length, this.isFastEndScoring());
     }
 
     /** 

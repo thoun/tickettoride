@@ -26,6 +26,16 @@ class LongestPath {
     } 
 }
 
+class ConnectedNetwork {
+    public array $cities;
+    public array $routes;
+
+    public function __construct(array $cities, array $routes) {
+        $this->cities = $cities;
+        $this->routes = $routes;
+    }
+}
+
 class MapManager {
     function __construct(
         protected Game $game,
@@ -109,9 +119,16 @@ class MapManager {
      * A city is counted once, even when the network contains branches or loops.
      */
     public function getMostConnectedCities(int $playerId): int {
+        return count($this->getLargestConnectedNetwork($playerId)->cities);
+    }
+
+    /**
+     * Get the routes and distinct cities in the player's largest connected network.
+     */
+    public function getLargestConnectedNetwork(int $playerId): ConnectedNetwork {
         $claimedRoutes = $this->game->getClaimedRoutes($playerId);
         if (empty($claimedRoutes)) {
-            return 0;
+            return new ConnectedNetwork([], []);
         }
 
         $routesByCity = [];
@@ -122,13 +139,15 @@ class MapManager {
         }
 
         $visitedCities = [];
-        $largestNetwork = 0;
+        $largestNetworkCities = [];
+        $largestNetworkRoutes = [];
         foreach (array_keys($routesByCity) as $startingCity) {
             if (array_key_exists($startingCity, $visitedCities)) {
                 continue;
             }
 
-            $networkSize = 0;
+            $networkCities = [];
+            $networkRoutes = [];
             $citiesToVisit = [$startingCity];
             while (!empty($citiesToVisit)) {
                 $city = array_pop($citiesToVisit);
@@ -137,8 +156,9 @@ class MapManager {
                 }
 
                 $visitedCities[$city] = true;
-                $networkSize++;
+                $networkCities[] = $city;
                 foreach ($routesByCity[$city] as $route) {
+                    $networkRoutes[$route->id] = $route;
                     $otherCity = $route->from == $city ? $route->to : $route->from;
                     if (!array_key_exists($otherCity, $visitedCities)) {
                         $citiesToVisit[] = $otherCity;
@@ -146,10 +166,13 @@ class MapManager {
                 }
             }
 
-            $largestNetwork = max($largestNetwork, $networkSize);
+            if (count($networkCities) > count($largestNetworkCities)) {
+                $largestNetworkCities = $networkCities;
+                $largestNetworkRoutes = array_values($networkRoutes);
+            }
         }
 
-        return $largestNetwork;
+        return new ConnectedNetwork($largestNetworkCities, $largestNetworkRoutes);
     }
 
     /**
