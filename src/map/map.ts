@@ -244,6 +244,9 @@ export class TtrMap {
                 if (route.locomotives) {
                     title += ` (${_("${number} locomotive(s) required").replace('${number}', `${route.locomotives}`)})`;
                 }  
+                if (route.mountain) {
+                    title += ` (${_("${number} mountain X").replace('${number}', `${route.mountain}`)})`;
+                }  
                 
                 document.getElementById(destination).insertAdjacentHTML('beforeend', `<div id="${destination}-route${route.id}-space${spaceIndex}" class="route-space ${route.tunnel ? 'tunnel' : ''}" 
                     style="transform: translate(${space.x + shiftX}px, ${space.y + shiftY}px) rotate(${space.angle}deg);"

@@ -38,6 +38,7 @@ export interface Route {
     locomotives: number;
     tunnel: boolean;
     canPayWithAnySetOfCards: number | null;
+    mountain: number;
 }
 
 export interface ClaimingRoute {

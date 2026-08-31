@@ -164,7 +164,8 @@ export class ChooseActionState {
 
         this.bga.statusBar.removeActionButtons();
         [clickedRoute, otherRoute].forEach(route => {
-            this.bga.statusBar.addActionButton(`<div class="train-car-color icon" data-color="${route.color}"></div> ${getColor(route.color, 'route')}`, () => this.clickedRouteDoubleRouteConfirmed(route));
+            const mountainCost = route.mountain > 0 ? ` (${_("${number} mountain X").replace('${number}', `${route.mountain}`)})` : '';
+            this.bga.statusBar.addActionButton(`<div class="train-car-color icon" data-color="${route.color}"></div> ${getColor(route.color, 'route')}${mountainCost}`, () => this.clickedRouteDoubleRouteConfirmed(route));
         });
         this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelRouteClaim(), { color: 'secondary' });
     }
@@ -293,20 +294,22 @@ export class ChooseActionState {
             return;
         }
 
-        const needToCheckDoubleRoute = this.askDoubleRouteActive();
-
         const routeColor = this.getConsideredRouteColor(route);
         const otherRoute = Object.values(this.game.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
         const otherRouteColor = otherRoute ? this.getConsideredRouteColor(otherRoute) : null;
-        let askDoubleRouteColor = needToCheckDoubleRoute && otherRoute && otherRouteColor != routeColor && this.canClaimRoute(route, 0) && this.canClaimRoute(otherRoute, 0);
-        if (askDoubleRouteColor) {
+        const doubleRoutesHaveDifferentMountains = otherRoute && otherRoute.mountain !== route.mountain;
+        let askDoubleRoute = otherRoute
+            && this.canClaimRoute(route, 0)
+            && this.canClaimRoute(otherRoute, 0)
+            && (doubleRoutesHaveDifferentMountains || (this.askDoubleRouteActive() && otherRouteColor != routeColor));
+        if (askDoubleRoute && !doubleRoutesHaveDifferentMountains) {
             const selectedColor = this.game.playerTable.getSelectedColor();
             if (selectedColor) {
-                askDoubleRouteColor = false;
+                askDoubleRoute = false;
             }
         }
 
-        if (askDoubleRouteColor) {
+        if (askDoubleRoute) {
             this.setActionBarAskDoubleRoad(route, otherRoute);
             return;
         }
