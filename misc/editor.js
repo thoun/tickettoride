@@ -18,12 +18,99 @@ async function getFileContent(dirHandle, fileName) {
 
 document.getElementById('map-code').value = MAP;
 
-async function load() {
-    MAP = (document.getElementById('map-code')).value;
-    localStorage.setItem('BGA_TTR_EDITOR_MAP', MAP);
+document.addEventListener('keydown', keydown);
+
+const selectedCityNameInput = document.getElementById('selected-city-name');
+selectedCityNameInput.addEventListener('change', () => {
+    if (selectedCity) {
+        selectedCity.dataset.name = selectedCityNameInput.value;
+        selectedCity.innerText = selectedCity.dataset.name;
+        updateCitiesExport();
+    }
+});
+
+const selectedRouteFromInput = document.getElementById('route-from');
+selectedRouteFromInput.addEventListener('change', () => {
+    if (selectedSpace) {
+        getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.from = selectedRouteFromInput.value);
+        updateRoutesExport();
+    }
+});
+
+const selectedRouteToInput = document.getElementById('route-to');
+selectedRouteToInput.addEventListener('change', () => {
+    if (selectedSpace) {
+        getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.from = selectedRouteToInput.value);
+        updateRoutesExport();
+    }
+});
+
+const selectedRouteColorInput = document.getElementById('route-color');
+selectedRouteColorInput.addEventListener('change', () => {
+    if (selectedSpace) {
+        getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.color = selectedRouteColorInput.value);
+        updateRoutesExport();
+    }
+});
+
+const selectedRouteTunnelInput = document.getElementById('route-tunnel');
+selectedRouteTunnelInput.addEventListener('change', () => {
+    if (selectedSpace) {
+        getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.tunnel = selectedRouteTunnelInput.checked ? 'true' : 'false');
+        updateRoutesExport();
+    }
+});
+
+const selectedRouteLocomotivesInput = document.getElementById('route-locomotives');
+selectedRouteLocomotivesInput.addEventListener('change', () => {
+    if (selectedSpace) {
+        getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.locomotives = selectedRouteLocomotivesInput.value);
+        updateRouteClasses(Number(selectedSpace.dataset.routeId));
+        updateRoutesExport();
+    }
+});
+
+const selectedRouteMountainInput = document.getElementById('route-mountain');
+selectedRouteMountainInput.addEventListener('change', () => {
+    if (selectedSpace) {
+        getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.mountain = selectedRouteMountainInput.value);
+        updateRouteClasses(Number(selectedSpace.dataset.routeId));
+        updateRoutesExport();
+    }
+});
+
+function resetEditor() {
+    unselectCity();
+    unselectSpace();
+
     const mapDiv = document.getElementById('map');
-    const mapUrl = `../img/${MAP}/map.webp`;
-    mapDiv.style.backgroundImage = `url('${mapUrl}')`;
+    mapDiv.style.backgroundImage = '';
+    mapDiv.style.width = '';
+    mapDiv.style.height = '';
+
+    document.getElementById('cities').replaceChildren();
+    document.getElementById('route-spaces').replaceChildren();
+    ['route-from', 'route-to', 'new-route-from', 'new-route-to'].forEach(selectId => {
+        document.getElementById(selectId).replaceChildren();
+    });
+
+    document.getElementById('cities-export').value = '';
+    document.getElementById('routes-export').value = '';
+
+    document.getElementById('new-city-id').value = '1';
+    document.getElementById('new-city-name').value = '';
+    document.getElementById('new-route-color').value = COLORS[0];
+    document.getElementById('new-route-tunnel').checked = false;
+    document.getElementById('new-route-spaces').value = '1';
+    document.getElementById('new-route-locomotives').value = '0';
+    document.getElementById('new-route-mountain').value = '0';
+}
+
+async function load() {
+    const mapCode = (document.getElementById('map-code')).value;
+    MAP = mapCode;
+    localStorage.setItem('BGA_TTR_EDITOR_MAP', MAP);
+    const mapUrl = `../img/${mapCode}/map.webp`;
 
     // Use the actual map dimensions instead of maintaining a map-name list.
     // This also keeps the editor working for newly added maps and non-standard
@@ -34,83 +121,25 @@ async function load() {
         mapImage.onerror = resolve;
         mapImage.src = mapUrl;
     });
+    const root = await (window).showDirectoryPicker();
+    const modulesHandle = await root.getDirectoryHandle('modules');
+    const mapsHandle = await modulesHandle.getDirectoryHandle('maps');
+    const mapHandle = await mapsHandle.getDirectoryHandle(mapCode);
+    const citiesPhpFileText = await getFileContent(mapHandle, `cities.php`);
+    const routesPhpFileText = await getFileContent(mapHandle, `routes.php`);
+
+    resetEditor();
+    const mapDiv = document.getElementById('map');
+    mapDiv.style.backgroundImage = `url('${mapUrl}')`;
     if (mapImage.naturalWidth > 0 && mapImage.naturalHeight > 0) {
         mapDiv.style.width = `${mapImage.naturalWidth}px`;
         mapDiv.style.height = `${mapImage.naturalHeight}px`;
     }
-    const root = await (window).showDirectoryPicker();
-    const modulesHandle = await root.getDirectoryHandle('modules');
-    const mapsHandle = await modulesHandle.getDirectoryHandle('maps');
-    const mapHandle = await mapsHandle.getDirectoryHandle(MAP);
-    const citiesPhpFileText = await getFileContent(mapHandle, `cities.php`);
-    const routesPhpFileText = await getFileContent(mapHandle, `routes.php`);
-
     parseCities(citiesPhpFileText);
     parseRoutes(routesPhpFileText);
 
-    document.addEventListener('keydown', keydown);
-    const selectedCityNameInput = document.getElementById('selected-city-name');
-    selectedCityNameInput.addEventListener('change', () => {
-        if (selectedCity) {
-            selectedCity.dataset.name = selectedCityNameInput.value;
-            selectedCity.innerText = selectedCity.dataset.name;
-            this.updateCitiesExport();
-        }
-    });
-
-    const selectedRouteFromInput = document.getElementById('route-from');
-    selectedRouteFromInput.addEventListener('change', () => {
-        if (selectedSpace) {
-            getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.from = selectedRouteFromInput.value);
-            this.updateRoutesExport();
-        }
-    });
-
-    const selectedRouteToInput = document.getElementById('route-to');
-    selectedRouteToInput.addEventListener('change', () => {
-        if (selectedSpace) {
-            getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.from = selectedRouteToInput.value);
-            this.updateRoutesExport();
-        }
-    });
-
-    const selectedRouteColorInput = document.getElementById('route-color');
-    selectedRouteColorInput.addEventListener('change', () => {
-        if (selectedSpace) {
-            getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.color = selectedRouteColorInput.value);
-            this.updateRoutesExport();
-        }
-    });
-
-    const selectedRouteTunnelInput = document.getElementById('route-tunnel');
-    selectedRouteTunnelInput.addEventListener('change', () => {
-        if (selectedSpace) {
-            getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.tunnel = selectedRouteTunnelInput.checked ? 'true' : 'false');
-            this.updateRoutesExport();
-        }
-    });
-
-    const selectedRouteLocomotivesInput = document.getElementById('route-locomotives');
-    selectedRouteLocomotivesInput.addEventListener('change', () => {
-        if (selectedSpace) {
-            getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.locomotives = selectedRouteLocomotivesInput.value);
-            updateRouteClasses(Number(selectedSpace.dataset.routeId));
-            this.updateRoutesExport();
-        }
-    });
-
-    const selectedRouteMountainInput = document.getElementById('route-mountain');
-    selectedRouteMountainInput.addEventListener('change', () => {
-        if (selectedSpace) {
-            getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.mountain = selectedRouteMountainInput.value);
-            updateRouteClasses(Number(selectedSpace.dataset.routeId));
-            this.updateRoutesExport();
-        }
-    });
-
-
-    this.updateCitiesExport();
-    this.updateRoutesExport();
+    updateCitiesExport();
+    updateRoutesExport();
 
 }
 

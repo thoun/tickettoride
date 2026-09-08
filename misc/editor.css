@@ -39,8 +39,12 @@
 }
 
 .route-space {
+    --text-shadow-color: gray;
+
     opacity: 0.6;
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin: 10px;
     position: absolute;
     top: -18px;
@@ -49,14 +53,70 @@
     height: 16px;
     transform: translate(var(--x), var(--y)) rotate(var(--a));
     color: black;
-    text-shadow: 0 0 1px white, 0 0 2px white, 0 0 1px white, 0 0 2px white;
+    text-align: center;
+    text-shadow: var(--text-shadow-color) 3px 0 0,
+        var(--text-shadow-color) 2.83487px 0.981584px 0,
+        var(--text-shadow-color) 2.35766px 1.85511px 0,
+        var(--text-shadow-color) 1.62091px 2.52441px 0,
+        var(--text-shadow-color) 0.705713px 2.91581px 0,
+        var(--text-shadow-color) -0.287171px 2.98622px 0,
+        var(--text-shadow-color) -1.24844px 2.72789px 0,
+        var(--text-shadow-color) -2.07227px 2.16926px 0,
+        var(--text-shadow-color) -2.66798px 1.37182px 0,
+        var(--text-shadow-color) -2.96998px 0.42336px 0,
+        var(--text-shadow-color) -2.94502px -0.571704px 0,
+        var(--text-shadow-color) -2.59586px -1.50383px 0,
+        var(--text-shadow-color) -1.96093px -2.27041px 0,
+        var(--text-shadow-color) -1.11013px -2.78704px 0,
+        var(--text-shadow-color) -0.137119px -2.99686px 0,
+        var(--text-shadow-color) 0.850987px -2.87677px 0,
+        var(--text-shadow-color) 1.74541px -2.43999px 0,
+        var(--text-shadow-color) 2.44769px -1.73459px 0,
+        var(--text-shadow-color) 2.88051px -0.838247px 0;
     overflow: hidden;
-    font-size: bold;
+    font-weight: bold;
 }
 
-.route-space[data-color="BLACK"], .route-space[data-color="TRACKBED"] {
+.route-space[data-color="TRACKBED"] {
+    --text-shadow-color: saddlebrown;
     color: white;
-    text-shadow: 0 0 1px black, 0 0 2px black, 0 0 1px black, 0 0 2px black;
+}
+
+.route-space[data-color="GRAY"] {
+    --text-shadow-color: #c5c4c7;
+}
+
+.route-space[data-color="PINK"] {
+    --text-shadow-color: #c58fc4;
+}
+
+.route-space[data-color="WHITE"] {
+    --text-shadow-color: #f6f6f6;
+}
+
+.route-space[data-color="BLUE"] {
+    --text-shadow-color: #06a0dc;
+}
+
+.route-space[data-color="YELLOW"] {
+    --text-shadow-color: #fce744;
+}
+
+.route-space[data-color="ORANGE"] {
+    --text-shadow-color: #da7e30;
+}
+
+.route-space[data-color="BLACK"] {
+    --text-shadow-color: #203734;
+    color: white;
+}
+
+.route-space[data-color="RED"] {
+    --text-shadow-color: red;
+}
+
+.route-space[data-color="GREEN"] {
+    --text-shadow-color: green;
 }
 
 .route-space.tunnel {
