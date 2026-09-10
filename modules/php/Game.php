@@ -274,6 +274,12 @@ class Game extends Table {
                 $player['completedDestinations'] = $this->destinationManager->getCompletedDestinations($playerId);
                 $player['uncompletedDestinations'] = $this->destinationManager->getUncompletedDestinations($playerId);
                 $player['longestPathLength'] = $this->mapManager->getLongestPath($playerId)->length;
+                if ($this->getMap()->mandalaPoints !== null) {
+                    $player['mandalaCount'] = count(array_filter(
+                        $player['completedDestinations'],
+                        fn($destination) => count($this->mapManager->getDistinctRoutes($playerId, $destination)) >= 2,
+                    ));
+                }
                 if ($this->getMap()->pointsForMostConnectedCities !== null) {
                     $player['mostConnectedCities'] = $this->mapManager->getMostConnectedCities($playerId);
                 }

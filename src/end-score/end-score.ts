@@ -92,6 +92,9 @@ export class EndScore {
                 if (this.game.getMap().pointsForMostConnectedCities !== null && player.mostConnectedCities == mostConnectedCities) {
                     this.setMostConnectedCitiesWinner(player.id, mostConnectedCities);
                 }
+                if (player.mandalaCount !== undefined) {
+                    this.setMandalaCount(player.id, player.mandalaCount);
+                }
                 this.updateDestinationsTooltip(player);
             });
         }
@@ -259,7 +262,7 @@ export class EndScore {
         `);
     }
 
-    public setMandalaCount(playerId: number, length: number) {
+    public setMandalaCount(playerId: number | string, length: number) {
         document.getElementById(`mandala-count-${playerId}`).insertAdjacentHTML('afterbegin', `<div class="mandala-count">${length} <div class="mandala-icon"></div></div>`);
     }
     

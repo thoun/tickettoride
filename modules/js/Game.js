@@ -703,6 +703,9 @@ class EndScore {
                 if (this.game.getMap().pointsForMostConnectedCities !== null && player.mostConnectedCities == mostConnectedCities) {
                     this.setMostConnectedCitiesWinner(player.id, mostConnectedCities);
                 }
+                if (player.mandalaCount !== undefined) {
+                    this.setMandalaCount(player.id, player.mandalaCount);
+                }
                 this.updateDestinationsTooltip(player);
             });
         }

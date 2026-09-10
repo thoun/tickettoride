@@ -76,6 +76,7 @@ export interface TicketToRidePlayer extends Player {
     uncompletedDestinations?: Destination[];
     longestPathLength: number;
     mostConnectedCities: number;
+    mandalaCount?: number;
 }
 
 export interface City {
