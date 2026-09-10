@@ -1,4 +1,4 @@
-import { TicketToRideGame, Route, Destination } from "./tickettoride.d";
+import { TicketToRideGame, Route } from "./tickettoride.d";
 import { WagonsAnimation } from "./wagons-animation";
 
 /**
@@ -10,14 +10,13 @@ export class MandalaRoutesAnimation extends WagonsAnimation {
     constructor(
         game: TicketToRideGame,
         private routes: Route[],
-        destination: Destination,
+        cityIds: number[],
         private actions: {
             end?: () => void,
         },
     ) {
         super(game, routes);
-        const to = Array.isArray(destination.to) ? destination.to : [destination.to];
-        [destination.from, ...to]
+        cityIds
             .filter(cityId => cityId > 0)
             .forEach(cityId => this.cities.push(document.getElementById(`city${cityId}`)));
     }

@@ -7,7 +7,7 @@ import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseActi
 import { ChooseLegendaryCharacterState } from "./ts/States/ChooseLegendaryCharacter";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
-import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifMostConnectedCitiesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs } from "./tickettoride.d";
+import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifMostConnectedCitiesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifScoreDestinationArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs } from "./tickettoride.d";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 import { BgaAutofit } from "./ts/libs";
@@ -589,6 +589,21 @@ export class Game implements TicketToRideGame {
         return this.bga.userPreferences.get(208) == 2;
     }
 
+    private getNotificationRoutes(routeIds: number[] | null): Route[] | null {
+        return routeIds === null || routeIds === undefined ? null : routeIds.map(routeId => this.getMap().routes[routeId]);
+    }
+
+    private getNotificationDestination(args: NotifDestinationCompletedArgs | NotifScoreDestinationArgs): Destination {
+        return {
+            ...this.getMap().destinations[args.destinationType][args.destinationTypeArg],
+            id: args.destinationId,
+            type: args.destinationType,
+            type_arg: args.destinationTypeArg,
+            location: 'hand',
+            location_arg: args.playerId,
+        };
+    }
+
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
 
@@ -750,10 +765,11 @@ export class Game implements TicketToRideGame {
      * Mark a destination as complete.
      */ 
     notif_destinationCompleted(notif: Notif<NotifDestinationCompletedArgs>) {
-        const destination: Destination = notif.args.destination;
+        const destination = this.getNotificationDestination(notif.args);
+        const destinationRoutes = this.getNotificationRoutes(notif.args.destinationRouteIds);
         this.completedDestinationsCounter.incValue(1);
         this.gamedatas.completedDestinations.push(destination);
-        this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
+        this.playerTable.markDestinationComplete(destination, destinationRoutes ?? undefined, notif.args.stationCityIds);
 
         this.bga.sounds.play(`completed-in-game`);
         this.bga.gameui.disableNextMoveSound();
@@ -804,25 +820,27 @@ export class Game implements TicketToRideGame {
      * Remove destinations discarded by Irene Adler before end scoring.
      */
     notif_discardDestination(notif: Notif<NotifDiscardDestinationArgs>) {
-        const { playerId, destination } = notif.args;
+        const { playerId, destinationId } = notif.args;
         this.destinationCardCounters[playerId].incValue(-1);
         if (playerId === this.bga.players.getCurrentPlayerId()) {
-            this.playerTable?.removeDestination(destination);
+            this.playerTable?.removeDestination(destinationId);
         }
     }
 
     /** 
      * Animate a destination for end score. 
      */ 
-    notif_scoreDestination(notif: Notif<NotifDestinationCompletedArgs>) {
+    notif_scoreDestination(notif: Notif<NotifScoreDestinationArgs>) {
         const playerId = notif.args.playerId;
         const player = this.gamedatas.players[playerId];
-        this.endScore?.scoreDestination(playerId, notif.args.destination, notif.args.destinationRoutes, this.isFastEndScoring());
-        if (notif.args.destinationRoutes) {
-            player.completedDestinations.push(notif.args.destination);
+        const destination = this.getNotificationDestination(notif.args);
+        const destinationRoutes = this.getNotificationRoutes(notif.args.destinationRouteIds);
+        this.endScore?.scoreDestination(playerId, destination, destinationRoutes, notif.args.stationCityIds, this.isFastEndScoring());
+        if (destinationRoutes) {
+            player.completedDestinations.push(destination);
         } else {
-            player.uncompletedDestinations.push(notif.args.destination);
-            document.getElementById(`destination-card-${notif.args.destination.id}`)?.classList.add('uncompleted');
+            player.uncompletedDestinations.push(destination);
+            document.getElementById(`destination-card-${destination.id}`)?.classList.add('uncompleted');
         }
         this.endScore?.updateDestinationsTooltip(player);
     }
@@ -838,11 +856,11 @@ export class Game implements TicketToRideGame {
      * Animate longest path for end score.
      */ 
     notif_longestPath(notif: Notif<NotifLongestPathArgs>) {
-        this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length, this.isFastEndScoring());
+        this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, this.getNotificationRoutes(notif.args.routeIds) ?? [], notif.args.length, this.isFastEndScoring());
     }
 
     notif_mostConnectedCities(notif: Notif<NotifMostConnectedCitiesArgs>) {
-        this.endScore?.showMostConnectedCities(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.connectedCities, notif.args.length, this.isFastEndScoring());
+        this.endScore?.showMostConnectedCities(this.gamedatas.players[notif.args.playerId].color, this.getNotificationRoutes(notif.args.routeIds) ?? [], notif.args.connectedCities, notif.args.cities, this.isFastEndScoring());
     }
 
     /** 
@@ -856,7 +874,7 @@ export class Game implements TicketToRideGame {
      * Animate mandala routes for end score.
      */ 
     notif_scoreDestinationGrandTour(notif: Notif<NotifMandalaRoutesArgs>) {
-        this.endScore?.showMandalaRoutes(notif.args.routes, notif.args.destination, this.isFastEndScoring());
+        this.endScore?.showMandalaRoutes(this.getNotificationRoutes(notif.args.routeIds) ?? [], notif.args.cityIds, this.isFastEndScoring());
     }
 
     /** 

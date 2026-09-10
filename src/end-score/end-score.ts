@@ -133,7 +133,7 @@ export class EndScore {
     /** 
      * Show score animation for a revealed destination.
      */ 
-    public scoreDestination(playerId: number, destination: Destination, destinationRoutes: Route[], isFastEndScoring: boolean = false) { 
+    public scoreDestination(playerId: number, destination: Destination, destinationRoutes: Route[], stationCityIds: number[], isFastEndScoring: boolean = false) {
         const state = destinationRoutes ? 'completed' : 'uncompleted';
         const endFunction = () => {
             (destinationRoutes ? this.completedDestinationCounters : this.uncompletedDestinationCounters)[playerId].incValue(1);
@@ -163,7 +163,8 @@ export class EndScore {
                 end: endFunction,
             },
             state,
-            0.15 / this.game.getZoom()
+            0.15 / this.game.getZoom(),
+            stationCityIds,
         );
 
         this.game.addAnimation(newDac);
@@ -191,7 +192,7 @@ export class EndScore {
     /** 
      * Show mandala routes animation for a player.
      */ 
-    public showMandalaRoutes(routes: Route[], destination: Destination, isFastEndScoring: boolean = false) {
+    public showMandalaRoutes(routes: Route[], cityIds: number[], isFastEndScoring: boolean = false) {
         if (isFastEndScoring) {
             return;
         }
@@ -199,7 +200,7 @@ export class EndScore {
         const newDac = new MandalaRoutesAnimation(
             this.game,
             routes, 
-            destination,
+            cityIds,
             {
                 end: () => {
                     //this.game.bga.sounds.play(`longest-line-scoring`);

@@ -22,8 +22,9 @@ export class DestinationCompleteAnimation extends WagonsAnimation {
         },
         private state: 'completed' | 'uncompleted',
         private initialSize: number = 1,
+        stationCityIds: number[] = [],
     ) {
-        super(game, destinationRoutes);
+        super(game, destinationRoutes, stationCityIds);
     }
 
     public animate(): Promise<WagonsAnimation> {

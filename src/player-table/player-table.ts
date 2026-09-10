@@ -48,12 +48,12 @@ export class PlayerTable {
         this.playerDestinations.addDestinations(destinations, originStock);
     }
 
-    public removeDestination(destination: Destination) {
-        this.playerDestinations.removeDestination(destination);
+    public removeDestination(destinationId: number) {
+        this.playerDestinations.removeDestination(destinationId);
     }
 
-    public markDestinationComplete(destination: Destination, destinationRoutes?: Route[]) {
-        this.playerDestinations.markDestinationComplete(destination, destinationRoutes);
+    public markDestinationComplete(destination: Destination, destinationRoutes?: Route[], stationCityIds: number[] = []) {
+        this.playerDestinations.markDestinationComplete(destination, destinationRoutes, stationCityIds);
     }
     
     public addTrainCars(trainCars: TrainCar[], from?: HTMLElement) {

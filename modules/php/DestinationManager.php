@@ -251,14 +251,18 @@ class DestinationManager {
             clienttranslate('${you} completed a new destination : ${from} - ${to}');
         $this->bga->notify->player($playerId, 'destinationCompleted', $message, [
             'playerId' => $playerId,
-            'player_name' => $this->game->getPlayerNameById($playerId),
+            // TODO: remove these legacy fields once clients from the previous release have finished: destination and destinationRoutes
             'destination' => $destination,
+            'destinationId' => $destination->id,
+            'destinationType' => $destination->type,
+            'destinationTypeArg' => $destination->type_arg,
             'from' => $this->game->getCityName($destination->from),
             'to' => $this->game->getLogTo($destination),
             'you' => clienttranslate('You'),
             'i18n' => ['you'],
             'destinationRoutes' => $destinationRoutes,
-            'destinationStations' => $stations,
+            'destinationRouteIds' => array_values(array_map(fn($route) => $route->id, $destinationRoutes)),
+            'stationCityIds' => $stations,
             'city_name' => implode(', ', array_map(fn($station) => $this->game->getCityName($station), $stations)),
         ]);
 

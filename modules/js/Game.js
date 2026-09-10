@@ -2,16 +2,22 @@
  * Animation with highlighted wagons.
  */
 class WagonsAnimation {
-    constructor(game, destinationRoutes) {
+    constructor(game, destinationRoutes, stationCityIds = []) {
         this.game = game;
-        this.wagons = [];
+        this.highlightedPieces = [];
         this.zoom = this.game.getZoom();
         this.shadowDiv = document.getElementById('map-destination-highlight-shadow');
-        destinationRoutes?.forEach(route => this.wagons.push(...Array.from(document.querySelectorAll(`[id^="wagon-route${route.id}-space"]`))));
+        destinationRoutes?.forEach(route => this.highlightedPieces.push(...Array.from(document.querySelectorAll(`[id^="wagon-route${route.id}-space"]`))));
+        stationCityIds.forEach(cityId => {
+            const station = document.getElementById(`station${cityId}`);
+            if (station) {
+                this.highlightedPieces.push(station);
+            }
+        });
     }
     setWagonsVisibility(visible) {
         this.shadowDiv.dataset.visible = visible ? 'true' : 'false';
-        this.wagons.forEach(wagon => wagon.classList.toggle('highlight', visible));
+        this.highlightedPieces.forEach(piece => piece.classList.toggle('highlight', visible));
     }
 }
 
@@ -19,8 +25,8 @@ class WagonsAnimation {
  * Destination animation : destination slides over the map, wagons used by destination are highlighted, destination is mark "done" or "uncomplete", and card slides back to original place.
  */
 class DestinationCompleteAnimation extends WagonsAnimation {
-    constructor(game, destination, destinationRoutes, fromId, toId, actions, state, initialSize = 1) {
-        super(game, destinationRoutes);
+    constructor(game, destination, destinationRoutes, fromId, toId, actions, state, initialSize = 1, stationCityIds = []) {
+        super(game, destinationRoutes, stationCityIds);
         this.destination = destination;
         this.fromId = fromId;
         this.toId = toId;
@@ -183,20 +189,20 @@ class PlayerDestinations {
     /**
      * Remove a destination from the player's hand.
      */
-    removeDestination(destination) {
-        const todoIndex = this.destinationsTodo.findIndex(d => d.id == destination.id);
+    removeDestination(destinationId) {
+        const todoIndex = this.destinationsTodo.findIndex(d => d.id == destinationId);
         if (todoIndex !== -1) {
             this.destinationsTodo.splice(todoIndex, 1);
         }
-        const doneIndex = this.destinationsDone.findIndex(d => d.id == destination.id);
+        const doneIndex = this.destinationsDone.findIndex(d => d.id == destinationId);
         if (doneIndex !== -1) {
             this.destinationsDone.splice(doneIndex, 1);
         }
-        const card = document.getElementById(`destination-card-${destination.id}`);
+        const card = document.getElementById(`destination-card-${destinationId}`);
         if (card) {
             card.parentElement?.removeChild(card);
         }
-        if (this.selectedDestination?.id == destination.id) {
+        if (this.selectedDestination?.id == destinationId) {
             this.activateNextDestination(this.destinationsTodo.length > 0 ? this.destinationsTodo : this.destinationsDone);
             return;
         }
@@ -221,20 +227,20 @@ class PlayerDestinations {
     /**
      * Add an animation to mark a destination as complete.
      */
-    markDestinationCompleteAnimation(destination, destinationRoutes) {
+    markDestinationCompleteAnimation(destination, destinationRoutes, stationCityIds = []) {
         const newDac = new DestinationCompleteAnimation(this.game, destination, destinationRoutes, `destination-card-${destination.id}`, `destination-card-${destination.id}`, {
             start: d => document.getElementById(`destination-card-${d.id}`).classList.add('hidden-for-animation'),
             change: d => this.markDestinationCompleteNoAnimation(d),
             end: d => document.getElementById(`destination-card-${d.id}`).classList.remove('hidden-for-animation'),
-        }, 'completed');
+        }, 'completed', 1, stationCityIds);
         this.game.addAnimation(newDac);
     }
     /**
      * Mark a destination as complete.
      */
-    markDestinationComplete(destination, destinationRoutes) {
+    markDestinationComplete(destination, destinationRoutes, stationCityIds = []) {
         if (destinationRoutes && this.game.bga.gameui.bgaAnimationsActive()) {
-            this.markDestinationCompleteAnimation(destination, destinationRoutes);
+            this.markDestinationCompleteAnimation(destination, destinationRoutes, stationCityIds);
         }
         else {
             this.markDestinationCompleteNoAnimation(destination);
@@ -552,13 +558,12 @@ class MostConnectedCitiesAnimation extends WagonsAnimation {
  * Longest path animation : wagons used by longest path are highlighted, and length is displayed over the map.
  */
 class MandalaRoutesAnimation extends WagonsAnimation {
-    constructor(game, routes, destination, actions) {
+    constructor(game, routes, cityIds, actions) {
         super(game, routes);
         this.routes = routes;
         this.actions = actions;
         this.cities = [];
-        const to = Array.isArray(destination.to) ? destination.to : [destination.to];
-        [destination.from, ...to]
+        cityIds
             .filter(cityId => cityId > 0)
             .forEach(cityId => this.cities.push(document.getElementById(`city${cityId}`)));
     }
@@ -733,7 +738,7 @@ class EndScore {
     /**
      * Show score animation for a revealed destination.
      */
-    scoreDestination(playerId, destination, destinationRoutes, isFastEndScoring = false) {
+    scoreDestination(playerId, destination, destinationRoutes, stationCityIds, isFastEndScoring = false) {
         const state = destinationRoutes ? 'completed' : 'uncompleted';
         const endFunction = () => {
             (destinationRoutes ? this.completedDestinationCounters : this.uncompletedDestinationCounters)[playerId].incValue(1);
@@ -752,7 +757,7 @@ class EndScore {
                 this.game.bga.gameui.disableNextMoveSound();
             },
             end: endFunction,
-        }, state, 0.15 / this.game.getZoom());
+        }, state, 0.15 / this.game.getZoom(), stationCityIds);
         this.game.addAnimation(newDac);
     }
     updateDestinationsTooltip(player) {
@@ -771,11 +776,11 @@ class EndScore {
     /**
      * Show mandala routes animation for a player.
      */
-    showMandalaRoutes(routes, destination, isFastEndScoring = false) {
+    showMandalaRoutes(routes, cityIds, isFastEndScoring = false) {
         if (isFastEndScoring) {
             return;
         }
-        const newDac = new MandalaRoutesAnimation(this.game, routes, destination, {
+        const newDac = new MandalaRoutesAnimation(this.game, routes, cityIds, {
             end: () => {
                 //this.game.bga.sounds.play(`longest-line-scoring`);
                 //this.game.bga.gameui.disableNextMoveSound();
@@ -1976,11 +1981,11 @@ class PlayerTable {
     addDestinations(destinations, originStock) {
         this.playerDestinations.addDestinations(destinations, originStock);
     }
-    removeDestination(destination) {
-        this.playerDestinations.removeDestination(destination);
+    removeDestination(destinationId) {
+        this.playerDestinations.removeDestination(destinationId);
     }
-    markDestinationComplete(destination, destinationRoutes) {
-        this.playerDestinations.markDestinationComplete(destination, destinationRoutes);
+    markDestinationComplete(destination, destinationRoutes, stationCityIds = []) {
+        this.playerDestinations.markDestinationComplete(destination, destinationRoutes, stationCityIds);
     }
     addTrainCars(trainCars, from) {
         this.playerTrainCars.addTrainCars(trainCars, from);
@@ -3585,6 +3590,19 @@ class Game {
     isFastEndScoring() {
         return this.bga.userPreferences.get(208) == 2;
     }
+    getNotificationRoutes(routeIds) {
+        return routeIds === null || routeIds === undefined ? null : routeIds.map(routeId => this.getMap().routes[routeId]);
+    }
+    getNotificationDestination(args) {
+        return {
+            ...this.getMap().destinations[args.destinationType][args.destinationTypeArg],
+            id: args.destinationId,
+            type: args.destinationType,
+            type_arg: args.destinationTypeArg,
+            location: 'hand',
+            location_arg: args.playerId,
+        };
+    }
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
     /*
@@ -3727,10 +3745,11 @@ class Game {
      * Mark a destination as complete.
      */
     notif_destinationCompleted(notif) {
-        const destination = notif.args.destination;
+        const destination = this.getNotificationDestination(notif.args);
+        const destinationRoutes = this.getNotificationRoutes(notif.args.destinationRouteIds);
         this.completedDestinationsCounter.incValue(1);
         this.gamedatas.completedDestinations.push(destination);
-        this.playerTable.markDestinationComplete(destination, notif.args.destinationRoutes);
+        this.playerTable.markDestinationComplete(destination, destinationRoutes ?? undefined, notif.args.stationCityIds);
         this.bga.sounds.play(`completed-in-game`);
         this.bga.gameui.disableNextMoveSound();
     }
@@ -3775,10 +3794,10 @@ class Game {
      * Remove destinations discarded by Irene Adler before end scoring.
      */
     notif_discardDestination(notif) {
-        const { playerId, destination } = notif.args;
+        const { playerId, destinationId } = notif.args;
         this.destinationCardCounters[playerId].incValue(-1);
         if (playerId === this.bga.players.getCurrentPlayerId()) {
-            this.playerTable?.removeDestination(destination);
+            this.playerTable?.removeDestination(destinationId);
         }
     }
     /**
@@ -3787,13 +3806,15 @@ class Game {
     notif_scoreDestination(notif) {
         const playerId = notif.args.playerId;
         const player = this.gamedatas.players[playerId];
-        this.endScore?.scoreDestination(playerId, notif.args.destination, notif.args.destinationRoutes, this.isFastEndScoring());
-        if (notif.args.destinationRoutes) {
-            player.completedDestinations.push(notif.args.destination);
+        const destination = this.getNotificationDestination(notif.args);
+        const destinationRoutes = this.getNotificationRoutes(notif.args.destinationRouteIds);
+        this.endScore?.scoreDestination(playerId, destination, destinationRoutes, notif.args.stationCityIds, this.isFastEndScoring());
+        if (destinationRoutes) {
+            player.completedDestinations.push(destination);
         }
         else {
-            player.uncompletedDestinations.push(notif.args.destination);
-            document.getElementById(`destination-card-${notif.args.destination.id}`)?.classList.add('uncompleted');
+            player.uncompletedDestinations.push(destination);
+            document.getElementById(`destination-card-${destination.id}`)?.classList.add('uncompleted');
         }
         this.endScore?.updateDestinationsTooltip(player);
     }
@@ -3807,10 +3828,10 @@ class Game {
      * Animate longest path for end score.
      */
     notif_longestPath(notif) {
-        this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.length, this.isFastEndScoring());
+        this.endScore?.showLongestPath(this.gamedatas.players[notif.args.playerId].color, this.getNotificationRoutes(notif.args.routeIds) ?? [], notif.args.length, this.isFastEndScoring());
     }
     notif_mostConnectedCities(notif) {
-        this.endScore?.showMostConnectedCities(this.gamedatas.players[notif.args.playerId].color, notif.args.routes, notif.args.connectedCities, notif.args.length, this.isFastEndScoring());
+        this.endScore?.showMostConnectedCities(this.gamedatas.players[notif.args.playerId].color, this.getNotificationRoutes(notif.args.routeIds) ?? [], notif.args.connectedCities, notif.args.cities, this.isFastEndScoring());
     }
     /**
      * Add Mandala count for end score.
@@ -3822,7 +3843,7 @@ class Game {
      * Animate mandala routes for end score.
      */
     notif_scoreDestinationGrandTour(notif) {
-        this.endScore?.showMandalaRoutes(notif.args.routes, notif.args.destination, this.isFastEndScoring());
+        this.endScore?.showMandalaRoutes(this.getNotificationRoutes(notif.args.routeIds) ?? [], notif.args.cityIds, this.isFastEndScoring());
     }
     /**
      * Add longest path badge for end score.

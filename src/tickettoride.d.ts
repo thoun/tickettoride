@@ -259,8 +259,11 @@ export interface NotifBuiltStationArgs {
 
 export interface NotifDestinationCompletedArgs {
     playerId: number;
-    destination: Destination;
-    destinationRoutes: Route[];
+    destinationId: number;
+    destinationType: number;
+    destinationTypeArg: number;
+    destinationRouteIds: number[] | null;
+    stationCityIds: number[];
 }
 
 export interface NotifFreeTunnelArgs {
@@ -276,33 +279,30 @@ export interface NotifScorePointArgs {
     points: number;
 }
 
-export interface NotifScoreDestinationArgs {
-    playerId: number;
-    points: number;
-}
+export interface NotifScoreDestinationArgs extends NotifDestinationCompletedArgs {}
 
 export interface NotifDiscardDestinationArgs {
     playerId: number;
-    destination: Destination;
+    destinationId: number;
 }
 
 export interface NotifLongestPathArgs {
     playerId: number;
     length: number;
-    routes: Route[];
+    routeIds: number[];
 }
 
 export interface NotifMostConnectedCitiesArgs {
     playerId: number;
-    length: number;
+    cities: number;
     connectedCities: number[];
-    routes: Route[];
+    routeIds: number[];
 }
 
 export interface NotifMandalaRoutesArgs {
     playerId: number;
-    destination: Destination;
-    routes: Route[];
+    cityIds: number[];
+    routeIds: number[];
 }
 
 

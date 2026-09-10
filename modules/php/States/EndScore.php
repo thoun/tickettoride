@@ -20,6 +20,10 @@ class EndScore extends GameState {
         );
     }
 
+    private function getRouteIds(?array $routes): ?array {
+        return $routes === null ? null : array_values(Arrays::map($routes, fn($route) => $route->id));
+    }
+
     /**
      * @param Destination[] $uncompletedDestinations 
      * @return Destination[] the new list of uncompleted destinations
@@ -49,7 +53,9 @@ class EndScore extends GameState {
             $this->game->destinationManager->discardDestination($destination);
             $this->notify->all('discardDestination', clienttranslate('${player_name} discards ${from} to ${to} incomplete destination with ${character_name}'), [
                 'playerId' => $playerId,
+                // TODO: remove this legacy field once clients from the previous release have finished: destination
                 'destination' => $destination,
+                'destinationId' => $destination->id,
                 'from' => $this->game->getCityName($destination->from),
                 'to' => $this->game->getLogTo($destination),
                 'character_name' => $this->game->legendaryCharacterManager->getCharacterName(2),
@@ -254,7 +260,7 @@ class EndScore extends GameState {
 
             foreach ($destinations as $destination) {
                 $destinationRoutes = null;
-                $destinationStations = null;
+                $destinationStations = [];
                 $completed = boolval($this->game->getUniqueValueFromDb("SELECT `completed` FROM `destination` WHERE `card_id` = $destination->id"));
                 if ($completed) {
                     $index = Arrays::findKey($useStationResult[$playerId][1], fn($d) => $d->id == $destination->id);
@@ -272,11 +278,16 @@ class EndScore extends GameState {
                 $this->notify->all('scoreDestination', clienttranslate('${player_name} reveals ${from} to ${to} destination'), [
                     'playerId' => $playerId,
                     'player_name' => $this->game->getPlayerNameById($playerId),
+                    // TODO: remove these legacy fields once clients from the previous release have finished: destination and destinationRoutes
                     'destination' => $destination,
+                    'destinationId' => $destination->id,
+                    'destinationType' => $destination->type,
+                    'destinationTypeArg' => $destination->type_arg,
                     'from' => $this->game->getCityName($destination->from),
                     'to' => $this->game->getLogTo($destination),
                     'destinationRoutes' => $destinationRoutes,
-                    'destinationStations' => $destinationStations,
+                    'destinationRouteIds' => $this->getRouteIds($destinationRoutes),
+                    'stationCityIds' => $destinationStations,
                 ]);
                 
                 $message = clienttranslate('${player_name} ${gainsloses} ${absdelta} points with ${from} to ${to} destination');
@@ -332,7 +343,9 @@ class EndScore extends GameState {
                     'playerId' => $playerId,
                     'player_name' => $this->game->getPlayerNameById($playerId),
                     'length' => $longestPath->length,
+                    // TODO: remove this legacy field once clients from the previous release have finished.
                     'routes' => $longestPath->routes,
+                    'routeIds' => $this->getRouteIds($longestPath->routes),
                 ]);
 
                 $this->game->setStat($longestPath->length, 'longestPath', $playerId);
@@ -361,10 +374,12 @@ class EndScore extends GameState {
                 $this->notify->all('mostConnectedCities', clienttranslate('${player_name} connected ${cities} cities in their largest network'), [
                     'playerId' => $playerId,
                     'player_name' => $this->game->getPlayerNameById($playerId),
+                    // TODO: remove these legacy fields once clients from the previous release have finished: routes
                     'length' => count($playersMostConnectedCities[$playerId]->cities),
                     'cities' => count($playersMostConnectedCities[$playerId]->cities),
                     'connectedCities' => $playersMostConnectedCities[$playerId]->cities,
                     'routes' => $playersMostConnectedCities[$playerId]->routes,
+                    'routeIds' => $this->getRouteIds($playersMostConnectedCities[$playerId]->routes),
                 ]);
             }
 
@@ -429,10 +444,13 @@ class EndScore extends GameState {
                     $this->notify->all('scoreDestinationGrandTour', clienttranslate('${player_name} gets a Grand Tour bonus (Mandala) from ${from} to ${to}'), [
                         'playerId' => $playerId,
                         'player_name' => $this->game->getPlayerNameById($playerId),
+                        // TODO: remove these legacy fields once clients from the previous release have finished: destination, routes
                         'destination' => $destination,
                         'from' => $this->game->getCityName($destination->from),
                         'to' => $this->game->getLogTo($destination),
+                        'cityIds' => array_merge([$destination->from], is_array($destination->to) ? $destination->to : [$destination->to]),
                         'routes' => $mandalaRoutes[$destination->id],
+                        'routeIds' => $this->getRouteIds($mandalaRoutes[$destination->id]),
                     ]);
                 }
 

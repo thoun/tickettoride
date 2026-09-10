@@ -124,23 +124,23 @@ export class PlayerDestinations {
     /**
      * Remove a destination from the player's hand.
      */
-    public removeDestination(destination: Destination) {
-        const todoIndex = this.destinationsTodo.findIndex(d => d.id == destination.id);
+    public removeDestination(destinationId: number) {
+        const todoIndex = this.destinationsTodo.findIndex(d => d.id == destinationId);
         if (todoIndex !== -1) {
             this.destinationsTodo.splice(todoIndex, 1);
         }
 
-        const doneIndex = this.destinationsDone.findIndex(d => d.id == destination.id);
+        const doneIndex = this.destinationsDone.findIndex(d => d.id == destinationId);
         if (doneIndex !== -1) {
             this.destinationsDone.splice(doneIndex, 1);
         }
 
-        const card = document.getElementById(`destination-card-${destination.id}`);
+        const card = document.getElementById(`destination-card-${destinationId}`);
         if (card) {
             card.parentElement?.removeChild(card);
         }
 
-        if (this.selectedDestination?.id == destination.id) {
+        if (this.selectedDestination?.id == destinationId) {
             this.activateNextDestination(this.destinationsTodo.length > 0 ? this.destinationsTodo : this.destinationsDone);
             return;
         }
@@ -169,7 +169,7 @@ export class PlayerDestinations {
     /** 
      * Add an animation to mark a destination as complete.
      */ 
-    public markDestinationCompleteAnimation(destination: Destination, destinationRoutes: Route[]) {
+    public markDestinationCompleteAnimation(destination: Destination, destinationRoutes: Route[], stationCityIds: number[] = []) {
         const newDac = new DestinationCompleteAnimation(
             this.game,
             destination, 
@@ -181,7 +181,9 @@ export class PlayerDestinations {
                 change: d => this.markDestinationCompleteNoAnimation(d),
                 end: d => document.getElementById(`destination-card-${d.id}`).classList.remove('hidden-for-animation'),
             },
-            'completed'
+            'completed',
+            1,
+            stationCityIds,
         );
 
         this.game.addAnimation(newDac);
@@ -190,9 +192,9 @@ export class PlayerDestinations {
     /** 
      * Mark a destination as complete.
      */ 
-    public markDestinationComplete(destination: Destination, destinationRoutes?: Route[]) {
+    public markDestinationComplete(destination: Destination, destinationRoutes?: Route[], stationCityIds: number[] = []) {
         if (destinationRoutes && this.game.bga.gameui.bgaAnimationsActive()) {
-            this.markDestinationCompleteAnimation(destination, destinationRoutes);
+            this.markDestinationCompleteAnimation(destination, destinationRoutes, stationCityIds);
         } else {
             this.markDestinationCompleteNoAnimation(destination);
         }
