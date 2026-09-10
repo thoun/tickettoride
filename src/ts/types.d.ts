@@ -1,6 +1,6 @@
-import { TtrMap } from "./map/map";
-import { PlayerTable } from "./player-table/player-table";
-import { ChooseActionState } from "./states/ChooseAction";
+import { TtrMap } from "./map";
+import { PlayerTable } from "../player-table/player-table";
+import { ChooseActionState } from "../states/ChooseAction";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 

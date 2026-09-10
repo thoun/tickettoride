@@ -1,4 +1,4 @@
-import { TicketToRideGame } from "./tickettoride.d";
+import { TicketToRideGame } from "./types";
 
 /**
  * Animation to move a card to a player's counter (the destroy animated card).

@@ -1,16 +1,16 @@
-import { DestinationSelection } from "./destination-deck/destination-deck";
-import { EndScore } from "./end-score/end-score";
-import { LegendaryCharacterManager } from "./ts/LegendaryCharactersManager";
-import { TtrMap } from "./map/map";
+import { DestinationSelection } from "./destination-deck";
+import { EndScore } from "./end-score";
+import { LegendaryCharacterManager } from "./LegendaryCharactersManager";
+import { TtrMap } from "./map";
 import { PlayerTable } from "./player-table/player-table";
 import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseAction";
-import { ChooseLegendaryCharacterState } from "./ts/States/ChooseLegendaryCharacter";
+import { ChooseLegendaryCharacterState } from "./states/ChooseLegendaryCharacter";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
-import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifMostConnectedCitiesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifScoreDestinationArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs } from "./tickettoride.d";
+import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifMostConnectedCitiesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifScoreDestinationArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs } from "./types";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
-import { BgaAutofit } from "./ts/libs";
+import { BgaAutofit } from "./libs";
 
 const ANIMATION_MS = 500;
 

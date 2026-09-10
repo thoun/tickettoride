@@ -1,5 +1,5 @@
 import { CARD_HEIGHT, CARD_WIDTH, getBackgroundInlineStyleForDestination } from "./stock-utils";
-import { Destination, TicketToRideGame, Route } from "./tickettoride.d";
+import { Destination, TicketToRideGame, Route } from "./types";
 import { WagonsAnimation } from "./wagons-animation";
 
 type DestinationAnimationCallback = (destination: Destination) => void;

@@ -1,6 +1,6 @@
 import { DestinationCompleteAnimation } from "../destination-animation";
 import { getBackgroundInlineStyleForDestination, setupDestinationCardDiv, DESTINATION_CARD_SHIFT, CARD_HEIGHT } from "../stock-utils";
-import { Destination, TicketToRideGame, TicketToRidePlayer, Route } from "../tickettoride.d";
+import { Destination, TicketToRideGame, TicketToRidePlayer, Route } from "../types";
 
 export const IMAGE_ITEMS_PER_ROW = 10;
 

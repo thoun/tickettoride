@@ -1,5 +1,5 @@
 import { DistributionPopin, DistributionResult } from "../distribution-popin";
-import { TicketToRideGame, TrainCar, TunnelAttempt } from "../tickettoride.d";
+import { TicketToRideGame, TrainCar, TunnelAttempt } from "../types";
 import { LOCOMOTIVE_TUNNEL, LOCOMOTIVE_FERRY } from "./ChooseAction";
 
 export interface EnteringConfirmTunnelArgs {

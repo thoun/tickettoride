@@ -1,4 +1,4 @@
-import { TicketToRideGame, TrainCar } from "../tickettoride.d";
+import { TicketToRideGame, TrainCar } from "../types";
 
 interface EnteringDrawSecondCardArgs {
     availableVisibleCards: TrainCar[];

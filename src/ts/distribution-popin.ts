@@ -1,4 +1,4 @@
-import { ClaimingRoute, TrainCar } from "./tickettoride.d";
+import { ClaimingRoute, TrainCar } from "./types";
 
 export class DistributionResult {
     public cardIds: number[];

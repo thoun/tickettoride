@@ -1,4 +1,4 @@
-import { Game } from "../../tickettoride";
+import { Game } from "../Game";
 
 export interface EnteringChooseLegendaryCharacterArgsArgs {
     remainingCharacters: number[];

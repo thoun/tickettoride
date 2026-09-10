@@ -1,4 +1,4 @@
-import { TicketToRideGame, Route } from "./tickettoride.d";
+import { TicketToRideGame, Route } from "./types";
 
 /**
  * Animation with highlighted wagons.

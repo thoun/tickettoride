@@ -1,8 +1,8 @@
 // @ts-ignore
 const [Stock] = await globalThis.importDojoLibs(["ebg/stock"]);
 
-import { CARD_HEIGHT, CARD_WIDTH, setupDestinationCardDiv, setupDestinationCards } from "../stock-utils";
-import { TicketToRideGame, TicketToRideMap, Destination } from "../tickettoride.d";
+import { CARD_HEIGHT, CARD_WIDTH, setupDestinationCardDiv, setupDestinationCards } from "./stock-utils";
+import { TicketToRideGame, TicketToRideMap, Destination } from "./types";
 
 /**
  * Selection of new destinations.

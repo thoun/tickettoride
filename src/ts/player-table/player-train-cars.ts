@@ -1,4 +1,4 @@
-import { City, Route, TicketToRideGame, TicketToRidePlayer, TrainCar } from "../tickettoride.d";
+import { City, Route, TicketToRideGame, TicketToRidePlayer, TrainCar } from "../types";
 
 export const CROSSHAIR_SIZE = 20;
 

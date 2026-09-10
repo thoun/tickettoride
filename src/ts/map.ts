@@ -1,7 +1,7 @@
-import { CROSSHAIR_SIZE } from "../player-table/player-train-cars";
-import { ChooseActionState, EnteringChooseActionArgs } from "../states/ChooseAction";
-import { getColor } from "../stock-utils";
-import { Route, TicketToRideMap, TicketToRideGame, TicketToRidePlayer, ClaimedRoute, RouteSpace, Destination, City, BuiltStation, PlayerMapSpecificData } from "../tickettoride.d";
+import { CROSSHAIR_SIZE } from "./player-table/player-train-cars";
+import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseAction";
+import { getColor } from "./stock-utils";
+import { Route, TicketToRideMap, TicketToRideGame, TicketToRidePlayer, ClaimedRoute, RouteSpace, Destination, City, BuiltStation, PlayerMapSpecificData } from "./types";
 
 const DRAG_AUTO_ZOOM_DELAY = 2000;
 

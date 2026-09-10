@@ -1,6 +1,6 @@
 import { animateCardToCounterAndDestroy } from "../slide-utils";
 import { setupTrainCarCardDiv } from "../stock-utils";
-import { TrainCar, TicketToRideGame, Card } from "../tickettoride.d";
+import { TrainCar, TicketToRideGame, Card } from "../types";
 
 /** 
  * Selection of new train cars.

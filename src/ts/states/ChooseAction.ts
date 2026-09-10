@@ -1,7 +1,7 @@
 import { DistributionPopin, DistributionResult } from "../distribution-popin";
 import { getColor } from "../stock-utils";
-import { Game } from "../tickettoride";
-import { City, ClaimingRoute, Route, TrainCar } from "../tickettoride.d";
+import { Game } from "../Game";
+import { City, ClaimingRoute, Route, TrainCar } from "../types";
 
 export const LOCOMOTIVE_TUNNEL = 0b01;
 export const LOCOMOTIVE_FERRY = 0b10;

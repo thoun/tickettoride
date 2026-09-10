@@ -1,29 +1,29 @@
-import { TicketToRideGame, Route } from "./tickettoride.d";
+import { TicketToRideGame, Route } from "./types";
 import { WagonsAnimation } from "./wagons-animation";
 
 /**
  * Longest path animation : wagons used by longest path are highlighted, and length is displayed over the map.
  */ 
-export class MandalaRoutesAnimation extends WagonsAnimation {
-    private cities: HTMLElement[] = [];
+export class LongestPathAnimation extends WagonsAnimation {
 
     constructor(
         game: TicketToRideGame,
         private routes: Route[],
-        cityIds: number[],
+        private length: number,
+        private playerColor: string,
         private actions: {
             end?: () => void,
         },
     ) {
         super(game, routes);
-        cityIds
-            .filter(cityId => cityId > 0)
-            .forEach(cityId => this.cities.push(document.getElementById(`city${cityId}`)));
     }
 
     public animate(): Promise<WagonsAnimation> {
         return new Promise(resolve => {
-            this.cities.forEach(city => city.dataset.highlight = 'true');
+
+            document.getElementById('map').insertAdjacentHTML('beforeend', `
+            <div id="longest-path-animation" style="color: #${this.playerColor};${this.getCardPosition()}">${this.length}</div>
+            `);
             this.setWagonsVisibility(true);
     
             setTimeout(() => this.endAnimation(resolve), 1900);
@@ -32,7 +32,8 @@ export class MandalaRoutesAnimation extends WagonsAnimation {
 
     private endAnimation(resolve: any) {
         this.setWagonsVisibility(false);
-        this.cities.forEach(city => city.dataset.highlight = 'false');
+        const number = document.getElementById('longest-path-animation');
+        number.parentElement.removeChild(number);
 
         resolve(this);
 

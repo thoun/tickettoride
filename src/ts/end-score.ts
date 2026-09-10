@@ -1,10 +1,10 @@
-import { DestinationCompleteAnimation } from "../destination-animation";
-import { LongestPathAnimation } from "../longest-path-animation";
-import { MostConnectedCitiesAnimation } from "../most-connected-cities-animation";
-import { MandalaRoutesAnimation } from "../mandala-routes-animation";
-import { RemainingStationsAnimation } from "../remaining-stations-animation";
-import { getBackgroundInlineStyleForDestination } from "../stock-utils";
-import { TicketToRideGame, TicketToRidePlayer, Destination, Route } from "../tickettoride.d";
+import { DestinationCompleteAnimation } from "./destination-animation";
+import { LongestPathAnimation } from "./longest-path-animation";
+import { MostConnectedCitiesAnimation } from "./most-connected-cities-animation";
+import { MandalaRoutesAnimation } from "./mandala-routes-animation";
+import { RemainingStationsAnimation } from "./remaining-stations-animation";
+import { getBackgroundInlineStyleForDestination } from "./stock-utils";
+import { TicketToRideGame, TicketToRidePlayer, Destination, Route } from "./types";
 
 /**
  * End score board.

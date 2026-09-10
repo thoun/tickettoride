@@ -1,4 +1,4 @@
-import { TicketToRideGame } from "./tickettoride.d";
+import { TicketToRideGame } from "./types";
 import { WagonsAnimation } from "./wagons-animation";
 
 /**

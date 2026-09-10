@@ -1,5 +1,5 @@
 import { animateCardToCounterAndDestroy } from "../slide-utils";
-import { TicketToRideGame, TrainCar } from "../tickettoride.d";
+import { TicketToRideGame, TrainCar } from "../types";
 import { VisibleCardSpot } from "./visible-card-spot";
 
 const DBL_CLICK_TIMEOUT = 300;

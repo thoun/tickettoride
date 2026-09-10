@@ -1,4 +1,4 @@
-import { TicketToRideGame, TicketToRidePlayer, TrainCar, Destination, Route, City } from "../tickettoride.d";
+import { TicketToRideGame, TicketToRidePlayer, TrainCar, Destination, Route, City } from "../types";
 import { PlayerDestinations } from "./player-destinations";
 import { PlayerTrainCars } from "./player-train-cars";
 
