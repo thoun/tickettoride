@@ -79,6 +79,15 @@ selectedRouteMountainInput.addEventListener('change', () => {
     }
 });
 
+const selectedRouteFerryWavesInput = document.getElementById('route-ferry-waves');
+selectedRouteFerryWavesInput.addEventListener('change', () => {
+    if (selectedSpace) {
+        getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.ferryWaves = selectedRouteFerryWavesInput.value);
+        updateRouteClasses(Number(selectedSpace.dataset.routeId));
+        updateRoutesExport();
+    }
+});
+
 function resetEditor() {
     unselectCity();
     unselectSpace();
@@ -104,6 +113,7 @@ function resetEditor() {
     document.getElementById('new-route-spaces').value = '1';
     document.getElementById('new-route-locomotives').value = '0';
     document.getElementById('new-route-mountain').value = '0';
+    document.getElementById('new-route-ferry-waves').value = '0';
 }
 
 async function load() {
@@ -361,6 +371,7 @@ function parseRoutes(text) {
                 routeArguments.tunnel,
                 routeArguments.locomotives,
                 routeArguments.mountain,
+                routeArguments.ferryWaves,
                 routeArguments.additionalArguments,
             );
             id = null;
@@ -395,10 +406,10 @@ function addCity(id, name, x, y, additionalArguments = []) {
     }
 }
 
-function addRoute(id, from, to, color, spaces, tunnel, locomotives, mountain, additionalArguments = []) {
+function addRoute(id, from, to, color, spaces, tunnel, locomotives, mountain, ferryWaves, additionalArguments = []) {
     spaces.forEach((space, index) => {
         document.getElementById('route-spaces').insertAdjacentHTML('beforeend', 
-            `<div id="route-spaces-route${id}-space${index}" class="route-space ${tunnel ? 'tunnel' : ''} ${index < locomotives ? 'locomotive' : ''} ${index < mountain ? 'mountain' : ''}" data-x="${space[0]}" data-y="${space[1]}" data-a="${space[2]}" style="--x: ${space[0]}px; --y: ${space[1]}px; --a: ${space[2]}deg;" data-tunnel="${tunnel ? 'true' : 'false'}" data-locomotives="${locomotives}" data-mountain="${mountain}" data-route-id="${id}" data-space-index="${index}" data-from="${from}" data-to="${to}" data-color="${color}">${color}</div>`
+            `<div id="route-spaces-route${id}-space${index}" class="route-space ${tunnel ? 'tunnel' : ''} ${index < locomotives ? 'locomotive' : ''} ${index < mountain ? 'mountain' : ''}" data-x="${space[0]}" data-y="${space[1]}" data-a="${space[2]}" style="--x: ${space[0]}px; --y: ${space[1]}px; --a: ${space[2]}deg;" data-tunnel="${tunnel ? 'true' : 'false'}" data-locomotives="${locomotives}" data-mountain="${mountain}" data-ferry-waves="${ferryWaves}" data-route-id="${id}" data-space-index="${index}" data-from="${from}" data-to="${to}" data-color="${color}">${color}</div>`
         );
         const elem = document.getElementById(`route-spaces-route${id}-space${index}`);
         elem.dataset.additionalArguments = JSON.stringify(additionalArguments);
@@ -425,6 +436,7 @@ function unselectSpace() {
     document.getElementById('route-tunnel').checked = false;
     document.getElementById('route-locomotives').value = '';
     document.getElementById('route-mountain').value = '';
+    document.getElementById('route-ferry-waves').value = '';
     document.querySelectorAll('.selected-other-route').forEach(elem => elem.classList.remove('selected-other-route'));
 }
 
@@ -454,6 +466,7 @@ function spaceClick(elem) {
         document.getElementById('route-tunnel').checked = elem.dataset.tunnel === 'true';
         document.getElementById('route-locomotives').value = elem.dataset.locomotives;
         document.getElementById('route-mountain').value = elem.dataset.mountain;
+        document.getElementById('route-ferry-waves').value = elem.dataset.ferryWaves;
 
         getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).filter(oe => oe != elem).forEach(oe => oe.classList.add('selected-other-route'));
         document.getElementById(`city-${elem.dataset.from}`).classList.add('selected');
@@ -627,6 +640,8 @@ function createNewRoute() {
 
     const selectedRouteMountainInput = document.getElementById('new-route-mountain');
 
+    const selectedRouteFerryWavesInput = document.getElementById('new-route-ferry-waves');
+
     const angle = Math.floor(Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI);
     const routeCenterX = (toX + fromX) / 2;
     const routeCenterY = (toY + fromY) / 2;
@@ -640,6 +655,6 @@ function createNewRoute() {
         routes.push([x, y, angle]);
     }
 
-    addRoute(id, selectedRouteFromInput.value, selectedRouteToInput.value, selectedRouteColorInput.value, routes, selectedRouteTunnelInput.checked, selectedRouteLocomotivesInput.value, selectedRouteMountainInput.value);
+    addRoute(id, selectedRouteFromInput.value, selectedRouteToInput.value, selectedRouteColorInput.value, routes, selectedRouteTunnelInput.checked, selectedRouteLocomotivesInput.value, selectedRouteMountainInput.value, selectedRouteFerryWavesInput.value);
     this.updateRoutesExport();
 }
