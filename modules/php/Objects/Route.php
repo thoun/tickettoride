@@ -21,11 +21,11 @@ class Route {
      * @param RouteSpace[] $spaces the spaces of the route
      * @param bool $tunnel if the route is a tunnel (special black outline on each space)
      * @param int $locomotives number of locomotives required to take the route (drawn on route spaces)
-     * @param ?int $canPayWithAnySetOfCards number of any cards you can use to replace a color card
-     * @param int $mountain number of discarded train cars when taking the route (cross drawn on route spaces)
-     * @param int[] $stockShares ids of the stock shares associated to this route
-     * @param ?int $bulletTrainSpaceIndex index of the bullet train space (bullet train logo drawn on this route space)
-     * @param ?int $ferryWaves number of waves on this route (wave logo drawn on route spaces)
+     * @param ?int $canPayWithAnySetOfCards number of any cards you can use to replace a color card (Nordic Countries map)
+     * @param int $mountain number of discarded train cars when taking the route (cross drawn on route spaces) (Legendary India map)
+     * @param int[] $stockShares ids of the stock shares associated to this route (Pennsylvania map)
+     * @param ?int $bulletTrainSpaceIndex index of the bullet train space (bullet train logo drawn on this route space) (Japan map)
+     * @param ?int $ferryWaves number of waves on this route (wave logo drawn on route spaces) (Italy map)
      */
     public function __construct(
         // generic parameters

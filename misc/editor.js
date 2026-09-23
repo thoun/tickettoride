@@ -70,10 +70,34 @@ async function getTtrRootHandle() {
     return ttrRootHandle;
 }
 
-getStoredTtrRootHandle().then(handle => {
+async function updateMapCodeOptions(rootHandle) {
+    const modulesHandle = await rootHandle.getDirectoryHandle("modules");
+    const mapsHandle = await modulesHandle.getDirectoryHandle("maps");
+    const mapCodes = [];
+
+    for await (const mapHandle of mapsHandle.values()) {
+        if (mapHandle.kind === "directory") {
+            mapCodes.push(mapHandle.name);
+        }
+    }
+
+    const mapCodesList = document.getElementById("map-codes");
+    mapCodesList.replaceChildren(...mapCodes.sort().map(mapCode => {
+        const option = document.createElement("option");
+        option.value = mapCode;
+        return option;
+    }));
+}
+
+getStoredTtrRootHandle().then(async handle => {
     if (handle) {
         ttrRootHandle = handle;
         document.getElementById('load-map').textContent = 'Load';
+        try {
+            await updateMapCodeOptions(handle);
+        } catch (error) {
+            console.warn("Unable to list available maps from the stored TTR folder.", error);
+        }
     }
 });
 
@@ -193,6 +217,11 @@ async function load() {
         mapImage.src = mapUrl;
     });
     const root = await getTtrRootHandle();
+    try {
+        await updateMapCodeOptions(root);
+    } catch (error) {
+        console.warn("Unable to list available maps from the TTR folder.", error);
+    }
     const modulesHandle = await root.getDirectoryHandle('modules');
     const mapsHandle = await modulesHandle.getDirectoryHandle('maps');
     const mapHandle = await mapsHandle.getDirectoryHandle(mapCode);
