@@ -136,7 +136,7 @@ export class Game implements TicketToRideGame {
 
         console.log('gamedatas', gamedatas);
 
-        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.builtStations, gamedatas.map.illustration);
+        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.builtStations, gamedatas.map.illustration, gamedatas.mapSpecificData);
         this.trainCarSelection = new TrainCarSelection(this, 
             gamedatas.visibleTrainCards,
             gamedatas.trainCarDeckCount,
@@ -726,11 +726,17 @@ export class Game implements TicketToRideGame {
         this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
         this.trainCarCounters[playerId].toValue(notif.args.remainingTrainCars);
         this.map.setClaimedRoutes([{
-            playerId,
+            playerId: notif.args.claimWithBulletTrain ? -1 : playerId,
             routeId: route.id
         }], playerId, notif.args.shifted ?? false);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
+        }
+        if (notif.args.remainingBulletTrains ?? undefined !== undefined) {
+            this.map.setRemainingBulletTrains(notif.args.remainingBulletTrains);
+        }
+        if (notif.args.bulletTrainPosition ?? undefined !== undefined) {
+            this.map.setBulletTrainPosition(playerId, notif.args.bulletTrainPosition);
         }
     }
 

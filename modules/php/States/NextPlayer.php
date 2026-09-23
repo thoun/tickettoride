@@ -30,13 +30,13 @@ class NextPlayer extends GameState {
         }
         if ($lastTurn == 0) {
             // check if last turn is started    
-            if ($this->game->getLowestTrainCarsCount() <= $this->game->getMap()->trainCarsNumberToStartLastTurn) {
+            if ($this->game->getMap()->isLastTurn($this->game)) {
                 $this->game->setGameStateValue(LAST_TURN, $activePlayerId);
 
                 $this->notify->all('lastTurn', clienttranslate('${player_name} has ${number} train cars or less, starting final turn !'), [
                     'playerId' => $activePlayerId,
                     'player_name' => $this->game->getPlayerNameById($activePlayerId),
-                    'number' => $this->game->getMap()->trainCarsNumberToStartLastTurn,
+                    'number' => 2,
                 ]);
             }
         }

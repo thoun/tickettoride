@@ -23,7 +23,7 @@ function getCities() {
     14 => new City('Kanazawa', 1041, 635),
     15 => new City('Kita-Senju', 1261, 151),
     16 => new City('Kochi', 354, 919),
-    17 => new City('Kokura', 26, 644),
+    17 => new City('Kokura', 26, 644, extraCoordinates: [521, 139]),
     18 => new City('Kumamoto', 348, 264),
     19 => new City('Kyoto', 791, 841),
     20 => new City('Masuda', 240, 586),
@@ -49,15 +49,11 @@ function getCities() {
     40 => new City('Suitengumae', 1202, 324),
     41 => new City('Takamatsu', 482, 832),
     42 => new City('Takasaki', 1318, 836),
-    43 => new City('Tokyo', 1354, 996),
+    43 => new City('Tokyo', 1354, 996, extraCoordinates: [1037, 337]),
     44 => new City('Tottori', 626, 625),
     45 => new City('Tsuruga', 865, 757),
     46 => new City('Ueno', 1112, 198),
     47 => new City('Utsunomiya', 1472, 871),
     48 => new City('Yotsuya', 928, 324),
-
-    // inset end points
-    1017 => new City('Kokura', 521, 139),
-    1043 => new City('Tokyo', 1037, 337),
   ];
 }

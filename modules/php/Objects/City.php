@@ -11,6 +11,7 @@ class City {
      * @param int $y the y position of the center of the city circle
      * @param ?int $country the country the city is associated to (UK map)
      * @param ?int $region the region the city is associated to (Italy map)
+     * @param int[]|null $extraCoordinates the coordinates of the second display of the city on the map (Japan map)
      */
     public function __construct(
         // generic parameters
@@ -20,6 +21,7 @@ class City {
         // specific parameters
         public ?int $country = null,
         public ?int $region = null,
+        public ?array $extraCoordinates = null,
     ) {
     }
 }

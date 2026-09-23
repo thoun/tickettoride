@@ -299,6 +299,8 @@ class Game extends Table {
         $result['legendaryCharactersExpansionActive'] = $legendaryCharacterActive;
         $result['isGlobetrotterBonusActive'] = $this->getMap()->isGlobetrotterBonusActive($expansionOption);
         $result['isLongestPathBonusActive'] = $this->getMap()->isLongestPathBonusActive($expansionOption);
+
+        $result['mapSpecificData'] = $this->getMap()->getMapSpecificData($this);
         
         $result['showTurnOrder'] = $this->tableOptions->get(SHOW_TURN_ORDER_OPTION) == 2;
         
@@ -358,6 +360,7 @@ class Game extends Table {
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
         $trainCarsHand = $this->trainCarManager->getPlayerHand($playerId);
         $cardsToRemove = $this->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
+        $claimWithBulletTrain = $route->bulletTrainSpaceIndex !== null && $this->bga->globals->get(REMAINING_BULLET_TRAINS) > 0;
 
         if ($legendaryCharacter === 1 && $legendaryCharacterState === 'using') {
             $this->legendaryCharacterManager->setPlayerCharacterState($playerId, 'used:'.$routeId);
@@ -366,15 +369,27 @@ class Game extends Table {
         $this->trainCarManager->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
 
         // save claimed route
-        $this->DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $playerId)");
+        $claimerId = $claimWithBulletTrain ? -1 : $playerId;
+        $this->DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $claimerId)");
 
         // update score
-        $points = $this->getMap()->routePoints[$route->number];
-        $this->incScore($playerId, $points);
+        $points = 0;
+        $remainingBulletTrains = null;
+        $bulletTrainPosition = null;
+        if ($claimWithBulletTrain) {
+            $bulletTrainPosition = $this->bga->globals->inc("BULLET_TRAIN_POSITION_{$playerId}", $cardCost);
 
-        $this->removeTrainCars($playerId, $route->number);
+            $remainingBulletTrains = $this->bga->globals->inc(REMAINING_BULLET_TRAINS, -1);
+        } else {
+            $points = $this->getMap()->routePoints[$route->number];
+            $this->incScore($playerId, $points);
+            $this->removeTrainCars($playerId, $route->number);
+        }
         
-        $this->notify->all('claimedRoute', clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'), [
+        $message = $claimWithBulletTrain ? 
+            clienttranslate('${player_name} claims a bullet train route from ${from} to ${to} with ${number} train car(s) : ${colors}') :
+            clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}');
+        $args = [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'points' => $points,
@@ -386,7 +401,17 @@ class Game extends Table {
             'colors' => array_map(fn($card) => $card->type, $cardsToRemove),
             'remainingTrainCars' => $this->getRemainingTrainCarsCount($playerId),
             'shifted' => $shifted,
-        ]);
+        ];
+        if ($shifted) {
+            $args['shifted'] = true;
+        }
+        if ($claimWithBulletTrain) {
+            $args['claimWithBulletTrain'] = true;
+            $args['remainingBulletTrains'] = $remainingBulletTrains;
+            $args['bulletTrainPosition'] = $bulletTrainPosition;
+        }
+
+        $this->notify->all('claimedRoute', $message, $args);
 
         $this->playerStats->inc('claimedRoutes', 1, $playerId, updateTableStat: true);
         $this->playerStats->inc('playedTrainCars', $route->number, $playerId, updateTableStat: true);
@@ -474,7 +499,7 @@ class Game extends Table {
     }
 
     function getMapCode(): string { 
-        //if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[7]; }
+        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[16]; }
         return MAP_LIST[match (__NAMESPACE__) {
             'Bga\\Games\\TicketToRide' => 1,
             'Bga\\Games\\TicketToRideEurope' => 2,
@@ -508,7 +533,7 @@ class Game extends Table {
     function getClaimedRoutes(?int $playerId = null): array {
         $sql = "SELECT route_id, player_id FROM claimed_routes ";
         if ($playerId !== null) {
-            $sql .= "WHERE player_id = $playerId ";
+            $sql .= "WHERE player_id = $playerId OR player_id = -1";
         }
         $dbResults = $this->getObjectListFromDB($sql);
         return array_map(fn($dbResult) => new ClaimedRoute($dbResult), array_values($dbResults));

@@ -521,9 +521,7 @@ class MostConnectedCitiesAnimation extends WagonsAnimation {
         this.length = length;
         this.playerColor = playerColor;
         this.actions = actions;
-        this.cities = cityIds
-            .map(cityId => document.getElementById(`city${cityId}`))
-            .filter((city) => city !== null);
+        this.cities = game.map.getCityElements(cityIds);
     }
     animate() {
         return new Promise(resolve => {
@@ -547,7 +545,7 @@ class MostConnectedCitiesAnimation extends WagonsAnimation {
         if (this.cities.length === 0) {
             return 'left: 100px; top: 100px;';
         }
-        const positions = this.cities.map(city => this.game.getMap().cities[Number(city.id.replace('city', ''))]);
+        const positions = this.cities.map(city => this.game.getMap().cities[Number(city.dataset.cityId)]);
         const x = positions.reduce((sum, city) => sum + city.x, 0) / positions.length;
         const y = positions.reduce((sum, city) => sum + city.y, 0) / positions.length;
         return `left: ${x}px; top: ${y}px;`;
@@ -563,9 +561,7 @@ class MandalaRoutesAnimation extends WagonsAnimation {
         this.routes = routes;
         this.actions = actions;
         this.cities = [];
-        cityIds
-            .filter(cityId => cityId > 0)
-            .forEach(cityId => this.cities.push(document.getElementById(`city${cityId}`)));
+        this.cities = game.map.getCityElements(cityIds.filter(cityId => cityId > 0));
     }
     animate() {
         return new Promise(resolve => {
@@ -1286,10 +1282,11 @@ class TtrMap {
     /**
      * Place map corner illustration and borders, cities, routes, and bind events.
      */
-    constructor(game, map, players, claimedRoutes, builtStations, illustration) {
+    constructor(game, map, players, claimedRoutes, builtStations, illustration, mapSpecificData) {
         this.game = game;
         this.map = map;
         this.players = players;
+        this.mapSpecificData = mapSpecificData;
         this.dragOverlay = null;
         this.crosshairTarget = null;
         this.crosshairHalfSize = 0;
@@ -1303,8 +1300,10 @@ class TtrMap {
         this.selectedDestinationCityIdsByDestination = new Map();
         // map specific
         this.mountainCarCounters = [];
+        this.remainingBulletTrainCarCounters = null;
+        this.mapDiv = document.getElementById('map');
         // map border
-        document.getElementById('map').insertAdjacentHTML('afterbegin', `
+        this.mapDiv.insertAdjacentHTML('afterbegin', `
             <div class="illustration" data-illustration="${illustration}"></div>
             <div id="cities"></div>
             <div id="route-spaces"></div>
@@ -1314,22 +1313,11 @@ class TtrMap {
         SIDES.forEach(side => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="side ${side}"></div>`));
         CORNERS.forEach(corner => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="corner ${corner}"></div>`));
         map.bigCities.forEach(bigCity => document.getElementById('cities').insertAdjacentHTML('beforeend', `<div class="big-city" style="left: ${bigCity.x}px; top: ${bigCity.y}px; width: ${bigCity.width}px;"></div>`));
-        Object.entries(map.cities).forEach(entry => {
-            const id = Number(entry[0]);
-            const city = entry[1];
-            document.getElementById('cities').insertAdjacentHTML('beforeend', `<div id="city${id}" class="city" 
-                style="transform: translate(${city.x}px, ${city.y}px)"
-                title="${game.getCityName(id)}"
-            ></div>`);
-        });
         this.createRouteSpaces('route-spaces');
-        if (map.stations !== null) {
-            this.createCities('cities');
-        }
+        this.createCities(map.stations !== null);
         this.setClaimedRoutes(claimedRoutes, null);
         this.setBuiltStations(builtStations, null);
         this.resizedDiv = document.getElementById('resized');
-        this.mapDiv = document.getElementById('map');
         this.inMapZoomManager = new InMapZoomManager(map);
         document.getElementById('map-destination-highlight-shadow').addEventListener('click', () => this.game.setHighligthedDestination(null));
         this.game.setTooltipToClass(`train-car-deck-hidden-pile-tooltip`, `<strong>${_('Train cars deck')}</strong><br><br>
@@ -1367,22 +1355,26 @@ class TtrMap {
             }
         }));
     }
-    createCities(destination, shiftX = 0, shiftY = 0) {
+    createCities(withEvents) {
         Object.entries(this.map.cities).forEach(entry => {
             const city = entry[1];
             city.id = Number(entry[0]);
-            dojo.place(`<div id="city${city.id}${destination === 'map-drag-overlay' ? '-drag' : ''}" class="city" 
-                style="transform: translate(${city.x + shiftX}px, ${city.y + shiftY}px); ${destination === 'map-drag-overlay' ? 'border: 2px solid red;' : ''}"
-                title="${this.game.getCityName(city.id)}"
-            ></div>`, destination);
-            const cityDiv = document.getElementById(`city${city.id}${destination === 'map-drag-overlay' ? '-drag' : ''}`);
+            const coordinates = [
+                [city.x, city.y],
+            ];
+            if (city.extraCoordinates) {
+                coordinates.push(city.extraCoordinates);
+            }
+            coordinates.forEach(coordinate => {
+                const x = coordinate[0];
+                const y = coordinate[1];
+                document.getElementById('cities').insertAdjacentHTML('beforeend', `<div class="city" data-city-id="${city.id}"
+                    style="transform: translate(${x}px, ${y}px);"
+                    title="${this.game.getCityName(city.id)}"
+                ></div>`);
+            });
             if (!this.claimedCitiesIds.some(id => id == city.id)) {
-                if (destination == 'cities') {
-                    this.setCityClickEvents(cityDiv, city);
-                }
-                else {
-                    this.setCityDragEvents(cityDiv, city);
-                }
+                this.getCityElements([city.id]).forEach(cityDiv => this.setCityClickEvents(cityDiv, city));
             }
         });
     }
@@ -1502,8 +1494,11 @@ class TtrMap {
     setSelectableStations(selectable, possibleStations) {
         dojo.query('.city').removeClass('selectable');
         if (selectable) {
-            possibleStations?.forEach(city => document.getElementById(`city${city.id}`)?.classList.add('selectable'));
+            this.getCityElements(possibleStations?.map(city => city.id) ?? []).forEach(city => city.classList.add('selectable'));
         }
+    }
+    getCityElements(cityIds) {
+        return cityIds.flatMap(cityId => Array.from(this.mapDiv.querySelectorAll(`.city[data-city-id="${cityId}"]`)));
     }
     /**
      * Place train cars on claimed routes.
@@ -1514,7 +1509,7 @@ class TtrMap {
             this.claimedRoutesIds.push(claimedRoute.routeId);
             const route = this.map.routes[claimedRoute.routeId];
             const player = this.players.find(player => Number(player.id) == claimedRoute.playerId);
-            const routeShifted = shifted || (player.legendaryCharacter === 1 && player.legendaryCharacterState === `used:${claimedRoute.routeId}`);
+            const routeShifted = shifted || (player && player.legendaryCharacter === 1 && player.legendaryCharacterState === `used:${claimedRoute.routeId}`);
             this.setWagons(route, claimedRoute.playerId, fromPlayerId, false, routeShifted);
             if (this.game.isDoubleRouteForbidden()) {
                 const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
@@ -1580,6 +1575,9 @@ class TtrMap {
     setWagon(route, space, spaceIndex, playerId, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute, shift = undefined) {
         const player = playerId > 0 ? this.game.bga.players.getPlayerById(playerId) : null;
         const id = `wagon-route${route.id}-space${spaceIndex}${shift ? '-shifted' : ''}${phantom ? '-phantom' : ''}`;
+        if (playerId === -1 && spaceIndex !== route.bulletTrainSpaceIndex) {
+            return;
+        }
         if (document.getElementById(id)) {
             return;
         }
@@ -1750,19 +1748,23 @@ class TtrMap {
     setHoveredRoute(route, valid = null, player = null) {
         this.inMapZoomManager.setHoveredRoute(route);
         if (route) {
-            [route.from, route.to].filter(city => city > 0).forEach(city => {
-                const cityDiv = document.getElementById(`city${city}`);
+            this.getCityElements([route.from, route.to].filter(city => city > 0)).forEach(cityDiv => {
                 cityDiv.dataset.hovered = 'true';
                 cityDiv.dataset.valid = valid.toString();
             });
             if (valid) {
                 const chooseActionArgs = this.game.bga.states.getCurrentMainStateName() === 'chooseAction' ? this.game.gamedatas.gamestate.args : null;
                 const shifted = chooseActionArgs && chooseActionArgs.legendaryCharacter === 1 && chooseActionArgs.legendaryCharacterState === 'using';
-                this.setWagons(route, Number((player || this.game.getCurrentPlayer()).id), null, true, shifted);
+                let claimerId = Number((player || this.game.getCurrentPlayer()).id);
+                if (route?.bulletTrainSpaceIndex !== null) {
+                    claimerId = -1; // TODO only if there are bullet train cars left
+                }
+                this.setWagons(route, claimerId, null, true, shifted);
             }
         }
         else {
-            Object.values(this.map.routes).forEach(r => [r.from, r.to].filter(city => city > 0).forEach(city => document.getElementById(`city${city}`).dataset.hovered = 'false'));
+            const cityIds = Object.values(this.map.routes).flatMap(route => [route.from, route.to]).filter(city => city > 0);
+            this.getCityElements(cityIds).forEach(cityDiv => cityDiv.dataset.hovered = 'false');
             // remove phantom wagons
             this.mapDiv.querySelectorAll('.wagon.phantom').forEach(spaceDiv => spaceDiv.parentElement.removeChild(spaceDiv));
         }
@@ -1853,11 +1855,8 @@ class TtrMap {
         this.renderCityMarkers(markerSet, dataKey);
     }
     renderCityMarkers(markerCityIds, dataKey) {
-        Object.keys(this.map.cities).forEach(cityId => {
-            const cityDiv = document.getElementById(`city${cityId}`);
-            if (cityDiv) {
-                cityDiv.dataset[dataKey] = markerCityIds.has(Number(cityId)).toString();
-            }
+        this.getCityElements(Object.keys(this.map.cities).map(Number)).forEach(cityDiv => {
+            cityDiv.dataset[dataKey] = markerCityIds.has(Number(cityDiv.dataset.cityId)).toString();
         });
     }
     /**
@@ -1943,13 +1942,41 @@ class TtrMap {
             this.players.forEach(player => {
                 const playerId = Number(player.id);
                 this.mountainCarCounters[playerId] = new ebg.counter();
-                this.mountainCarCounters[playerId].create(`mountain-train-car-counter-${playerId}`);
-                this.mountainCarCounters[playerId].setValue(player.mapSpecificData.mountainTrains);
+                this.mountainCarCounters[playerId].create(`mountain-train-car-counter-${playerId}`, { value: player.mapSpecificData.mountainTrains });
             });
+        }
+        if (this.map.code === 'japan') {
+            this.mapDiv.insertAdjacentHTML('afterbegin', `
+                <div class="remaining-bullet-train-car-counter">
+                    <div class="bullet-train-icon"></div> <span id="remaining-bullet-train-car-counter"></span>
+                </div>
+            `);
+            this.remainingBulletTrainCarCounters = new ebg.counter();
+            this.remainingBulletTrainCarCounters.create(`remaining-bullet-train-car-counter`, { value: this.mapSpecificData.remainingBulletTrains });
+            // TODO create the slots
+            this.mapDiv.insertAdjacentHTML('afterbegin', `
+                <div class="bullet-train-positions">
+                    ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+            `);
+            this.players.forEach(player => this.setBulletTrainPosition(Number(player.id), player.mapSpecificData.bulletTrainPosition));
         }
     }
     setMountainTrains(playerId, number) {
         this.mountainCarCounters[playerId].toValue(number);
+    }
+    setRemainingBulletTrains(number) {
+        this.remainingBulletTrainCarCounters.toValue(number);
+    }
+    setBulletTrainPosition(playerId, position) {
+        let marker = document.getElementById(`bullet-train-position-marker-${playerId}`);
+        if (!marker) {
+            marker = document.createElement('div');
+            marker.id = `bullet-train-position-marker-${playerId}`;
+            marker.classList.add('bullet-train-position-marker');
+            marker.style.setProperty('--player-color', '#' + this.game.bga.players.getPlayerById(playerId)?.color);
+        }
+        document.getElementById(`bullet-train-position-${position}`).appendChild(marker);
     }
 }
 
@@ -3214,7 +3241,7 @@ class Game {
         console.log("Starting game setup");
         this.gamedatas = gamedatas;
         console.log('gamedatas', gamedatas);
-        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.builtStations, gamedatas.map.illustration);
+        this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.builtStations, gamedatas.map.illustration, gamedatas.mapSpecificData);
         this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards, gamedatas.trainCarDeckCount, gamedatas.destinationDeckCount, gamedatas.trainCarDeckMaxCount, gamedatas.destinationDeckMaxCount);
         this.destinationSelection = new DestinationSelection(this, map);
         const player = gamedatas.players[this.getPlayerId()];
@@ -3716,11 +3743,17 @@ class Game {
         this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
         this.trainCarCounters[playerId].toValue(notif.args.remainingTrainCars);
         this.map.setClaimedRoutes([{
-                playerId,
+                playerId: notif.args.claimWithBulletTrain ? -1 : playerId,
                 routeId: route.id
             }], playerId, notif.args.shifted ?? false);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
+        }
+        if (notif.args.remainingBulletTrains ?? undefined !== undefined) {
+            this.map.setRemainingBulletTrains(notif.args.remainingBulletTrains);
+        }
+        if (notif.args.bulletTrainPosition ?? undefined !== undefined) {
+            this.map.setBulletTrainPosition(playerId, notif.args.bulletTrainPosition);
         }
     }
     notif_addMountainTrains(notif) {

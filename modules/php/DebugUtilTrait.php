@@ -121,7 +121,7 @@ trait DebugUtilTrait {
     }
 
     function debug_SetLastTurn() {
-        $this->DbQuery("UPDATE player SET `player_remaining_train_cars` = ".$this->getMap()->trainCarsNumberToStartLastTurn);
+        $this->DbQuery("UPDATE player SET `player_remaining_train_cars` = 2");
     }
     function debug_NoTrainCar() {
         $this->DbQuery("UPDATE player SET `player_remaining_train_cars` = 0");

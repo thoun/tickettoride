@@ -140,7 +140,7 @@ class BuildingManager {
      */
     function useStations(int $playerId, array $stations, array $uncompletedDestinations): array {
         $allRoutes = $this->game->getClaimedRoutes();
-        $playerRoutes = array_values(array_filter($allRoutes, fn($route) => $route->playerId == $playerId));
+        $playerRoutes = array_values(array_filter($allRoutes, fn($route) => $route->playerId == $playerId || $route->playerId === -1));
 
         $mapRoutes = $this->game->getMap()->routes;
 

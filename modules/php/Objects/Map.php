@@ -19,7 +19,7 @@ class Map {
     public bool $visibleLocomotivesCountsAsTwoCards = true; // Says if it is possible to take only one visible locomotive.
     public int $locomotiveUsageRestriction = 0; // Combination of LOCOMOTIVE_TUNNEL / LOCOMOTIVE_FERRY for joker usage. (0 means no restriction)
     public ?int $resetVisibleCardsWithLocomotives = 3; // Resets visible cards when 3 locomotives are visible (null means disabled)
-    public int $trainCarsNumberToStartLastTurn = 2; // 2 means 0, 1, or 2 will start last turn
+    
     public int $trainCarsPerPlayer = 45; // trains car tokens per player at the beginning of the game
     public int $additionalDestinationMinimumKept = 1; // Minimum number of destinations cards to keep at pick destination action.
     public bool $unusedInitialDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
@@ -114,9 +114,17 @@ class Map {
 
     function setup(Game $game): void {}
 
+    function getMapSpecificData(Game $game): array {
+        return [];
+    }
+
     function getPlayerMapSpecificData(Game $game, int $playerId): array {
         return [];
     }
     
     function onClaimRoute(Game $game, int $playerId, Route $route): void {}
+
+    function isLastTurn(Game $game): bool {
+        return $game->getLowestTrainCarsCount() <= 2; // 2 means 0, 1, or 2 will start last turn
+    }
 }

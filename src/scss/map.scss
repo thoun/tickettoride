@@ -220,6 +220,9 @@
 }*/
 
 .city {
+  position: absolute;
+  left: 0;
+  top: 0;
   display: inline-block;
   width: 60px;
   height: 60px;
@@ -374,9 +377,6 @@
       background-image: url('img/wagons-#{$name}.png'), url('img/wagons-shadow.png');
     }
   }
-  &[data-player-color="-1"] {
-    background-image: url('img/wagons-bullet-train.png'), url('img/wagons-shadow.png');
-  }
 
   &.phantom {
     opacity: 0.5;
@@ -401,9 +401,6 @@
       &[data-player-color="#{$color}"] {
         background-image: url('img/wagons-#{$name}.png'), url('img/wagons-shadow-big.png');
       }
-    }
-    [data-player-color="-1"] {
-      background-image: url('img/wagons-bullet-train.png'), url('img/wagons-shadow-big.png');
     }
   }
 }

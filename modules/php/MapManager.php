@@ -297,6 +297,8 @@ class MapManager {
      * Indicates if the player got enough train cars (meeples) left, and enough Train car cards (of route color + locomotive).
      * If player cannot pay, returns null.
      * If player can pay return cards to pay for the route.
+     * 
+     * @param Route $route
      */
     public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0, ?array $distributionCards = null, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null): ?array {
         if ($pairSetAsLocomotive !== null) {
@@ -345,7 +347,9 @@ class MapManager {
 
         $cardCost = $route->number + $extraCardsCost;
 
-        if ($remainingTrainCars < ($route->number + $route->mountain)) {
+        if ($route->bulletTrainSpaceIndex !== null && $this->game->bga->globals->get(REMAINING_BULLET_TRAINS) > 0) {
+            // no need to check if the player has enough train cars as he will use bullet train ones
+        } else if ($remainingTrainCars < ($route->number + $route->mountain)) {
             return null; // not enough remaining meeples
         }
 

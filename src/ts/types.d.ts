@@ -37,8 +37,9 @@ export interface Route {
     color: number;
     locomotives: number;
     tunnel: boolean;
-    canPayWithAnySetOfCards: number | null;
-    mountain: number;
+    canPayWithAnySetOfCards?: number | null;
+    mountain?: number;
+    bulletTrainSpaceIndex?: number;
 }
 
 export interface ClaimingRoute {
@@ -57,8 +58,12 @@ export interface BuiltStation {
     playerId: number;
 }
 
+interface MapSpecificData {
+    remainingBulletTrains?: number;
+}
 interface PlayerMapSpecificData {
     mountainTrains?: number;
+    bulletTrainPosition?: number; // TODO display
 }
 
 export interface TicketToRidePlayer extends Player {
@@ -84,6 +89,7 @@ export interface City {
     name: string;
     x: number;
     y: number;
+    extraCoordinates?: number[];
 }
 
 export interface BigCity {
@@ -151,6 +157,7 @@ export interface TicketToRideGamedatas {
     isGlobetrotterBonusActive: boolean;
     isLongestPathBonusActive: boolean;
     showTurnOrder: boolean;
+    mapSpecificData: MapSpecificData;
 }
 
 export interface TicketToRideGame{
@@ -243,7 +250,10 @@ export interface NotifClaimedRouteArgs {
     route: Route;
     removeCards: TrainCar[];
     remainingTrainCars: number;
-    shifted: false;
+    shifted?: boolean;
+    claimWithBulletTrain?: boolean;
+    remainingBulletTrains?: number;
+    bulletTrainPosition?: number;
 }
 
 export interface NotifAddMountainTrainsArgs {

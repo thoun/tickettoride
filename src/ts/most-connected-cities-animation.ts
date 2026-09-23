@@ -18,9 +18,7 @@ export class MostConnectedCitiesAnimation extends WagonsAnimation {
         },
     ) {
         super(game, routes);
-        this.cities = cityIds
-            .map(cityId => document.getElementById(`city${cityId}`))
-            .filter((city): city is HTMLElement => city !== null);
+        this.cities = game.map.getCityElements(cityIds);
     }
 
     public animate(): Promise<WagonsAnimation> {
@@ -47,7 +45,7 @@ export class MostConnectedCitiesAnimation extends WagonsAnimation {
         if (this.cities.length === 0) {
             return 'left: 100px; top: 100px;';
         }
-        const positions = this.cities.map(city => this.game.getMap().cities[Number(city.id.replace('city', ''))]);
+        const positions = this.cities.map(city => this.game.getMap().cities[Number(city.dataset.cityId)]);
         const x = positions.reduce((sum, city) => sum + city.x, 0) / positions.length;
         const y = positions.reduce((sum, city) => sum + city.y, 0) / positions.length;
         return `left: ${x}px; top: ${y}px;`;

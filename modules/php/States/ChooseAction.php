@@ -439,7 +439,7 @@ class ChooseAction extends GameState {
         foreach ($allRoutes as $route) {
             $routeId = $route->id;
             if (array_key_exists($routeId, $playerClaimedRouteIds)) {
-                if ($playerClaimedRouteIds[$routeId] !== $playerId) {
+                if (!in_array($playerClaimedRouteIds[$routeId], [$playerId, -1])) {
                     continue;
                 }
                 $weight = 0;
