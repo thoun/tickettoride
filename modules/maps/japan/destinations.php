@@ -1,124 +1,64 @@
 <?php
 
 use Bga\Games\TicketToRide\Objects\DestinationCard;
-/*
-    8-Tokyo-Hakodate
-    5-Osaka-Tokyo
-    3-Tokyo-Sendai
-    9-Tottori-Tokyo
-    13-Kagoshima-Chuo-Tokyo
-    4-Tokyo-Shinjuku
-    6-Tokyo-Asakusa
-    6-Ise-Tokyo
-    10-Hakata-Tokyo
-    3-Hiroshima-Osaka
-    8-Kahoshima-Chuo-Osaka
-    3-Osaka-Nagano
-    7-Osaka-Fukushima
-    9-Osaka-Akita
-    13-Osaka-Shibuya
-    12-Miyazaki-Kyoto
-    5-Masuda-Kyoto
-    6-Kochi-Kyoto
-    6-Kyoto-Narita
-    5-Kyoto-Niigata
-    9-Kyoto-Aomori
-    12-Kyoto-Ikebukuro
-    10-Nagoya-Shinjuku
-    6-Matsuyama-Nagoya
-    10-Nagasaki-Nagoya
-    8-Nagoya-Iwaki
-    7-Nagoya-Shinjo
-    4-Tottori-Nagoya
-    3-Hakata-Oita
-    8-Hakata-Kochi
-    14-Hakata-Ise
-    19-Hakata-Miyako
-    8-Hakata-Kanazawa
-    7-Ginza-Kita-Senju
-    7-Yotsuya-Monzen-Nakacho
-    10-Shinjuku-Asakusa
-    3-Kagoshima-Chuo-Kokura
-    5-Nagasaki-Miyazaki
-    16-Nagasaki-Niigata
-    7-Kumamoto-Takamatsu
-    6-Okayama-Mastumoto
-    1-Odawara-Narita
-    5-Takasaki-Morioka
-    3-Hamamatsu-Utsunomiya
-    14-Hiroshima-Hakodate
-    8-Kokura-Tsuruga
-    4-Sendai-Aoromi
-    16-Masuda-Sendai
-    5-Matsumoto-Fukushima
-    2-Akita-Miyako
-    7-Shibuya-Ueno
-    6-Nagano-Suitengumae
-    7-Ikebukuro-Suitengumae
-    4-Shinjuku-Ikebukuro
-*/
 
 function getBaseDestinations() {
   return [
-    1 => new DestinationCard(1, 20, 8), // Agra Jarhat 8
-    2 => new DestinationCard(2, 11, 7), // Ahmadabad Calicut 7
-    3 => new DestinationCard(3, 30, 10), // Ambala Mormugau 10
-    4 => new DestinationCard(3, 36, 5), // Ambala Ratiam 5
-    5 => new DestinationCard(3, 39, 9), // Ambala Waltair 9
-    6 => new DestinationCard(4, 2, 5), // Bareilly Ahmadabad 5
-    7 => new DestinationCard(4, 10, 6), // Bareilly Calcutta 6
-    8 => new DestinationCard(4, 16, 10), // Bareilly Guntakal 10
-    9 => new DestinationCard(6, 5, 13), // Bhatinda Bezwada 13
-    10 => new DestinationCard(6, 8, 7), // Bhatinda Bilaspur 7
-    11 => new DestinationCard(6, 29, 9), // Bhatinda Manmad 9
-    12 => new DestinationCard(7, 10, 6), // Bhopal Calcutta 6
-    13 => new DestinationCard(7, 30, 5), // Bhopal Mormugau 5
-    14 => new DestinationCard(8, 11, 10), // Bilaspur Calicut 10
-    15 => new DestinationCard(8, 14, 5), // Bilaspur Dhubri 5
-    16 => new DestinationCard(9, 5, 5), // Bombay Bezwada 5
-    17 => new DestinationCard(9, 34, 6), // Bombay Quilon 6
-    18 => new DestinationCard(10, 15, 9), // Calcutta Erode 9
-    19 => new DestinationCard(10, 17, 8), // Calcutta Indur 8
-    20 => new DestinationCard(12, 38, 11), // Chittagong Wadi 11
-    21 => new DestinationCard(13, 11, 11), // Delhi Calicut 11
-    22 => new DestinationCard(13, 12, 9), // Delhi Chittagong 9
-    23 => new DestinationCard(13, 17, 9), // Delhi Indur 9
-    24 => new DestinationCard(14, 28, 12), // Dhubri Mangalore 12
-    25 => new DestinationCard(18, 9, 10), // Jacobabad Bombay 10
-    26 => new DestinationCard(18, 10, 13), // Jacobabad Calcutta 13
-    27 => new DestinationCard(18, 36, 9), // Jacobabad Ratiam 9
-    28 => new DestinationCard(19, 31, 5), // Jaipur Patna 5
-    29 => new DestinationCard(19, 33, 5), // Jaipur Poona 5
-    30 => new DestinationCard(19, 35, 5), // Jaipur Raipur 5
-    31 => new DestinationCard(20, 9, 13), // Jarhat Bombay 13
-    32 => new DestinationCard(21, 16, 9), // Jodhpur Guntakal 9
-    33 => new DestinationCard(21, 24, 5), // Jodhpur Khandwa 5
-    34 => new DestinationCard(21, 26, 5), // Jodhpur Lucknow 5
-    35 => new DestinationCard(22, 2, 6), // Karachi Ahmadabad 6
-    36 => new DestinationCard(22, 13, 7), // Karachi Delhi 7
-    37 => new DestinationCard(22, 33, 7), // Karachi Poona 7
-    38 => new DestinationCard(23, 24, 5), // Katni Khandwa 5
-    39 => new DestinationCard(23, 38, 8), // Katni Wadi 8
-    40 => new DestinationCard(23, 39, 5), // Katni Waltair 5
-    41 => new DestinationCard(24, 12, 10), // Khandwa Chittagong 10
-    42 => new DestinationCard(25, 13, 5), // Lahore Delhi 5
-    43 => new DestinationCard(25, 14, 12), // Lahore Dhubri 12
-    44 => new DestinationCard(25, 38, 13), // Lahore Wadi 13
-    45 => new DestinationCard(26, 9, 7), // Lucknow Bombay 7
-    46 => new DestinationCard(26, 15, 11), // Lucknow Erode 11
-    47 => new DestinationCard(29, 15, 7), // Manmad Erode 7
-    48 => new DestinationCard(27, 34, 6), // Madras Quilon 6
-    49 => new DestinationCard(31, 27, 9), // Patna Madras 9
-    50 => new DestinationCard(31, 30, 10), // Patna Mormugau 10
-    51 => new DestinationCard(32, 7, 9), // Peshawar Bhopal 9
-    52 => new DestinationCard(32, 27, 17), // Peshawar Madras 17
-    53 => new DestinationCard(35, 16, 7), // Raipur Guntakal 7
-    54 => new DestinationCard(35, 29, 5), // Raipur Manmad 5
-    55 => new DestinationCard(36, 5, 8), // Ratiam Bezwada 8
-    56 => new DestinationCard(37, 1, 7), // Rohri Agra 7
-    57 => new DestinationCard(37, 28, 12), // Rohri Mangalore 12
-    58 => new DestinationCard(39, 28, 6), // Waltair Mangalore 6
-    ];
+    1 => new DestinationCard(43, 7, 8), // Tokyo Hakodate 8
+    2 => new DestinationCard(35, 43, 5), // Osaka Tokyo 5
+    3 => new DestinationCard(43, 36, 3), // Tokyo Sendai 3
+    4 => new DestinationCard(44, 43, 9), // Tottori Tokyo 9
+    5 => new DestinationCard(13, 43, 13), // Kagoshima-Chuo Tokyo 13
+    6 => new DestinationCard(43, 39, 4), // Tokyo Shinjuku 4
+    7 => new DestinationCard(43, 3, 6), // Tokyo Asakusa 6
+    8 => new DestinationCard(11, 43, 6), // Ise Tokyo 6
+    9 => new DestinationCard(6, 43, 10), // Hakata Tokyo 10
+    10 => new DestinationCard(9, 35, 3), // Hiroshima Osaka 3
+    11 => new DestinationCard(13, 35, 8), // Kagoshima-Chuo Osaka 8
+    12 => new DestinationCard(35, 27, 3), // Osaka Nagano 3
+    13 => new DestinationCard(35, 4, 7), // Osaka Fukushima 7
+    14 => new DestinationCard(35, 1, 9), // Osaka Akita 9
+    15 => new DestinationCard(35, 37, 13), // Osaka Shibuya 13
+    16 => new DestinationCard(24, 19, 12), // Miyazaki Kyoto 12
+    17 => new DestinationCard(20, 19, 5), // Masuda Kyoto 5
+    18 => new DestinationCard(16, 19, 6), // Kochi Kyoto 6
+    19 => new DestinationCard(19, 30, 6), // Kyoto Narita 6
+    20 => new DestinationCard(19, 31, 5), // Kyoto Niigata 5
+    21 => new DestinationCard(19, 2, 9), // Kyoto Aomori 9
+    22 => new DestinationCard(19, 10, 12), // Kyoto Ikebukuro 12
+    23 => new DestinationCard(29, 39, 10), // Nagoya Shinjuku 10
+    24 => new DestinationCard(22, 29, 6), // Matsuyama Nagoya 6
+    25 => new DestinationCard(28, 29, 10), // Nagasaki Nagoya 10
+    26 => new DestinationCard(29, 12, 8), // Nagoya Iwaki 8
+    27 => new DestinationCard(29, 38, 7), // Nagoya Shinjo 7
+    28 => new DestinationCard(44, 29, 4), // Tottori Nagoya 4
+    29 => new DestinationCard(6, 33, 3), // Hakata Oita 3
+    30 => new DestinationCard(6, 16, 8), // Hakata Kochi 8
+    31 => new DestinationCard(6, 11, 14), // Hakata Ise 14
+    32 => new DestinationCard(6, 23, 19), // Hakata Miyako 19
+    33 => new DestinationCard(6, 14, 8), // Hakata Kanazawa 8
+    34 => new DestinationCard(5, 15, 7), // Ginza Kita-Senju 7
+    35 => new DestinationCard(48, 25, 7), // Yotsuya Monzen-Nakacho 7
+    36 => new DestinationCard(39, 3, 10), // Shinjuku Asakusa 10
+    37 => new DestinationCard(13, 17, 3), // Kagoshima-Chuo Kokura 3
+    38 => new DestinationCard(28, 24, 5), // Nagasaki Miyazaki 5
+    39 => new DestinationCard(28, 31, 16), // Nagasaki Niigata 16
+    40 => new DestinationCard(18, 41, 7), // Kumamoto Takamatsu 7
+    41 => new DestinationCard(34, 21, 6), // Okayama Matsumoto 6
+    42 => new DestinationCard(32, 30, 1), // Odawara Narita 1
+    43 => new DestinationCard(42, 26, 5), // Takasaki Morioka 5
+    44 => new DestinationCard(8, 47, 3), // Hamamatsu Utsunomiya 3
+    45 => new DestinationCard(9, 7, 14), // Hiroshima Hakodate 14
+    46 => new DestinationCard(17, 45, 8), // Kokura Tsuruga 8
+    47 => new DestinationCard(36, 2, 4), // Sendai Aomori 4
+    48 => new DestinationCard(20, 36, 16), // Masuda Sendai 16
+    49 => new DestinationCard(21, 4, 5), // Matsumoto Fukushima 5
+    50 => new DestinationCard(1, 23, 2), // Akita Miyako 2
+    51 => new DestinationCard(37, 46, 7), // Shibuya Ueno 7
+    52 => new DestinationCard(27, 40, 6), // Nagano Suitengumae 6
+    53 => new DestinationCard(10, 40, 7), // Ikebukuro Suitengumae 7
+    54 => new DestinationCard(39, 10, 4), // Shinjuku Ikebukuro 4
+  ];
 }
 
 function getAllDestinations() {

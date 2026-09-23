@@ -15,15 +15,19 @@ class Route {
     public int $number;
 
     public function __construct(
+        // generic parameters
         public int $from,
         public int $to,
         public int $color,
         public array $spaces = [],
         public bool $tunnel = false,
         public int $locomotives = 0,
+        // specific parameters
         public ?int $canPayWithAnySetOfCards = null,
         public int $mountain = 0,
         public array $stockShares = [],
+        public ?int $bulletTrainSpaceIndex = null,
+        public int $ferryWaves = 0,
     ) {
         $this->number = count($spaces);
     }
