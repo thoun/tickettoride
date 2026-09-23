@@ -1,8 +1,19 @@
 const COLORS = ['TRACKBED', 'GRAY', 'PINK', 'WHITE', 'BLUE', 'YELLOW', 'ORANGE', 'BLACK', 'RED', 'GREEN'];
+const SPECIFIC_ROUTE_ARGUMENTS = {
+    canPayWithAnySetOfCards: { input: 'route-can-pay-with-any-set-of-cards', defaultValue: 'null' },
+    mountain: { input: 'route-mountain', defaultValue: '0' },
+    stockShares: { input: 'route-stock-shares', defaultValue: '[]' },
+    bulletTrainSpaceIndex: { input: 'route-bullet-train-space-index', defaultValue: 'null', checkbox: true },
+    ferryWaves: { input: 'route-ferry-waves', defaultValue: '0' },
+};
+const DIRECTORY_DATABASE_NAME = 'BGA_TTR_EDITOR';
+const DIRECTORY_STORE_NAME = 'directoryHandles';
+const TTR_ROOT_HANDLE_KEY = 'ttrRoot';
 
 let MAP = localStorage.getItem('BGA_TTR_EDITOR_MAP') ?? 'usa';
 let selectedCity = null;
 let selectedSpace = null;
+let ttrRootHandle = null;
 
 COLORS.forEach(color => {
     addOptionToSelect(color, color, 'route-color');
@@ -15,6 +26,56 @@ async function getFileContent(dirHandle, fileName) {
     const text = await file.text();
     return text;
 }
+
+function openDirectoryDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DIRECTORY_DATABASE_NAME, 1);
+        request.onupgradeneeded = () => request.result.createObjectStore(DIRECTORY_STORE_NAME);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function getStoredTtrRootHandle() {
+    const database = await openDirectoryDatabase();
+    return new Promise((resolve, reject) => {
+        const request = database.transaction(DIRECTORY_STORE_NAME).objectStore(DIRECTORY_STORE_NAME).get(TTR_ROOT_HANDLE_KEY);
+        request.onsuccess = () => resolve(request.result ?? null);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function storeTtrRootHandle(handle) {
+    const database = await openDirectoryDatabase();
+    return new Promise((resolve, reject) => {
+        const transaction = database.transaction(DIRECTORY_STORE_NAME, 'readwrite');
+        transaction.objectStore(DIRECTORY_STORE_NAME).put(handle, TTR_ROOT_HANDLE_KEY);
+        transaction.oncomplete = resolve;
+        transaction.onerror = () => reject(transaction.error);
+    });
+}
+
+async function getTtrRootHandle() {
+    if (ttrRootHandle) {
+        const permission = await ttrRootHandle.queryPermission({mode: 'read'});
+        if (permission === 'granted' || await ttrRootHandle.requestPermission({mode: 'read'}) === 'granted') {
+            return ttrRootHandle;
+        }
+        throw new DOMException('Permission to read the TTR folder was denied.', 'NotAllowedError');
+    }
+
+    ttrRootHandle = await window.showDirectoryPicker({mode: 'read'});
+    await storeTtrRootHandle(ttrRootHandle);
+    document.getElementById('load-map').textContent = 'Load';
+    return ttrRootHandle;
+}
+
+getStoredTtrRootHandle().then(handle => {
+    if (handle) {
+        ttrRootHandle = handle;
+        document.getElementById('load-map').textContent = 'Load';
+    }
+});
 
 document.getElementById('map-code').value = MAP;
 
@@ -70,22 +131,19 @@ selectedRouteLocomotivesInput.addEventListener('change', () => {
     }
 });
 
-const selectedRouteMountainInput = document.getElementById('route-mountain');
-selectedRouteMountainInput.addEventListener('change', () => {
-    if (selectedSpace) {
-        getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.mountain = selectedRouteMountainInput.value);
-        updateRouteClasses(Number(selectedSpace.dataset.routeId));
-        updateRoutesExport();
-    }
-});
+Object.entries(SPECIFIC_ROUTE_ARGUMENTS).forEach(([name, definition]) => {
+    document.getElementById(definition.input).addEventListener('change', event => {
+        if (!selectedSpace) {
+            return;
+        }
 
-const selectedRouteFerryWavesInput = document.getElementById('route-ferry-waves');
-selectedRouteFerryWavesInput.addEventListener('change', () => {
-    if (selectedSpace) {
-        getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).forEach(elem => elem.dataset.ferryWaves = selectedRouteFerryWavesInput.value);
+        const value = definition.checkbox
+            ? (event.target.checked ? selectedSpace.dataset.spaceIndex : 'null')
+            : (event.target.value || definition.defaultValue);
+        setRouteAdditionalArgument(Number(selectedSpace.dataset.routeId), name, value);
         updateRouteClasses(Number(selectedSpace.dataset.routeId));
         updateRoutesExport();
-    }
+    });
 });
 
 function resetEditor() {
@@ -112,8 +170,11 @@ function resetEditor() {
     document.getElementById('new-route-tunnel').checked = false;
     document.getElementById('new-route-spaces').value = '1';
     document.getElementById('new-route-locomotives').value = '0';
+    document.getElementById('new-route-can-pay-with-any-set-of-cards').value = '';
     document.getElementById('new-route-mountain').value = '0';
+    document.getElementById('new-route-stock-shares').value = '[]';
     document.getElementById('new-route-ferry-waves').value = '0';
+    document.querySelectorAll('.specific-route-field').forEach(field => field.hidden = true);
 }
 
 async function load() {
@@ -131,7 +192,7 @@ async function load() {
         mapImage.onerror = resolve;
         mapImage.src = mapUrl;
     });
-    const root = await (window).showDirectoryPicker();
+    const root = await getTtrRootHandle();
     const modulesHandle = await root.getDirectoryHandle('modules');
     const mapsHandle = await modulesHandle.getDirectoryHandle('maps');
     const mapHandle = await mapsHandle.getDirectoryHandle(mapCode);
@@ -294,11 +355,10 @@ function parsePhpString(value) {
 }
 
 function parseRouteArguments(text) {
-    const routeArgumentNames = ['tunnel', 'locomotives', 'canPayWithAnySetOfCards', 'mountain', 'stockShares'];
+    const routeArgumentNames = ['tunnel', 'locomotives', ...Object.keys(SPECIFIC_ROUTE_ARGUMENTS)];
     const result = {
         tunnel: false,
         locomotives: 0,
-        mountain: 0,
         additionalArguments: [],
     };
     let positionalArgumentIndex = 0;
@@ -316,12 +376,9 @@ function parseRouteArguments(text) {
             case 'locomotives':
                 result.locomotives = Number(value);
                 break;
-            case 'mountain':
-                result.mountain = Number(value);
-                break;
             default:
-                // Keep parameters the editor does not know about, such as
-                // stockShares, so exporting a route does not discard them.
+                // Specific and unknown parameters stay together so addRoute
+                // does not need a fixed parameter for every map variant.
                 result.additionalArguments.push(namedArgumentMatch ? argument : `${name}: ${value}`);
         }
     });
@@ -370,8 +427,6 @@ function parseRoutes(text) {
                 routes,
                 routeArguments.tunnel,
                 routeArguments.locomotives,
-                routeArguments.mountain,
-                routeArguments.ferryWaves,
                 routeArguments.additionalArguments,
             );
             id = null;
@@ -406,10 +461,39 @@ function addCity(id, name, x, y, additionalArguments = []) {
     }
 }
 
-function addRoute(id, from, to, color, spaces, tunnel, locomotives, mountain, ferryWaves, additionalArguments = []) {
+function getAdditionalArgument(additionalArguments, name) {
+    const argument = additionalArguments.find(value => value.match(new RegExp(`^${name}\\s*:`)));
+    return argument?.replace(new RegExp(`^${name}\\s*:\\s*`), '') ?? null;
+}
+
+function setRouteAdditionalArgument(routeId, name, value) {
+    getSpacesOfRoute(routeId).forEach(space => {
+        const additionalArguments = JSON.parse(space.dataset.additionalArguments ?? '[]');
+        const newArgument = `${name}: ${value}`;
+        const argumentIndex = additionalArguments.findIndex(argument => argument.match(new RegExp(`^${name}\\s*:`)));
+        if (argumentIndex === -1) {
+            additionalArguments.push(newArgument);
+        } else {
+            additionalArguments[argumentIndex] = newArgument;
+        }
+        space.dataset.additionalArguments = JSON.stringify(additionalArguments);
+    });
+}
+
+function showSpecificRouteArguments(additionalArguments) {
+    Object.keys(SPECIFIC_ROUTE_ARGUMENTS).forEach(name => {
+        if (getAdditionalArgument(additionalArguments, name) !== null) {
+            document.querySelectorAll(`[data-route-argument="${name}"]`).forEach(field => field.hidden = false);
+        }
+    });
+}
+
+function addRoute(id, from, to, color, spaces, tunnel, locomotives, additionalArguments = []) {
+    const mountain = Number(getAdditionalArgument(additionalArguments, 'mountain') ?? 0);
+    showSpecificRouteArguments(additionalArguments);
     spaces.forEach((space, index) => {
         document.getElementById('route-spaces').insertAdjacentHTML('beforeend', 
-            `<div id="route-spaces-route${id}-space${index}" class="route-space ${tunnel ? 'tunnel' : ''} ${index < locomotives ? 'locomotive' : ''} ${index < mountain ? 'mountain' : ''}" data-x="${space[0]}" data-y="${space[1]}" data-a="${space[2]}" style="--x: ${space[0]}px; --y: ${space[1]}px; --a: ${space[2]}deg;" data-tunnel="${tunnel ? 'true' : 'false'}" data-locomotives="${locomotives}" data-mountain="${mountain}" data-ferry-waves="${ferryWaves}" data-route-id="${id}" data-space-index="${index}" data-from="${from}" data-to="${to}" data-color="${color}">${color}</div>`
+            `<div id="route-spaces-route${id}-space${index}" class="route-space ${tunnel ? 'tunnel' : ''} ${index < locomotives ? 'locomotive' : ''} ${index < mountain ? 'mountain' : ''}" data-x="${space[0]}" data-y="${space[1]}" data-a="${space[2]}" style="--x: ${space[0]}px; --y: ${space[1]}px; --a: ${space[2]}deg;" data-tunnel="${tunnel ? 'true' : 'false'}" data-locomotives="${locomotives}" data-route-id="${id}" data-space-index="${index}" data-from="${from}" data-to="${to}" data-color="${color}">${color}</div>`
         );
         const elem = document.getElementById(`route-spaces-route${id}-space${index}`);
         elem.dataset.additionalArguments = JSON.stringify(additionalArguments);
@@ -435,8 +519,14 @@ function unselectSpace() {
     document.getElementById('route-color').value = '';
     document.getElementById('route-tunnel').checked = false;
     document.getElementById('route-locomotives').value = '';
-    document.getElementById('route-mountain').value = '';
-    document.getElementById('route-ferry-waves').value = '';
+    Object.values(SPECIFIC_ROUTE_ARGUMENTS).forEach(definition => {
+        const input = document.getElementById(definition.input);
+        if (definition.checkbox) {
+            input.checked = false;
+        } else {
+            input.value = '';
+        }
+    });
     document.querySelectorAll('.selected-other-route').forEach(elem => elem.classList.remove('selected-other-route'));
 }
 
@@ -465,8 +555,16 @@ function spaceClick(elem) {
         document.getElementById('route-color').value = elem.dataset.color;
         document.getElementById('route-tunnel').checked = elem.dataset.tunnel === 'true';
         document.getElementById('route-locomotives').value = elem.dataset.locomotives;
-        document.getElementById('route-mountain').value = elem.dataset.mountain;
-        document.getElementById('route-ferry-waves').value = elem.dataset.ferryWaves;
+        const additionalArguments = JSON.parse(elem.dataset.additionalArguments ?? '[]');
+        Object.entries(SPECIFIC_ROUTE_ARGUMENTS).forEach(([name, definition]) => {
+            const input = document.getElementById(definition.input);
+            const value = getAdditionalArgument(additionalArguments, name) ?? definition.defaultValue;
+            if (definition.checkbox) {
+                input.checked = value !== 'null' && Number(value) === Number(elem.dataset.spaceIndex);
+            } else {
+                input.value = value === 'null' ? '' : value;
+            }
+        });
 
         getSpacesOfRoute(Number(selectedSpace.dataset.routeId)).filter(oe => oe != elem).forEach(oe => oe.classList.add('selected-other-route'));
         document.getElementById(`city-${elem.dataset.from}`).classList.add('selected');
@@ -563,8 +661,10 @@ function getSpacesOfRoute(routeId) {
 
 function updateRouteClasses(routeId) {
     getSpacesOfRoute(routeId).forEach((space, index) => {
+        const additionalArguments = JSON.parse(space.dataset.additionalArguments ?? '[]');
+        const mountain = Number(getAdditionalArgument(additionalArguments, 'mountain') ?? 0);
         space.classList.toggle('locomotive', index < Number(space.dataset.locomotives));
-        space.classList.toggle('mountain', index < Number(space.dataset.mountain));
+        space.classList.toggle('mountain', index < mountain);
     });
 }
 
@@ -577,7 +677,6 @@ function updateRoutesExport() {
             const from = Math.min(Number(firstSpace.dataset.from), Number(firstSpace.dataset.to));
             const to = Math.max(Number(firstSpace.dataset.from), Number(firstSpace.dataset.to));
             const locomotives = Number(firstSpace.dataset.locomotives);
-            const mountain = Number(firstSpace.dataset.mountain);
             const additionalArguments = JSON.parse(firstSpace.dataset.additionalArguments ?? '[]');
             const routeArguments = [];
             if (firstSpace.dataset.tunnel === 'true') {
@@ -585,9 +684,6 @@ function updateRoutesExport() {
             }
             if (locomotives > 0) {
                 routeArguments.push(`locomotives: ${locomotives}`);
-            }
-            if (mountain > 0) {
-                routeArguments.push(`mountain: ${mountain}`);
             }
             routeArguments.push(...additionalArguments);
             php += `    ${id} => new Route(${from}, ${to}, ${firstSpace.dataset.color}, [\n`;
@@ -638,10 +734,6 @@ function createNewRoute() {
 
     const selectedRouteLocomotivesInput = document.getElementById('new-route-locomotives');
 
-    const selectedRouteMountainInput = document.getElementById('new-route-mountain');
-
-    const selectedRouteFerryWavesInput = document.getElementById('new-route-ferry-waves');
-
     const angle = Math.floor(Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI);
     const routeCenterX = (toX + fromX) / 2;
     const routeCenterY = (toY + fromY) / 2;
@@ -655,6 +747,15 @@ function createNewRoute() {
         routes.push([x, y, angle]);
     }
 
-    addRoute(id, selectedRouteFromInput.value, selectedRouteToInput.value, selectedRouteColorInput.value, routes, selectedRouteTunnelInput.checked, selectedRouteLocomotivesInput.value, selectedRouteMountainInput.value, selectedRouteFerryWavesInput.value);
+    const additionalArguments = [];
+    Object.entries(SPECIFIC_ROUTE_ARGUMENTS).forEach(([name, definition]) => {
+        if (definition.checkbox || document.querySelector(`[data-route-argument="${name}"]`).hidden) {
+            return;
+        }
+        const value = document.getElementById(`new-${definition.input}`).value || definition.defaultValue;
+        additionalArguments.push(`${name}: ${value}`);
+    });
+
+    addRoute(id, selectedRouteFromInput.value, selectedRouteToInput.value, selectedRouteColorInput.value, routes, selectedRouteTunnelInput.checked, selectedRouteLocomotivesInput.value, additionalArguments);
     this.updateRoutesExport();
 }

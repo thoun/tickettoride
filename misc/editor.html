@@ -12,7 +12,7 @@ then choose the map name code and select the tickettoride root folder on the pro
         <div class="fieldsets">
             <fieldset>
                 <legend>Map</legend>
-                <input type="text" id="map-code" value="usa" /><button type="button" onclick="load()">Select TTR folder</button>
+                <input type="text" id="map-code" value="usa" /><button type="button" id="load-map" onclick="load()">Select TTR folder</button>
             </fieldset>
             <fieldset>
                 <legend>Selected city</legend>
@@ -25,8 +25,11 @@ then choose the map name code and select the tickettoride root folder on the pro
                 Color <select id="route-color"></select>
                 Tunnel <input type="checkbox" id="route-tunnel" />
                 Locomotives <input type="number" id="route-locomotives" />
-                Mountain <input type="number" id="route-mountain" />
-                Ferry waves <input type="number" id="route-ferry-waves" />
+                <span class="specific-route-field" data-route-argument="canPayWithAnySetOfCards" hidden>Any-card set <input type="number" id="route-can-pay-with-any-set-of-cards" /></span>
+                <span class="specific-route-field" data-route-argument="mountain" hidden>Mountain <input type="number" id="route-mountain" /></span>
+                <span class="specific-route-field" data-route-argument="stockShares" hidden>Stock shares <input type="text" id="route-stock-shares" /></span>
+                <span class="specific-route-field" data-route-argument="bulletTrainSpaceIndex" hidden>Bullet train <input type="checkbox" id="route-bullet-train-space-index" /></span>
+                <span class="specific-route-field" data-route-argument="ferryWaves" hidden>Ferry waves <input type="number" id="route-ferry-waves" /></span>
             </fieldset>
         </div>
         <div class="fieldsets">
@@ -48,8 +51,10 @@ then choose the map name code and select the tickettoride root folder on the pro
                 Tunnel <input type="checkbox" id="new-route-tunnel" />
                 Number of spaces <input type="number" id="new-route-spaces" value="1" />
                 Locomotives <input type="number" id="new-route-locomotives" value="0" />
-                Mountain <input type="number" id="new-route-mountain" value="0" />
-                Ferry waves <input type="number" id="new-route-ferry-waves" />
+                <span class="specific-route-field" data-route-argument="canPayWithAnySetOfCards" hidden>Any-card set <input type="number" id="new-route-can-pay-with-any-set-of-cards" /></span>
+                <span class="specific-route-field" data-route-argument="mountain" hidden>Mountain <input type="number" id="new-route-mountain" value="0" /></span>
+                <span class="specific-route-field" data-route-argument="stockShares" hidden>Stock shares <input type="text" id="new-route-stock-shares" value="[]" /></span>
+                <span class="specific-route-field" data-route-argument="ferryWaves" hidden>Ferry waves <input type="number" id="new-route-ferry-waves" value="0" /></span>
                 <button type="button" onclick="createNewRoute()">Create new route</button>
             </fieldset>
         </div>
