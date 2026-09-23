@@ -570,6 +570,10 @@ class ChooseAction extends GameState {
     }
 
     private function getZombieRoutePairKey(object $route): string {
-        return min($route->from, $route->to).'-'.max($route->from, $route->to);
+        $key = min($route->from, $route->to).'-'.max($route->from, $route->to);
+        if (!$this->game->getMap()->differentLengthRoutesAreDoubleRoutes) {
+            $key .= '-'.$route->number;
+        }
+        return $key;
     }
 }

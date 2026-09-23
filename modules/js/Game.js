@@ -1393,7 +1393,7 @@ class TtrMap {
         const cardsColor = Number(this.mapDiv.dataset.dragColor);
         let overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            const otherRoute = this.game.getOtherDoubleRoute(route);
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -1431,7 +1431,7 @@ class TtrMap {
         mapDiv.dataset.dragColor = '';
         let overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            const otherRoute = this.game.getOtherDoubleRoute(route);
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -1520,7 +1520,7 @@ class TtrMap {
             const routeShifted = shifted || (player && player.legendaryCharacter === 1 && player.legendaryCharacterState === `used:${claimedRoute.routeId}`);
             this.setWagons(route, claimedRoute.playerId, fromPlayerId, false, routeShifted);
             if (this.game.isDoubleRouteForbidden()) {
-                const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+                const otherRoute = this.game.getOtherDoubleRoute(route);
                 if (otherRoute) {
                     this.claimedRoutesIds.push(otherRoute.id);
                     otherRoute.spaces.forEach((space, spaceIndex) => {
@@ -1686,7 +1686,7 @@ class TtrMap {
      * Check if the route is mostly horizontal, and the lowest from a double route
      */
     isLowestFromDoubleHorizontalRoute(route) {
-        const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+        const otherRoute = this.game.getOtherDoubleRoute(route);
         if (!otherRoute) { // not a double route
             return false;
         }
@@ -2390,7 +2390,7 @@ class ChooseActionState {
         const selectedColor = this.game.playerTable.getSelectedColor();
         const routeColor = this.getConsideredRouteColor(route);
         if (routeColor !== 0 && selectedColor !== null && selectedColor !== 0 && routeColor !== selectedColor) {
-            const otherRoute = Object.values(this.game.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            const otherRoute = this.game.getOtherDoubleRoute(route);
             const otherRouteColor = otherRoute ? this.getConsideredRouteColor(otherRoute) : null;
             if (otherRouteColor === selectedColor) {
                 this.clickedRouteColorChosen(otherRoute, selectedColor);
@@ -2489,7 +2489,7 @@ class ChooseActionState {
             return;
         }
         const routeColor = this.getConsideredRouteColor(route);
-        const otherRoute = Object.values(this.game.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+        const otherRoute = this.game.getOtherDoubleRoute(route);
         const otherRouteColor = otherRoute ? this.getConsideredRouteColor(otherRoute) : null;
         const doubleRoutesHaveDifferentMountains = otherRoute && otherRoute.mountain !== route.mountain;
         let askDoubleRoute = otherRoute
@@ -3402,6 +3402,12 @@ class Game {
     }
     isDoubleRouteForbidden() {
         return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForDoubleRoutes;
+    }
+    getOtherDoubleRoute(route) {
+        return Object.values(this.gamedatas.map.routes).find(otherRoute => route.id !== otherRoute.id
+            && route.from === otherRoute.from
+            && route.to === otherRoute.to
+            && (this.gamedatas.map.differentLengthRoutesAreDoubleRoutes || route.spaces.length === otherRoute.spaces.length));
     }
     getMap() {
         return this.gamedatas.map;

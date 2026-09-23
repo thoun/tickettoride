@@ -287,7 +287,7 @@ export class TtrMap {
 
         let overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            const otherRoute = this.game.getOtherDoubleRoute(route);
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -331,7 +331,7 @@ export class TtrMap {
         
         let overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            const otherRoute = this.game.getOtherDoubleRoute(route);
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -437,7 +437,7 @@ export class TtrMap {
             this.setWagons(route, claimedRoute.playerId, fromPlayerId, false, routeShifted);
 
             if (this.game.isDoubleRouteForbidden()) {
-                const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+                const otherRoute = this.game.getOtherDoubleRoute(route);
                 if (otherRoute) {
                     this.claimedRoutesIds.push(otherRoute.id);
                     otherRoute.spaces.forEach((space, spaceIndex) => {
@@ -630,7 +630,7 @@ export class TtrMap {
      * Check if the route is mostly horizontal, and the lowest from a double route
      */ 
     private isLowestFromDoubleHorizontalRoute(route: Route) {
-        const otherRoute = Object.values(this.map.routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+        const otherRoute = this.game.getOtherDoubleRoute(route);
         if (!otherRoute) { // not a double route
             return false;
         }

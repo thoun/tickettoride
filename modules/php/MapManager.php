@@ -466,8 +466,9 @@ class MapManager {
     private function getTwinRoutes(object $route) {
         $allRoutes = $this->getAllRoutes();
 
-        $twinRoutes = array_values(array_filter($allRoutes, fn($twinRoute) =>
-            $twinRoute->from == $route->from && $twinRoute->to == $route->to && $twinRoute->id != $route->id
+        $twinRoutes = array_values(array_filter(
+            $allRoutes,
+            fn($twinRoute) => $this->game->getMap()->areRoutesDouble($route, $twinRoute)
         ));
 
         return $twinRoutes;

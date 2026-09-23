@@ -177,7 +177,7 @@ export class ChooseActionState {
         const selectedColor = this.game.playerTable.getSelectedColor();
         const routeColor = this.getConsideredRouteColor(route);
         if (routeColor !== 0 && selectedColor !== null && selectedColor !== 0 && routeColor !== selectedColor) {
-            const otherRoute = Object.values(this.game.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+            const otherRoute = this.game.getOtherDoubleRoute(route);
             const otherRouteColor = otherRoute ? this.getConsideredRouteColor(otherRoute) : null;
             if (otherRouteColor === selectedColor) {
                 this.clickedRouteColorChosen(otherRoute, selectedColor);
@@ -295,7 +295,7 @@ export class ChooseActionState {
         }
 
         const routeColor = this.getConsideredRouteColor(route);
-        const otherRoute = Object.values(this.game.getMap().routes).find(r => route.from == r.from && route.to == r.to && route.id != r.id);
+        const otherRoute = this.game.getOtherDoubleRoute(route);
         const otherRouteColor = otherRoute ? this.getConsideredRouteColor(otherRoute) : null;
         const doubleRoutesHaveDifferentMountains = otherRoute && otherRoute.mountain !== route.mountain;
         let askDoubleRoute = otherRoute

@@ -317,6 +317,15 @@ export class Game implements TicketToRideGame {
         return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForDoubleRoutes;
     }
 
+    public getOtherDoubleRoute(route: Route): Route | undefined {
+        return Object.values(this.gamedatas.map.routes).find(otherRoute =>
+            route.id !== otherRoute.id
+            && route.from === otherRoute.from
+            && route.to === otherRoute.to
+            && (this.gamedatas.map.differentLengthRoutesAreDoubleRoutes || route.spaces.length === otherRoute.spaces.length)
+        );
+    }
+
     public getMap(): TicketToRideMap {
         return this.gamedatas.map;
     }

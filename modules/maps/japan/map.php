@@ -41,6 +41,7 @@ class JapanMap extends Map {
         $this->pointsForLongestPath = null; // points for maximum longest countinuous path (null means disabled)
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
         $this->minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
+        $this->differentLengthRoutesAreDoubleRoutes = false;
 
         $this->bulletTrainBonusPoints = [
             2 => [1 => 10, 2 => -10],
