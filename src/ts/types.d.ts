@@ -112,7 +112,8 @@ export interface TicketToRideMap {
     minimumPlayerForDoubleRoutes: number;
     multilingualPdfRulesUrl?: string;
     rulesDifferences?: string[];
-    vertical: boolean;
+    width: number;
+    height: number;
     stations: number | null;
     pointsForGlobetrotter: number | null;
     pointsForMostConnectedCities: number | null;

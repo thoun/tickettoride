@@ -47,8 +47,6 @@ class IndiaMap extends Map {
             clienttranslate('Ferries: To claim a Ferry route, a player must play a Locomotive card for each Locomotive symbol on the route.'),
             clienttranslate('Grand Tour bonus (Mandala): Any Ticket whose 2 Destination Cities are linked via at least 2 distinct continuous paths of its owner’s plastic trains qualifies for a Grand Tour bonus.'),
         ];
-
-        $this->vertical = true;
         
         $this->mandalaPoints = [
             0 => 0,

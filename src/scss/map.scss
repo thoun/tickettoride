@@ -164,15 +164,10 @@
 
 #map {
     position: relative;
-    width: 1744px;
-    height: 1125px;
+    width: var(--map-width);
+    height: var(--map-height);
     transform-origin: top left;
     color: black;
-}
-
-.vertical-map #map {
-    width: 1125px;
-    height: 1744px;
 }
 
 /*.point-marker {

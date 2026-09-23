@@ -56,8 +56,6 @@ class NordicCountriesMap extends Map {
             clienttranslate('You can spend any set of 4 cards to replace a color card on the Murmansk-Lieksa route.'),
             clienttranslate('There is no longest path bonus, but a 10 points Globetrotter bonus for the most completed tickets'),
         ];
-
-        $this->vertical = true;
     }
     
     /**

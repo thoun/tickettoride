@@ -399,8 +399,9 @@ class DestinationSelection {
     constructor(game, map) {
         this.game = game;
         this.visibleDestinations = [];
-        const DESTINATION_CARD_WIDTH = map.vertical ? CARD_HEIGHT : CARD_WIDTH;
-        const DESTINATION_CARD_HEIGHT = map.vertical ? CARD_WIDTH : CARD_HEIGHT;
+        const verticalMap = map.width < map.height;
+        const DESTINATION_CARD_WIDTH = verticalMap ? CARD_HEIGHT : CARD_WIDTH;
+        const DESTINATION_CARD_HEIGHT = verticalMap ? CARD_WIDTH : CARD_HEIGHT;
         // @ts-ignore
         this.destinations = new ebg.stock();
         this.destinations.setSelectionAppearance('class');
@@ -1160,8 +1161,6 @@ class PlayerTrainCars {
 const DRAG_AUTO_ZOOM_DELAY = 2000;
 const SIDES = ['left', 'right', 'top', 'bottom'];
 const CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
-const HORIZONTAL_MAP_WIDTH = 1744;
-const HORIZONTAL_MAP_HEIGHT = 1125;
 const DECK_WIDTH = 250;
 const PLAYER_WIDTH = 305;
 const PLAYER_HEIGHT = 257; // avg height (4 destination cards)
@@ -1695,10 +1694,10 @@ class TtrMap {
         return true;
     }
     getMapWidth() {
-        return this.map.vertical ? HORIZONTAL_MAP_HEIGHT : HORIZONTAL_MAP_WIDTH;
+        return this.map.width;
     }
     getMapHeight() {
-        return this.map.vertical ? HORIZONTAL_MAP_WIDTH : HORIZONTAL_MAP_HEIGHT;
+        return this.map.height;
     }
     /**
      * Set map size, depending on available screen size.
@@ -3227,6 +3226,11 @@ class Game {
             </div>
         `);
         const map = this.getMap();
+        document.body.style.setProperty('--map-width', `${map.width}px`);
+        document.body.style.setProperty('--map-height', `${map.height}px`);
+        if (map.width < map.height) {
+            document.body.classList.add('vertical-map');
+        }
         Object.entries(map.cities).forEach(entry => entry[1].id = Number(entry[0]));
         Object.entries(map.routes).forEach(entry => entry[1].id = Number(entry[0]));
         Object.entries(map.destinations).forEach(typeEntry => Object.entries(typeEntry[1]).forEach(entry => entry[1].id = Number(entry[0])));
@@ -3259,9 +3263,6 @@ class Game {
         this.bga.gameui.onScreenWidthChange = () => this.map.setAutoZoom();
         if (this.gamedatas.map.multilingualPdfRulesUrl || this.gamedatas.map.rulesDifferences) {
             this.bga.statusBar.addActionButton(_('Rules differences between USA and current map'), () => this.createRulesPopin(), { id: 'rules-differences-btn', destination: document.getElementById(`player_boards`) });
-        }
-        if (this.gamedatas.map.vertical) {
-            document.body.classList.add('vertical-map');
         }
         BgaAutofit.init();
         console.log("Ending game setup");

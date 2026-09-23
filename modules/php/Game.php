@@ -227,7 +227,8 @@ class Game extends Table {
                 'minimumPlayerForDoubleRoutes' => $this->getMap()->minimumPlayerForDoubleRoutes,
                 'multilingualPdfRulesUrl' => $this->getMap()->multilingualPdfRulesUrl,
                 'rulesDifferences' => $this->getMap()->rulesDifferences,
-                'vertical' => $this->getMap()->vertical,
+                'width' => $this->getMap()->width,
+                'height' => $this->getMap()->height,
                 'stations' => $this->getMap()->stations,
                 'pointsForGlobetrotter' => $this->getMap()->pointsForGlobetrotter,
                 'pointsForMostConnectedCities' => $this->getMap()->pointsForMostConnectedCities,
@@ -514,7 +515,7 @@ class Game extends Table {
             require_once(__DIR__.'/../maps/'.$mapCode.'/map.php');
 
             $this->map = getMap();
-            $this->map->code = $mapCode;
+            $this->map->setCode($mapCode);
         }
         return $this->map;
     }

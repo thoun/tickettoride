@@ -9,6 +9,8 @@ class Map {
     public const LOCOMOTIVE_FERRY = 0b10;
 
     public string $code;
+    public int $width;
+    public int $height;
     public ?int $expansion = null;
     public ?array $bigCities = null;
     public array $countriesEndPoints = [];
@@ -30,7 +32,6 @@ class Map {
     public int $minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
     public ?string $multilingualPdfRulesUrl = null; // PDF rules URL to display when it's not the base game
     public ?array $rulesDifferences = null; // text summary of rules differences to display when it's not the base game
-    public bool $vertical = false;
     public ?int $stations = null;
     public ?array $mandalaPoints = null;
 
@@ -56,6 +57,17 @@ class Map {
             8 => 21,
         ],
     ) {
+    }
+
+    public function setCode(string $code): void {
+        $this->code = $code;
+
+        $dimensions = getimagesize(__DIR__.'/../../../img/'.$code.'/map.webp');
+        if ($dimensions === false) {
+            throw new \RuntimeException("Unable to read dimensions for map '$code'");
+        }
+
+        [$this->width, $this->height] = $dimensions;
     }
 
     /**

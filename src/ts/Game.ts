@@ -116,6 +116,11 @@ export class Game implements TicketToRideGame {
         `);
         
         const map = this.getMap();
+        document.body.style.setProperty('--map-width', `${map.width}px`);
+        document.body.style.setProperty('--map-height', `${map.height}px`);
+        if (map.width < map.height) {
+            document.body.classList.add('vertical-map');
+        }
         Object.entries(map.cities).forEach(entry => entry[1].id = Number(entry[0]));
         Object.entries(map.routes).forEach(entry => entry[1].id = Number(entry[0]));
         Object.entries(map.destinations).forEach(typeEntry => Object.entries(typeEntry[1]).forEach(entry => entry[1].id = Number(entry[0])));
@@ -170,10 +175,6 @@ export class Game implements TicketToRideGame {
                 () => this.createRulesPopin(), 
                 { id: 'rules-differences-btn', destination: document.getElementById(`player_boards`) }
             );
-        }
-
-        if (this.gamedatas.map.vertical) {
-            document.body.classList.add('vertical-map');
         }
 
         BgaAutofit.init();

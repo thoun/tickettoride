@@ -8,8 +8,6 @@ const DRAG_AUTO_ZOOM_DELAY = 2000;
 const SIDES = ['left', 'right', 'top', 'bottom'];
 const CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 
-const HORIZONTAL_MAP_WIDTH = 1744;
-const HORIZONTAL_MAP_HEIGHT = 1125;
 const DECK_WIDTH = 250;
 const PLAYER_WIDTH = 305;
 const PLAYER_HEIGHT = 257; // avg height (4 destination cards)
@@ -654,10 +652,10 @@ export class TtrMap {
     }
 
     private getMapWidth() {
-        return this.map.vertical ? HORIZONTAL_MAP_HEIGHT : HORIZONTAL_MAP_WIDTH;
+        return this.map.width;
     }
     private getMapHeight() {
-        return this.map.vertical ? HORIZONTAL_MAP_WIDTH : HORIZONTAL_MAP_HEIGHT;
+        return this.map.height;
     }
 
     /** 

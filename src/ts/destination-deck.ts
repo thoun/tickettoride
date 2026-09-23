@@ -21,8 +21,9 @@ export class DestinationSelection {
         private game: TicketToRideGame,
         map: TicketToRideMap,
     ) {
-        const DESTINATION_CARD_WIDTH = map.vertical ? CARD_HEIGHT : CARD_WIDTH;
-        const DESTINATION_CARD_HEIGHT = map.vertical ? CARD_WIDTH : CARD_HEIGHT;
+        const verticalMap = map.width < map.height;
+        const DESTINATION_CARD_WIDTH = verticalMap ? CARD_HEIGHT : CARD_WIDTH;
+        const DESTINATION_CARD_HEIGHT = verticalMap ? CARD_WIDTH : CARD_HEIGHT;
 
         // @ts-ignore
         this.destinations = new ebg.stock() as Stock;
