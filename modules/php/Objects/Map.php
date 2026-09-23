@@ -34,6 +34,7 @@ class Map {
     public ?array $rulesDifferences = null; // text summary of rules differences to display when it's not the base game
     public ?int $stations = null;
     public ?array $mandalaPoints = null;
+    public ?array $bulletTrainBonusPoints = null;
 
     /**
      * @param City[] $cities
@@ -89,6 +90,18 @@ class Map {
      */
     function getInitialDestinationPick(int $expansionValue): array {
         return ['deck' => 3];
+    }
+
+    /**
+     * Return each player's Bullet Train bonus, based on their position on the
+     * progression track. Tied players share a rank and still occupy all their
+     * positions (for example: 1st, tied 2nd, tied 2nd, 4th).
+     *
+     * @param array<int, int> $positions position by player id
+     * @return array<int, int> bonus points by player id
+     */
+    function getBulletTrainBonuses(array $positions): array {
+        return [];
     }
 
     /**

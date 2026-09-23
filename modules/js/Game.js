@@ -658,6 +658,9 @@ class EndScore {
                 ${game.getMap().code === 'india' ? `
                     <td id="mandala-count-${player.id}"></td>
                 ` : ``}
+                ${game.getMap().code === 'japan' ? `
+                    <td id="bullet-train-count-${player.id}"></td>
+                ` : ``}
                 <td id="train-score-${player.id}" class="train">
                     <div id="train-image-${player.id}" class="train-image" data-player-color="${player.color}"></div>
                 </td>
@@ -702,6 +705,9 @@ class EndScore {
                 }
                 if (player.mandalaCount !== undefined) {
                     this.setMandalaCount(player.id, player.mandalaCount);
+                }
+                if (player.mapSpecificData.bulletTrainPosition !== undefined) {
+                    this.setBulletTrainCount(player.id, player.mapSpecificData.bulletTrainPosition);
                 }
                 this.updateDestinationsTooltip(player);
             });
@@ -823,6 +829,9 @@ class EndScore {
     }
     setMandalaCount(playerId, length) {
         document.getElementById(`mandala-count-${playerId}`).insertAdjacentHTML('afterbegin', `<div class="mandala-count">${length} <div class="mandala-icon"></div></div>`);
+    }
+    setBulletTrainCount(playerId, position) {
+        document.getElementById(`bullet-train-count-${playerId}`).innerHTML = `<div class="bullet-train-count">${position} <div class="bullet-train-icon"></div></div>`;
     }
     /**
      * Show longest path animation for a player.
@@ -1954,8 +1963,17 @@ class TtrMap {
             this.remainingBulletTrainCarCounters.create(`remaining-bullet-train-car-counter`, { value: this.mapSpecificData.remainingBulletTrains });
             // TODO create the slots
             this.mapDiv.insertAdjacentHTML('afterbegin', `
-                <div class="bullet-train-positions">
-                    ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                <div class="bullet-train-positions" style="--bottom: 363px; grid-template-columns: 115px;">
+                    <div id="bullet-train-position-0" style="height: 42px;"></div>
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 150px;">
+                    ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 112px;">
+                    ${[21, 22, 23, 24, 25].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 82px;">
+                    ${[26, 27, 28, 29, 30].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
                 </div>
             `);
             this.players.forEach(player => this.setBulletTrainPosition(Number(player.id), player.mapSpecificData.bulletTrainPosition));
@@ -3675,6 +3693,7 @@ class Game {
             ['remainingStations', skipEndOfGameAnimations ? 1 : 1500],
             ['mandalaCount', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestinationGrandTour', skipEndOfGameAnimations ? 1 : 2000],
+            ['bulletTrainBonus', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['highlightWinnerScore', 1],
         ];
         notifs.forEach((notif) => {
@@ -3876,6 +3895,10 @@ class Game {
      */
     notif_mandalaCount(notif) {
         this.endScore?.setMandalaCount(notif.args.playerId, notif.args.length);
+    }
+    /** Show Bullet Train progression for end scoring. */
+    notif_bulletTrainBonus(notif) {
+        this.endScore?.setBulletTrainCount(notif.args.playerId, notif.args.position);
     }
     /**
      * Animate mandala routes for end score.

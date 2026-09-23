@@ -42,6 +42,13 @@ class JapanMap extends Map {
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
         $this->minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
 
+        $this->bulletTrainBonusPoints = [
+            2 => [1 => 10, 2 => -10],
+            3 => [1 => 15, 2 => 5, 3 => -10],
+            4 => [1 => 20, 2 => 10, 3 => 0, 4 => -10],
+            5 => [1 => 25, 2 => 15, 3 => 5, 4 => -5, 5 => -10],
+        ];
+
         $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2024/07/720132-T2RMC7-Rules_Japan_en.pdf';
         $this->rulesDifferences = [
             // TODO
@@ -74,6 +81,13 @@ class JapanMap extends Map {
             'deck' => $destinations
         ];
     }
+    
+    /**
+     * Return if Longest Path bonus card is used for the game.
+     */
+    function isLongestPathBonusActive(int $expansionValue): bool {
+        return false;
+    }
 
     function setup(Game $game): void {
         $game->bga->globals->set(REMAINING_BULLET_TRAINS, 16);
@@ -97,6 +111,34 @@ class JapanMap extends Map {
 
     function isLastTurn(Game $game): bool {
         return $game->getLowestTrainCarsCount() <= 2 && $game->bga->globals->get(REMAINING_BULLET_TRAINS) <= 2; // 2 means 0, 1, or 2 will start last turn
+    }
+
+    /**
+     * Return each player's Bullet Train bonus, based on their position on the
+     * progression track. Tied players share a rank and still occupy all their
+     * positions (for example: 1st, tied 2nd, tied 2nd, 4th).
+     *
+     * @param array<int, int> $positions position by player id
+     * @return array<int, int> bonus points by player id
+     */
+    function getBulletTrainBonuses(array $positions): array {
+        if ($this->bulletTrainBonusPoints === null) {
+            return [];
+        }
+
+        $pointsByRank = $this->bulletTrainBonusPoints[count($positions)];
+        $bonuses = [];
+        foreach ($positions as $playerId => $position) {
+            if ($position === 0) {
+                $bonuses[$playerId] = -20;
+                continue;
+            }
+
+            $rank = 1 + count(array_filter($positions, fn($otherPosition) => $otherPosition > $position));
+            $bonuses[$playerId] = $pointsByRank[$rank];
+        }
+
+        return $bonuses;
     }
 }
 

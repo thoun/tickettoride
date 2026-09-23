@@ -11,20 +11,20 @@
 
 .remaining-bullet-train-car-counter {
     position: absolute;
-    left: 770px;
-    top: 560px;
+    left: 1520px;
+    bottom: 48px;
     background: #00000066;
-    padding: 10px;
+    padding: 5px;
     border-radius: 20px;
 
     display: grid;
     grid-template-columns: repeat(2, 64px);
     justify-items: center;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
     color: white;
     text-shadow: 0 0 1px black, 0 0 1px black, 0 0 2px black, 0 0 2px black, 0 0 3px black, 0 0 3px black, 0 0 4px black, 0 0 4px black;
-    font-size: 48px;
+    font-size: 42px;
     font-weight: bold;
 }
 
@@ -38,17 +38,36 @@
     background-repeat: no-repeat;
 }
 
+.bullet-train-count {
+    background: white;
+    border-radius: 5px;
+    color: #1966a3;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 2px;
+    gap: 2px;
+}
+
+.bullet-train-count .bullet-train-icon {
+    width: 20px;
+    height: 20px;
+}
+
 .bullet-train-positions {
     position: absolute;
     display: grid;
-    grid-template-columns: repeat(5, 50px);
+    grid-template-columns: repeat(var(--column-count), 55px);
+    bottom: var(--bottom);
+    right: 82px;
+    gap: 2px;
 }
 
 .bullet-train-positions>div {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 30px;
+    height: 28px;
 }
 
 .bullet-train-position-marker {

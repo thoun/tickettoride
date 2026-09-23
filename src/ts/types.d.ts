@@ -323,6 +323,11 @@ export interface NotifBadgeArgs {
     length: number;
 }
 
+export interface NotifBulletTrainBonusArgs {
+    playerId: number;
+    position: number;
+}
+
 export interface NotifRemainingStationsArgs {
     playerId: number;
     remainingStations: number;

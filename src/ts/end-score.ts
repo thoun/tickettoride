@@ -44,6 +44,9 @@ export class EndScore {
                 ${game.getMap().code === 'india' ? `
                     <td id="mandala-count-${player.id}"></td>
                 ` : ``}
+                ${game.getMap().code === 'japan' ? `
+                    <td id="bullet-train-count-${player.id}"></td>
+                ` : ``}
                 <td id="train-score-${player.id}" class="train">
                     <div id="train-image-${player.id}" class="train-image" data-player-color="${player.color}"></div>
                 </td>
@@ -94,6 +97,9 @@ export class EndScore {
                 }
                 if (player.mandalaCount !== undefined) {
                     this.setMandalaCount(player.id, player.mandalaCount);
+                }
+                if (player.mapSpecificData.bulletTrainPosition !== undefined) {
+                    this.setBulletTrainCount(player.id, player.mapSpecificData.bulletTrainPosition);
                 }
                 this.updateDestinationsTooltip(player);
             });
@@ -264,6 +270,10 @@ export class EndScore {
 
     public setMandalaCount(playerId: number | string, length: number) {
         document.getElementById(`mandala-count-${playerId}`).insertAdjacentHTML('afterbegin', `<div class="mandala-count">${length} <div class="mandala-icon"></div></div>`);
+    }
+
+    public setBulletTrainCount(playerId: number | string, position: number) {
+        document.getElementById(`bullet-train-count-${playerId}`).innerHTML = `<div class="bullet-train-count">${position} <div class="bullet-train-icon"></div></div>`;
     }
     
     /** 

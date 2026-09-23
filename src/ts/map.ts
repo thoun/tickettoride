@@ -954,8 +954,17 @@ export class TtrMap {
 
             // TODO create the slots
             this.mapDiv.insertAdjacentHTML('afterbegin', `
-                <div class="bullet-train-positions">
-                    ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                <div class="bullet-train-positions" style="--bottom: 363px; grid-template-columns: 115px;">
+                    <div id="bullet-train-position-0" style="height: 42px;"></div>
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 150px;">
+                    ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 112px;">
+                    ${[21, 22, 23, 24, 25].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 82px;">
+                    ${[26, 27, 28, 29, 30].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
                 </div>
             `);
             this.players.forEach(player => this.setBulletTrainPosition(Number(player.id), player.mapSpecificData.bulletTrainPosition)); 

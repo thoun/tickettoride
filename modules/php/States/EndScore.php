@@ -69,6 +69,7 @@ class EndScore extends GameState {
         $isLongestPathBonusActive = $this->game->getMap()->isLongestPathBonusActive($expansionOption);
         $isMostConnectedCitiesBonusActive = $this->game->getMap()->pointsForMostConnectedCities !== null;
         $mandalaPoints = $this->game->getMap()->mandalaPoints;
+        $bulletTrainBonusPoints = $this->game->getMap()->bulletTrainBonusPoints;
 
         $sql = "SELECT player_id id, player_score score FROM player ORDER BY player_no ASC";
         $players = $this->game->getCollectionFromDb($sql);
@@ -242,6 +243,18 @@ class EndScore extends GameState {
                     count($playerMandalas),
                 );
                 $totalScore[$playerId] += $mandalaPoints[$completedMandalas];
+            }
+        }
+
+        $bulletTrainPositions = [];
+        $bulletTrainBonuses = [];
+        if ($bulletTrainBonusPoints !== null) {
+            foreach ($players as $playerId => $playerDb) {
+                $bulletTrainPositions[$playerId] = (int)$this->game->bga->globals->get("BULLET_TRAIN_POSITION_{$playerId}", 0);
+            }
+            $bulletTrainBonuses = $this->game->getMap()->getBulletTrainBonuses($bulletTrainPositions);
+            foreach ($bulletTrainBonuses as $playerId => $points) {
+                $totalScore[$playerId] += $points;
             }
         }
 
@@ -458,6 +471,24 @@ class EndScore extends GameState {
                     'number' => count($playerMandalas),
                 ]);
             }
+        }
+
+        // Bullet Train bonus
+        foreach ($bulletTrainBonuses as $playerId => $points) {
+            $position = $bulletTrainPositions[$playerId];
+            $this->notify->all('bulletTrainBonus', '', [
+                'playerId' => $playerId,
+                'position' => $position,
+            ]);
+
+            $message = clienttranslate('${player_name} ${gainsloses} ${absdelta} points with the Bullet Train Bonus (position: ${position})');
+            $this->game->incScore($playerId, $points, $message, [
+                'delta' => $points,
+                'absdelta' => abs($points),
+                'position' => $position,
+                'i18n' => ['gainsloses'],
+                'gainsloses' => $points >= 0 ? clienttranslate('gains') : clienttranslate('loses'),
+            ]);
         }
 
         // highlight winner(s)
