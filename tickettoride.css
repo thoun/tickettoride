@@ -738,6 +738,9 @@
 .wagon[data-player-color=af0ac2] {
   background-image: url("img/wagons-purple.png"), url("img/wagons-shadow.png");
 }
+.wagon[data-player-color="-1"] {
+  background-image: url("img/wagons-bullet-train.png"), url("img/wagons-shadow.png");
+}
 .wagon.phantom {
   opacity: 0.5;
 }
@@ -765,6 +768,9 @@
 }
 #map[data-big-shadows=true] .wagon[data-player-color=af0ac2] {
   background-image: url("img/wagons-purple.png"), url("img/wagons-shadow-big.png");
+}
+#map[data-big-shadows=true] .wagon [data-player-color="-1"] {
+  background-image: url("img/wagons-bullet-train.png"), url("img/wagons-shadow-big.png");
 }
 
 #map .station {
