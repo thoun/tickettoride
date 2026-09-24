@@ -661,6 +661,9 @@ class EndScore {
                 ${game.getMap().code === 'japan' ? `
                     <td id="bullet-train-count-${player.id}"></td>
                 ` : ``}
+                ${game.getMap().code === 'italy' ? `
+                    <td id="regions-bonus-${player.id}"></td>
+                ` : ``}
                 <td id="train-score-${player.id}" class="train">
                     <div id="train-image-${player.id}" class="train-image" data-player-color="${player.color}"></div>
                 </td>
@@ -708,6 +711,9 @@ class EndScore {
                 }
                 if (player.mapSpecificData.bulletTrainPosition !== undefined) {
                     this.setBulletTrainCount(player.id, player.mapSpecificData.bulletTrainPosition);
+                }
+                if (player.mapSpecificData.regionsBonus !== undefined) {
+                    this.setRegionsBonus(player.id, player.mapSpecificData.regionsBonus);
                 }
                 this.updateDestinationsTooltip(player);
             });
@@ -832,6 +838,9 @@ class EndScore {
     }
     setBulletTrainCount(playerId, position) {
         document.getElementById(`bullet-train-count-${playerId}`).innerHTML = `<div class="bullet-train-count">${position} <div class="bullet-train-icon"></div></div>`;
+    }
+    setRegionsBonus(playerId, points) {
+        document.getElementById(`regions-bonus-${playerId}`).innerHTML = `<div class="regions-bonus">+${points} <span>${_('Regions')}</span></div>`;
     }
     /**
      * Show longest path animation for a player.
@@ -3700,6 +3709,7 @@ class Game {
             ['mandalaCount', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestinationGrandTour', skipEndOfGameAnimations ? 1 : 2000],
             ['bulletTrainBonus', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
+            ['regionsBonus', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['highlightWinnerScore', 1],
         ];
         notifs.forEach((notif) => {
@@ -3905,6 +3915,10 @@ class Game {
     /** Show Bullet Train progression for end scoring. */
     notif_bulletTrainBonus(notif) {
         this.endScore?.setBulletTrainCount(notif.args.playerId, notif.args.position);
+    }
+    /** Show the Regions Bonus during end scoring. */
+    notif_regionsBonus(notif) {
+        this.endScore?.setRegionsBonus(notif.args.playerId, notif.args.points);
     }
     /**
      * Animate mandala routes for end score.

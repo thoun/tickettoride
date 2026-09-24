@@ -1,3 +1,20 @@
 #map {
     background-image: url('./map.webp');
 }
+
+.regions-bonus {
+    background: white;
+    border-radius: 5px;
+    color: #427d39;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 4px;
+    gap: 3px;
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+.regions-bonus span {
+    font-size: 10px;
+}

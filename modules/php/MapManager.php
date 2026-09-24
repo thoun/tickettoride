@@ -126,9 +126,25 @@ class MapManager {
      * Get the routes and distinct cities in the player's largest connected network.
      */
     public function getLargestConnectedNetwork(int $playerId): ConnectedNetwork {
+        $largestNetwork = new ConnectedNetwork([], []);
+        foreach ($this->getConnectedNetworks($playerId) as $network) {
+            if (count($network->cities) > count($largestNetwork->cities)) {
+                $largestNetwork = $network;
+            }
+        }
+
+        return $largestNetwork;
+    }
+
+    /**
+     * Get every distinct connected network for the player.
+     *
+     * @return ConnectedNetwork[]
+     */
+    public function getConnectedNetworks(int $playerId): array {
         $claimedRoutes = $this->game->getClaimedRoutes($playerId);
         if (empty($claimedRoutes)) {
-            return new ConnectedNetwork([], []);
+            return [];
         }
 
         $routesByCity = [];
@@ -139,8 +155,7 @@ class MapManager {
         }
 
         $visitedCities = [];
-        $largestNetworkCities = [];
-        $largestNetworkRoutes = [];
+        $networks = [];
         foreach (array_keys($routesByCity) as $startingCity) {
             if (array_key_exists($startingCity, $visitedCities)) {
                 continue;
@@ -166,13 +181,10 @@ class MapManager {
                 }
             }
 
-            if (count($networkCities) > count($largestNetworkCities)) {
-                $largestNetworkCities = $networkCities;
-                $largestNetworkRoutes = array_values($networkRoutes);
-            }
+            $networks[] = new ConnectedNetwork($networkCities, array_values($networkRoutes));
         }
 
-        return new ConnectedNetwork($largestNetworkCities, $largestNetworkRoutes);
+        return $networks;
     }
 
     /**

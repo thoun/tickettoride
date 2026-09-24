@@ -70,6 +70,7 @@ class EndScore extends GameState {
         $isMostConnectedCitiesBonusActive = $this->game->getMap()->pointsForMostConnectedCities !== null;
         $mandalaPoints = $this->game->getMap()->mandalaPoints;
         $bulletTrainBonusPoints = $this->game->getMap()->bulletTrainBonusPoints;
+        $regionBonusPoints = $this->game->getMap()->regionBonusPoints;
 
         $sql = "SELECT player_id id, player_score score FROM player ORDER BY player_no ASC";
         $players = $this->game->getCollectionFromDb($sql);
@@ -255,6 +256,14 @@ class EndScore extends GameState {
             $bulletTrainBonuses = $this->game->getMap()->getBulletTrainBonuses($bulletTrainPositions);
             foreach ($bulletTrainBonuses as $playerId => $points) {
                 $totalScore[$playerId] += $points;
+            }
+        }
+
+        $regionsBonuses = [];
+        if ($regionBonusPoints !== null) {
+            foreach ($players as $playerId => $playerDb) {
+                $regionsBonuses[$playerId] = $this->game->getMap()->getRegionsBonus($this->game, $playerId);
+                $totalScore[$playerId] += $regionsBonuses[$playerId];
             }
         }
 
@@ -488,6 +497,18 @@ class EndScore extends GameState {
                 'position' => $position,
                 'i18n' => ['gainsloses'],
                 'gainsloses' => $points >= 0 ? clienttranslate('gains') : clienttranslate('loses'),
+            ]);
+        }
+
+        // Regions Bonus
+        foreach ($regionsBonuses as $playerId => $points) {
+            $this->notify->all("regionsBonus", "", [
+                "playerId" => $playerId,
+                "points" => $points,
+            ]);
+
+            $this->game->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with the Regions Bonus'), [
+                "delta" => $points,
             ]);
         }
 

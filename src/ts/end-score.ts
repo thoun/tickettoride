@@ -47,6 +47,9 @@ export class EndScore {
                 ${game.getMap().code === 'japan' ? `
                     <td id="bullet-train-count-${player.id}"></td>
                 ` : ``}
+                ${game.getMap().code === 'italy' ? `
+                    <td id="regions-bonus-${player.id}"></td>
+                ` : ``}
                 <td id="train-score-${player.id}" class="train">
                     <div id="train-image-${player.id}" class="train-image" data-player-color="${player.color}"></div>
                 </td>
@@ -100,6 +103,9 @@ export class EndScore {
                 }
                 if (player.mapSpecificData.bulletTrainPosition !== undefined) {
                     this.setBulletTrainCount(player.id, player.mapSpecificData.bulletTrainPosition);
+                }
+                if (player.mapSpecificData.regionsBonus !== undefined) {
+                    this.setRegionsBonus(player.id, player.mapSpecificData.regionsBonus);
                 }
                 this.updateDestinationsTooltip(player);
             });
@@ -274,6 +280,9 @@ export class EndScore {
 
     public setBulletTrainCount(playerId: number | string, position: number) {
         document.getElementById(`bullet-train-count-${playerId}`).innerHTML = `<div class="bullet-train-count">${position} <div class="bullet-train-icon"></div></div>`;
+    }
+    public setRegionsBonus(playerId: number | string, points: number) {
+        document.getElementById(`regions-bonus-${playerId}`).innerHTML = `<div class="regions-bonus">+${points} <span>${_('Regions')}</span></div>`;
     }
     
     /** 

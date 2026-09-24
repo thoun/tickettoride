@@ -7,7 +7,7 @@ import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseActi
 import { ChooseLegendaryCharacterState } from "./states/ChooseLegendaryCharacter";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
-import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifMostConnectedCitiesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifScoreDestinationArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs, NotifBulletTrainBonusArgs } from "./types";
+import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifMostConnectedCitiesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifScoreDestinationArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs, NotifBulletTrainBonusArgs, NotifRegionsBonusArgs } from "./types";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 import { BgaAutofit } from "./libs";
@@ -658,6 +658,7 @@ export class Game implements TicketToRideGame {
             ['mandalaCount', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['scoreDestinationGrandTour', skipEndOfGameAnimations ? 1 : 2000],
             ['bulletTrainBonus', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
+            ['regionsBonus', skipEndOfGameAnimations ? 1 : ANIMATION_MS],
             ['highlightWinnerScore', 1],
         ];
 
@@ -890,6 +891,11 @@ export class Game implements TicketToRideGame {
     /** Show Bullet Train progression for end scoring. */
     notif_bulletTrainBonus(notif: Notif<NotifBulletTrainBonusArgs>) {
         this.endScore?.setBulletTrainCount(notif.args.playerId, notif.args.position);
+    }
+
+    /** Show the Regions Bonus during end scoring. */
+    notif_regionsBonus(notif: Notif<NotifRegionsBonusArgs>) {
+        this.endScore?.setRegionsBonus(notif.args.playerId, notif.args.points);
     }
 
     /** 

@@ -64,6 +64,7 @@ interface MapSpecificData {
 interface PlayerMapSpecificData {
     mountainTrains?: number;
     bulletTrainPosition?: number; // TODO display
+    regionsBonus?: number;
 }
 
 export interface TicketToRidePlayer extends Player {
@@ -328,6 +329,11 @@ export interface NotifBadgeArgs {
 export interface NotifBulletTrainBonusArgs {
     playerId: number;
     position: number;
+}
+
+export interface NotifRegionsBonusArgs {
+    playerId: number;
+    points: number;
 }
 
 export interface NotifRemainingStationsArgs {

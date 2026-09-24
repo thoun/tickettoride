@@ -36,6 +36,8 @@ class Map {
     public ?int $stations = null;
     public ?array $mandalaPoints = null;
     public ?array $bulletTrainBonusPoints = null;
+    public ?array $regionBonusPoints = null;
+    public array $completeRegionsCountingDouble = [];
 
     /**
      * @param City[] $cities
@@ -110,6 +112,54 @@ class Map {
      */
     function getBulletTrainBonuses(array $positions): array {
         return [];
+    }
+
+    /**
+     * Return the Regions Bonus for all distinct networks belonging to a player.
+     */
+    function getRegionsBonus(Game $game, int $playerId): int {
+        return $this->getRegionsBonusForNetworks($game->mapManager->getConnectedNetworks($playerId));
+    }
+
+    /**
+     * @param \Bga\Games\TicketToRide\ConnectedNetwork[] $networks
+     */
+    function getRegionsBonusForNetworks(array $networks): int {
+        if ($this->regionBonusPoints === null) {
+            return 0;
+        }
+
+        $citiesByRegion = [];
+        foreach ($this->cities as $cityId => $city) {
+            if ($city->region !== null) {
+                $citiesByRegion[$city->region][] = $cityId;
+            }
+        }
+
+        $bonus = 0;
+        $maximumScoredRegions = max(array_keys($this->regionBonusPoints));
+        foreach ($networks as $network) {
+            $networkCities = array_fill_keys($network->cities, true);
+            $connectedRegions = [];
+            foreach ($network->cities as $cityId) {
+                $region = $this->cities[$cityId]->region ?? null;
+                if ($region !== null) {
+                    $connectedRegions[$region] = true;
+                }
+            }
+
+            $regionCount = count($connectedRegions);
+            foreach ($this->completeRegionsCountingDouble as $region) {
+                if (isset($connectedRegions[$region])
+                    && count(array_filter($citiesByRegion[$region], fn($cityId) => !isset($networkCities[$cityId]))) === 0) {
+                    $regionCount++;
+                }
+            }
+
+            $bonus += $this->regionBonusPoints[min($regionCount, $maximumScoredRegions)] ?? 0;
+        }
+
+        return $bonus;
     }
 
     /**

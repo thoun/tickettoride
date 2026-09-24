@@ -41,6 +41,25 @@ class ItalyMap extends Map {
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
         $this->minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
 
+        $this->regionBonusPoints = [
+            5 => 1,
+            6 => 2,
+            7 => 4,
+            8 => 7,
+            9 => 11,
+            10 => 16,
+            11 => 22,
+            12 => 29,
+            13 => 37,
+            14 => 46,
+            15 => 56,
+        ];
+        $this->completeRegionsCountingDouble = [
+            ITALY_REGION_SARDEGNA,
+            ITALY_REGION_SICILIA,
+            ITALY_REGION_PUGLIA,
+        ];
+
         $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2024/07/720132-T2RMC7-Rules_Italy_en.pdf';
         $this->rulesDifferences = [
             // TODO
@@ -72,6 +91,12 @@ class ItalyMap extends Map {
         return ['destinations-1-0.jpg'];
     }
     
+    function getPlayerMapSpecificData(\Bga\Games\TicketToRide\Game $game, int $playerId): array {
+        return [
+            'regionsBonus' => $this->getRegionsBonus($game, $playerId),
+        ];
+    }
+
     /**
      * List the destination tickets that will be used for the game.
      */
