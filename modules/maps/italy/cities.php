@@ -25,6 +25,14 @@ const ITALY_REGION_VENETO = 17;
  */
 function getCities() {
   return [
+    // countries
+    -5 => new City('Croazia', 1071, 1005),
+    -4 => new City('Austria', 1010, 271),
+    -3 => new City('Svizzera', 550, 76),
+    -2 => new City('Monaco', 77, 379),
+    -1 => new City('Francia', 66, 170),
+
+    // cities
     1 => new City('Agrigento', 166, 1835, region: ITALY_REGION_SICILIA),
     2 => new City('Ancona', 761, 848, region: ITALY_REGION_MARCHE),
     3 => new City('Bari', 934, 1473, region: ITALY_REGION_PUGLIA),
