@@ -163,6 +163,15 @@
     background-position: #{0 * 100% / 3} 50%;
   }
 
+  &.ferry-card-icon {
+    width: 20px;
+    height: 31px;
+    border-radius: 2px;
+    background-image: url('img/italy/destinations-1-0.jpg');
+    background-size: 1000% 600%;
+    background-position: #{7 * 100% / 9} 100%;
+  }
+
   &.destination-card {
     background-position: #{1 * 100% / 3} 50%;
   }

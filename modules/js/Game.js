@@ -2071,8 +2071,9 @@ class PlayerTable {
 }
 
 class DistributionResult {
-    constructor(distributionCards, auto = false) {
+    constructor(distributionCards, auto = false, ferryCards = 0) {
         this.auto = auto;
+        this.ferryCards = ferryCards;
         this.cardIds = distributionCards.flat();
         const colorKey = Object.keys(distributionCards).map(Number).filter(n => ![0, 99].includes(n))[0];
         const hasColorCards = colorKey && distributionCards[colorKey].length > 0;
@@ -2080,21 +2081,25 @@ class DistributionResult {
     }
 }
 class DistributionPopin {
-    constructor(trainCarsHand, claimingRoute, cost, canUseLocomotives) {
+    constructor(trainCarsHand, claimingRoute, cost, canUseLocomotives, ferryCardsCount = 0) {
         this.trainCarsHand = trainCarsHand;
         this.claimingRoute = claimingRoute;
         this.cost = cost;
         this.canUseLocomotives = canUseLocomotives;
+        this.ferryCardsCount = ferryCardsCount;
         this.distributionCards = [];
+        this.selectedFerryCards = [];
     }
     show(title) {
         this.distributionCards = [];
+        this.selectedFerryCards = [];
         return new Promise(resolve => {
             const distributionDlg = new ebg.popindialog();
             distributionDlg.create('distributionPopin');
             distributionDlg.setTitle(title);
+            const isFerry = this.claimingRoute.route.ferryWaves > 0;
             const locomotiveCards = this.canUseLocomotives ? this.trainCarsHand.filter(card => card.type == 0).slice(0, this.cost) : [];
-            let minLocomotives = this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? 0 : this.claimingRoute.route.locomotives;
+            let minLocomotives = isFerry || this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? 0 : this.claimingRoute.route.locomotives;
             const maxLocomotives = this.canUseLocomotives ? locomotiveCards.length : 0;
             const showLocomotives = this.canUseLocomotives ? (minLocomotives > 0 || maxLocomotives > 0) : false;
             let colorCards = null;
@@ -2102,9 +2107,9 @@ class DistributionPopin {
             let maxColorCards = 0;
             if (this.claimingRoute.color > 0) {
                 colorCards = this.trainCarsHand.filter(card => card.type == this.claimingRoute.color).slice(0, this.cost);
-                minColorCards = this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? 0 : Math.max(0, Math.min(this.cost - minLocomotives, this.cost - maxLocomotives));
-                maxColorCards = Math.min(this.cost - this.claimingRoute.route.locomotives, colorCards.length);
-                if (!this.claimingRoute.route.canPayWithAnySetOfCards && maxColorCards < this.cost) {
+                minColorCards = isFerry || this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? 0 : Math.max(0, Math.min(this.cost - minLocomotives, this.cost - maxLocomotives));
+                maxColorCards = Math.min(isFerry ? this.cost - this.claimingRoute.route.ferryWaves : this.cost - this.claimingRoute.route.locomotives, colorCards.length);
+                if (!isFerry && !this.claimingRoute.route.canPayWithAnySetOfCards && maxColorCards < this.cost) {
                     minLocomotives = Math.min(maxLocomotives, this.cost - maxColorCards);
                 }
             }
@@ -2120,15 +2125,20 @@ class DistributionPopin {
                 if (this.claimingRoute.route.locomotives) {
                     html += `${_('${number} locomotives required').replace('${number}', `${this.claimingRoute.route.locomotives}`)}<br>`;
                 }
-                html += this.cardSection(locomotiveCardsToDisplay, this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : 0);
+                html += this.cardSection(locomotiveCardsToDisplay, isFerry || this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : 0);
             }
             if (showColorCards) {
                 this.distributionCards[this.claimingRoute.color] = [];
-                html += this.cardSection(colorCardsToDisplay, this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : this.claimingRoute.color);
+                html += this.cardSection(colorCardsToDisplay, isFerry || this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : this.claimingRoute.color);
             }
             if (this.claimingRoute.route.canPayWithAnySetOfCards > 0) {
                 this.distributionCards[99] = [];
                 html += `${_('Any set of ${number} cards').replace('${number}', `${this.claimingRoute.route.canPayWithAnySetOfCards}`)}<br>` + this.cardSection(otherCardsForSet, null);
+            }
+            if (isFerry && this.ferryCardsCount > 0) {
+                html += `<div class="ferry-card-selection">
+                    ${Array.from({ length: Math.min(this.ferryCardsCount, this.claimingRoute.route.ferryWaves) }, (unused, index) => `<div role="button" id="distribution-ferry-${index}" class="icon ferry-card-icon selectable"></div>`).join('')}
+                </div><hr/>`;
             }
             html += `
                 <div class="total">
@@ -2156,7 +2166,7 @@ class DistributionPopin {
                         }
                     }
                 });
-                if (!showSet) {
+                if (!showSet && !isFerry) {
                     document.getElementById(`use-maximum-${0}-btn`).addEventListener('click', () => this.useMaximum(0));
                 }
             }
@@ -2176,7 +2186,7 @@ class DistributionPopin {
                         }
                     }
                 });
-                if (!showSet) {
+                if (!showSet && !isFerry) {
                     document.getElementById(`use-maximum-${this.claimingRoute.color}-btn`).addEventListener('click', () => this.useMaximum(this.claimingRoute.color));
                 }
             }
@@ -2187,12 +2197,17 @@ class DistributionPopin {
                     element.addEventListener('click', () => this.onDistributionCardClick(card.id, 99));
                 });
             }
+            if (isFerry) {
+                Array.from({ length: Math.min(this.ferryCardsCount, this.claimingRoute.route.ferryWaves) }, (_, index) => index).forEach(index => {
+                    document.getElementById(`distribution-ferry-${index}`).addEventListener('click', () => this.onFerryCardClick(index));
+                });
+            }
             this.updateTotal();
-            const closeFn = (result) => { resolve(result ? new DistributionResult(result) : null); distributionDlg.destroy(); };
+            const closeFn = (result) => { resolve(result ? new DistributionResult(result, false, this.selectedFerryCards.length) : null); distributionDlg.destroy(); };
             distributionDlg.replaceCloseCallback(() => closeFn(null));
             document.getElementById('confirmDistribution-btn').addEventListener('click', () => closeFn(this.distributionCards));
             document.getElementById('cancelDistribution-btn').addEventListener('click', () => closeFn(null));
-            if ((minLocomotives + minColorCards) === this.cost) {
+            if (!isFerry && (minLocomotives + minColorCards) === this.cost) {
                 // all possible cards are preselected, meaning the player doesn't have a choice
                 resolve(new DistributionResult(this.distributionCards, true));
                 distributionDlg.destroy();
@@ -2220,10 +2235,19 @@ class DistributionPopin {
     updateTotal() {
         const element = document.getElementById(`distribution-current-size`);
         const selectedCardCount = this.getSelectedCardCount();
-        element.innerText = `${selectedCardCount}`;
-        const validCount = selectedCardCount === this.cost;
+        const isFerry = this.claimingRoute.route.ferryWaves > 0;
+        const ferryCardValue = isFerry
+            ? Math.min(2 * this.selectedFerryCards.length, this.claimingRoute.route.ferryWaves, Math.max(0, this.cost - selectedCardCount))
+            : 0;
+        const total = selectedCardCount + ferryCardValue;
+        element.innerText = `${total}`;
+        const validCount = isFerry
+            ? total === this.cost && ferryCardValue >= this.selectedFerryCards.length
+            : total === this.cost;
         element.dataset.valid = JSON.stringify(validCount);
-        let valid = validCount && this.getSelectedCardCount(true) >= this.claimingRoute.route.locomotives;
+        let valid = validCount && (isFerry
+            ? (this.distributionCards[0]?.length ?? 0) >= this.claimingRoute.route.ferryWaves - ferryCardValue
+            : this.getSelectedCardCount(true) >= this.claimingRoute.route.locomotives);
         if (this.claimingRoute.route.canPayWithAnySetOfCards && this.distributionCards[99]) {
             if (this.distributionCards[99].length % this.claimingRoute.route.canPayWithAnySetOfCards !== 0) {
                 valid = false;
@@ -2246,11 +2270,23 @@ class DistributionPopin {
             this.distributionCards[type] = this.distributionCards[type].filter(id => id != cardId);
         }
         else {
-            if (this.getSelectedCardCount() >= this.cost) {
+            if (this.getSelectedCardCount() >= this.cost - this.selectedFerryCards.length) {
                 return;
             }
             element.classList.add('selected');
             this.distributionCards[type].push(cardId);
+        }
+        this.updateTotal();
+    }
+    onFerryCardClick(index) {
+        const element = document.getElementById(`distribution-ferry-${index}`);
+        if (this.selectedFerryCards.includes(index)) {
+            this.selectedFerryCards = this.selectedFerryCards.filter(selectedIndex => selectedIndex !== index);
+            element.classList.remove('selected');
+        }
+        else {
+            this.selectedFerryCards.push(index);
+            element.classList.add('selected');
         }
         this.updateTotal();
     }
@@ -2360,6 +2396,9 @@ class ChooseActionState {
         if (isCurrentPlayerActive) {
             this.bga.statusBar.removeActionButtons();
             this.bga.statusBar.addActionButton(dojo.string.substitute(_("Draw ${number} destination tickets"), { number: this.args.maxDestinationsPick }), () => this.game.drawDestinations(), { color: 'alert', disabled: !this.args.maxDestinationsPick });
+            if (this.game.getMap().ferryCards) {
+                this.bga.statusBar.addActionButton(_("Draw 1 Ferry card").replace('${number}', `${this.args.ferryCardsCount}`), () => this.bga.actions.performAction('actDrawFerryCard'), { disabled: !this.args.canDrawFerryCard });
+            }
             if (this.args.canPass) {
                 // Pass (only in case of no possible action)
                 this.bga.statusBar.addActionButton(_("Pass"), () => this.bga.actions.performAction('actPass'));
@@ -2566,13 +2605,18 @@ class ChooseActionState {
         const canUseLocomotives = locomotiveRestriction === 0
             || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
             || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
-        return route.canPayWithAnySetOfCards > 0 || (locomotiveRestriction && canUseLocomotives);
+        return route.ferryWaves > 0 || route.canPayWithAnySetOfCards > 0 || (locomotiveRestriction && canUseLocomotives);
     }
     clickedRouteDoubleRouteConfirmed(route) {
         document.querySelectorAll(`[id^="claimRouteWithColor_button"]`).forEach(button => button.parentElement.removeChild(button));
         const showDistributionPopin = this.showDistributionPopin(route);
         const routeColor = this.getConsideredRouteColor(route);
-        if ((routeColor === 0 || route.tunnel || showDistributionPopin) && this.game.playerTable.getSelectedColor() === null) {
+        const selectedColor = this.game.playerTable.getSelectedColor();
+        if (route.ferryWaves > 0 && selectedColor !== null) {
+            this.showCustomDistributionPopin(route, selectedColor);
+            return;
+        }
+        if ((routeColor === 0 || route.tunnel || showDistributionPopin) && selectedColor === null) {
             const possibleColors = [];
             const costForRoute = this.args.costForRoute[route.id];
             if (costForRoute) {
@@ -2607,12 +2651,8 @@ class ChooseActionState {
             .replace('${to}', this.game.getCityName(route.to));
         this.bga.statusBar.setTitle(confirmationQuestion);
         this.bga.statusBar.removeActionButtons();
-        const locomotiveRestriction = this.game.getMap().locomotiveUsageRestriction;
-        const canUseLocomotives = locomotiveRestriction === 0
-            || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
-            || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
         possibleColors.forEach(color => {
-            if (this.args.costForRoute[route.id][color].length >= route.spaces.length) {
+            if (!route.ferryWaves && this.args.costForRoute[route.id][color].length >= route.spaces.length) {
                 const label = dojo.string.substitute(_("Use ${color}"), {
                     'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
                 });
@@ -2622,23 +2662,27 @@ class ChooseActionState {
         if (showDistributionPopin) {
             this.claimingRoute = { route, color: route.color, distribution: null };
             if (route.color) {
-                this.bga.statusBar.addActionButton(_("Custom..."), () => {
-                    new DistributionPopin(this.args._private.trainCarsHand, this.claimingRoute, this.claimingRoute.route.spaces.length, canUseLocomotives)
-                        .show(confirmationQuestion)
-                        .then(distribution => this.onDistributionPopinResult(distribution));
-                }, { id: `claimRouteWithColor_button99`, color: 'secondary', });
+                this.bga.statusBar.addActionButton(_("Custom..."), () => this.showCustomDistributionPopin(route, route.color, confirmationQuestion), { id: `claimRouteWithColor_button99`, color: 'secondary', });
             }
             else {
                 // gray road, players must choose a color to take the gray route 
-                possibleColors.forEach(color => this.bga.statusBar.addActionButton(_("Custom (${color})...").replace('${color}', `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`), () => {
-                    this.claimingRoute.color = color;
-                    new DistributionPopin(this.args._private.trainCarsHand, this.claimingRoute, this.claimingRoute.route.spaces.length, canUseLocomotives)
-                        .show(confirmationQuestion)
-                        .then(distribution => this.onDistributionPopinResult(distribution));
-                }, { id: `claimRouteWithColor_button99_${color}`, color: 'secondary', }));
+                possibleColors.forEach(color => this.bga.statusBar.addActionButton(_("Custom (${color})...").replace('${color}', `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`), () => this.showCustomDistributionPopin(route, color, confirmationQuestion), { id: `claimRouteWithColor_button99_${color}`, color: 'secondary', }));
             }
         }
         this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelRouteClaim(), { color: 'secondary' });
+    }
+    showCustomDistributionPopin(route, color, title) {
+        const locomotiveRestriction = this.game.getMap().locomotiveUsageRestriction;
+        const canUseLocomotives = locomotiveRestriction === 0
+            || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
+            || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
+        const popinTitle = title ?? _("Choose color for the route from ${from} to ${to}")
+            .replace('${from}', this.game.getCityName(route.from))
+            .replace('${to}', this.game.getCityName(route.to));
+        this.claimingRoute = { route, color, distribution: null };
+        new DistributionPopin(this.args._private.trainCarsHand, this.claimingRoute, route.spaces.length, canUseLocomotives, this.args.ferryCardsCount)
+            .show(popinTitle)
+            .then(distribution => this.onDistributionPopinResult(distribution));
     }
     onDistributionPopinResult(distribution) {
         if (distribution) {
@@ -2646,6 +2690,7 @@ class ChooseActionState {
                 this.claimingRoute.color = 0;
             }
             this.claimingRoute.distribution = distribution.cardIds;
+            this.claimingRoute.ferryCards = distribution.ferryCards;
             if (distribution.auto) {
                 this.clickedRouteDistributionChosen();
             }
@@ -2681,6 +2726,7 @@ class ChooseActionState {
             routeId: this.claimingRoute.route.id,
             color: this.claimingRoute.color,
             distribution: this.claimingRoute.distribution,
+            ferryCards: this.claimingRoute.ferryCards ?? 0,
         });
     }
     /**
@@ -3180,6 +3226,7 @@ class Game {
         this.trainCarCounters = [];
         this.stationCounters = [];
         this.trainCarCardCounters = [];
+        this.ferryCardCounters = [];
         this.destinationCardCounters = [];
         this.animations = [];
         this.temporaryHighlightedDestinationTimeout = null;
@@ -3444,7 +3491,11 @@ class Game {
                 <div id="train-car-card-counter-${player.id}-wrapper" class="counter train-car-card-counter">
                     <div class="icon train-car-card-icon"></div> 
                     <span id="train-car-card-counter-${player.id}"></span>
-                </div>
+                </div>${this.gamedatas.map.ferryCards ? `
+                <div id="ferry-card-counter-${player.id}-wrapper" class="counter ferry-card-counter">
+                    <div class="icon ferry-card-icon"></div>
+                    <span id="ferry-card-counter-${player.id}"></span>/ 2
+                </div>` : ''}
                 <div id="destinations-counter-${player.id}-wrapper" class="counter destinations-counter">
                     <div class="icon destination-card"></div> 
                     <span id="completed-destinations-counter-${player.id}">${this.getPlayerId() !== playerId ? '?' : ''}</span>/<span id="destination-card-counter-${player.id}"></span>
@@ -3464,6 +3515,12 @@ class Game {
             trainCarCardCounter.create(`train-car-card-counter-${player.id}`);
             trainCarCardCounter.setValue(player.trainCarsCount);
             this.trainCarCardCounters[playerId] = trainCarCardCounter;
+            if (this.gamedatas.map.ferryCards) {
+                const ferryCardCounter = new ebg.counter();
+                ferryCardCounter.create(`ferry-card-counter-${player.id}`);
+                ferryCardCounter.setValue(player.mapSpecificData.ferryCards ?? 0);
+                this.ferryCardCounters[playerId] = ferryCardCounter;
+            }
             const destinationCardCounter = new ebg.counter();
             destinationCardCounter.create(`destination-card-counter-${player.id}`);
             destinationCardCounter.setValue(player.destinationsCount);
@@ -3483,6 +3540,7 @@ class Game {
         });
         this.setTooltipToClass('train-car-counter', _("Remaining train cars"));
         this.setTooltipToClass('train-car-card-counter', _("Train cars cards"));
+        this.setTooltipToClass('ferry-card-counter', _("Ferry cards"));
         this.setTooltipToClass('destinations-counter', _("Completed / Total destination cards"));
     }
     /**
@@ -3691,6 +3749,7 @@ class Game {
             ['points', 1],
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
+            ['ferryCardDrawn', 1],
             ['freeTunnel', 2000],
             ['highlightVisibleLocomotives', 1000],
             ['notEnoughTrainCars', 1],
@@ -3753,6 +3812,9 @@ class Game {
         }
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }
+    notif_ferryCardDrawn(notif) {
+        this.ferryCardCounters[notif.args.playerId]?.toValue(notif.args.ferryCardsCount);
+    }
     /**
      * Update visible cards.
      */
@@ -3790,6 +3852,9 @@ class Game {
         }
         if (notif.args.bulletTrainPosition ?? undefined !== undefined) {
             this.map.setBulletTrainPosition(playerId, notif.args.bulletTrainPosition);
+        }
+        if (notif.args.ferryCardsCount ?? undefined !== undefined) {
+            this.ferryCardCounters[playerId]?.toValue(notif.args.ferryCardsCount);
         }
     }
     notif_addMountainTrains(notif) {

@@ -38,6 +38,7 @@ export interface Route {
     locomotives: number;
     tunnel: boolean;
     canPayWithAnySetOfCards?: number | null;
+    ferryWaves?: number;
     mountain?: number;
     bulletTrainSpaceIndex?: number;
 }
@@ -46,6 +47,7 @@ export interface ClaimingRoute {
     route: Route;
     color: number;
     distribution: number[] | null;
+    ferryCards?: number;
 }
 
 export interface ClaimedRoute {
@@ -65,6 +67,7 @@ interface PlayerMapSpecificData {
     mountainTrains?: number;
     bulletTrainPosition?: number; // TODO display
     regionsBonus?: number;
+    ferryCards?: number;
 }
 
 export interface TicketToRidePlayer extends Player {
@@ -119,6 +122,7 @@ export interface TicketToRideMap {
     stations: number | null;
     pointsForGlobetrotter: number | null;
     pointsForMostConnectedCities: number | null;
+    ferryCards: boolean;
 }
 
 /**
@@ -258,6 +262,13 @@ export interface NotifClaimedRouteArgs {
     claimWithBulletTrain?: boolean;
     remainingBulletTrains?: number;
     bulletTrainPosition?: number;
+    ferryCardsUsed?: number;
+    ferryCardsCount?: number;
+}
+
+export interface NotifFerryCardDrawnArgs {
+    playerId: number;
+    ferryCardsCount: number;
 }
 
 export interface NotifAddMountainTrainsArgs {

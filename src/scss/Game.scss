@@ -82,6 +82,12 @@ html, .mode_3d #game_play_area_background {
     }
 }
 
+.ferry-card-selection {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+}
+
 #page-title {
     .color-cards {
         display: inline-block;
@@ -259,7 +265,7 @@ h2 {
 }
 
 #popin_distributionPopin {
-    .train-car-color.icon {
+    .train-car-color.icon, .ferry-card-icon {
         margin: 4px;
 
         &.selectable {

@@ -1,5 +1,6 @@
 <?php
 
+use Bga\Games\TicketToRide\Game;
 use Bga\Games\TicketToRide\Objects\Map;
 
 require_once(__DIR__.'/cities.php');
@@ -40,6 +41,7 @@ class ItalyMap extends Map {
         $this->pointsForLongestPath = null; // points for maximum longest countinuous path (null means disabled)
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
         $this->minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
+        $this->ferryCards = true;
 
         $this->regionBonusPoints = [
             5 => 1,
@@ -58,6 +60,14 @@ class ItalyMap extends Map {
             ITALY_REGION_SARDEGNA,
             ITALY_REGION_SICILIA,
             ITALY_REGION_PUGLIA,
+        ];
+
+        $this->countriesEndPoints = [
+            -1 => [1001],
+            -2 => [2001],
+            -3 => [3001, 3002],
+            -4 => [4001],
+            -5 => [5001, 5002, 5003],
         ];
 
         $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2024/07/720132-T2RMC7-Rules_Italy_en.pdf';
@@ -94,6 +104,7 @@ class ItalyMap extends Map {
     function getPlayerMapSpecificData(\Bga\Games\TicketToRide\Game $game, int $playerId): array {
         return [
             'regionsBonus' => $this->getRegionsBonus($game, $playerId),
+            'ferryCards' => $game->bga->globals->get("FERRY_CARD_{$playerId}", 0),
         ];
     }
 
@@ -118,6 +129,12 @@ class ItalyMap extends Map {
      */
     function isLongestPathBonusActive(int $expansionValue): bool {
         return false;
+    }
+
+    function setup(Game $game): void {
+        foreach ($game->getPlayersIds() as $playerId) {
+            $game->bga->globals->set("FERRY_CARD_{$playerId}", 0);
+        }
     }
 }
 

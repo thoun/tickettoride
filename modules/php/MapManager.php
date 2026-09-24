@@ -48,7 +48,7 @@ class MapManager {
      * - it is not already claimed
      * - player count allows it (if double route)
      */
-    public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars, bool $opponentRoutesInsteadOfFreeOnes = false, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null) {
+    public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars, bool $opponentRoutesInsteadOfFreeOnes = false, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null, int $ferryCards = 0) {
         $allRoutes = $this->getAllRoutes();
         $claimedRoutes = $this->game->getClaimedRoutes();
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
@@ -63,7 +63,7 @@ class MapManager {
 
         // remove routes user can't pay
         $claimableRoutes = array_values(array_filter($claimableRoutes, fn($unclaimedRoute) => 
-           $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive) !== null
+           $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $ferryCards) !== null
         ));
 
         $doubleRouteAllowed = $this->isDoubleRouteAllowed();
@@ -312,12 +312,12 @@ class MapManager {
      * 
      * @param Route $route
      */
-    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0, ?array $distributionCards = null, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null): ?array {
+    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0, ?array $distributionCards = null, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null, int $ferryCards = 0, ?int $ferryCardsUsed = null): ?array {
         if ($pairSetAsLocomotive !== null) {
             // Do not consume the selected pair when the route can already be
             // paid with cards of that same color, without locomotives.
             if ($route->color === $pairSetAsLocomotive && $route->locomotives === 0) {
-                $normalPayment = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardsCost, $distributionCards, $considerAllRoutesGray);
+                $normalPayment = $this->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardsCost, $distributionCards, $considerAllRoutesGray, ferryCards: $ferryCards, ferryCardsUsed: $ferryCardsUsed);
                 if ($normalPayment !== null && !Arrays::some($normalPayment, fn($card) => $card->type === 0)) {
                     return $normalPayment;
                 }
@@ -340,7 +340,7 @@ class MapManager {
                     $paymentDistribution[] = $virtualLocomotive;
                 }
 
-                $payment = $this->canPayForRoute($route, $paymentHand, $remainingTrainCars, $color, $extraCardsCost, $paymentDistribution, $considerAllRoutesGray);
+                $payment = $this->canPayForRoute($route, $paymentHand, $remainingTrainCars, $color, $extraCardsCost, $paymentDistribution, $considerAllRoutesGray, ferryCards: $ferryCards, ferryCardsUsed: $ferryCardsUsed);
                 if ($payment === null) {
                     return null;
                 }
@@ -363,6 +363,10 @@ class MapManager {
             // no need to check if the player has enough train cars as he will use bullet train ones
         } else if ($remainingTrainCars < ($route->number + $route->mountain)) {
             return null; // not enough remaining meeples
+        }
+
+        if ($route->ferryWaves > 0) {
+            return $this->canPayForFerryRoute($route, $trainCarsHand, $color, $distributionCards, $ferryCards, $ferryCardsUsed);
         }
 
         $routeColor = $considerAllRoutesGray ? 0 : $route->color;
@@ -473,6 +477,77 @@ class MapManager {
         }
 
         return null;
+    }
+
+    /**
+     * Italy Ferry Cards cover one or two wave spaces. Colored cards can only
+     * cover non-wave spaces; Locomotives can cover either kind of space.
+     */
+    private function canPayForFerryRoute(object $route, array $trainCarsHand, ?int $color, ?array $distributionCards, int $ferryCards, ?int $ferryCardsUsed): ?array {
+        $ferryCards = max(0, min(2, $ferryCards));
+        $colorsToTest = $color === null ? [1,2,3,4,5,6,7,8,0] : [$color];
+
+        foreach ($colorsToTest as $colorToTest) {
+            if ($colorToTest < 0 || $colorToTest > 8) {
+                continue;
+            }
+
+            if ($distributionCards !== null) {
+                if ($ferryCardsUsed === null || $ferryCardsUsed < 0 || $ferryCardsUsed > $ferryCards) {
+                    return null;
+                }
+                if (Arrays::some($distributionCards, fn($card) => $card->type !== 0 && $card->type !== $colorToTest)) {
+                    continue;
+                }
+                if ($this->isValidFerryPayment($route, $distributionCards, $ferryCardsUsed)) {
+                    return $distributionCards;
+                }
+                continue;
+            }
+
+            for ($usedFerryCards = 0; $usedFerryCards <= $ferryCards; $usedFerryCards++) {
+                $minimumCoveredWaves = $usedFerryCards;
+                $maximumCoveredWaves = min($route->ferryWaves, 2 * $usedFerryCards);
+                for ($coveredWaves = $maximumCoveredWaves; $coveredWaves >= $minimumCoveredWaves; $coveredWaves--) {
+                    $requiredLocomotives = $route->ferryWaves - $coveredWaves;
+                    $requiredTrainCards = $route->number - $coveredWaves;
+                    $locomotives = array_values(array_filter($trainCarsHand, fn($card) => $card->type === 0));
+                    if (count($locomotives) < $requiredLocomotives) {
+                        continue;
+                    }
+
+                    $payment = array_slice($locomotives, 0, $requiredLocomotives);
+                    $normalSpaces = $route->number - $route->ferryWaves;
+                    if ($colorToTest > 0) {
+                        $colorCards = array_values(array_filter($trainCarsHand, fn($card) => $card->type === $colorToTest));
+                        $payment = array_merge($payment, array_slice($colorCards, 0, $normalSpaces));
+                    }
+                    if (count($payment) < $requiredTrainCards) {
+                        $usedIds = array_map(fn($card) => $card->id, $payment);
+                        $remainingLocomotives = array_values(array_filter($locomotives, fn($card) => !in_array($card->id, $usedIds)));
+                        $payment = array_merge($payment, array_slice($remainingLocomotives, 0, $requiredTrainCards - count($payment)));
+                    }
+                    $payment = array_slice($payment, 0, $requiredTrainCards);
+                    if ($this->isValidFerryPayment($route, $payment, $usedFerryCards)) {
+                        return $payment;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function isValidFerryPayment(object $route, array $trainCards, int $ferryCardsUsed): bool {
+        $coveredWaves = $route->number - count($trainCards);
+        if ($coveredWaves < $ferryCardsUsed || $coveredWaves > 2 * $ferryCardsUsed || $coveredWaves > $route->ferryWaves) {
+            return false;
+        }
+
+        $locomotiveCount = Arrays::count($trainCards, fn($card) => $card->type === 0);
+        $coloredCardCount = count($trainCards) - $locomotiveCount;
+        return $coloredCardCount <= $route->number - $route->ferryWaves
+            && $locomotiveCount >= $route->ferryWaves - $coveredWaves;
     }
 
     private function getTwinRoutes(object $route) {

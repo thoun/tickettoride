@@ -47,12 +47,13 @@ class ChooseAction extends GameState {
         }
 
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
+        $ferryCardsCount = $this->game->getMap()->ferryCards ? (int) $this->game->bga->globals->get("FERRY_CARD_{$activePlayerId}", 0) : 0;
         // we don't limit claimable routes to the number of remaining train cars, because the players don't understand why they can't claim the route
         // so instead they'll get an error when they try to claim the route, saying they don't have enough train cars left
         $remainingTrainCars = 99;
         $realRemainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
 
-        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $ferryCardsCount);
         if ($legendaryCharacter === 4) {
             $possibleRoutes = $this->game->legendaryCharacterManager->filterCharacter4Routes($activePlayerId, $possibleRoutes);
         }
@@ -70,9 +71,9 @@ class ChooseAction extends GameState {
             }
             $costByColor = [];
             foreach($colorsToTest as $colorToTest) {
-                $costByColor[$colorToTest] = $this->game->mapManager->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
+                $costByColor[$colorToTest] = $this->game->mapManager->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $ferryCardsCount);
 
-                if (!$canClaimARoute && $costByColor[$colorToTest] != null && count($costByColor[$colorToTest]) <= $realRemainingTrainCars) {
+                if (!$canClaimARoute && $costByColor[$colorToTest] !== null && count($costByColor[$colorToTest]) <= $realRemainingTrainCars) {
                     $canClaimARoute = true;
                 }
             }
@@ -98,12 +99,14 @@ class ChooseAction extends GameState {
             }
         }
 
-        $canPass = !$canClaimARoute && !$canBuildStation && $maxDestinationsPick == 0 && $canTakeTrainCarCards == 0;
+        $canDrawFerryCard = $this->game->getMap()->ferryCards && $ferryCardsCount < 2;
+        $canPass = !$canClaimARoute && !$canBuildStation && $maxDestinationsPick == 0 && $canTakeTrainCarCards == 0 && !$canDrawFerryCard;
 
         if ($usingCharacter4) {
             $maxDestinationsPick = 0;
             $maxHiddenCardsPick = 0;
             $canTakeTrainCarCards = false;
+            $canDrawFerryCard = false;
             $canBuildStation = false;
             $possibleStations = [];
             $costForStation = [];
@@ -117,6 +120,8 @@ class ChooseAction extends GameState {
             'maxHiddenCardsPick' => $maxHiddenCardsPick,
             'maxDestinationsPick' => $maxDestinationsPick,
             'canTakeTrainCarCards' => $canTakeTrainCarCards,
+            'canDrawFerryCard' => $canDrawFerryCard,
+            'ferryCardsCount' => $ferryCardsCount,
             'canBuildStation' => $canBuildStation,
             'costForStation' => $costForStation,
             'canPass' => $canPass,
@@ -127,7 +132,7 @@ class ChooseAction extends GameState {
             ]
         ];
 
-        if ($this->game->getMap()->locomotiveUsageRestriction) {
+        if ($this->game->getMap()->locomotiveUsageRestriction || $this->game->getMap()->ferryCards) {
             $args['_private'] = [
                 $activePlayerId => [
                     'trainCarsHand' => $trainCarsHand,
@@ -160,6 +165,29 @@ class ChooseAction extends GameState {
         $this->game->incStat($drawNumber, 'collectedHiddenTrainCarCards', $activePlayerId);
 
        return $drawNumber == 1 && $this->game->trainCarManager->canTakeASecondCard(null) ? DrawSecondCard::class : NextPlayer::class;
+    }
+
+    #[PossibleAction]
+    public function actDrawFerryCard(int $activePlayerId) {
+        $this->assertCharacter4DoesNotDraw($activePlayerId);
+        if (!$this->game->getMap()->ferryCards) {
+            throw new UserException("Ferry cards are not used on this map.");
+        }
+
+        $key = "FERRY_CARD_{$activePlayerId}";
+        $ferryCardsCount = (int) $this->game->bga->globals->get($key, 0);
+        if ($ferryCardsCount >= 2) {
+            throw new UserException("You cannot have more than 2 Ferry cards.");
+        }
+
+        $ferryCardsCount = $this->game->bga->globals->inc($key, 1);
+        $this->notify->all('ferryCardDrawn', clienttranslate('${player_name} draws a Ferry card'), [
+            'playerId' => $activePlayerId,
+            'player_name' => $this->game->getPlayerNameById($activePlayerId),
+            'ferryCardsCount' => $ferryCardsCount,
+        ]);
+
+        return NextPlayer::class;
     }
     
     #[PossibleAction]
@@ -196,7 +224,7 @@ class ChooseAction extends GameState {
     }
     
     #[PossibleAction]
-    public function actClaimRoute(int $routeId, int $color, #[IntArrayParam()] ?array $distribution, int $activePlayerId) {
+    public function actClaimRoute(int $routeId, int $color, #[IntArrayParam()] ?array $distribution, int $ferryCards, int $activePlayerId) {
         $route = $this->game->mapManager->getAllRoutes()[$routeId];
 
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
@@ -234,14 +262,18 @@ class ChooseAction extends GameState {
         }
         
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
-        $distributionCards = $distribution ? Arrays::filter($trainCarsHand, fn($card) => in_array($card->id, $distribution)) : null;
-        $colorAndLocomotiveCards = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
+        $distributionCards = $distribution !== null ? Arrays::filter($trainCarsHand, fn($card) => in_array($card->id, $distribution)) : null;
+        $availableFerryCards = $this->game->getMap()->ferryCards ? (int) $this->game->bga->globals->get("FERRY_CARD_{$activePlayerId}", 0) : 0;
+        if ($route->ferryWaves > 0 && $distribution === null) {
+            throw new UserException("You must choose how to pay for this Ferry route.");
+        }
+        $colorAndLocomotiveCards = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $availableFerryCards, ferryCardsUsed: $ferryCards);
         
-        if ($colorAndLocomotiveCards == null || count($colorAndLocomotiveCards) < $route->number) {
+        if ($colorAndLocomotiveCards == null) {
             throw new UserException("Not enough cards to claim the route.");
         }
 
-        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $availableFerryCards);
         $possibleRoutes = $this->game->legendaryCharacterManager->filterCharacter4Routes($activePlayerId, $possibleRoutes);
         if (!Arrays::some($possibleRoutes, fn($possibleRoute) => $possibleRoute->id == $routeId)) {
             throw new UserException("You can't claim this route");
@@ -282,7 +314,7 @@ class ChooseAction extends GameState {
             }
         }
 
-        $this->game->applyClaimRoute($activePlayerId, $routeId, $color, 0, distributionCards: $distributionCards, shifted: $opponentRoutesInsteadOfFreeOnes);
+        $this->game->applyClaimRoute($activePlayerId, $routeId, $color, 0, distributionCards: $distributionCards, shifted: $opponentRoutesInsteadOfFreeOnes, ferryCardsUsed: $ferryCards);
 
         if ($legendaryCharacter === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0) {
             if ($this->game->legendaryCharacterManager->character4CanClaimAnotherRoute($activePlayerId)) {
@@ -492,9 +524,13 @@ class ChooseAction extends GameState {
                     continue;
                 }
 
+                if ($possibleRoute->ferryWaves > 0) {
+                    continue;
+                }
+
                 $color = $this->getZombieClaimColor($possibleRoute, $trainCarsHand, $remainingTrainCars);
                 if ($color !== null) {
-                    return $this->actClaimRoute($possibleRoute->id, $color, null, $playerId);
+                    return $this->actClaimRoute($possibleRoute->id, $color, null, 0, $playerId);
                 }
             }
         }

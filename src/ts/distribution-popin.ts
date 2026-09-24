@@ -7,6 +7,7 @@ export class DistributionResult {
     constructor(
         distributionCards: number[][],
         public auto: boolean = false,
+        public ferryCards: number = 0,
     ) {
         this.cardIds = distributionCards.flat();
         const colorKey = Object.keys(distributionCards).map(Number).filter(n => ![0,99].includes(n))[0];
@@ -17,16 +18,19 @@ export class DistributionResult {
 
 export class DistributionPopin {
     private distributionCards: number[][] = [];
+    private selectedFerryCards: number[] = [];
 
     constructor(
         public trainCarsHand: TrainCar[], 
         public claimingRoute: ClaimingRoute, 
         public cost: number,
-        public canUseLocomotives: boolean
+        public canUseLocomotives: boolean,
+        public ferryCardsCount: number = 0,
     ) {}
 
     public show(title: string): Promise<DistributionResult | null> {
         this.distributionCards = [];
+        this.selectedFerryCards = [];
         return new Promise(resolve => {
             
             const distributionDlg = new ebg.popindialog();
@@ -34,8 +38,9 @@ export class DistributionPopin {
             distributionDlg.setTitle(title);
 
 
+            const isFerry = this.claimingRoute.route.ferryWaves > 0;
             const locomotiveCards = this.canUseLocomotives ? this.trainCarsHand.filter(card => card.type == 0).slice(0, this.cost) : [];
-            let minLocomotives = this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? 0 : this.claimingRoute.route.locomotives;
+            let minLocomotives = isFerry || this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? 0 : this.claimingRoute.route.locomotives;
             const maxLocomotives = this.canUseLocomotives ? locomotiveCards.length : 0;
             const showLocomotives = this.canUseLocomotives ? (minLocomotives > 0 || maxLocomotives > 0) : false;
 
@@ -44,10 +49,10 @@ export class DistributionPopin {
             let maxColorCards = 0;
             if (this.claimingRoute.color > 0) {
                 colorCards = this.trainCarsHand.filter(card => card.type == this.claimingRoute.color).slice(0, this.cost);
-                minColorCards = this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? 0 : Math.max(0, Math.min(this.cost - minLocomotives, this.cost - maxLocomotives));
-                maxColorCards = Math.min(this.cost - this.claimingRoute.route.locomotives, colorCards.length);
+                minColorCards = isFerry || this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? 0 : Math.max(0, Math.min(this.cost - minLocomotives, this.cost - maxLocomotives));
+                maxColorCards = Math.min(isFerry ? this.cost - this.claimingRoute.route.ferryWaves : this.cost - this.claimingRoute.route.locomotives, colorCards.length);
 
-                if (!this.claimingRoute.route.canPayWithAnySetOfCards && maxColorCards < this.cost) {
+                if (!isFerry && !this.claimingRoute.route.canPayWithAnySetOfCards && maxColorCards < this.cost) {
                     minLocomotives = Math.min(maxLocomotives, this.cost - maxColorCards);
                 }
             }
@@ -66,15 +71,20 @@ export class DistributionPopin {
                 if (this.claimingRoute.route.locomotives) {
                     html += `${_('${number} locomotives required').replace('${number}', `${this.claimingRoute.route.locomotives}`)}<br>`
                 }
-                html += this.cardSection(locomotiveCardsToDisplay, this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : 0);
+                html += this.cardSection(locomotiveCardsToDisplay, isFerry || this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : 0);
             }
             if (showColorCards) {
                 this.distributionCards[this.claimingRoute.color] = [];
-                html += this.cardSection(colorCardsToDisplay, this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : this.claimingRoute.color);
+                html += this.cardSection(colorCardsToDisplay, isFerry || this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : this.claimingRoute.color);
             }
             if (this.claimingRoute.route.canPayWithAnySetOfCards > 0) {
                 this.distributionCards[99] = [];
                 html += `${_('Any set of ${number} cards').replace('${number}', `${this.claimingRoute.route.canPayWithAnySetOfCards}`)}<br>` + this.cardSection(otherCardsForSet, null);
+            }
+            if (isFerry && this.ferryCardsCount > 0) {
+                html += `<div class="ferry-card-selection">
+                    ${Array.from({ length: Math.min(this.ferryCardsCount, this.claimingRoute.route.ferryWaves) }, (unused, index) => `<div role="button" id="distribution-ferry-${index}" class="icon ferry-card-icon selectable"></div>`).join('')}
+                </div><hr/>`;
             }
             html += `
                 <div class="total">
@@ -104,7 +114,7 @@ export class DistributionPopin {
                     }
                 });
 
-                if (!showSet) {
+                if (!showSet && !isFerry) {
                     document.getElementById(`use-maximum-${0}-btn`).addEventListener('click', () => this.useMaximum(0));
                 }
             }
@@ -124,7 +134,7 @@ export class DistributionPopin {
                     }
                 });
 
-                if (!showSet) {
+                if (!showSet && !isFerry) {
                     document.getElementById(`use-maximum-${this.claimingRoute.color}-btn`).addEventListener('click', () => this.useMaximum(this.claimingRoute.color));
                 }
             }
@@ -135,15 +145,20 @@ export class DistributionPopin {
                     element.addEventListener('click', () => this.onDistributionCardClick(card.id, 99));
                 });
             }
+            if (isFerry) {
+                Array.from({ length: Math.min(this.ferryCardsCount, this.claimingRoute.route.ferryWaves) }, (_, index) => index).forEach(index => {
+                    document.getElementById(`distribution-ferry-${index}`).addEventListener('click', () => this.onFerryCardClick(index));
+                });
+            }
 
             this.updateTotal();
 
-            const closeFn = (result: number[][] | null) => { resolve(result ? new DistributionResult(result) : null); distributionDlg.destroy(); };
+            const closeFn = (result: number[][] | null) => { resolve(result ? new DistributionResult(result, false, this.selectedFerryCards.length) : null); distributionDlg.destroy(); };
             distributionDlg.replaceCloseCallback(() => closeFn(null));
             document.getElementById('confirmDistribution-btn').addEventListener('click', () => closeFn(this.distributionCards));
             document.getElementById('cancelDistribution-btn').addEventListener('click', () => closeFn(null));
 
-            if ((minLocomotives + minColorCards) === this.cost) {
+            if (!isFerry && (minLocomotives + minColorCards) === this.cost) {
                 // all possible cards are preselected, meaning the player doesn't have a choice
                 resolve(new DistributionResult(this.distributionCards, true));
                 distributionDlg.destroy();
@@ -174,10 +189,19 @@ export class DistributionPopin {
     updateTotal() {
         const element = document.getElementById(`distribution-current-size`);
         const selectedCardCount = this.getSelectedCardCount();
-        element.innerText = `${selectedCardCount}`;
-        const validCount = selectedCardCount === this.cost;
+        const isFerry = this.claimingRoute.route.ferryWaves > 0;
+        const ferryCardValue = isFerry
+            ? Math.min(2 * this.selectedFerryCards.length, this.claimingRoute.route.ferryWaves, Math.max(0, this.cost - selectedCardCount))
+            : 0;
+        const total = selectedCardCount + ferryCardValue;
+        element.innerText = `${total}`;
+        const validCount = isFerry
+            ? total === this.cost && ferryCardValue >= this.selectedFerryCards.length
+            : total === this.cost;
         element.dataset.valid = JSON.stringify(validCount);
-        let valid = validCount && this.getSelectedCardCount(true) >= this.claimingRoute.route.locomotives;
+        let valid = validCount && (isFerry
+            ? (this.distributionCards[0]?.length ?? 0) >= this.claimingRoute.route.ferryWaves - ferryCardValue
+            : this.getSelectedCardCount(true) >= this.claimingRoute.route.locomotives);
         if (this.claimingRoute.route.canPayWithAnySetOfCards && this.distributionCards[99]) {
             if (this.distributionCards[99].length % this.claimingRoute.route.canPayWithAnySetOfCards !== 0) {
                 valid = false;
@@ -201,11 +225,23 @@ export class DistributionPopin {
             element.classList.remove('selected');
             this.distributionCards[type] = this.distributionCards[type].filter(id => id != cardId);
         } else {
-            if (this.getSelectedCardCount() >= this.cost) {
+            if (this.getSelectedCardCount() >= this.cost - this.selectedFerryCards.length) {
                 return;
             }
             element.classList.add('selected');
             this.distributionCards[type].push(cardId);
+        }
+        this.updateTotal();
+    }
+
+    private onFerryCardClick(index: number) {
+        const element = document.getElementById(`distribution-ferry-${index}`);
+        if (this.selectedFerryCards.includes(index)) {
+            this.selectedFerryCards = this.selectedFerryCards.filter(selectedIndex => selectedIndex !== index);
+            element.classList.remove('selected');
+        } else {
+            this.selectedFerryCards.push(index);
+            element.classList.add('selected');
         }
         this.updateTotal();
     }

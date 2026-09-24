@@ -170,7 +170,8 @@ class LegendaryCharacterManager {
 
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($playerId);
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($playerId);
-        $possibleRoutes = $this->game->mapManager->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars);
+        $ferryCards = $this->game->getMap()->ferryCards ? (int) $this->game->bga->globals->get("FERRY_CARD_{$playerId}", 0) : 0;
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($playerId, $trainCarsHand, $remainingTrainCars, ferryCards: $ferryCards);
 
         return count($this->filterCharacter4Routes($playerId, $possibleRoutes)) > 0;
     }

@@ -14,6 +14,8 @@ export interface EnteringChooseActionArgs {
     maxHiddenCardsPick: number;
     maxDestinationsPick: number;
     canTakeTrainCarCards: boolean;
+    canDrawFerryCard: boolean;
+    ferryCardsCount: number;
     canBuildStation: boolean;
     canPass: boolean;
     _private?: {
@@ -126,6 +128,13 @@ export class ChooseActionState {
                 () => this.game.drawDestinations(), 
                 { color: 'alert', disabled: !this.args.maxDestinationsPick },
             );
+            if (this.game.getMap().ferryCards) {
+                this.bga.statusBar.addActionButton(
+                    _("Draw 1 Ferry card").replace('${number}', `${this.args.ferryCardsCount}`),
+                    () => this.bga.actions.performAction('actDrawFerryCard'),
+                    { disabled: !this.args.canDrawFerryCard },
+                );
+            }
             if (this.args.canPass) {
                 // Pass (only in case of no possible action)
                 this.bga.statusBar.addActionButton(_("Pass"), () => this.bga.actions.performAction('actPass'));
@@ -373,7 +382,7 @@ export class ChooseActionState {
         const canUseLocomotives = locomotiveRestriction === 0
             || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
             || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
-        return route.canPayWithAnySetOfCards > 0 || (locomotiveRestriction && canUseLocomotives);
+        return route.ferryWaves > 0 || route.canPayWithAnySetOfCards > 0 || (locomotiveRestriction && canUseLocomotives);
     }
 
     public clickedRouteDoubleRouteConfirmed(route: Route) {
@@ -381,7 +390,12 @@ export class ChooseActionState {
         const showDistributionPopin = this.showDistributionPopin(route);
 
         const routeColor = this.getConsideredRouteColor(route);
-        if ((routeColor === 0 || route.tunnel || showDistributionPopin) && this.game.playerTable.getSelectedColor() === null) {
+        const selectedColor = this.game.playerTable.getSelectedColor();
+        if (route.ferryWaves > 0 && selectedColor !== null) {
+            this.showCustomDistributionPopin(route, selectedColor);
+            return;
+        }
+        if ((routeColor === 0 || route.tunnel || showDistributionPopin) && selectedColor === null) {
             const possibleColors: number[] = [];
             const costForRoute = this.args.costForRoute[route.id];
             if (costForRoute) {
@@ -420,13 +434,8 @@ export class ChooseActionState {
 
         this.bga.statusBar.removeActionButtons();
 
-        const locomotiveRestriction = this.game.getMap().locomotiveUsageRestriction;
-        const canUseLocomotives = locomotiveRestriction === 0
-            || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
-            || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
-
         possibleColors.forEach(color => {
-            if (this.args.costForRoute[route.id][color].length >= route.spaces.length) {
+            if (!route.ferryWaves && this.args.costForRoute[route.id][color].length >= route.spaces.length) {
                 const label = dojo.string.substitute(_("Use ${color}"), {
                     'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
                 });
@@ -442,11 +451,7 @@ export class ChooseActionState {
             if (route.color) {
                 this.bga.statusBar.addActionButton(
                     _("Custom..."), 
-                    () => {
-                        new DistributionPopin(this.args._private.trainCarsHand, this.claimingRoute, this.claimingRoute.route.spaces.length, canUseLocomotives)
-                            .show(confirmationQuestion)
-                            .then(distribution => this.onDistributionPopinResult(distribution));
-                    }, 
+                    () => this.showCustomDistributionPopin(route, route.color, confirmationQuestion),
                     { id: `claimRouteWithColor_button99`, color: 'secondary', }
                 );
             } else {
@@ -454,12 +459,7 @@ export class ChooseActionState {
                 possibleColors.forEach(color => 
                     this.bga.statusBar.addActionButton(
                         _("Custom (${color})...").replace('${color}', `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`), 
-                        () => {
-                            this.claimingRoute.color = color;
-                            new DistributionPopin(this.args._private.trainCarsHand, this.claimingRoute, this.claimingRoute.route.spaces.length, canUseLocomotives)
-                                .show(confirmationQuestion)
-                                .then(distribution => this.onDistributionPopinResult(distribution));
-                        }, 
+                        () => this.showCustomDistributionPopin(route, color, confirmationQuestion),
                         { id: `claimRouteWithColor_button99_${color}`, color: 'secondary', }
                     )
                 );
@@ -469,12 +469,28 @@ export class ChooseActionState {
         this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancelRouteClaim(), { color: 'secondary' });
     }
 
+    private showCustomDistributionPopin(route: Route, color: number, title?: string) {
+        const locomotiveRestriction = this.game.getMap().locomotiveUsageRestriction;
+        const canUseLocomotives = locomotiveRestriction === 0
+            || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
+            || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
+        const popinTitle = title ?? _("Choose color for the route from ${from} to ${to}")
+            .replace('${from}', this.game.getCityName(route.from))
+            .replace('${to}', this.game.getCityName(route.to));
+
+        this.claimingRoute = { route, color, distribution: null };
+        new DistributionPopin(this.args._private.trainCarsHand, this.claimingRoute, route.spaces.length, canUseLocomotives, this.args.ferryCardsCount)
+            .show(popinTitle)
+            .then(distribution => this.onDistributionPopinResult(distribution));
+    }
+
     private onDistributionPopinResult(distribution: DistributionResult) {
         if (distribution) {
             if (distribution.locomotivesOnly) {
                 this.claimingRoute.color = 0;
             }
             this.claimingRoute.distribution = distribution.cardIds;
+            this.claimingRoute.ferryCards = distribution.ferryCards;
             if (distribution.auto) {
                 this.clickedRouteDistributionChosen();
             } else {
@@ -511,6 +527,7 @@ export class ChooseActionState {
             routeId: this.claimingRoute.route.id,
             color: this.claimingRoute.color,
             distribution: this.claimingRoute.distribution,
+            ferryCards: this.claimingRoute.ferryCards ?? 0,
         });
     }
 

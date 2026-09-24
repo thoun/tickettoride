@@ -38,6 +38,7 @@ class Map {
     public ?array $bulletTrainBonusPoints = null;
     public ?array $regionBonusPoints = null;
     public array $completeRegionsCountingDouble = [];
+    public bool $ferryCards = false;
 
     /**
      * @param City[] $cities

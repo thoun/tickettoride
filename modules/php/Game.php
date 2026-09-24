@@ -233,6 +233,7 @@ class Game extends Table {
                 'stations' => $this->getMap()->stations,
                 'pointsForGlobetrotter' => $this->getMap()->pointsForGlobetrotter,
                 'pointsForMostConnectedCities' => $this->getMap()->pointsForMostConnectedCities,
+                'ferryCards' => $this->getMap()->ferryCards,
             ],
         ];
     
@@ -341,9 +342,10 @@ class Game extends Table {
         $this->DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $number WHERE player_id = $playerId");
     }
 
-    function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null, bool $shifted = false): void {
+    function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null, bool $shifted = false, int $ferryCardsUsed = 0): void {
         $route = $this->mapManager->getAllRoutes()[$routeId];
         $cardCost = $route->number + $extraCardCost;
+        $ferryCardsUsed = $route->ferryWaves > 0 ? $ferryCardsUsed : 0;
 
         $legendaryCharacter = null;
         $considerAllRoutesGray = false;
@@ -361,7 +363,8 @@ class Game extends Table {
         
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
         $trainCarsHand = $this->trainCarManager->getPlayerHand($playerId);
-        $cardsToRemove = $this->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive);
+        $availableFerryCards = $this->getMap()->ferryCards ? (int) $this->bga->globals->get("FERRY_CARD_{$playerId}", 0) : 0;
+        $cardsToRemove = $this->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $availableFerryCards, ferryCardsUsed: $ferryCardsUsed);
         $claimWithBulletTrain = $route->bulletTrainSpaceIndex !== null && $this->bga->globals->get(REMAINING_BULLET_TRAINS) > 0;
 
         if ($legendaryCharacter === 1 && $legendaryCharacterState === 'using') {
@@ -369,6 +372,9 @@ class Game extends Table {
         }
 
         $this->trainCarManager->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
+        $ferryCardsCount = $ferryCardsUsed > 0
+            ? $this->bga->globals->inc("FERRY_CARD_{$playerId}", -$ferryCardsUsed)
+            : $availableFerryCards;
 
         // save claimed route
         $claimerId = $claimWithBulletTrain ? -1 : $playerId;
@@ -388,9 +394,11 @@ class Game extends Table {
             $this->removeTrainCars($playerId, $route->number);
         }
         
-        $message = $claimWithBulletTrain ? 
+        $message = $ferryCardsUsed > 0
+            ? clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} using ${ferryCardsUsed} Ferry card(s) and these Train Car cards: ${colors}')
+            : ($claimWithBulletTrain ?
             clienttranslate('${player_name} claims a bullet train route from ${from} to ${to} with ${number} train car(s) : ${colors}') :
-            clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}');
+            clienttranslate('${player_name} gains ${points} point(s) by claiming route from ${from} to ${to} with ${number} train car(s) : ${colors}'));
         $args = [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
@@ -403,6 +411,8 @@ class Game extends Table {
             'colors' => array_map(fn($card) => $card->type, $cardsToRemove),
             'remainingTrainCars' => $this->getRemainingTrainCarsCount($playerId),
             'shifted' => $shifted,
+            'ferryCardsUsed' => $ferryCardsUsed,
+            'ferryCardsCount' => $ferryCardsCount,
         ];
         if ($shifted) {
             $args['shifted'] = true;

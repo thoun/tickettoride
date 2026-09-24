@@ -193,6 +193,14 @@
 .icon.train-car-card-icon {
   background-position: 0% 50%;
 }
+.icon.ferry-card-icon {
+  width: 20px;
+  height: 31px;
+  border-radius: 2px;
+  background-image: url("img/italy/destinations-1-0.jpg");
+  background-size: 1000% 600%;
+  background-position: 77.7777777778% 100%;
+}
 .icon.destination-card {
   background-position: 33.3333333333% 50%;
 }
@@ -1664,6 +1672,12 @@ html, .mode_3d #game_play_area_background {
   cursor: not-allowed;
 }
 
+.ferry-card-selection {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
 #page-title .color-cards {
   display: inline-block;
 }
@@ -1817,17 +1831,17 @@ h2 {
   list-style: unset;
 }
 
-#popin_distributionPopin .train-car-color.icon {
+#popin_distributionPopin .train-car-color.icon, #popin_distributionPopin .ferry-card-icon {
   margin: 4px;
 }
-#popin_distributionPopin .train-car-color.icon.selectable {
+#popin_distributionPopin .train-car-color.icon.selectable, #popin_distributionPopin .ferry-card-icon.selectable {
   outline: 3px solid transparent;
   cursor: pointer;
 }
-#popin_distributionPopin .train-car-color.icon.selected {
+#popin_distributionPopin .train-car-color.icon.selected, #popin_distributionPopin .ferry-card-icon.selected {
   outline: 3px solid red;
 }
-#popin_distributionPopin .train-car-color.icon.grayed {
+#popin_distributionPopin .train-car-color.icon.grayed, #popin_distributionPopin .ferry-card-icon.grayed {
   filter: brightness(0.6);
 }
 #popin_distributionPopin .total {

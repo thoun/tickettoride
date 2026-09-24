@@ -7,7 +7,7 @@ import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseActi
 import { ChooseLegendaryCharacterState } from "./states/ChooseLegendaryCharacter";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
-import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifMostConnectedCitiesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifScoreDestinationArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs, NotifBulletTrainBonusArgs, NotifRegionsBonusArgs } from "./types";
+import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFerryCardDrawnArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifMostConnectedCitiesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifScoreDestinationArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs, NotifBulletTrainBonusArgs, NotifRegionsBonusArgs } from "./types";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 import { BgaAutofit } from "./libs";
@@ -30,6 +30,7 @@ export class Game implements TicketToRideGame {
     private trainCarCounters: Counter[] = [];
     public stationCounters: Counter[] = [];
     private trainCarCardCounters: Counter[] = [];
+    private ferryCardCounters: Counter[] = [];
     public destinationCardCounters: Counter[] = [];
     private completedDestinationsCounter: Counter;
     public legendaryCharacterManager: LegendaryCharacterManager;
@@ -357,7 +358,11 @@ export class Game implements TicketToRideGame {
                 <div id="train-car-card-counter-${player.id}-wrapper" class="counter train-car-card-counter">
                     <div class="icon train-car-card-icon"></div> 
                     <span id="train-car-card-counter-${player.id}"></span>
-                </div>
+                </div>${this.gamedatas.map.ferryCards ? `
+                <div id="ferry-card-counter-${player.id}-wrapper" class="counter ferry-card-counter">
+                    <div class="icon ferry-card-icon"></div>
+                    <span id="ferry-card-counter-${player.id}"></span>/ 2
+                </div>` : ''}
                 <div id="destinations-counter-${player.id}-wrapper" class="counter destinations-counter">
                     <div class="icon destination-card"></div> 
                     <span id="completed-destinations-counter-${player.id}">${this.getPlayerId() !== playerId ? '?' : ''}</span>/<span id="destination-card-counter-${player.id}"></span>
@@ -380,6 +385,13 @@ export class Game implements TicketToRideGame {
             trainCarCardCounter.create(`train-car-card-counter-${player.id}`);
             trainCarCardCounter.setValue(player.trainCarsCount);
             this.trainCarCardCounters[playerId] = trainCarCardCounter;
+
+            if (this.gamedatas.map.ferryCards) {
+                const ferryCardCounter = new ebg.counter();
+                ferryCardCounter.create(`ferry-card-counter-${player.id}`);
+                ferryCardCounter.setValue(player.mapSpecificData.ferryCards ?? 0);
+                this.ferryCardCounters[playerId] = ferryCardCounter;
+            }
 
             const destinationCardCounter = new ebg.counter();
             destinationCardCounter.create(`destination-card-counter-${player.id}`);
@@ -404,6 +416,7 @@ export class Game implements TicketToRideGame {
 
         this.setTooltipToClass('train-car-counter', _("Remaining train cars"));
         this.setTooltipToClass('train-car-card-counter', _("Train cars cards"));
+        this.setTooltipToClass('ferry-card-counter', _("Ferry cards"));
         this.setTooltipToClass('destinations-counter', _("Completed / Total destination cards"));
     }
     
@@ -640,6 +653,7 @@ export class Game implements TicketToRideGame {
             ['points', 1],
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
+            ['ferryCardDrawn', 1],
             ['freeTunnel', 2000],
             ['highlightVisibleLocomotives', 1000],
             ['notEnoughTrainCars', 1],
@@ -708,6 +722,10 @@ export class Game implements TicketToRideGame {
         this.trainCarSelection.setTrainCarCount(notif.args.remainingTrainCarsInDeck);
     }
 
+    notif_ferryCardDrawn(notif: Notif<NotifFerryCardDrawnArgs>) {
+        this.ferryCardCounters[notif.args.playerId]?.toValue(notif.args.ferryCardsCount);
+    }
+
     /** 
      * Update visible cards.
      */ 
@@ -749,6 +767,9 @@ export class Game implements TicketToRideGame {
         }
         if (notif.args.bulletTrainPosition ?? undefined !== undefined) {
             this.map.setBulletTrainPosition(playerId, notif.args.bulletTrainPosition);
+        }
+        if (notif.args.ferryCardsCount ?? undefined !== undefined) {
+            this.ferryCardCounters[playerId]?.toValue(notif.args.ferryCardsCount);
         }
     }
 

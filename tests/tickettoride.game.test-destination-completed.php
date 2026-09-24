@@ -74,6 +74,17 @@ class TicketToRideTestDestinationCompleted extends Game { // this is your game c
             return array_map(function($route) use ($playerId) {
                 return new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]);
             }, $routes);
+        } else if ($playerId === 6) {
+            $routes = [
+                119, // Francia to Torino
+                91,  // Torino to Milano
+                22,  // Milano to Bergamo
+                21,  // Bergamo to Bolzano
+                39,  // Bolzano to Austria
+            ];
+            return array_map(function($route) use ($playerId) {
+                return new ClaimedRoute(['route_id' => $route, 'player_id' => $playerId]);
+            }, $routes);
         }
         return [];
     }
@@ -155,12 +166,28 @@ class TicketToRideTestDestinationCompleted extends Game { // this is your game c
         }
     }
 
+    function testItalyCountryToCountryDestination() {
+        $this->forcedMapCode = 'italy';
+        unset($this->map);
+
+        $result = $this->mapManager->getDestinationRoutes(6, $this->getMap()->destinations[1][55]);
+        $equal = $result !== null;
+
+        if ($equal) {
+            echo "Test6: PASSED\n";
+        } else {
+            echo "Test6: FAILED\n";
+            echo "Expected completed Francia to Austria destination, value: null\n";
+        }
+    }
+
     function testAll() {
         $this->testDestinationCompletedNo();
         $this->testDestinationCompletedYes();
         $this->testDestinationCompletedYes2();
         $this->testDestinationCompletedYes3();
         $this->testMultiToDestinationUsesHighestScoringTo();
+        $this->testItalyCountryToCountryDestination();
     }
 }
 
