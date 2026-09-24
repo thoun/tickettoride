@@ -299,6 +299,9 @@ export class Game implements TicketToRideGame {
                 document.getElementById('train-car-deck').append(document.getElementById(prefValue == 1 ? 'destination-deck-hidden-pile': 'train-car-deck-hidden-pile'));
                 document.getElementById('destination-deck-hidden-pile').classList.toggle('top', prefValue == 2);
                 break;
+            case 210:
+                this.map.setAutoZoom();
+                break;
         }
     }
 

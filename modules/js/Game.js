@@ -1739,7 +1739,8 @@ class TtrMap {
         const gameHeight = MAP_HEIGHT + (left ? 0 : PLAYER_HEIGHT * 0.75);
         const horizontalScale = document.getElementById('game_play_area').clientWidth / gameWidth;
         const verticalScale = (window.innerHeight - 80) / gameHeight;
-        this.scale = Math.min(1, horizontalScale, verticalScale);
+        const fitWholeMap = this.game.bga.userPreferences.get(210) === 1;
+        this.scale = Math.min(1, horizontalScale, fitWholeMap ? verticalScale : 1);
         this.resizedDiv.style.transform = this.scale === 1 ? '' : `scale(${this.scale})`;
         this.resizedDiv.style.marginBottom = `-${(1 - this.scale) * gameHeight}px`;
         this.setOutline();
@@ -3444,6 +3445,9 @@ class Game {
                 document.getElementById('train-car-deck').prepend(document.getElementById(prefValue == 1 ? 'train-car-deck-hidden-pile' : 'destination-deck-hidden-pile'));
                 document.getElementById('train-car-deck').append(document.getElementById(prefValue == 1 ? 'destination-deck-hidden-pile' : 'train-car-deck-hidden-pile'));
                 document.getElementById('destination-deck-hidden-pile').classList.toggle('top', prefValue == 2);
+                break;
+            case 210:
+                this.map.setAutoZoom();
                 break;
         }
     }

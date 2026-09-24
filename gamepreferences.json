@@ -121,5 +121,18 @@
             }
         },
         "default": 1
+    },
+    "210": {
+        "name": "Map size",
+        "needReload": false,
+        "values": {
+            "0": {
+                "name": "Fit only the map width on the screen (you may need to scroll)"
+            },
+            "1": {
+                "name": "Fit the whole map on the screen (can be small on mobile)"
+            }
+        },
+        "default": 0
     }
 }

@@ -684,7 +684,8 @@ export class TtrMap {
 
         const horizontalScale = document.getElementById('game_play_area').clientWidth / gameWidth;
         const verticalScale = (window.innerHeight - 80) / gameHeight;
-        this.scale = Math.min(1, horizontalScale, verticalScale);
+        const fitWholeMap = this.game.bga.userPreferences.get(210) === 1;
+        this.scale = Math.min(1, horizontalScale, fitWholeMap ? verticalScale : 1);
 
         this.resizedDiv.style.transform = this.scale === 1 ? '' : `scale(${this.scale})`;
         this.resizedDiv.style.marginBottom = `-${(1 - this.scale) * gameHeight}px`;
