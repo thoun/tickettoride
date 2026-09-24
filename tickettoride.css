@@ -1789,6 +1789,7 @@ html[data-color-blind=true] [data-color-blind-player-no="5"]::after {
   max-width: 99%;
   width: 1096.3px;
   background: white;
+  color: black;
   box-shadow: 3px 3px 10px 1px rgba(0, 0, 0, 0.6666666667);
   border-radius: 10px;
   padding: 20px;

@@ -431,7 +431,15 @@ class Game extends Table {
 
         $this->getMap()->onClaimRoute($this, $playerId, $route);
 
-        $this->destinationManager->checkCompletedDestinations($playerId);
+        if ($claimWithBulletTrain) {
+            // we may have completed destination for other players as well
+            $playerIds = $this->getPlayersIds();
+            foreach ($playerIds as $pId) {
+                $this->destinationManager->checkCompletedDestinations($pId);
+            }
+        } else {
+            $this->destinationManager->checkCompletedDestinations($playerId);
+        }
 
         // in case there is less than 5 visible cards on the table, we refill with newly discarded cards
         $this->trainCarManager->checkVisibleTrainCarCards();
