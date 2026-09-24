@@ -919,7 +919,7 @@ export class Game implements TicketToRideGame {
 
     /** Show the Regions Bonus during end scoring. */
     notif_regionsBonus(notif: Notif<NotifRegionsBonusArgs>) {
-        this.endScore?.setRegionsBonus(notif.args.playerId, notif.args.points);
+        this.endScore?.setRegionsCount(notif.args.playerId, notif.args.regionsCount);
     }
 
     /** 

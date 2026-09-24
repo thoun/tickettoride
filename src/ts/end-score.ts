@@ -104,8 +104,8 @@ export class EndScore {
                 if (player.mapSpecificData.bulletTrainPosition !== undefined) {
                     this.setBulletTrainCount(player.id, player.mapSpecificData.bulletTrainPosition);
                 }
-                if (player.mapSpecificData.regionsBonus !== undefined) {
-                    this.setRegionsBonus(player.id, player.mapSpecificData.regionsBonus);
+                if (player.mapSpecificData.regionsCount !== undefined) {
+                    this.setRegionsCount(player.id, player.mapSpecificData.regionsCount);
                 }
                 this.updateDestinationsTooltip(player);
             });
@@ -281,8 +281,8 @@ export class EndScore {
     public setBulletTrainCount(playerId: number | string, position: number) {
         document.getElementById(`bullet-train-count-${playerId}`).innerHTML = `<div class="bullet-train-count">${position} <div class="bullet-train-icon"></div></div>`;
     }
-    public setRegionsBonus(playerId: number | string, points: number) {
-        document.getElementById(`regions-bonus-${playerId}`).innerHTML = `<div class="regions-bonus">+${points} <span>${_('Regions')}</span></div>`;
+    public setRegionsCount(playerId: number | string, regionsCount: number) {
+        document.getElementById(`regions-bonus-${playerId}`).innerHTML = `<div class="regions-bonus">${regionsCount}<span><div class="region-icon"></div></span></div>`;
     }
     
     /** 

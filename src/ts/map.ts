@@ -728,8 +728,8 @@ export class TtrMap {
                 const chooseActionArgs = this.game.bga.states.getCurrentMainStateName() === 'chooseAction' ? this.game.gamedatas.gamestate.args as EnteringChooseActionArgs : null;
                 const shifted = chooseActionArgs && chooseActionArgs.legendaryCharacter === 1 && chooseActionArgs.legendaryCharacterState === 'using';
                 let claimerId = Number((player || this.game.getCurrentPlayer()).id);
-                if (route?.bulletTrainSpaceIndex !== null) {
-                    claimerId = -1; // TODO only if there are bullet train cars left
+                if (route?.bulletTrainSpaceIndex !== null && this.remainingBulletTrainCarCounters.getValue() > 0) {
+                    claimerId = -1;
                 }
                 this.setWagons(route, claimerId, null, true, shifted);
             }
@@ -953,15 +953,26 @@ export class TtrMap {
             this.remainingBulletTrainCarCounters = new ebg.counter();
             this.remainingBulletTrainCarCounters.create(`remaining-bullet-train-car-counter`, { value: this.mapSpecificData.remainingBulletTrains });
 
-            // TODO create the slots
             this.mapDiv.insertAdjacentHTML('afterbegin', `
                 <div class="bullet-train-positions" style="--bottom: 363px; grid-template-columns: 115px;">
                     <div id="bullet-train-position-0" style="height: 42px;"></div>
                 </div>
-                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 150px;">
-                    ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                <div class="bullet-train-positions" style="--column-count: 3; --bottom: 322px;">
+                    ${[1, 2, 3].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
                 </div>
-                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 112px;">
+                <div class="bullet-train-positions" style="--column-count: 3; --bottom: 282px;">
+                    ${[4, 5, 6].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 4; --bottom: 242px;">
+                    ${[7, 8, 9, 10].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 202px;">
+                    ${[11, 12, 13, 14, 15].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 162px;">
+                    ${[16, 17, 18, 19, 20].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 122px;">
                     ${[21, 22, 23, 24, 25].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
                 </div>
                 <div class="bullet-train-positions" style="--column-count: 5; --bottom: 82px;">

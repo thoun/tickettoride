@@ -260,9 +260,11 @@ class EndScore extends GameState {
         }
 
         $regionsBonuses = [];
+        $regionsCounts = [];
         if ($regionBonusPoints !== null) {
             foreach ($players as $playerId => $playerDb) {
                 $regionsBonuses[$playerId] = $this->game->getMap()->getRegionsBonus($this->game, $playerId);
+                $regionsCounts[$playerId] = $this->game->getMap()->getRegionsCount($this->game, $playerId);
                 $totalScore[$playerId] += $regionsBonuses[$playerId];
             }
         }
@@ -505,6 +507,7 @@ class EndScore extends GameState {
             $this->notify->all("regionsBonus", "", [
                 "playerId" => $playerId,
                 "points" => $points,
+                "regionsCount" => $regionsCounts[$playerId],
             ]);
 
             $this->game->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with the Regions Bonus'), [

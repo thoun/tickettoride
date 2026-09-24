@@ -123,6 +123,13 @@ class Map {
     }
 
     /**
+     * Return the total number of Regions counted across a player's distinct networks.
+     */
+    function getRegionsCount(Game $game, int $playerId): int {
+        return array_sum($this->getRegionsCountsForNetworks($game->mapManager->getConnectedNetworks($playerId)));
+    }
+
+    /**
      * @param \Bga\Games\TicketToRide\ConnectedNetwork[] $networks
      */
     function getRegionsBonusForNetworks(array $networks): int {
@@ -130,6 +137,20 @@ class Map {
             return 0;
         }
 
+        $bonus = 0;
+        $maximumScoredRegions = max(array_keys($this->regionBonusPoints));
+        foreach ($this->getRegionsCountsForNetworks($networks) as $regionCount) {
+            $bonus += $this->regionBonusPoints[min($regionCount, $maximumScoredRegions)] ?? 0;
+        }
+
+        return $bonus;
+    }
+
+    /**
+     * @param \Bga\Games\TicketToRide\ConnectedNetwork[] $networks
+     * @return int[] region count by distinct network
+     */
+    private function getRegionsCountsForNetworks(array $networks): array {
         $citiesByRegion = [];
         foreach ($this->cities as $cityId => $city) {
             if ($city->region !== null) {
@@ -137,8 +158,7 @@ class Map {
             }
         }
 
-        $bonus = 0;
-        $maximumScoredRegions = max(array_keys($this->regionBonusPoints));
+        $regionCounts = [];
         foreach ($networks as $network) {
             $networkCities = array_fill_keys($network->cities, true);
             $connectedRegions = [];
@@ -157,10 +177,10 @@ class Map {
                 }
             }
 
-            $bonus += $this->regionBonusPoints[min($regionCount, $maximumScoredRegions)] ?? 0;
+            $regionCounts[] = $regionCount;
         }
 
-        return $bonus;
+        return $regionCounts;
     }
 
     /**

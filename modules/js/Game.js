@@ -712,8 +712,8 @@ class EndScore {
                 if (player.mapSpecificData.bulletTrainPosition !== undefined) {
                     this.setBulletTrainCount(player.id, player.mapSpecificData.bulletTrainPosition);
                 }
-                if (player.mapSpecificData.regionsBonus !== undefined) {
-                    this.setRegionsBonus(player.id, player.mapSpecificData.regionsBonus);
+                if (player.mapSpecificData.regionsCount !== undefined) {
+                    this.setRegionsCount(player.id, player.mapSpecificData.regionsCount);
                 }
                 this.updateDestinationsTooltip(player);
             });
@@ -839,8 +839,8 @@ class EndScore {
     setBulletTrainCount(playerId, position) {
         document.getElementById(`bullet-train-count-${playerId}`).innerHTML = `<div class="bullet-train-count">${position} <div class="bullet-train-icon"></div></div>`;
     }
-    setRegionsBonus(playerId, points) {
-        document.getElementById(`regions-bonus-${playerId}`).innerHTML = `<div class="regions-bonus">+${points} <span>${_('Regions')}</span></div>`;
+    setRegionsCount(playerId, regionsCount) {
+        document.getElementById(`regions-bonus-${playerId}`).innerHTML = `<div class="regions-bonus">${regionsCount}<span><div class="region-icon"></div></span></div>`;
     }
     /**
      * Show longest path animation for a player.
@@ -1774,8 +1774,8 @@ class TtrMap {
                 const chooseActionArgs = this.game.bga.states.getCurrentMainStateName() === 'chooseAction' ? this.game.gamedatas.gamestate.args : null;
                 const shifted = chooseActionArgs && chooseActionArgs.legendaryCharacter === 1 && chooseActionArgs.legendaryCharacterState === 'using';
                 let claimerId = Number((player || this.game.getCurrentPlayer()).id);
-                if (route?.bulletTrainSpaceIndex !== null) {
-                    claimerId = -1; // TODO only if there are bullet train cars left
+                if (route?.bulletTrainSpaceIndex !== null && this.remainingBulletTrainCarCounters.getValue() > 0) {
+                    claimerId = -1;
                 }
                 this.setWagons(route, claimerId, null, true, shifted);
             }
@@ -1971,15 +1971,26 @@ class TtrMap {
             `);
             this.remainingBulletTrainCarCounters = new ebg.counter();
             this.remainingBulletTrainCarCounters.create(`remaining-bullet-train-car-counter`, { value: this.mapSpecificData.remainingBulletTrains });
-            // TODO create the slots
             this.mapDiv.insertAdjacentHTML('afterbegin', `
                 <div class="bullet-train-positions" style="--bottom: 363px; grid-template-columns: 115px;">
                     <div id="bullet-train-position-0" style="height: 42px;"></div>
                 </div>
-                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 150px;">
-                    ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                <div class="bullet-train-positions" style="--column-count: 3; --bottom: 322px;">
+                    ${[1, 2, 3].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
                 </div>
-                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 112px;">
+                <div class="bullet-train-positions" style="--column-count: 3; --bottom: 282px;">
+                    ${[4, 5, 6].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 4; --bottom: 242px;">
+                    ${[7, 8, 9, 10].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 202px;">
+                    ${[11, 12, 13, 14, 15].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 162px;">
+                    ${[16, 17, 18, 19, 20].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
+                </div>
+                <div class="bullet-train-positions" style="--column-count: 5; --bottom: 122px;">
                     ${[21, 22, 23, 24, 25].map(n => `<div id="bullet-train-position-${n}"></div>`).join('')}
                 </div>
                 <div class="bullet-train-positions" style="--column-count: 5; --bottom: 82px;">
@@ -3987,7 +3998,7 @@ class Game {
     }
     /** Show the Regions Bonus during end scoring. */
     notif_regionsBonus(notif) {
-        this.endScore?.setRegionsBonus(notif.args.playerId, notif.args.points);
+        this.endScore?.setRegionsCount(notif.args.playerId, notif.args.regionsCount);
     }
     /**
      * Animate mandala routes for end score.

@@ -29,9 +29,9 @@ class ItalyMap extends Map {
                 2 => 2,
                 3 => 4,
                 4 => 7,
-                //5 => 10,
+                5 => 10,
                 6 => 15,
-                8 => 21,
+                7 => 18,
             ]
         );
 
@@ -101,9 +101,9 @@ class ItalyMap extends Map {
         return ['destinations-1-0.jpg'];
     }
     
-    function getPlayerMapSpecificData(\Bga\Games\TicketToRide\Game $game, int $playerId): array {
+    function getPlayerMapSpecificData(Game $game, int $playerId): array {
         return [
-            'regionsBonus' => $this->getRegionsBonus($game, $playerId),
+            'regionsCount' => $this->getRegionsCount($game, $playerId),
             'ferryCards' => $game->bga->globals->get("FERRY_CARD_{$playerId}", 0),
         ];
     }
