@@ -1,7 +1,0 @@
-<?php
-
-const UK_COUNTRY_ENGLAND = 1;
-const UK_COUNTRY_WALES = 2;
-const UK_COUNTRY_SCOTLAND = 3;
-const UK_COUNTRY_IRELAND = 4;
-const UK_COUNTRY_FRANCE = 9;

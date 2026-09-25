@@ -2,7 +2,11 @@
 
 use Bga\Games\TicketToRide\Objects\City;
 
-require_once(__DIR__.'/countries.php');
+const UK_COUNTRY_ENGLAND = 1;
+const UK_COUNTRY_WALES = 2;
+const UK_COUNTRY_SCOTLAND = 3;
+const UK_COUNTRY_IRELAND = 4;
+const UK_COUNTRY_FRANCE = 9;
 
 /**
  * Cities in the UK map (alphabetical order).
@@ -63,5 +67,7 @@ function getCities() {
         // country endpoints
         1001 => new City('France', 532, 1728),
         1002 => new City('France', 1067, 1696),
+
+        2001 => new City('New York', -21, 1624),
     ];
 }

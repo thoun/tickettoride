@@ -510,6 +510,7 @@ function getRoutes() {
             new RouteSpace(1090, 534, -6),
             new RouteSpace(1154, 527, -6),
             new RouteSpace(1216, 522, -5),
+            new RouteSpace(1281, 515, -5),
         ], stockShares: []),
         94 => new Route(29, 32, BLACK, [
             new RouteSpace(1031, 482, -46),

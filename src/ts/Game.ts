@@ -773,7 +773,7 @@ export class Game {
         if (notif.args.bulletTrainPosition ?? undefined !== undefined) {
             this.map.setBulletTrainPosition(playerId, notif.args.bulletTrainPosition);
         }
-        if (notif.args.ferryCardsCount ?? undefined !== undefined) {
+        if (notif.args.ferryCardsCount !== undefined) {
             this.ferryCardCounters[playerId]?.toValue(notif.args.ferryCardsCount);
         }
     }
