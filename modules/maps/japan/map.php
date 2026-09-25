@@ -51,7 +51,13 @@ class JapanMap extends Map {
 
         $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2024/07/720132-T2RMC7-Rules_Japan_en.pdf';
         $this->rulesDifferences = [
-            // TODO
+            clienttranslate('All players start with 20 trains instead of 45 trains, and the game has 16 white Bullet Train miniatures.'),
+            clienttranslate('When claiming a Bullet Train route, place 1 Bullet Train miniature on it. It will not give you points, by make you progress on the Progression Marker of the Bullet Train Track that will give points at the end of the game.'),
+            clienttranslate('To complete Destination Tickets players can use any mix of routes with wagons in their color or claimed Bullet Train Routes whether or not they claimed them themselves.'),
+            clienttranslate('If there is no Bullet Train miniature remaining, the Bullet Train routes become standard gray routes.'),
+            clienttranslate('The Aomori-Hakodate routes are of different length and are not considered a double route.'),
+            clienttranslate('Final turn is triggered when a player has 2 train cars or less AND there are 2 Bullet Trains miniatures or less.'),
+            clienttranslate('There is no longest path bonus and no Globetrotter bonus.'),
         ];
     }
     

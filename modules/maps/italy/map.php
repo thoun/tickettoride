@@ -72,7 +72,11 @@ class ItalyMap extends Map {
 
         $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/production-daysofwonder/uploads/2024/07/720132-T2RMC7-Rules_Italy_en.pdf';
         $this->rulesDifferences = [
-            // TODO
+            clienttranslate('Game start: Deal 5 tickets and keep at least 3.'),
+            clienttranslate('A player can draw a Ferry card as a turn action. They cannot have more than 2 Ferry cards in hand.'),
+            clienttranslate('To claim a space with a Wave Symbol, player must use a Locomotive card or a Ferry card. A Ferry card can be used for up to 2 spaces with a Wave Symbol whereas Locomotive cards are only ever worth one space each. Ferry Cards cannot be used on regular Routes or on Ferry Route spaces without a Wave Symbol.'),
+            clienttranslate('Regions bonus: player count the number of Regions that they connected together and scores points according to the chart. If a player has two (or more) distinct networks, these networks are scored separately. The 3 special Regions (Sardegna, Sicilia and Puglia) count as 2 Regions instead of one toward the bonus if all their cities are part of the same network.'),
+            clienttranslate('There is no longest path bonus and no Globetrotter bonus.'),
         ];
     }
     
