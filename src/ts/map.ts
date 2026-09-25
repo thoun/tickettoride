@@ -287,7 +287,9 @@ export class TtrMap {
 
         let overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            const otherRoute = this.game.getOtherDoubleRoute(route);
+            const otherRoute = this.game.getOtherDoubleRoutes(route).find(otherRoute =>
+                otherRoute.color == cardsColor && this.game.chooseActionState.canClaimRoute(otherRoute, cardsColor)
+            );
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -331,7 +333,9 @@ export class TtrMap {
         
         let overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            const otherRoute = this.game.getOtherDoubleRoute(route);
+            const otherRoute = this.game.getOtherDoubleRoutes(route).find(otherRoute =>
+                otherRoute.color == cardsColor && this.game.chooseActionState.canClaimRoute(otherRoute, cardsColor)
+            );
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -436,22 +440,24 @@ export class TtrMap {
             const routeShifted = shifted || (player && player.legendaryCharacter === 1 && player.legendaryCharacterState === `used:${claimedRoute.routeId}`);
             this.setWagons(route, claimedRoute.playerId, fromPlayerId, false, routeShifted);
 
-            if (this.game.isDoubleRouteForbidden()) {
-                const otherRoute = this.game.getOtherDoubleRoute(route);
-                if (otherRoute) {
+            const otherRoutes = this.game.getOtherDoubleRoutes(route);
+            if ((otherRoutes.length > 1 && this.game.isTripleRouteForbidden()) || (otherRoutes.length === 1 && this.game.isDoubleRouteForbidden())) {
+                otherRoutes.forEach(otherRoute => {
                     this.claimedRoutesIds.push(otherRoute.id);
                     otherRoute.spaces.forEach((space, spaceIndex) => {
                         const spaceDiv = document.getElementById(`route-spaces-route${otherRoute.id}-space${spaceIndex}`);
                         if (spaceDiv) {
                             spaceDiv.classList.add('forbidden');
                             this.game.setTooltip(spaceDiv.id, `<strong><span style="color: darkred">${_('Important Note:')}</span> 
-                            ${ this.game.gamedatas.map.minimumPlayerForDoubleRoutes <= 3 ?
+                            ${ otherRoutes.length > 1 ? 
+                                (_('In 2 or 3 player games, only one of the Triple-Routes can be used.')) :
+                                (this.game.gamedatas.map.minimumPlayerForDoubleRoutes <= 3 ?
                                 _('In 2 player games, only one of the Double-Routes can be used.') :
-                                _('In 2 or 3 player games, only one of the Double-Routes can be used.')
+                                _('In 2 or 3 player games, only one of the Double-Routes can be used.'))
                             }</strong>`);
                         }
                     });
-                }
+                });
             }
         });
     }
@@ -630,25 +636,20 @@ export class TtrMap {
      * Check if the route is mostly horizontal, and the lowest from a double route
      */ 
     private isLowestFromDoubleHorizontalRoute(route: Route) {
-        const otherRoute = this.game.getOtherDoubleRoute(route);
-        if (!otherRoute) { // not a double route
+        const otherRoutes = this.game.getOtherDoubleRoutes(route);
+        if (!otherRoutes.length) { // not a double route
             return false;
         }
 
         const routeAvgX = route.spaces.map(space => space.x).reduce((a, b) => a + b, 0);
         const routeAvgY = route.spaces.map(space => space.y).reduce((a, b) => a + b, 0);
-        const otherRouteAvgX = otherRoute.spaces.map(space => space.x).reduce((a, b) => a + b, 0);
-        const otherRouteAvgY = otherRoute.spaces.map(space => space.y).reduce((a, b) => a + b, 0);
+        return otherRoutes.every(otherRoute => {
+            const otherRouteAvgX = otherRoute.spaces.map(space => space.x).reduce((a, b) => a + b, 0);
+            const otherRouteAvgY = otherRoute.spaces.map(space => space.y).reduce((a, b) => a + b, 0);
 
-        if (Math.abs(routeAvgX - otherRouteAvgX) > Math.abs(routeAvgY - otherRouteAvgY)) { // not mostly horizontal
-            return false;
-        }
-
-        if (routeAvgY <= otherRouteAvgY) { // not the lowest one
-            return false;
-        }
-
-        return true;
+            return Math.abs(routeAvgX - otherRouteAvgX) <= Math.abs(routeAvgY - otherRouteAvgY) // mostly horizontal
+                && routeAvgY > otherRouteAvgY; // lowest one
+        });
     }
 
     private getMapWidth() {

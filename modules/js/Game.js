@@ -1402,7 +1402,7 @@ class TtrMap {
         const cardsColor = Number(this.mapDiv.dataset.dragColor);
         let overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            const otherRoute = this.game.getOtherDoubleRoute(route);
+            const otherRoute = this.game.getOtherDoubleRoutes(route).find(otherRoute => otherRoute.color == cardsColor && this.game.chooseActionState.canClaimRoute(otherRoute, cardsColor));
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -1440,7 +1440,7 @@ class TtrMap {
         mapDiv.dataset.dragColor = '';
         let overRoute = route;
         if (cardsColor > 0 && route.color > 0 && cardsColor != route.color) {
-            const otherRoute = this.game.getOtherDoubleRoute(route);
+            const otherRoute = this.game.getOtherDoubleRoutes(route).find(otherRoute => otherRoute.color == cardsColor && this.game.chooseActionState.canClaimRoute(otherRoute, cardsColor));
             if (otherRoute && otherRoute.color == cardsColor) {
                 overRoute = otherRoute;
             }
@@ -1528,21 +1528,23 @@ class TtrMap {
             const player = this.players.find(player => Number(player.id) == claimedRoute.playerId);
             const routeShifted = shifted || (player && player.legendaryCharacter === 1 && player.legendaryCharacterState === `used:${claimedRoute.routeId}`);
             this.setWagons(route, claimedRoute.playerId, fromPlayerId, false, routeShifted);
-            if (this.game.isDoubleRouteForbidden()) {
-                const otherRoute = this.game.getOtherDoubleRoute(route);
-                if (otherRoute) {
+            const otherRoutes = this.game.getOtherDoubleRoutes(route);
+            if ((otherRoutes.length > 1 && this.game.isTripleRouteForbidden()) || (otherRoutes.length === 1 && this.game.isDoubleRouteForbidden())) {
+                otherRoutes.forEach(otherRoute => {
                     this.claimedRoutesIds.push(otherRoute.id);
                     otherRoute.spaces.forEach((space, spaceIndex) => {
                         const spaceDiv = document.getElementById(`route-spaces-route${otherRoute.id}-space${spaceIndex}`);
                         if (spaceDiv) {
                             spaceDiv.classList.add('forbidden');
                             this.game.setTooltip(spaceDiv.id, `<strong><span style="color: darkred">${_('Important Note:')}</span> 
-                            ${this.game.gamedatas.map.minimumPlayerForDoubleRoutes <= 3 ?
-                                _('In 2 player games, only one of the Double-Routes can be used.') :
-                                _('In 2 or 3 player games, only one of the Double-Routes can be used.')}</strong>`);
+                            ${otherRoutes.length > 1 ?
+                                (_('In 2 or 3 player games, only one of the Triple-Routes can be used.')) :
+                                (this.game.gamedatas.map.minimumPlayerForDoubleRoutes <= 3 ?
+                                    _('In 2 player games, only one of the Double-Routes can be used.') :
+                                    _('In 2 or 3 player games, only one of the Double-Routes can be used.'))}</strong>`);
                         }
                     });
-                }
+                });
             }
         });
     }
@@ -1695,21 +1697,18 @@ class TtrMap {
      * Check if the route is mostly horizontal, and the lowest from a double route
      */
     isLowestFromDoubleHorizontalRoute(route) {
-        const otherRoute = this.game.getOtherDoubleRoute(route);
-        if (!otherRoute) { // not a double route
+        const otherRoutes = this.game.getOtherDoubleRoutes(route);
+        if (!otherRoutes.length) { // not a double route
             return false;
         }
         const routeAvgX = route.spaces.map(space => space.x).reduce((a, b) => a + b, 0);
         const routeAvgY = route.spaces.map(space => space.y).reduce((a, b) => a + b, 0);
-        const otherRouteAvgX = otherRoute.spaces.map(space => space.x).reduce((a, b) => a + b, 0);
-        const otherRouteAvgY = otherRoute.spaces.map(space => space.y).reduce((a, b) => a + b, 0);
-        if (Math.abs(routeAvgX - otherRouteAvgX) > Math.abs(routeAvgY - otherRouteAvgY)) { // not mostly horizontal
-            return false;
-        }
-        if (routeAvgY <= otherRouteAvgY) { // not the lowest one
-            return false;
-        }
-        return true;
+        return otherRoutes.every(otherRoute => {
+            const otherRouteAvgX = otherRoute.spaces.map(space => space.x).reduce((a, b) => a + b, 0);
+            const otherRouteAvgY = otherRoute.spaces.map(space => space.y).reduce((a, b) => a + b, 0);
+            return Math.abs(routeAvgX - otherRouteAvgX) <= Math.abs(routeAvgY - otherRouteAvgY) // mostly horizontal
+                && routeAvgY > otherRouteAvgY; // lowest one
+        });
     }
     getMapWidth() {
         return this.map.width;
@@ -2433,11 +2432,11 @@ class ChooseActionState {
             }
         }
     }
-    setActionBarAskDoubleRoad(clickedRoute, otherRoute) {
-        const question = _("Which part of the double route do you want to claim?");
+    setActionBarAskDoubleRoad(clickedRoute, otherRoutes) {
+        const question = otherRoutes.length > 1 ? _("Which part of the triple route do you want to claim?") : _("Which part of the double route do you want to claim?");
         this.bga.statusBar.setTitle(question);
         this.bga.statusBar.removeActionButtons();
-        [clickedRoute, otherRoute].forEach(route => {
+        [clickedRoute, ...otherRoutes].forEach(route => {
             const mountainCost = route.mountain > 0 ? ` (${_("${number} mountain X").replace('${number}', `${route.mountain}`)})` : '';
             this.bga.statusBar.addActionButton(`<div class="train-car-color icon" data-color="${route.color}"></div> ${getColor(route.color, 'route')}${mountainCost}`, () => this.clickedRouteDoubleRouteConfirmed(route));
         });
@@ -2450,9 +2449,9 @@ class ChooseActionState {
         const selectedColor = this.game.playerTable.getSelectedColor();
         const routeColor = this.getConsideredRouteColor(route);
         if (routeColor !== 0 && selectedColor !== null && selectedColor !== 0 && routeColor !== selectedColor) {
-            const otherRoute = this.game.getOtherDoubleRoute(route);
-            const otherRouteColor = otherRoute ? this.getConsideredRouteColor(otherRoute) : null;
-            if (otherRouteColor === selectedColor) {
+            const otherRoute = this.game.getOtherDoubleRoutes(route).find(otherRoute => this.getConsideredRouteColor(otherRoute) === selectedColor
+                && this.canClaimRoute(otherRoute, selectedColor));
+            if (otherRoute) {
                 this.clickedRouteColorChosen(otherRoute, selectedColor);
             }
             return;
@@ -2549,13 +2548,12 @@ class ChooseActionState {
             return;
         }
         const routeColor = this.getConsideredRouteColor(route);
-        const otherRoute = this.game.getOtherDoubleRoute(route);
-        const otherRouteColor = otherRoute ? this.getConsideredRouteColor(otherRoute) : null;
-        const doubleRoutesHaveDifferentMountains = otherRoute && otherRoute.mountain !== route.mountain;
-        let askDoubleRoute = otherRoute
+        const otherRoutes = this.game.getOtherDoubleRoutes(route).filter(otherRoute => this.canClaimRoute(otherRoute, 0));
+        const doubleRoutesHaveDifferentMountains = otherRoutes.some(otherRoute => otherRoute.mountain !== route.mountain);
+        const hasOtherRouteColor = otherRoutes.some(otherRoute => this.getConsideredRouteColor(otherRoute) !== routeColor);
+        let askDoubleRoute = otherRoutes.length > 0
             && this.canClaimRoute(route, 0)
-            && this.canClaimRoute(otherRoute, 0)
-            && (doubleRoutesHaveDifferentMountains || (this.askDoubleRouteActive() && otherRouteColor != routeColor));
+            && (doubleRoutesHaveDifferentMountains || (this.askDoubleRouteActive() && hasOtherRouteColor));
         if (askDoubleRoute && !doubleRoutesHaveDifferentMountains) {
             const selectedColor = this.game.playerTable.getSelectedColor();
             if (selectedColor) {
@@ -2563,7 +2561,7 @@ class ChooseActionState {
             }
         }
         if (askDoubleRoute) {
-            this.setActionBarAskDoubleRoad(route, otherRoute);
+            this.setActionBarAskDoubleRoad(route, otherRoutes);
             return;
         }
         if (!this.canClaimRoute(route, 0)) {
@@ -3474,8 +3472,8 @@ class Game {
     isDoubleRouteForbidden() {
         return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForDoubleRoutes;
     }
-    getOtherDoubleRoute(route) {
-        return Object.values(this.gamedatas.map.routes).find(otherRoute => route.id !== otherRoute.id
+    getOtherDoubleRoutes(route) {
+        return Object.values(this.gamedatas.map.routes).filter(otherRoute => route.id !== otherRoute.id
             && route.from === otherRoute.from
             && route.to === otherRoute.to
             && (this.gamedatas.map.differentLengthRoutesAreDoubleRoutes || route.spaces.length === otherRoute.spaces.length));

@@ -453,6 +453,7 @@ class ChooseAction extends GameState {
         $allRoutes = $this->game->mapManager->getAllRoutes();
         $claimedRoutes = $this->game->getClaimedRoutes();
         $doubleRouteAllowed = $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForDoubleRoutes;
+        $tripleRouteAllowed = $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForTripleRoutes;
 
         $playerClaimedRouteIds = [];
         $claimedOwnersByPair = [];

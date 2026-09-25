@@ -67,9 +67,11 @@ class MapManager {
         ));
 
         $doubleRouteAllowed = $this->isDoubleRouteAllowed();
+        $tripleRouteAllowed = $this->isTripleRouteAllowed();
         // remove double routes if low player count, or if player already got the other route
-        $claimableRoutes = array_values(array_filter($claimableRoutes, function($unclaimedRoute) use ($playerId, $claimedRoutes, $doubleRouteAllowed) {
+        $claimableRoutes = array_values(array_filter($claimableRoutes, function($unclaimedRoute) use ($playerId, $claimedRoutes, $doubleRouteAllowed, $tripleRouteAllowed) {
             $twinRoutes = $this->getTwinRoutes($unclaimedRoute);
+            $otherRoutesAllowed = count($twinRoutes) > 2 ? $tripleRouteAllowed : $doubleRouteAllowed;
             foreach($twinRoutes as $twinRoute) {
                 // we check if twin route is claimed
                 $twinRouteClaimedBy = null;
@@ -82,8 +84,8 @@ class MapManager {
 
                 if ($twinRouteClaimedBy !== null) {
                     // twin route is claimed by someone
-                    // if double routes are not allowed, or player already got twin route, he can claim route
-                    if (!$doubleRouteAllowed || $twinRouteClaimedBy == $playerId) {
+                    // if double/triple routes are not allowed, or player already got twin route, he can claim route
+                    if (!$otherRoutesAllowed || $twinRouteClaimedBy == $playerId) {
                         return false;
                     }
                 }
@@ -303,6 +305,9 @@ class MapManager {
     
     private function isDoubleRouteAllowed() {
         return $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForDoubleRoutes;
+    }
+    private function isTripleRouteAllowed() {
+        return $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForTripleRoutes;
     }
 
     /**

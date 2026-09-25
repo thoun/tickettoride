@@ -30,6 +30,7 @@ class Map {
     public ?int $pointsForGlobetrotter = 15; // points for maximum completed destinations (null means disabled)
     public ?int $pointsForMostConnectedCities = null; // points for most connected cities (null means disabled)
     public int $minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
+    public int $minimumPlayerForTripleRoutes = 4; // 4 means 2-3 players cant use double routes
     public bool $differentLengthRoutesAreDoubleRoutes = true; // Whether parallel routes of different lengths count as a double route.
     public ?string $multilingualPdfRulesUrl = null; // PDF rules URL to display when it's not the base game
     public ?array $rulesDifferences = null; // text summary of rules differences to display when it's not the base game

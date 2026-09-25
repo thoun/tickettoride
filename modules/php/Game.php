@@ -225,6 +225,7 @@ class Game extends Table {
                 'preloadImages' => $this->getMap()->getPreloadImages($expansionOption),
                 'locomotiveUsageRestriction' => $this->getMap()->locomotiveUsageRestriction,
                 'minimumPlayerForDoubleRoutes' => $this->getMap()->minimumPlayerForDoubleRoutes,
+                'minimumPlayerForTripleRoutes' => $this->getMap()->minimumPlayerForTripleRoutes,
                 'differentLengthRoutesAreDoubleRoutes' => $this->getMap()->differentLengthRoutesAreDoubleRoutes,
                 'multilingualPdfRulesUrl' => $this->getMap()->multilingualPdfRulesUrl,
                 'rulesDifferences' => $this->getMap()->rulesDifferences,
@@ -519,7 +520,7 @@ class Game extends Table {
     }
 
     function getMapCode(): string { 
-        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[15]; }
+        //if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[15]; }
         return MAP_LIST[match (__NAMESPACE__) {
             'Bga\\Games\\TicketToRide' => 1,
             'Bga\\Games\\TicketToRideEurope' => 2,

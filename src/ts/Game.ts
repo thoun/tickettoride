@@ -321,8 +321,8 @@ export class Game implements TicketToRideGame {
         return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForDoubleRoutes;
     }
 
-    public getOtherDoubleRoute(route: Route): Route | undefined {
-        return Object.values(this.gamedatas.map.routes).find(otherRoute =>
+    public getOtherDoubleRoutes(route: Route): Route[] {
+        return Object.values(this.gamedatas.map.routes).filter(otherRoute =>
             route.id !== otherRoute.id
             && route.from === otherRoute.from
             && route.to === otherRoute.to

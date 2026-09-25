@@ -167,12 +167,12 @@ export class ChooseActionState {
         }
     }
 
-    private setActionBarAskDoubleRoad(clickedRoute: Route, otherRoute: Route) {
-        const question = _("Which part of the double route do you want to claim?")
+    private setActionBarAskDoubleRoad(clickedRoute: Route, otherRoutes: Route[]) {
+        const question = otherRoutes.length > 1 ? _("Which part of the triple route do you want to claim?") : _("Which part of the double route do you want to claim?");
         this.bga.statusBar.setTitle(question);
 
         this.bga.statusBar.removeActionButtons();
-        [clickedRoute, otherRoute].forEach(route => {
+        [clickedRoute, ...otherRoutes].forEach(route => {
             const mountainCost = route.mountain > 0 ? ` (${_("${number} mountain X").replace('${number}', `${route.mountain}`)})` : '';
             this.bga.statusBar.addActionButton(`<div class="train-car-color icon" data-color="${route.color}"></div> ${getColor(route.color, 'route')}${mountainCost}`, () => this.clickedRouteDoubleRouteConfirmed(route));
         });
@@ -186,9 +186,11 @@ export class ChooseActionState {
         const selectedColor = this.game.playerTable.getSelectedColor();
         const routeColor = this.getConsideredRouteColor(route);
         if (routeColor !== 0 && selectedColor !== null && selectedColor !== 0 && routeColor !== selectedColor) {
-            const otherRoute = this.game.getOtherDoubleRoute(route);
-            const otherRouteColor = otherRoute ? this.getConsideredRouteColor(otherRoute) : null;
-            if (otherRouteColor === selectedColor) {
+            const otherRoute = this.game.getOtherDoubleRoutes(route).find(otherRoute =>
+                this.getConsideredRouteColor(otherRoute) === selectedColor
+                && this.canClaimRoute(otherRoute, selectedColor)
+            );
+            if (otherRoute) {
                 this.clickedRouteColorChosen(otherRoute, selectedColor);
             }
             return;
@@ -304,13 +306,12 @@ export class ChooseActionState {
         }
 
         const routeColor = this.getConsideredRouteColor(route);
-        const otherRoute = this.game.getOtherDoubleRoute(route);
-        const otherRouteColor = otherRoute ? this.getConsideredRouteColor(otherRoute) : null;
-        const doubleRoutesHaveDifferentMountains = otherRoute && otherRoute.mountain !== route.mountain;
-        let askDoubleRoute = otherRoute
+        const otherRoutes = this.game.getOtherDoubleRoutes(route).filter(otherRoute => this.canClaimRoute(otherRoute, 0));
+        const doubleRoutesHaveDifferentMountains = otherRoutes.some(otherRoute => otherRoute.mountain !== route.mountain);
+        const hasOtherRouteColor = otherRoutes.some(otherRoute => this.getConsideredRouteColor(otherRoute) !== routeColor);
+        let askDoubleRoute = otherRoutes.length > 0
             && this.canClaimRoute(route, 0)
-            && this.canClaimRoute(otherRoute, 0)
-            && (doubleRoutesHaveDifferentMountains || (this.askDoubleRouteActive() && otherRouteColor != routeColor));
+            && (doubleRoutesHaveDifferentMountains || (this.askDoubleRouteActive() && hasOtherRouteColor));
         if (askDoubleRoute && !doubleRoutesHaveDifferentMountains) {
             const selectedColor = this.game.playerTable.getSelectedColor();
             if (selectedColor) {
@@ -319,7 +320,7 @@ export class ChooseActionState {
         }
 
         if (askDoubleRoute) {
-            this.setActionBarAskDoubleRoad(route, otherRoute);
+            this.setActionBarAskDoubleRoad(route, otherRoutes);
             return;
         }
 

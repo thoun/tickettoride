@@ -114,6 +114,7 @@ export interface TicketToRideMap {
     illustration: number;
     locomotiveUsageRestriction: number;
     minimumPlayerForDoubleRoutes: number;
+    minimumPlayerForTripleRoutes: number;
     differentLengthRoutesAreDoubleRoutes: boolean;
     multilingualPdfRulesUrl?: string;
     rulesDifferences?: string[];
@@ -199,7 +200,8 @@ export interface TicketToRideGame{
     endAnimation(ended: WagonsAnimation): void;
     isColorBlindMode(): boolean;
     isDoubleRouteForbidden(): boolean;
-    getOtherDoubleRoute(route: Route): Route | undefined;
+    isTripleRouteForbidden(): boolean;
+    getOtherDoubleRoutes(route: Route): Route[];
     selectedColorChanged(selectedColor: number | null): void;
     setTooltip(id: string, html: string): void;
     setTooltipToClass(className: string, html: string): void;
