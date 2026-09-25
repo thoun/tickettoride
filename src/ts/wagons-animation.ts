@@ -1,4 +1,4 @@
-import { TicketToRideGame, Route } from "./types";
+import { Game } from "./Game";
 
 /**
  * Animation with highlighted wagons.
@@ -9,7 +9,7 @@ export abstract class WagonsAnimation {
     private shadowDiv: HTMLDivElement;
 
     constructor(
-        protected game: TicketToRideGame,
+        protected game: Game,
         destinationRoutes: Route[],
         stationCityIds: number[] = [],
     ) {

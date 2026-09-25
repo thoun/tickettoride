@@ -4,7 +4,7 @@ import { MostConnectedCitiesAnimation } from "./most-connected-cities-animation"
 import { MandalaRoutesAnimation } from "./mandala-routes-animation";
 import { RemainingStationsAnimation } from "./remaining-stations-animation";
 import { getBackgroundInlineStyleForDestination } from "./stock-utils";
-import { TicketToRideGame, TicketToRidePlayer, Destination, Route } from "./types";
+import { Game } from "./Game";
 
 /**
  * End score board.
@@ -21,7 +21,7 @@ export class EndScore {
     private uncompletedDestinationCounters: Counter[] = [];
 
     constructor(
-        private game: TicketToRideGame, 
+        private game: Game, 
         private players: TicketToRidePlayer[],
         /** fromReload: if a player refresh when game is over, we skip animations (as there will be no notifications to animate the score board) */ 
         fromReload: boolean,

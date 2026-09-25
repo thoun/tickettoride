@@ -1,8 +1,8 @@
 // @ts-ignore
 const [Stock] = await globalThis.importDojoLibs(["ebg/stock"]);
 
+import { Game } from "./Game";
 import { CARD_HEIGHT, CARD_WIDTH, setupDestinationCardDiv, setupDestinationCards } from "./stock-utils";
-import { TicketToRideGame, TicketToRideMap, Destination } from "./types";
 
 /**
  * Selection of new destinations.
@@ -18,7 +18,7 @@ export class DestinationSelection {
      * Init stock.
      */ 
     constructor(
-        private game: TicketToRideGame,
+        private game: Game,
         map: TicketToRideMap,
     ) {
         const verticalMap = map.width < map.height;

@@ -1,5 +1,3 @@
-import { ClaimingRoute, TrainCar } from "./types";
-
 export class DistributionResult {
     public cardIds: number[];
     public locomotivesOnly: boolean;

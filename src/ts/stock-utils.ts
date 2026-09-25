@@ -1,5 +1,5 @@
+import { Game } from "./Game";
 import { IMAGE_ITEMS_PER_ROW } from "./player-table/player-destinations";
-import { TicketToRideMap, TicketToRideGame, Destination } from "./types";
 
 export const CARD_WIDTH = 250;
 export const CARD_HEIGHT = 161;
@@ -73,7 +73,7 @@ function getDestinations(map: TicketToRideMap): DestinationCard[] {
     return destinations;
 }
 
-export function setupDestinationCardDiv(game: TicketToRideGame, cardDiv: HTMLDivElement, cardUniqueId: number) {
+export function setupDestinationCardDiv(game: Game, cardDiv: HTMLDivElement, cardUniqueId: number) {
     const destinations = getDestinations(game.getMap());
     const destination = destinations.find(d => d.uniqueId == cardUniqueId);
     cardDiv.title = `${dojo.string.substitute(_('${from} to ${to}'), {

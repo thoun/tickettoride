@@ -1,5 +1,5 @@
 import { DistributionPopin, DistributionResult } from "../distribution-popin";
-import { TicketToRideGame, TrainCar, TunnelAttempt } from "../types";
+import { Game } from "../Game";
 import { LOCOMOTIVE_TUNNEL, LOCOMOTIVE_FERRY } from "./ChooseAction";
 
 export interface EnteringConfirmTunnelArgs {
@@ -12,10 +12,7 @@ export interface EnteringConfirmTunnelArgs {
 }
 
 export class ConfirmTunnelState {
-    protected game: TicketToRideGame;
-    protected bga: Bga;
-
-    constructor(game: TicketToRideGame, bga: Bga) {
+    constructor(protected game: Game, protected bga: Bga) {
         this.game = game;
         this.bga = bga;
     }

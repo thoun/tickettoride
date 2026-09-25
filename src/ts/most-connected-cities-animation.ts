@@ -1,4 +1,4 @@
-import { TicketToRideGame, Route } from "./types";
+import { Game } from "./Game";
 import { WagonsAnimation } from "./wagons-animation";
 
 /**
@@ -8,7 +8,7 @@ export class MostConnectedCitiesAnimation extends WagonsAnimation {
     private cities: HTMLElement[];
 
     constructor(
-        game: TicketToRideGame,
+        game: Game,
         routes: Route[],
         cityIds: number[],
         private length: number,

@@ -1,4 +1,4 @@
-import { TicketToRideGame, TicketToRidePlayer, TrainCar, Destination, Route, City } from "../types";
+import { Game } from "../Game";
 import { PlayerDestinations } from "./player-destinations";
 import { PlayerTrainCars } from "./player-train-cars";
 
@@ -10,7 +10,7 @@ export class PlayerTable {
     private playerTrainCars: PlayerTrainCars;
 
     constructor(
-        game: TicketToRideGame, 
+        game: Game, 
         player: TicketToRidePlayer,
         trainCars: TrainCar[],
         destinations: Destination[],

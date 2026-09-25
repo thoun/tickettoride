@@ -1,6 +1,6 @@
 import { DestinationCompleteAnimation } from "../destination-animation";
+import { Game } from "../Game";
 import { getBackgroundInlineStyleForDestination, setupDestinationCardDiv, DESTINATION_CARD_SHIFT, CARD_HEIGHT } from "../stock-utils";
-import { Destination, TicketToRideGame, TicketToRidePlayer, Route } from "../types";
 
 export const IMAGE_ITEMS_PER_ROW = 10;
 
@@ -17,7 +17,7 @@ export class PlayerDestinations {
     private destinationsDone: Destination[] = [];
 
     constructor(
-        private game: TicketToRideGame, 
+        private game: Game, 
         player: TicketToRidePlayer,
         destinations: Destination[],
         completedDestinations: Destination[]) {

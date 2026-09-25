@@ -1,5 +1,5 @@
+import { Game } from "../Game";
 import { animateCardToCounterAndDestroy } from "../slide-utils";
-import { TicketToRideGame, TrainCar } from "../types";
 import { VisibleCardSpot } from "./visible-card-spot";
 
 const DBL_CLICK_TIMEOUT = 300;
@@ -42,7 +42,7 @@ export class TrainCarSelection {
      * Init stocks and gauges.
      */ 
     constructor(
-        private game: TicketToRideGame,
+        private game: Game,
         visibleCards: { [spot: number]: TrainCar | null },
         trainCarDeckCount: number,
         destinationDeckCount: number,

@@ -1,4 +1,4 @@
-import { TicketToRideGame, TrainCar } from "../types";
+import { Game } from "../Game";
 
 interface EnteringDrawSecondCardArgs {
     availableVisibleCards: TrainCar[];
@@ -6,10 +6,7 @@ interface EnteringDrawSecondCardArgs {
 }
 
 export class DrawSecondCardState {
-    protected game: TicketToRideGame;
-    protected bga: Bga;
-
-    constructor(game: TicketToRideGame, bga: Bga) {
+    constructor(protected game: Game, protected bga: Bga) {
         this.game = game;
         this.bga = bga;
     }

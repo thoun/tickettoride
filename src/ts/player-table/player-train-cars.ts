@@ -1,4 +1,4 @@
-import { City, Route, TicketToRideGame, TicketToRidePlayer, TrainCar } from "../types";
+import { Game } from "../Game";
 
 export const CROSSHAIR_SIZE = 20;
 
@@ -14,7 +14,7 @@ export class PlayerTrainCars {
     private selectedColor: number | null = null;
 
     constructor(
-        private game: TicketToRideGame, 
+        private game: Game, 
         player: TicketToRidePlayer,
         trainCars: TrainCar[]) {
 

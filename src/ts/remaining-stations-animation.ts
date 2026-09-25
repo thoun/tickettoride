@@ -1,4 +1,4 @@
-import { TicketToRideGame } from "./types";
+import { Game } from "./Game";
 import { WagonsAnimation } from "./wagons-animation";
 
 /**
@@ -7,7 +7,7 @@ import { WagonsAnimation } from "./wagons-animation";
 export class RemainingStationsAnimation extends WagonsAnimation {
 
     constructor(
-        game: TicketToRideGame,
+        game: Game,
         private remainingStations: number,
         private playerColor: string,
         private actions: {

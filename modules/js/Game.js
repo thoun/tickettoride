@@ -2812,6 +2812,8 @@ class ConfirmTunnelState {
     constructor(game, bga) {
         this.game = game;
         this.bga = bga;
+        this.game = game;
+        this.bga = bga;
     }
     onEnteringState(args, isCurrentPlayerActive) {
         const route = this.game.getMap().routes[args.tunnelAttempt.routeId];
@@ -2849,6 +2851,8 @@ class ConfirmTunnelState {
 
 class DrawSecondCardState {
     constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
         this.game = game;
         this.bga = bga;
     }
@@ -3471,6 +3475,9 @@ class Game {
     }
     isDoubleRouteForbidden() {
         return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForDoubleRoutes;
+    }
+    isTripleRouteForbidden() {
+        return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForTripleRoutes;
     }
     getOtherDoubleRoutes(route) {
         return Object.values(this.gamedatas.map.routes).filter(otherRoute => route.id !== otherRoute.id

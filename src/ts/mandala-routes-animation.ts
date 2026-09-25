@@ -1,4 +1,4 @@
-import { TicketToRideGame, Route } from "./types";
+import { Game } from "./Game";
 import { WagonsAnimation } from "./wagons-animation";
 
 /**
@@ -8,7 +8,7 @@ export class MandalaRoutesAnimation extends WagonsAnimation {
     private cities: HTMLElement[] = [];
 
     constructor(
-        game: TicketToRideGame,
+        game: Game,
         private routes: Route[],
         cityIds: number[],
         private actions: {

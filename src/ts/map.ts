@@ -1,7 +1,7 @@
+import { Game } from "./Game";
 import { CROSSHAIR_SIZE } from "./player-table/player-train-cars";
-import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseAction";
+import { EnteringChooseActionArgs } from "./states/ChooseAction";
 import { getColor } from "./stock-utils";
-import { Route, TicketToRideMap, TicketToRideGame, TicketToRidePlayer, ClaimedRoute, RouteSpace, Destination, City, BuiltStation, PlayerMapSpecificData, MapSpecificData } from "./types";
 
 const DRAG_AUTO_ZOOM_DELAY = 2000;
 
@@ -178,7 +178,7 @@ export class TtrMap {
      * Place map corner illustration and borders, cities, routes, and bind events.
      */ 
     constructor(
-        private game: TicketToRideGame,
+        private game: Game,
         private map: TicketToRideMap,
         private players: TicketToRidePlayer[],
         claimedRoutes: ClaimedRoute[],

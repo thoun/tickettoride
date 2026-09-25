@@ -1,5 +1,5 @@
+import { Game } from "./Game";
 import { CARD_HEIGHT, CARD_WIDTH, getBackgroundInlineStyleForDestination } from "./stock-utils";
-import { Destination, TicketToRideGame, Route } from "./types";
 import { WagonsAnimation } from "./wagons-animation";
 
 type DestinationAnimationCallback = (destination: Destination) => void;
@@ -10,7 +10,7 @@ type DestinationAnimationCallback = (destination: Destination) => void;
 export class DestinationCompleteAnimation extends WagonsAnimation {
 
     constructor(
-        game: TicketToRideGame,
+        game: Game,
         private destination: Destination,
         destinationRoutes: Route[],
         private fromId: string,

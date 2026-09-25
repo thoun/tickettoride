@@ -1,6 +1,6 @@
+import { Game } from "../Game";
 import { animateCardToCounterAndDestroy } from "../slide-utils";
 import { setupTrainCarCardDiv } from "../stock-utils";
-import { TrainCar, TicketToRideGame, Card } from "../types";
 
 /** 
  * Selection of new train cars.
@@ -13,7 +13,7 @@ export class VisibleCardSpot {
      * Init stocks and gauges.
      */ 
     constructor(
-        private game: TicketToRideGame,
+        private game: Game,
         private spotNumber: number,
     ) {
         this.spotDiv = document.getElementById(`visible-train-cards-stock${this.spotNumber}`) as HTMLDivElement;

@@ -7,14 +7,13 @@ import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseActi
 import { ChooseLegendaryCharacterState } from "./states/ChooseLegendaryCharacter";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
-import { City, Destination, EnteringChooseDestinationsArgs, NotifBadgeArgs, NotifBestScoreArgs, NotifBuiltStationArgs, NotifChooseCharacterArgs, NotifClaimedRouteArgs, NotifDestinationCompletedArgs, NotifDiscardDestinationArgs, NotifDestinationsPickedArgs, NotifFerryCardDrawnArgs, NotifFreeTunnelArgs, NotifLongestPathArgs, NotifMandalaRoutesArgs, NotifMostConnectedCitiesArgs, NotifNewCardsOnTableArgs, NotifPointsArgs, NotifRemainingStationsArgs, NotifScoreDestinationArgs, NotifTrainCarsPickedArgs, Route, TicketToRideGame, TicketToRideGamedatas, TicketToRideMap, TicketToRidePlayer, TrainCar, NotifAddMountainTrainsArgs, NotifBulletTrainBonusArgs, NotifRegionsBonusArgs } from "./types";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 import { BgaAutofit } from "./libs";
 
 const ANIMATION_MS = 500;
 
-export class Game implements TicketToRideGame {
+export class Game {
     public bga: Bga;
     public gamedatas: TicketToRideGamedatas;
 
@@ -319,6 +318,9 @@ export class Game implements TicketToRideGame {
 
     public isDoubleRouteForbidden(): boolean {
         return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForDoubleRoutes;
+    }
+    public isTripleRouteForbidden(): boolean {
+        return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForTripleRoutes;
     }
 
     public getOtherDoubleRoutes(route: Route): Route[] {
