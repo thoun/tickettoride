@@ -88,13 +88,6 @@ class JapanMap extends Map {
         ];
     }
     
-    /**
-     * Return if Longest Path bonus card is used for the game.
-     */
-    function isLongestPathBonusActive(int $expansionValue): bool {
-        return false;
-    }
-
     function setup(Game $game): void {
         $game->bga->globals->set(REMAINING_BULLET_TRAINS, 16);
 

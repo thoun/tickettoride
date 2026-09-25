@@ -38,7 +38,7 @@ class ItalyMap extends Map {
         $this->trainCarsPerPlayer = 45; // trains car tokens per player at the beginning of the game
         $this->unusedInitialDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
         $this->unusedAdditionalDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
-        $this->pointsForLongestPath = null; // points for maximum longest countinuous path (null means disabled)
+        $this->pointsForLongestPath = null; // points for maximum longest continuous path (null means disabled)
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
         $this->minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
         $this->ferryCards = true;
@@ -128,13 +128,6 @@ class ItalyMap extends Map {
         ];
     }
     
-    /**
-     * Return if Longest Path bonus card is used for the game.
-     */
-    function isLongestPathBonusActive(int $expansionValue): bool {
-        return false;
-    }
-
     function setup(Game $game): void {
         foreach ($game->getPlayersIds() as $playerId) {
             $game->bga->globals->set("FERRY_CARD_{$playerId}", 0);

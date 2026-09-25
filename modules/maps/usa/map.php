@@ -35,6 +35,8 @@ class UsaMap extends Map {
             ]
         );
 
+        $this->pointsForLongestPath = 10;
+        $this->pointsForGlobetrotter = 15;
         $this->expansion = EXPANSION19xx_OPTION; // 0 => base game, 1 => 1910, 2 => mega game, 3 => big cities
 
         $this->bigCities = [
@@ -52,14 +54,14 @@ class UsaMap extends Map {
      * Return if Globetrotter bonus card is used for the game.
      */
     function isGlobetrotterBonusActive(int $expansionValue): bool {
-        return in_array($expansionValue, [1, 2]);
+        return $this->pointsForGlobetrotter !== null && in_array($expansionValue, [1, 2]);
     }
     
     /**
      * Return if Longest Path bonus card is used for the game.
      */
     function isLongestPathBonusActive(int $expansionValue): bool {
-        return in_array($expansionValue, [0, 2]);
+        return $this->pointsForLongestPath !== null && in_array($expansionValue, [0, 2]);
     }
     
     /**

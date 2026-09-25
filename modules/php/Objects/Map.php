@@ -26,8 +26,8 @@ class Map {
     public int $additionalDestinationMinimumKept = 1; // Minimum number of destinations cards to keep at pick destination action.
     public bool $unusedInitialDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
     public bool $unusedAdditionalDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
-    public ?int $pointsForLongestPath = 10; // points for maximum longest countinuous path (null means disabled)
-    public ?int $pointsForGlobetrotter = 15; // points for maximum completed destinations (null means disabled)
+    public ?int $pointsForLongestPath = null; // points for maximum longest continuous path (null means disabled)
+    public ?int $pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
     public ?int $pointsForMostConnectedCities = null; // points for most connected cities (null means disabled)
     public int $minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
     public int $minimumPlayerForTripleRoutes = 4; // 4 means 2-3 players cant use double routes
@@ -87,14 +87,14 @@ class Map {
      * Return if Globetrotter bonus card is used for the game.
      */
     function isGlobetrotterBonusActive(int $expansionValue): bool {
-        return false;
+        return $this->pointsForGlobetrotter !== null;
     }
 
     /**
      * Return if Longest Path bonus card is used for the game.
      */
     function isLongestPathBonusActive(int $expansionValue): bool {
-        return true;
+        return $this->pointsForLongestPath !== null;
     }
 
     /**

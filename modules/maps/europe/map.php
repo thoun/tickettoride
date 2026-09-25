@@ -36,6 +36,7 @@ class EuropeMap extends Map {
         );
 
         $this->unusedInitialDestinationsGoToDeckBottom = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
+        $this->pointsForLongestPath = 10;
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
 
         $this->expansion = EXPANSION19xx_OPTION; // 0 => base game, 1 => extended, 2 => mega game, 3 => big cities

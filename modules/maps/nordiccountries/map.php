@@ -85,19 +85,6 @@ class NordicCountriesMap extends Map {
         ];
     }
     
-    /**
-     * Return if Globetrotter bonus card is used for the game.
-     */
-    function isGlobetrotterBonusActive(int $expansionValue): bool {
-        return true;
-    }
-    
-    /**
-     * Return if Longest Path bonus card is used for the game.
-     */
-    function isLongestPathBonusActive(int $expansionValue): bool {
-        return false;
-    }
 }
 
 function getMap() {

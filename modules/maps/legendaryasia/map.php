@@ -67,10 +67,6 @@ class LegendaryAsiaMap extends Map {
         return ['destinations-1-0.jpg', 'destinations-2-0.jpg'];
     }
 
-    function isLongestPathBonusActive(int $expansionValue): bool {
-        return false;
-    }
-
     /**
      * List the destination tickets that will be used for the game.
      */

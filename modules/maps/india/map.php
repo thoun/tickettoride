@@ -38,6 +38,7 @@ class IndiaMap extends Map {
         $this->trainCarsPerPlayer = 45; // trains car tokens per player at the beginning of the game
         $this->unusedInitialDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
         $this->unusedAdditionalDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
+        $this->pointsForLongestPath = 10;
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
         $this->minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
 
