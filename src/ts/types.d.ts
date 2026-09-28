@@ -194,9 +194,7 @@ interface NotifDestinationsPickedArgs {
      */
     count: number;
     remainingDestinationsInDeck: number;
-    _private?: {
-        destinations: Destination[];
-    };
+    destinations?: Destination[]; // private data
 }
 
 interface NotifTrainCarsPickedArgs {

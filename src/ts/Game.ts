@@ -708,7 +708,7 @@ export class Game {
      */ 
     notif_destinationsPicked(notif: Notif<NotifDestinationsPickedArgs>) {
         this.destinationCardCounters[notif.args.playerId].toValue(notif.args.number);
-        const destinations = notif.args._private?.destinations;
+        const destinations = notif.args.destinations;
         if (destinations) {
             this.playerTable.addDestinations(destinations, this.destinationSelection.destinations);
         } else {

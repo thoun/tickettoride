@@ -186,16 +186,18 @@ class DestinationManager {
             'count' => count($ids),
             'number' => $this->getPlayerHandCount($playerId),
             'remainingDestinationsInDeck' => $this->getRemainingDestinationCardsInDeck(),
-            '_private' => [
-                $playerId => [
-                    'destinations' => $this->getDestinationsFromDb($this->destinations->getCards($ids)),
-                ],
-            ],
         ];
 
         if ($secret) {
+            $args['destinations'] = $this->getDestinationsFromDb($this->destinations->getCards($ids));
             $this->game->notify->player($playerId, 'destinationsPicked', '', $args);
         } else {
+            $args['_private'] =  [
+                $playerId => [
+                    'destinations' => $this->getDestinationsFromDb($this->destinations->getCards($ids)),
+                ],
+            ];
+            $args['_merge_private'] = true;
             $this->game->notify->all('destinationsPicked', clienttranslate('${player_name} keeps ${count} destinations'), $args);
         }
     }
