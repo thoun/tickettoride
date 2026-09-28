@@ -659,6 +659,7 @@ export class Game {
             ['addMountainTrains', 1],
             ['builtStation', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
+            ['points', 1],
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
             ['ferryCardDrawn', 1],
