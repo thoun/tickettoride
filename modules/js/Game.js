@@ -3368,8 +3368,9 @@ class Game {
             case 'chooseAdditionalDestinations':
                 if (args?.args) {
                     const chooseDestinationsArgs = args.args;
-                    const destinations = chooseDestinationsArgs.destinations || chooseDestinationsArgs._private?.destinations;
-                    if (destinations && this.bga.players.isCurrentPlayerActive()) {
+                    const destinationReferences = chooseDestinationsArgs.destinations || chooseDestinationsArgs._private?.destinations;
+                    if (destinationReferences && this.bga.players.isCurrentPlayerActive()) {
+                        const destinations = destinationReferences.map(destination => this.getDestinationFromReference(destination, 'pick', this.getPlayerId()));
                         destinations.forEach(destination => this.map.setSelectableDestination(destination, true));
                         this.destinationSelection.setCards(destinations, chooseDestinationsArgs.minimum, this.trainCarSelection.getVisibleColors());
                         this.destinationSelection.selectionChange();
@@ -3741,15 +3742,20 @@ class Game {
     getNotificationRoutes(routeIds) {
         return routeIds === null || routeIds === undefined ? null : routeIds.map(routeId => this.getMap().routes[routeId]);
     }
-    getNotificationDestination(args) {
+    getDestinationFromReference(reference, location, locationArg) {
         return {
-            ...this.getMap().destinations[args.destinationType][args.destinationTypeArg],
+            ...this.getMap().destinations[reference.type][reference.type_arg],
+            ...reference,
+            location,
+            location_arg: locationArg,
+        };
+    }
+    getNotificationDestination(args) {
+        return this.getDestinationFromReference({
             id: args.destinationId,
             type: args.destinationType,
             type_arg: args.destinationTypeArg,
-            location: 'hand',
-            location_arg: args.playerId,
-        };
+        }, 'hand', args.playerId);
     }
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
@@ -3814,8 +3820,9 @@ class Game {
      */
     notif_destinationsPicked(notif) {
         this.destinationCardCounters[notif.args.playerId].toValue(notif.args.number);
-        const destinations = notif.args.destinations;
-        if (destinations) {
+        const destinationReferences = notif.args.destinations;
+        if (destinationReferences) {
+            const destinations = destinationReferences.map(destination => this.getDestinationFromReference(destination, 'hand', notif.args.playerId));
             this.playerTable.addDestinations(destinations, this.destinationSelection.destinations);
         }
         else {

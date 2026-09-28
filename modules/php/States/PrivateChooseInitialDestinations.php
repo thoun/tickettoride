@@ -23,7 +23,9 @@ class PrivateChooseInitialDestinations extends GameState {
     function getArgs(int $playerId) {
         return [
             'minimum' => $this->game->getMap()->getInitialDestinationMinimumKept($this->game->getExpansionOption()),
-            'destinations' => $this->game->destinationManager->getPickedDestinationCards($playerId),
+            'destinations' => $this->game->destinationManager->getDestinationReferences(
+                $this->game->destinationManager->getPickedDestinationCards($playerId),
+            ),
         ];
     }
 
@@ -57,6 +59,6 @@ class PrivateChooseInitialDestinations extends GameState {
         $destinations = $args['destinations'];
         shuffle($destinations);
         $kept = array_slice($destinations, 0, $args['minimum']);
-        return $this->actChooseInitialDestinations(Arrays::map($kept, fn($card) => $card->id), $playerId);
+        return $this->actChooseInitialDestinations(Arrays::map($kept, fn($card) => $card['id']), $playerId);
     }
 }

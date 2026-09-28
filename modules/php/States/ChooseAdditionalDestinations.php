@@ -28,7 +28,7 @@ class ChooseAdditionalDestinations extends GameState {
             'minimum' => $this->game->getMap()->additionalDestinationMinimumKept,
             '_private' => [          // Using "_private" keyword, all data inside this array will be made private
                 'active' => [       // Using "active" keyword inside "_private", you select active player(s)
-                    'destinations' => $destinations,   // will be send only to active player(s)
+                    'destinations' => $this->game->destinationManager->getDestinationReferences($destinations),
                 ]
             ],
         ];
@@ -50,6 +50,6 @@ class ChooseAdditionalDestinations extends GameState {
         $destinations = $args['_private']['active']['destinations'];
         shuffle($destinations);
         $kept = array_slice($destinations, 0, $args['minimum']);
-        return $this->actChooseAdditionalDestinations(Arrays::map($kept, fn($card) => $card->id), $playerId);
+        return $this->actChooseAdditionalDestinations(Arrays::map($kept, fn($card) => $card['id']), $playerId);
     }
 }

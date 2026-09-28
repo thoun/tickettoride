@@ -119,6 +119,20 @@ class DestinationManager {
     }
 
     /**
+     * Keep only the physical card identity; destination details are already in the map data.
+     *
+     * @param Destination[] $destinations
+     * @return array<array{id: int, type: int, type_arg: int}>
+     */
+    public function getDestinationReferences(array $destinations): array {
+        return array_map(fn($destination) => [
+            'id' => $destination->id,
+            'type' => $destination->type,
+            'type_arg' => $destination->type_arg,
+        ], $destinations);
+    }
+
+    /**
      * get remaining destination cards in deck.
      */
     public function getRemainingDestinationCardsInDeck(): int {
@@ -189,12 +203,14 @@ class DestinationManager {
         ];
 
         if ($secret) {
-            $args['destinations'] = $this->getDestinationsFromDb($this->destinations->getCards($ids));
+            $destinations = $this->getDestinationsFromDb($this->destinations->getCards($ids));
+            $args['destinations'] = $this->getDestinationReferences($destinations);
             $this->game->notify->player($playerId, 'destinationsPicked', '', $args);
         } else {
+            $destinations = $this->getDestinationsFromDb($this->destinations->getCards($ids));
             $args['_private'] =  [
                 $playerId => [
-                    'destinations' => $this->getDestinationsFromDb($this->destinations->getCards($ids)),
+                    'destinations' => $this->getDestinationReferences($destinations),
                 ],
             ];
             $args['_merge_private'] = true;

@@ -15,6 +15,12 @@ interface Destination extends Card {
     points: number | number[];
 }
 
+interface DestinationReference {
+    id: number;
+    type: number;
+    type_arg: number;
+}
+
 interface RouteSpace {
     x: number;
     y: number;
@@ -164,9 +170,9 @@ interface TicketToRideGamedatas {
 
 interface EnteringChooseDestinationsArgs {
     _private?: {
-        destinations: Destination[];
+        destinations: DestinationReference[];
     };
-    destinations?: Destination[];
+    destinations?: DestinationReference[];
     minimum: number;
 }
 
@@ -194,7 +200,7 @@ interface NotifDestinationsPickedArgs {
      */
     count: number;
     remainingDestinationsInDeck: number;
-    destinations?: Destination[]; // private data
+    destinations?: DestinationReference[]; // private data
 }
 
 interface NotifTrainCarsPickedArgs {
