@@ -229,8 +229,9 @@ class ChooseAction extends GameState {
     public function actClaimRoute(int $routeId, int $color, #[IntArrayParam()] ?array $distribution, int $ferryCards, int $activePlayerId) {
         $route = $this->game->mapManager->getAllRoutes()[$routeId];
 
+        $claimWithBulletTrain = $route->bulletTrainSpaceIndex !== null && $this->bga->globals->get(REMAINING_BULLET_TRAINS) > 0;
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
-        if ($remainingTrainCars < ($route->number + $route->mountain)) {
+        if (!$claimWithBulletTrain && $remainingTrainCars < ($route->number + $route->mountain)) {
             $this->notify->player($activePlayerId, 'notEnoughTrainCars', '', []);
             return;
         }
