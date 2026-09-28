@@ -1508,10 +1508,10 @@ class TtrMap {
     /**
      * Highlight selectable cities.
      */
-    setSelectableStations(selectable, possibleStations) {
+    setSelectableStations(selectable, possibleStationIds) {
         dojo.query('.city').removeClass('selectable');
         if (selectable) {
-            this.getCityElements(possibleStations?.map(city => city.id) ?? []).forEach(city => city.classList.add('selectable'));
+            this.getCityElements(possibleStationIds ?? []).forEach(city => city.classList.add('selectable'));
         }
     }
     getCityElements(cityIds) {
@@ -2350,8 +2350,8 @@ class ChooseActionState {
         else {
             this.game.trainCarSelection.removeSelectableVisibleCards();
         }
-        this.game.map.setSelectableRoutes(isCurrentPlayerActive, args.possibleRoutes);
-        this.game.map.setSelectableStations(isCurrentPlayerActive, args.possibleStations);
+        this.game.map.setSelectableRoutes(isCurrentPlayerActive, args.possibleRouteIds.map(routeId => this.game.getMap().routes[routeId]));
+        this.game.map.setSelectableStations(isCurrentPlayerActive, args.possibleStationIds);
         this.game.playerTable?.setDraggable(isCurrentPlayerActive);
         this.game.playerTable?.setSelectable(isCurrentPlayerActive);
         if (isCurrentPlayerActive) {
@@ -2573,7 +2573,7 @@ class ChooseActionState {
      * Check if a route can be claimed with dragged cards.
      */
     canClaimCity(city, cardsColor) {
-        return this.args.possibleStations.some(ps => ps.id == city.id);
+        return this.args.possibleStationIds?.includes(city.id) ?? false;
     }
     /**
      * Handle city click.
@@ -2753,7 +2753,7 @@ class ChooseActionState {
      */
     canClaimRoute(route, cardsColor) {
         const routeColor = this.getConsideredRouteColor(route);
-        return (routeColor == 0 || cardsColor == 0 || routeColor == cardsColor) && (this.args.possibleRoutes.some(pr => pr.id == route.id));
+        return (routeColor == 0 || cardsColor == 0 || routeColor == cardsColor) && (this.args.possibleRouteIds.includes(route.id));
     }
     getConsideredRouteColor(route) {
         if (this.args.legendaryCharacter === 5 && this.args.legendaryCharacterState === 'using') {
@@ -3665,11 +3665,12 @@ class Game {
             return;
         }
         const args = this.gamedatas.gamestate.args;
+        const possibleRoutes = args.possibleRouteIds.map(routeId => this.getMap().routes[routeId]);
         if (selectedColor === null || selectedColor === 0) {
-            this.map.setSelectableRoutes(true, args.possibleRoutes);
+            this.map.setSelectableRoutes(true, possibleRoutes);
         }
         else {
-            this.map.setSelectableRoutes(true, args.possibleRoutes.filter(route => route.color === selectedColor || route.color === 0));
+            this.map.setSelectableRoutes(true, possibleRoutes.filter(route => route.color === selectedColor || route.color === 0));
         }
     }
     /**
@@ -3869,12 +3870,12 @@ class Game {
      */
     notif_claimedRoute(notif) {
         const playerId = notif.args.playerId;
-        const route = notif.args.route;
+        const routeId = notif.args.routeId;
         this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
         this.trainCarCounters[playerId].toValue(notif.args.remainingTrainCars);
         this.map.setClaimedRoutes([{
                 playerId: notif.args.claimWithBulletTrain ? -1 : playerId,
-                routeId: route.id
+                routeId
             }], playerId, notif.args.shifted ?? false);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
@@ -3899,12 +3900,12 @@ class Game {
      */
     notif_builtStation(notif) {
         const playerId = notif.args.playerId;
-        const city = notif.args.city;
+        const cityId = notif.args.cityId;
         this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
         this.stationCounters[playerId].incValue(-1);
         this.map.setBuiltStations([{
                 playerId,
-                cityId: city.id
+                cityId
             }], playerId);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);

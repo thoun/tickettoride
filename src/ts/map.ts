@@ -416,11 +416,11 @@ export class TtrMap {
     /** 
      * Highlight selectable cities.
      */ 
-    public setSelectableStations(selectable: boolean, possibleStations: City[]) {
+    public setSelectableStations(selectable: boolean, possibleStationIds: number[] | null) {
         dojo.query('.city').removeClass('selectable');
 
         if (selectable) {
-            this.getCityElements(possibleStations?.map(city => city.id) ?? []).forEach(city => city.classList.add('selectable'));
+            this.getCityElements(possibleStationIds ?? []).forEach(city => city.classList.add('selectable'));
         }
     }
 

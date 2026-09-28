@@ -7,8 +7,8 @@ export const LOCOMOTIVE_TUNNEL = 0b01;
 export const LOCOMOTIVE_FERRY = 0b10;
 
 export interface EnteringChooseActionArgs {
-    possibleRoutes: Route[];
-    possibleStations: City[];
+    possibleRouteIds: number[];
+    possibleStationIds: number[] | null;
     costForRoute: { [routeId: number]: { [color: number]: number[] } };
     costForStation: { [color: number]: number[] };
     maxHiddenCardsPick: number;
@@ -60,8 +60,11 @@ export class ChooseActionState {
             this.game.trainCarSelection.removeSelectableVisibleCards();
         }
         
-        this.game.map.setSelectableRoutes(isCurrentPlayerActive, args.possibleRoutes);
-        this.game.map.setSelectableStations(isCurrentPlayerActive, args.possibleStations);
+        this.game.map.setSelectableRoutes(
+            isCurrentPlayerActive,
+            args.possibleRouteIds.map(routeId => this.game.getMap().routes[routeId]),
+        );
+        this.game.map.setSelectableStations(isCurrentPlayerActive, args.possibleStationIds);
 
         this.game.playerTable?.setDraggable(isCurrentPlayerActive);
         this.game.playerTable?.setSelectable(isCurrentPlayerActive);
@@ -335,7 +338,7 @@ export class ChooseActionState {
      * Check if a route can be claimed with dragged cards.
      */ 
     public canClaimCity(city: City, cardsColor: number): boolean {
-        return this.args.possibleStations.some(ps => ps.id == city.id);
+        return this.args.possibleStationIds?.includes(city.id) ?? false;
     }
     
     /** 
@@ -550,7 +553,7 @@ export class ChooseActionState {
         return (
             routeColor == 0 || cardsColor == 0 || routeColor == cardsColor
         ) && (
-            this.args.possibleRoutes.some(pr => pr.id == route.id)
+            this.args.possibleRouteIds.includes(route.id)
         );
     }
 

@@ -122,7 +122,7 @@ class BuildingManager {
         $this->bga->notify->all('builtStation', clienttranslate('${player_name} builds a Train Station on ${city_name} with ${number} train car(s) : ${colors}'), [
             'playerId' => $playerId,
             'player_name' => $this->game->getPlayerNameById($playerId),
-            'city' => $this->game->getMap()->cities[$cityId],
+            'cityId' => $cityId,
             'city_name' => $this->game->getCityName($cityId),
             'number' => $cardCost,
             'removeCards' => $cardsToRemove,

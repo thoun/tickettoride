@@ -540,10 +540,11 @@ export class Game {
         }
 
         const args = this.gamedatas.gamestate.args as EnteringChooseActionArgs;
+        const possibleRoutes = args.possibleRouteIds.map(routeId => this.getMap().routes[routeId]);
         if (selectedColor === null || selectedColor === 0) {
-            this.map.setSelectableRoutes(true, args.possibleRoutes);
+            this.map.setSelectableRoutes(true, possibleRoutes);
         } else {
-            this.map.setSelectableRoutes(true, args.possibleRoutes.filter(route => route.color === selectedColor || route.color === 0));
+            this.map.setSelectableRoutes(true, possibleRoutes.filter(route => route.color === selectedColor || route.color === 0));
         }
     }
 
@@ -772,13 +773,13 @@ export class Game {
      */ 
     notif_claimedRoute(notif: Notif<NotifClaimedRouteArgs>) {
         const playerId = notif.args.playerId;
-        const route: Route = notif.args.route;
+        const routeId = notif.args.routeId;
 
         this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
         this.trainCarCounters[playerId].toValue(notif.args.remainingTrainCars);
         this.map.setClaimedRoutes([{
             playerId: notif.args.claimWithBulletTrain ? -1 : playerId,
-            routeId: route.id
+            routeId
         }], playerId, notif.args.shifted ?? false);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
@@ -806,13 +807,13 @@ export class Game {
      */ 
     notif_builtStation(notif: Notif<NotifBuiltStationArgs>) {
         const playerId = notif.args.playerId;
-        const city: City = notif.args.city;
+        const cityId = notif.args.cityId;
 
         this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
         this.stationCounters[playerId].incValue(-1);
         this.map.setBuiltStations([{
             playerId,
-            cityId: city.id
+            cityId
         }], playerId);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);

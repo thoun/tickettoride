@@ -404,7 +404,7 @@ class Game extends Table {
             'playerId' => $playerId,
             'player_name' => $this->getPlayerNameById($playerId),
             'points' => $points,
-            'route' => $route,
+            'routeId' => $route->id,
             'from' => $this->getCityName($route->from),
             'to' => $this->getCityName($route->to),
             'number' => $cardCost,

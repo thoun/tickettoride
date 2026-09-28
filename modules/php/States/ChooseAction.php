@@ -114,8 +114,10 @@ class ChooseAction extends GameState {
         }
 
         $args = [
-            'possibleRoutes' => $possibleRoutes,
-            'possibleStations' => $possibleStations,
+            'possibleRouteIds' => array_values(array_map(fn($route) => $route->id, $possibleRoutes)),
+            'possibleStationIds' => $possibleStations === null
+                ? null
+                : array_values(array_map(fn($city) => $city->id, $possibleStations)),
             'costForRoute' => $costForRoute,
             'maxHiddenCardsPick' => $maxHiddenCardsPick,
             'maxDestinationsPick' => $maxDestinationsPick,

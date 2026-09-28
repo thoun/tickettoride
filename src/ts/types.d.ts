@@ -220,7 +220,7 @@ interface NotifNewCardsOnTableArgs {
 
 interface NotifClaimedRouteArgs {
     playerId: number;
-    route: Route;
+    routeId: number;
     removeCards: TrainCar[];
     remainingTrainCars: number;
     shifted?: boolean;
@@ -244,7 +244,7 @@ interface NotifAddMountainTrainsArgs {
 
 interface NotifBuiltStationArgs {
     playerId: number;
-    city: City;
+    cityId: number;
     removeCards: TrainCar[];
 }
 
