@@ -31,10 +31,26 @@ class PrivateChooseInitialDestinations extends GameState {
     public function actChooseInitialDestinations(#[IntArrayParam] array $destinationsIds, int $currentPlayerId) {
         $this->game->destinationManager->keepInitialDestinationCards($currentPlayerId, $destinationsIds);
 
-        $this->game->incStat(count($destinationsIds), 'keptInitialDestinationCards', $currentPlayerId);
+        $this->bga->playerStats->inc('keptInitialDestinationCards', count($destinationsIds), $currentPlayerId);
         
-        $this->gamestate->setPlayerNonMultiactive($currentPlayerId, ChooseAction::class);
+        $this->gamestate->setPlayerNonMultiactive($currentPlayerId, fn() => $this->endChooseInitialDestination());
         $this->game->giveExtraTime($currentPlayerId);
+    }
+
+    function endChooseInitialDestination(): string {
+        foreach ($this->game->getPlayersIds() as $playerId) {
+            $count = $this->game->destinationManager->getPlayerHandCount($playerId);
+
+            $this->game->notify->all('destinationsPicked', clienttranslate('${player_name} keeps ${count} destinations'), [
+                'playerId' => $playerId,
+                'player_name' => $this->game->getPlayerNameById($playerId),
+                'count' => $count,
+                'number' => $count,
+                'remainingDestinationsInDeck' => $this->game->destinationManager->getRemainingDestinationCardsInDeck(),
+            ]);
+        }
+
+        return ChooseAction::class;
     }
 
     function zombie(int $playerId, array $args) {

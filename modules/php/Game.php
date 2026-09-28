@@ -207,8 +207,8 @@ class Game extends Table {
         _ when a player refreshes the game page (F5)
     */
     protected function getAllDatas(int $currentPlayerId): array {
-        $stateName = $this->gamestate->getCurrentMainState()->name; 
-        $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
+        $isEnd = $this->gamestate->getCurrentMainStateId() >= ST_END_SCORE;
+        $gameStarted = $this->gamestate->getCurrentMainStateId() >= ST_PLAYER_CHOOSE_ACTION;
 
         $expansionOption = $this->getExpansionOption();
         $legendaryCharacterActive = $this->legendaryCharacterManager->isActive();
@@ -263,7 +263,7 @@ class Game extends Table {
         foreach ($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
             $player['trainCarsCount'] = $this->trainCarManager->getPlayerHandCount($playerId);
-            $player['destinationsCount'] = $this->destinationManager->getPlayerHandCount($playerId);
+            $player['destinationsCount'] = $gameStarted || $playerId === $currentPlayerId ? $this->destinationManager->getPlayerHandCount($playerId) : null;
             $player['remainingTrainCarsCount'] = $this->getRemainingTrainCarsCount($playerId);
             $remainingStations = $this->buildingManager->getRemainingStations($playerId);
             if ($remainingStations !== null) {

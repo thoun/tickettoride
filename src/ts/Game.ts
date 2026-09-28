@@ -370,7 +370,7 @@ export class Game {
                 </div>` : ''}
                 <div id="destinations-counter-${player.id}-wrapper" class="counter destinations-counter">
                     <div class="icon destination-card"></div> 
-                    <span id="completed-destinations-counter-${player.id}">${this.getPlayerId() !== playerId ? '?' : ''}</span>/<span id="destination-card-counter-${player.id}"></span>
+                    <span id="completed-destinations-counter-${player.id}">${this.getPlayerId() !== playerId ? '?' : ''}</span>/<span id="destination-card-counter-${player.id}">?</span>
                 </div>
             </div>`);
 
@@ -400,7 +400,11 @@ export class Game {
 
             const destinationCardCounter = new ebg.counter();
             destinationCardCounter.create(`destination-card-counter-${player.id}`);
-            destinationCardCounter.setValue(player.destinationsCount);
+            if (player.destinationsCount === null) {
+                document.getElementById(`destination-card-counter-${player.id}`).innerHTML = '?';
+            } else {
+                destinationCardCounter.setValue(player.destinationsCount);
+            }
             this.destinationCardCounters[playerId] = destinationCardCounter;
 
             // private counters
@@ -655,7 +659,6 @@ export class Game {
             ['addMountainTrains', 1],
             ['builtStation', ANIMATION_MS],
             ['destinationCompleted', ANIMATION_MS],
-            ['points', 1],
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
             ['ferryCardDrawn', 1],
@@ -703,12 +706,12 @@ export class Game {
      * Update player destinations.
      */ 
     notif_destinationsPicked(notif: Notif<NotifDestinationsPickedArgs>) {
-        this.destinationCardCounters[notif.args.playerId].incValue(notif.args.number);
+        this.destinationCardCounters[notif.args.playerId].toValue(notif.args.number);
         const destinations = notif.args._private?.destinations;
         if (destinations) {
             this.playerTable.addDestinations(destinations, this.destinationSelection.destinations);
         } else {
-            this.trainCarSelection.moveDestinationCardToPlayerBoard(notif.args.playerId, notif.args.number);
+            this.trainCarSelection.moveDestinationCardToPlayerBoard(notif.args.playerId, notif.args.count);
         }
         this.trainCarSelection.setDestinationCount(notif.args.remainingDestinationsInDeck);
     }

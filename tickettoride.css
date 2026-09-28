@@ -176,6 +176,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
 }
 .counters .counter span {
   padding: 0 5px 0 5px;

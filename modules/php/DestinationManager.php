@@ -76,7 +76,13 @@ class DestinationManager {
      * Unused destination cards are set back on the deck or discarded.
      */
     public function keepInitialDestinationCards(int $playerId, array $ids): void {
-		$this->keepDestinationCards($playerId, $ids, $this->game->getMap()->getInitialDestinationMinimumKept($this->game->getExpansionOption()), $this->game->getMap()->unusedInitialDestinationsGoToDeckBottom);
+		$this->keepDestinationCards(
+            $playerId, 
+            $ids, 
+            $this->game->getMap()->getInitialDestinationMinimumKept($this->game->getExpansionOption()), 
+            $this->game->getMap()->unusedInitialDestinationsGoToDeckBottom, 
+            true, 
+        );
     }	
 	
     /**
@@ -93,7 +99,13 @@ class DestinationManager {
      * Unused destination cards are set back on the deck or discarded.
      */
     public function keepAdditionalDestinationCards(int $playerId, array $ids): void {
-		$this->keepDestinationCards($playerId, $ids, $this->game->getMap()->additionalDestinationMinimumKept, $this->game->getMap()->unusedAdditionalDestinationsGoToDeckBottom);
+		$this->keepDestinationCards(
+            $playerId, 
+            $ids, 
+            $this->game->getMap()->additionalDestinationMinimumKept, 
+            $this->game->getMap()->unusedAdditionalDestinationsGoToDeckBottom,
+            false,
+        );
     }
 
     /**
@@ -132,7 +144,7 @@ class DestinationManager {
     /**
      * move selected cards to player hand, and empty pick$playerId.
      */
-    private function keepDestinationCards(int $playerId, array $ids, int $minimum, bool $toDeckBottom): void {
+    private function keepDestinationCards(int $playerId, array $ids, int $minimum, bool $toDeckBottom, bool $secret): void {
         if (count($ids) < $minimum) {
             throw new UserException("You must keep at least $minimum cards.");
         }
@@ -168,19 +180,25 @@ class DestinationManager {
             }
         }
 
-        $this->game->notify->all('destinationsPicked', clienttranslate('${player_name} keeps ${count} destinations'), [
+        $args = [
             'playerId' => $playerId,
             'player_name' => $this->game->getPlayerNameById($playerId),
             'count' => count($ids),
-            'number' => count($ids),
+            'number' => $this->getPlayerHandCount($playerId),
             'remainingDestinationsInDeck' => $this->getRemainingDestinationCardsInDeck(),
             '_private' => [
                 $playerId => [
                     'destinations' => $this->getDestinationsFromDb($this->destinations->getCards($ids)),
                 ],
             ],
-        ]);
-    } 
+        ];
+
+        if ($secret) {
+            $this->game->notify->player($playerId, 'destinationsPicked', '', $args);
+        } else {
+            $this->game->notify->all('destinationsPicked', clienttranslate('${player_name} keeps ${count} destinations'), $args);
+        }
+    }
 
     public function discardDestination(Destination $destination) {
         $this->destinations->moveCard($destination->id, 'discard');

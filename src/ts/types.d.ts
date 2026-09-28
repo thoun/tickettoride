@@ -67,7 +67,7 @@ interface PlayerMapSpecificData {
 interface TicketToRidePlayer extends Player {
     playerNo: number;
     trainCarsCount: number;
-    destinationsCount: number;
+    destinationsCount: number | null;
     remainingTrainCarsCount: number;
     remainingStations?: number;
     legendaryCharacter?: number;
@@ -185,7 +185,13 @@ interface NotifPointsArgs {
 
 interface NotifDestinationsPickedArgs {
     playerId: number;
+    /**
+     * total destinations
+     */
     number: number;
+    /**
+     * picked destinations
+     */
     count: number;
     remainingDestinationsInDeck: number;
     _private?: {
