@@ -9,6 +9,7 @@ $playerColors: "0056aa", "41a62a", "af0ac2", "e3001a", "ffed00";
 @import 'train-car-deck';
 @import 'destination-deck';
 @import 'player-table';
+@import 'player-zone';
 @import 'end-score';
 @import 'LegendaryCharacters';
 
@@ -18,12 +19,10 @@ $playerColors: "0056aa", "41a62a", "af0ac2", "e3001a", "ffed00";
       margin-bottom: 8px;
       margin-top: 8px;
     }
-  }
-  
-$background: url('img/background.jpg');
+}
 
-html, .mode_3d #game_play_area_background {
-    background: $background #b59958;
+body {
+    background: url('img/background.jpg') #b59958;
     background-repeat: no-repeat;
     background-size: 100%;
 }

@@ -6,6 +6,7 @@ import { PlayerTable } from "./player-table/player-table";
 import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseAction";
 import { ChooseLegendaryCharacterState } from "./states/ChooseLegendaryCharacter";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
+import { ChooseStockShareState } from "./states/ChooseStockShare";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
@@ -48,6 +49,8 @@ export class Game {
         this.bga.states.register('chooseAction', this.chooseActionState);
         this.bga.states.register('drawSecondCard', new DrawSecondCardState(this, bga));
         this.bga.states.register('confirmTunnel', new ConfirmTunnelState(this, bga));
+        this.bga.states.register('ChooseStockShare', new ChooseStockShareState(this, bga));
+        this.bga.states.register('ChooseStockShareDummy', new ChooseStockShareState(this, bga));
 
         this.bga.userPreferences.onChange = (id, val) => this.onUserPreferenceChanged(id, val);
 
@@ -431,6 +434,35 @@ export class Game {
         this.setTooltipToClass('ferry-card-counter', _("Ferry cards"));
         this.setTooltipToClass('destinations-counter', _("Completed / Total destination cards"));
     }
+
+    public createPlayerZones(tableZoneLabel: string | null) {
+        let html = `
+            <div class="player-zones">
+            ${this.gamedatas.playerorder.map(playerId => this.bga.players.getPlayerById(playerId)).map(player => `
+                <div id="player-zone-${player.id}" class="player-zone" style="--background: #${player.color}44;">
+                    <div class="player-zone-name-wrapper">${this.bga.players.getFormattedPlayerName(Number(player.id))}</div>
+                    <div class="player-zone-content"></div>
+                </div>
+            `).join('')}
+            </div>`;
+
+        if (tableZoneLabel) {
+            html += `
+            <div class="player-zones">
+                <div id="player-zone-table" class="player-zone player-zone-table" style="--background: #88888888;">
+                    <div class="player-zone-name-wrapper">${tableZoneLabel}</div>
+                    <div class="player-zone-content"></div>
+                </div>
+            </div>
+            `;
+        }
+
+        document.getElementById('map-zoom-wrapper').insertAdjacentHTML('afterend', html);
+    }
+
+    public getPlayerZoneContentElement(id: number | string): HTMLDivElement {
+        return document.getElementById(`player-zone-${id}`).querySelector('.player-zone-content') as HTMLDivElement;
+    }
     
     /**
      * Update player score.
@@ -673,6 +705,7 @@ export class Game {
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
             ['ferryCardDrawn', 1],
+            ['stockShareTaken', 1],
             ['freeTunnel', 2000],
             ['highlightVisibleLocomotives', 1000],
             ['notEnoughTrainCars', 1],
@@ -746,6 +779,10 @@ export class Game {
 
     notif_ferryCardDrawn(notif: Notif<NotifFerryCardDrawnArgs>) {
         this.ferryCardCounters[notif.args.playerId]?.toValue(notif.args.ferryCardsCount);
+    }
+
+    notif_stockShareTaken(notif: Notif<NotifStockShareTakenArgs>) {
+        this.map.stockShareTaken(notif.args);
     }
 
     /** 
@@ -1021,9 +1058,12 @@ export class Game {
                 if (typeof args.colors == 'object') {
                     args.colors = args.colors.map(color => `<div class="train-car-color icon" data-color="${color}"></div>`).join('');
                 }
+                if (Array.isArray(args.stockShares)) {
+                    args.stockShares = args.stockShares.map(type => `<div class="icon stock-share" data-type="${type}"></div>`).join('');
+                }
 
                 // make cities names in bold 
-                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name'].forEach(field => {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }

@@ -10,7 +10,6 @@ use Bga\GameFramework\UserException;
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
 use Bga\Games\TicketToRide\Game;
 use Bga\Games\TicketToRide\Objects\TunnelAttempt;
-use Throwable;
 
 class ChooseAction extends GameState {
     public function __construct(protected Game $game)
@@ -327,6 +326,14 @@ class ChooseAction extends GameState {
             $this->game->legendaryCharacterManager->onCharacter4Pass($activePlayerId);
         }
 
+        if ($route->stockShares !== null) {
+            $remainingStockShareCards = $this->game->bga->globals->get('REMAINING_STOCK_SHARE_CARDS', []);
+            if (array_any($route->stockShares, fn($type) => !empty($remainingStockShareCards[$type]))) {
+                $this->bga->globals->set('STOCK_SHARE_ROUTE', $routeId);
+                return ChooseStockShare::class;
+            }
+        }
+
         return NextPlayer::class;
     }
   	
@@ -440,7 +447,7 @@ class ChooseAction extends GameState {
             }
 
             return $this->actDrawDeckCards(2, $playerId);
-        } catch (Throwable $e) { // safe catch : if the zombie cannot play, just pass
+        } catch (\Throwable $e) { // safe catch : if the zombie cannot play, just pass
             return NextPlayer::class;
         }
     }

@@ -982,6 +982,106 @@ export class TtrMap {
             `);
             this.players.forEach(player => this.setBulletTrainPosition(Number(player.id), player.mapSpecificData.bulletTrainPosition)); 
         }
+        if (this.map.code === 'pennsylvania') {
+            this.game.createPlayerZones(_('Remaining Stock Shares'));
+            const tableZone = this.game.getPlayerZoneContentElement('table');
+            Object.entries(this.mapSpecificData.remainingStockShareCards ?? {}).forEach(([type, cards]) => {
+                this.addStockSharePile(tableZone, Number(type), cards);
+            });
+            this.players.forEach(player => {
+                const playerZone = this.game.getPlayerZoneContentElement(player.id);
+                const cardsByType = player.mapSpecificData.stockShareCards ?? {};
+                if (Number(player.id) === Number(this.game.bga.players.getCurrentPlayerId())) {
+                    Object.entries(cardsByType).forEach(([type, cards]) => {
+                        this.addStockSharePile(playerZone, Number(type), cards);
+                    });
+                } else {
+                    const count = Object.values(cardsByType).reduce((total, cards) => total + cards.length, 0);
+                    this.addStockSharePile(playerZone, null, [], count);
+                }
+            }); 
+        }
+    }
+
+    private addStockSharePile(zone: HTMLElement, type: number | null, cards: number[], hiddenCount?: number) {
+        const count = hiddenCount ?? cards.length;
+        if (!count) {
+            return;
+        }
+
+        const pile = document.createElement('div');
+        pile.className = 'stock-shares-pile';
+        if (type !== null) {
+            pile.dataset.type = String(type);
+        }
+
+        const card = document.createElement('div');
+        card.className = 'stock-shares-card';
+        if (type !== null) {
+            card.dataset.type = String(type);
+            const points = this.mapSpecificData.shareStockPoints?.[type] ?? [];
+            const pointsTable = document.createElement('div');
+            pointsTable.className = 'stock-shares-points';
+            points.forEach((score, rank) => {
+                const row = document.createElement('div');
+                row.classList.add('stock-shares-points-row', 'stock-shares-line');
+                row.innerHTML = `<span>${rank + 1}</span><span class="red">${score}</span>`;
+                pointsTable.appendChild(row);
+            });
+            card.appendChild(pointsTable);
+
+            const number = document.createElement('span');
+            number.classList.add('stock-shares-number', 'stock-shares-line');
+            number.innerHTML = `<span class="red">${cards[0]}</span> / ${type}`;
+            card.appendChild(number);
+        }
+        pile.appendChild(card);
+
+        const counter = document.createElement('span');
+        counter.className = 'stock-shares-count';
+        counter.textContent = String(count);
+        pile.appendChild(counter);
+        zone.appendChild(pile);
+    }
+
+    public stockShareTaken(args: NotifStockShareTakenArgs) {
+        this.mapSpecificData.remainingStockShareCards?.[args.type]?.shift();
+        const tableZone = this.game.getPlayerZoneContentElement('table');
+        const tablePile = tableZone.querySelector<HTMLElement>(`.stock-shares-pile[data-type="${args.type}"]`);
+        if (args.remainingCount === 0) {
+            tablePile?.remove();
+        } else if (tablePile) {
+            tablePile.querySelector<HTMLElement>('.stock-shares-number .red').textContent = String(args.nextCardNumber);
+            tablePile.querySelector<HTMLElement>('.stock-shares-count').textContent = String(args.remainingCount);
+        }
+
+        if (args.playerId === null) {
+            const dummyCards = this.mapSpecificData.stockShareCardsDummy ??= {};
+            (dummyCards[args.type] ??= []).push(args.cardNumber);
+            return;
+        }
+
+        const player = this.players.find(player => Number(player.id) === args.playerId);
+        const playerCards = player.mapSpecificData.stockShareCards ??= {};
+        const cardsOfType = playerCards[args.type] ??= [];
+        cardsOfType.push(args.cardNumber);
+
+        const playerZone = this.game.getPlayerZoneContentElement(args.playerId);
+        if (args.playerId === Number(this.game.bga.players.getCurrentPlayerId())) {
+            const pile = playerZone.querySelector<HTMLElement>(`.stock-shares-pile[data-type="${args.type}"]`);
+            if (pile) {
+                pile.querySelector<HTMLElement>('.stock-shares-count').textContent = String(args.ownerTypeCount);
+            } else {
+                this.addStockSharePile(playerZone, args.type, cardsOfType);
+            }
+        } else {
+            const pile = playerZone.querySelector<HTMLElement>('.stock-shares-pile');
+            if (pile) {
+                pile.querySelector<HTMLElement>('.stock-shares-count').textContent = String(args.ownerTotalCount);
+            } else {
+                this.addStockSharePile(playerZone, null, [], args.ownerTotalCount);
+            }
+        }
     }
     
     public setMountainTrains(playerId: number, number: number) {

@@ -1377,6 +1377,30 @@
   right: 0;
 }
 
+.player-zones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-evenly;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.player-zones .player-zone {
+  background: var(--background, transparent);
+  border-radius: 10px;
+  padding: 10px;
+  flex: 1;
+}
+.player-zones .player-zone-name-wrapper {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+}
+.player-zones .player-zone-table .player-zone-name-wrapper {
+  color: black;
+  text-shadow: 0 0 1px var(--game-bga-text-shadow-color-white), 0 0 2px var(--game-bga-text-shadow-color-white), 0 0 3px var(--game-bga-text-shadow-color-white);
+}
+
 #score {
   display: none;
   justify-content: center;
@@ -1599,7 +1623,7 @@
     margin-top: 8px;
   }
 }
-html, .mode_3d #game_play_area_background {
+body {
   background: url("img/background.jpg") #b59958;
   background-repeat: no-repeat;
   background-size: 100%;

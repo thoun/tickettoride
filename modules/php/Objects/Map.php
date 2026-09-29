@@ -54,6 +54,12 @@ class Map {
     public ?array $regionBonusPoints = null;
     public array $completeRegionsCountingDouble = [];
     public bool $ferryCards = false;
+    /**
+     * List for each type of share stock cards, the points awarded by ranking (index 0 means ranked first)
+     */
+    public ?array $shareStockPoints = null;
+    /** Company names indexed by stock share type. */
+    public ?array $shareStockCompanyNames = null;
 
     /**
      * @param City[] $cities

@@ -62,12 +62,16 @@ interface BuiltStation {
 
 interface MapSpecificData {
     remainingBulletTrains?: number;
+    remainingStockShareCards?: {[type: number]: number[] };
+    stockShareCardsDummy?: {[type: number]: number[] };
+    shareStockPoints?: {[type: number]: number[] };
 }
 interface PlayerMapSpecificData {
     mountainTrains?: number;
     bulletTrainPosition?: number;
     regionsCount?: number;
     ferryCards?: number;
+    stockShareCards?: {[type: number]: number[] };
 }
 
 interface TicketToRidePlayer extends Player {
@@ -130,20 +134,8 @@ interface TicketToRideMap {
  * Your game interfaces
  */
 
-interface TicketToRideGamedatas {
-    map: TicketToRideMap;
-    current_player_id: string;
-    decision: {decision_type: string};
-    game_result_neutralized: string;
-    gamestate: Gamestate;
-    gamestates: { [gamestateId: number]: Gamestate };
-    neutralized_player_id: string;
-    notifications: {last_packet_id: string, move_nbr: string}
-    playerorder: (string | number)[];
-    players: { [playerId: number]: TicketToRidePlayer };
-    tablespeed: string;
-
-    // Add here variables you set up in getAllDatas   
+interface TicketToRideGamedatas extends Gamedatas<TicketToRidePlayer> {
+    map: TicketToRideMap; 
     claimedRoutes: ClaimedRoute[];
     builtStations: BuiltStation[];
     visibleTrainCards: { [spot: number]: TrainCar | null };
@@ -234,6 +226,16 @@ interface NotifClaimedRouteArgs {
 interface NotifFerryCardDrawnArgs {
     playerId: number;
     ferryCardsCount: number;
+}
+
+interface NotifStockShareTakenArgs {
+    playerId: number | null;
+    type: number;
+    cardNumber: number;
+    nextCardNumber: number | null;
+    remainingCount: number;
+    ownerTypeCount: number;
+    ownerTotalCount: number;
 }
 
 interface NotifAddMountainTrainsArgs {

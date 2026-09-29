@@ -269,6 +269,26 @@ class EndScore extends GameState {
             }
         }
 
+        $stockShareScores = [];
+        $stockShareRanks = [];
+        if ($this->game->getMap()->shareStockPoints !== null) {
+            $cardsByPlayer = [];
+            foreach ($players as $playerId => $playerDb) {
+                $cardsByPlayer[$playerId] = $this->game->bga->globals->get("STOCK_SHARE_CARDS_{$playerId}");
+            }
+            $revealedDummyCards = count($players) === 2
+                ? $this->game->getMap()->revealDummyStockShareCards($this->game->bga->globals->get('STOCK_SHARE_CARDS_DUMMY'))
+                : [];
+            $stockShareRanks = $this->game->getMap()->getStockShareRanks($cardsByPlayer, $revealedDummyCards);
+            $stockShareScores = array_fill_keys(array_keys($players), 0);
+            foreach ($stockShareRanks as $result) {
+                $stockShareScores[$result['playerId']] += $result['points'];
+            }
+            foreach ($stockShareScores as $playerId => $points) {
+                $totalScore[$playerId] += $points;
+            }
+        }
+
         // we need to send bestScore before all score notifs, because train animations will show score ratio over best score
         $bestScore = max($totalScore);
         $this->notify->all('bestScore', '', [
@@ -512,6 +532,17 @@ class EndScore extends GameState {
 
             $this->game->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with the Regions Bonus'), [
                 "delta" => $points,
+            ]);
+        }
+
+        usort($stockShareRanks, static fn(array $a, array $b): int =>
+            ($a['type'] <=> $b['type']) ?: ($a['rank'] <=> $b['rank'])
+        );
+        foreach ($stockShareRanks as $result) {
+            $this->game->incScore($result['playerId'], $result['points'], clienttranslate('${player_name} is ranked ${rank} for ${company_name} stock shares and gains ${delta} points'), [
+                'rank' => $result['rank'],
+                'company_name' => $this->game->getMap()->shareStockCompanyNames[$result['type']],
+                'delta' => $result['points'],
             ]);
         }
 

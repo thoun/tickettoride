@@ -1998,6 +1998,103 @@ class TtrMap {
             `);
             this.players.forEach(player => this.setBulletTrainPosition(Number(player.id), player.mapSpecificData.bulletTrainPosition));
         }
+        if (this.map.code === 'pennsylvania') {
+            this.game.createPlayerZones(_('Remaining Stock Shares'));
+            const tableZone = this.game.getPlayerZoneContentElement('table');
+            Object.entries(this.mapSpecificData.remainingStockShareCards ?? {}).forEach(([type, cards]) => {
+                this.addStockSharePile(tableZone, Number(type), cards);
+            });
+            this.players.forEach(player => {
+                const playerZone = this.game.getPlayerZoneContentElement(player.id);
+                const cardsByType = player.mapSpecificData.stockShareCards ?? {};
+                if (Number(player.id) === Number(this.game.bga.players.getCurrentPlayerId())) {
+                    Object.entries(cardsByType).forEach(([type, cards]) => {
+                        this.addStockSharePile(playerZone, Number(type), cards);
+                    });
+                }
+                else {
+                    const count = Object.values(cardsByType).reduce((total, cards) => total + cards.length, 0);
+                    this.addStockSharePile(playerZone, null, [], count);
+                }
+            });
+        }
+    }
+    addStockSharePile(zone, type, cards, hiddenCount) {
+        const count = hiddenCount ?? cards.length;
+        if (!count) {
+            return;
+        }
+        const pile = document.createElement('div');
+        pile.className = 'stock-shares-pile';
+        if (type !== null) {
+            pile.dataset.type = String(type);
+        }
+        const card = document.createElement('div');
+        card.className = 'stock-shares-card';
+        if (type !== null) {
+            card.dataset.type = String(type);
+            const points = this.mapSpecificData.shareStockPoints?.[type] ?? [];
+            const pointsTable = document.createElement('div');
+            pointsTable.className = 'stock-shares-points';
+            points.forEach((score, rank) => {
+                const row = document.createElement('div');
+                row.classList.add('stock-shares-points-row', 'stock-shares-line');
+                row.innerHTML = `<span>${rank + 1}</span><span class="red">${score}</span>`;
+                pointsTable.appendChild(row);
+            });
+            card.appendChild(pointsTable);
+            const number = document.createElement('span');
+            number.classList.add('stock-shares-number', 'stock-shares-line');
+            number.innerHTML = `<span class="red">${cards[0]}</span> / ${type}`;
+            card.appendChild(number);
+        }
+        pile.appendChild(card);
+        const counter = document.createElement('span');
+        counter.className = 'stock-shares-count';
+        counter.textContent = String(count);
+        pile.appendChild(counter);
+        zone.appendChild(pile);
+    }
+    stockShareTaken(args) {
+        var _a, _b, _c, _d;
+        this.mapSpecificData.remainingStockShareCards?.[args.type]?.shift();
+        const tableZone = this.game.getPlayerZoneContentElement('table');
+        const tablePile = tableZone.querySelector(`.stock-shares-pile[data-type="${args.type}"]`);
+        if (args.remainingCount === 0) {
+            tablePile?.remove();
+        }
+        else if (tablePile) {
+            tablePile.querySelector('.stock-shares-number .red').textContent = String(args.nextCardNumber);
+            tablePile.querySelector('.stock-shares-count').textContent = String(args.remainingCount);
+        }
+        if (args.playerId === null) {
+            const dummyCards = (_a = this.mapSpecificData).stockShareCardsDummy ?? (_a.stockShareCardsDummy = {});
+            (dummyCards[_b = args.type] ?? (dummyCards[_b] = [])).push(args.cardNumber);
+            return;
+        }
+        const player = this.players.find(player => Number(player.id) === args.playerId);
+        const playerCards = (_c = player.mapSpecificData).stockShareCards ?? (_c.stockShareCards = {});
+        const cardsOfType = playerCards[_d = args.type] ?? (playerCards[_d] = []);
+        cardsOfType.push(args.cardNumber);
+        const playerZone = this.game.getPlayerZoneContentElement(args.playerId);
+        if (args.playerId === Number(this.game.bga.players.getCurrentPlayerId())) {
+            const pile = playerZone.querySelector(`.stock-shares-pile[data-type="${args.type}"]`);
+            if (pile) {
+                pile.querySelector('.stock-shares-count').textContent = String(args.ownerTypeCount);
+            }
+            else {
+                this.addStockSharePile(playerZone, args.type, cardsOfType);
+            }
+        }
+        else {
+            const pile = playerZone.querySelector('.stock-shares-pile');
+            if (pile) {
+                pile.querySelector('.stock-shares-count').textContent = String(args.ownerTotalCount);
+            }
+            else {
+                this.addStockSharePile(playerZone, null, [], args.ownerTotalCount);
+            }
+        }
     }
     setMountainTrains(playerId, number) {
         this.mountainCarCounters[playerId].toValue(number);
@@ -2849,6 +2946,39 @@ class ConfirmTunnelState {
     }
 }
 
+class ChooseStockShareState {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+        this.onTableClick = (event) => {
+            const card = event.target.closest('.stock-shares-card.selectable');
+            if (card) {
+                this.bga.actions.performAction('actChooseStockShare', { type: Number(card.dataset.type) });
+            }
+        };
+    }
+    onEnteringState(args, isCurrentPlayerActive) {
+        if (isCurrentPlayerActive) {
+            const tableZone = this.game.getPlayerZoneContentElement('table');
+            const cards = tableZone.querySelectorAll('.stock-shares-card');
+            cards.forEach(card => {
+                const selectable = isCurrentPlayerActive && args.stockShares.includes(Number(card.dataset.type));
+                card.classList.toggle('selectable', selectable);
+                card.classList.toggle('disabled', !selectable);
+            });
+            tableZone.addEventListener('click', this.onTableClick);
+        }
+    }
+    onLeavingState(args, isCurrentPlayerActive) {
+        if (isCurrentPlayerActive) {
+            const tableZone = this.game.getPlayerZoneContentElement('table');
+            tableZone.removeEventListener('click', this.onTableClick);
+            const cards = tableZone.querySelectorAll('.stock-shares-card');
+            cards.forEach(card => card.classList.remove('selectable', 'disabled'));
+        }
+    }
+}
+
 class DrawSecondCardState {
     constructor(game, bga) {
         this.game = game;
@@ -3252,6 +3382,8 @@ class Game {
         this.bga.states.register('chooseAction', this.chooseActionState);
         this.bga.states.register('drawSecondCard', new DrawSecondCardState(this, bga));
         this.bga.states.register('confirmTunnel', new ConfirmTunnelState(this, bga));
+        this.bga.states.register('ChooseStockShare', new ChooseStockShareState(this, bga));
+        this.bga.states.register('ChooseStockShareDummy', new ChooseStockShareState(this, bga));
         this.bga.userPreferences.onChange = (id, val) => this.onUserPreferenceChanged(id, val);
         this.legendaryCharacterManager = new LegendaryCharacterManager();
     }
@@ -3569,6 +3701,31 @@ class Game {
         this.setTooltipToClass('ferry-card-counter', _("Ferry cards"));
         this.setTooltipToClass('destinations-counter', _("Completed / Total destination cards"));
     }
+    createPlayerZones(tableZoneLabel) {
+        let html = `
+            <div class="player-zones">
+            ${this.gamedatas.playerorder.map(playerId => this.bga.players.getPlayerById(playerId)).map(player => `
+                <div id="player-zone-${player.id}" class="player-zone" style="--background: #${player.color}44;">
+                    <div class="player-zone-name-wrapper">${this.bga.players.getFormattedPlayerName(Number(player.id))}</div>
+                    <div class="player-zone-content"></div>
+                </div>
+            `).join('')}
+            </div>`;
+        if (tableZoneLabel) {
+            html += `
+            <div class="player-zones">
+                <div id="player-zone-table" class="player-zone player-zone-table" style="--background: #88888888;">
+                    <div class="player-zone-name-wrapper">${tableZoneLabel}</div>
+                    <div class="player-zone-content"></div>
+                </div>
+            </div>
+            `;
+        }
+        document.getElementById('map-zoom-wrapper').insertAdjacentHTML('afterend', html);
+    }
+    getPlayerZoneContentElement(id) {
+        return document.getElementById(`player-zone-${id}`).querySelector('.player-zone-content');
+    }
     /**
      * Update player score.
      */
@@ -3782,6 +3939,7 @@ class Game {
             ['destinationsPicked', 1],
             ['trainCarPicked', ANIMATION_MS],
             ['ferryCardDrawn', 1],
+            ['stockShareTaken', 1],
             ['freeTunnel', 2000],
             ['highlightVisibleLocomotives', 1000],
             ['notEnoughTrainCars', 1],
@@ -3847,6 +4005,9 @@ class Game {
     }
     notif_ferryCardDrawn(notif) {
         this.ferryCardCounters[notif.args.playerId]?.toValue(notif.args.ferryCardsCount);
+    }
+    notif_stockShareTaken(notif) {
+        this.map.stockShareTaken(notif.args);
     }
     /**
      * Update visible cards.
@@ -4086,8 +4247,11 @@ class Game {
                 if (typeof args.colors == 'object') {
                     args.colors = args.colors.map(color => `<div class="train-car-color icon" data-color="${color}"></div>`).join('');
                 }
+                if (Array.isArray(args.stockShares)) {
+                    args.stockShares = args.stockShares.map(type => `<div class="icon stock-share" data-type="${type}"></div>`).join('');
+                }
                 // make cities names in bold 
-                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name'].forEach(field => {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }

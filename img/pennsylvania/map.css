@@ -3,8 +3,6 @@
 }
 
 .bonus-card.globetrotter {
-    width: 161px;
-    height: 250px;
     background: url('./bonus-card-globetrotter.webp'); 
 }
 
@@ -14,8 +12,8 @@
     left: 0;
     width: 250px; 
     height: 161px; 
-    background-image: url("img/stock-shares.webp");
-    background-size: 100% 900%;
+    background-image: url("./stock-shares.webp");
+    background-size: 100% 1000%;
     border-radius: 6px;
     box-shadow: 0 0 8px 1px black;
     transform-origin: center center;
@@ -28,4 +26,123 @@
 .stock-shares-card.disabled {
     filter: contrast(0.6);
     cursor: not-allowed;
+}
+
+.player-zones .player-zone-content {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.stock-shares-pile {
+    position: relative;
+    width: 125px;
+    height: 81px;
+}
+
+.stock-shares-pile .stock-shares-card {
+    width: 125px;
+    height: 81px;
+}
+
+.stock-shares-count {
+    position: absolute;
+    z-index: 1;
+    border-radius: 10px;
+    background: #fff;
+    color: #222;
+    font-weight: bold;
+    box-shadow: 0 0 3px #222;
+    left: calc(50% - 10px);
+    bottom: -8px;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+}
+
+.stock-shares-line {
+    font-family: Georgia, serif;
+    font-weight: bold;
+    font-size: 8pt;
+}
+
+.stock-shares-line .red {
+    color: #a42632;
+}
+
+.stock-shares-number .stock-shares-line {
+    font-size: 10pt;
+}
+
+.stock-shares-number {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    padding: 0 3px;
+    border: 1px solid #756c4c;
+    border-radius: 2px;
+    background: #eee3b8;
+    box-shadow: 0 1px 2px #342e20;
+    color: #54452d;
+    pointer-events: none;
+}
+
+.stock-shares-points {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 27px;
+    padding: 1px 3px;
+    border: 1px solid #756c4c;
+    border-radius: 2px;
+    background: #eee3b8e8;
+    box-shadow: 0 1px 2px #342e20;
+    color: #54452d;
+    pointer-events: none;
+}
+
+.stock-shares-points-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.icon.stock-share {
+    height: 21px;
+    background-image: url("./stock-shares.webp");
+    background-position: 0% 0%;
+    background-size: 100% 1000%;
+    background-repeat: no-repeat;
+    border-radius: 2px;
+    vertical-align: middle;
+}
+
+.icon.stock-share[data-type="2"], .stock-shares-card[data-type="2"] {
+    background-position: 0% 11.1111111111%;
+}
+.icon.stock-share[data-type="3"], .stock-shares-card[data-type="3"] {
+    background-position: 0% 22.2222222222%;
+}
+.icon.stock-share[data-type="4"], .stock-shares-card[data-type="4"] {
+    background-position: 0% 33.3333333333%;
+}
+.icon.stock-share[data-type="5"], .stock-shares-card[data-type="5"] {
+    background-position: 0% 44.4444444444%;
+}
+.icon.stock-share[data-type="6"], .stock-shares-card[data-type="6"] {
+    background-position: 0% 55.5555555556%;
+}
+.icon.stock-share[data-type="7"], .stock-shares-card[data-type="7"] {
+    background-position: 0% 66.6666666667%;
+}
+.icon.stock-share[data-type="8"], .stock-shares-card[data-type="8"] {
+    background-position: 0% 77.7777777778%;
+}
+.icon.stock-share[data-type="10"], .stock-shares-card[data-type="10"] {
+    background-position: 0% 88.8888888889%;
+}
+.icon.stock-share[data-type="15"], .stock-shares-card[data-type="15"] {
+    background-position: 0% 100%;
 }
