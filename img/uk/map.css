@@ -7,17 +7,54 @@
 }
 
 .technology-card {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 250px; 
-    height: 161px; 
-    background-image: url("img/technology-cards.webp");
-    background-size: 100% auto;
+    position: relative;
+    width: 125px;
+    height: 80.5px;
+    flex: none;
+    background-image: url("./technology-cards.webp");
+    background-size: 100% 1600%;
     border-radius: 6px;
     box-shadow: 0 0 8px 1px black;
-    transform-origin: center center;
 }
+
+.player-zones .player-zone-content {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.technology-card-count {
+    position: absolute;
+    left: calc(50% - 10px);
+    bottom: -8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: #fff;
+    color: #222;
+    box-shadow: 0 0 3px #222;
+    font-weight: bold;
+    text-align: center;
+    line-height: 20px;
+}
+
+.technology-card[data-type="1"] { background-position: 0% 6.6666666667%; }
+.technology-card[data-type="2"] { background-position: 0% 13.3333333333%; }
+.technology-card[data-type="3"] { background-position: 0% 20%; }
+.technology-card[data-type="4"] { background-position: 0% 26.6666666667%; }
+.technology-card[data-type="5"] { background-position: 0% 33.3333333333%; }
+.technology-card[data-type="6"] { background-position: 0% 40%; }
+.technology-card[data-type="7"] { background-position: 0% 46.6666666667%; }
+.technology-card[data-type="8"] { background-position: 0% 53.3333333333%; }
+.technology-card[data-type="9"] { background-position: 0% 60%; }
+.technology-card[data-type="10"] { background-position: 0% 66.6666666667%; }
+.technology-card[data-type="11"] { background-position: 0% 73.3333333333%; }
+.technology-card[data-type="12"] { background-position: 0% 80%; }
+.technology-card[data-type="13"] { background-position: 0% 86.6666666667%; }
+.technology-card[data-type="14"] { background-position: 0% 93.3333333333%; }
+.technology-card[data-type="15"] { background-position: 0% 100%; }
 
 .technology-card.selectable {
     cursor: pointer;
@@ -27,4 +64,3 @@
     filter: contrast(0.6);
     cursor: not-allowed;
 }
-

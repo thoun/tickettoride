@@ -235,6 +235,7 @@ class Game extends Table {
                 'pointsForGlobetrotter' => $this->getMap()->pointsForGlobetrotter,
                 'pointsForMostConnectedCities' => $this->getMap()->pointsForMostConnectedCities,
                 'ferryCards' => $this->getMap()->ferryCards,
+                'useTechnologyCards' => $this->getMap()->useTechnologyCards,
             ],
         ];
     
@@ -345,7 +346,7 @@ class Game extends Table {
 
     function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null, bool $shifted = false, int $ferryCardsUsed = 0): void {
         $route = $this->mapManager->getAllRoutes()[$routeId];
-        $cardCost = $route->number + $extraCardCost;
+        $cardCost = $this->mapManager->getRouteTrainCardCost($route, $playerId, $extraCardCost);
         $ferryCardsUsed = $route->ferryWaves > 0 ? $ferryCardsUsed : 0;
 
         $legendaryCharacter = null;
@@ -365,7 +366,7 @@ class Game extends Table {
         $remainingTrainCars = $this->getRemainingTrainCarsCount($playerId);
         $trainCarsHand = $this->trainCarManager->getPlayerHand($playerId);
         $availableFerryCards = $this->getMap()->ferryCards ? (int) $this->bga->globals->get("FERRY_CARD_{$playerId}", 0) : 0;
-        $cardsToRemove = $this->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $availableFerryCards, ferryCardsUsed: $ferryCardsUsed);
+        $cardsToRemove = $this->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, $extraCardCost, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $availableFerryCards, ferryCardsUsed: $ferryCardsUsed, playerId: $playerId);
         $claimWithBulletTrain = $route->bulletTrainSpaceIndex !== null && $this->bga->globals->get(REMAINING_BULLET_TRAINS) > 0;
 
         if ($legendaryCharacter === 1 && $legendaryCharacterState === 'using') {
@@ -379,7 +380,8 @@ class Game extends Table {
 
         // save claimed route
         $claimerId = $claimWithBulletTrain ? -1 : $playerId;
-        $this->DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`) VALUES ($routeId, $claimerId)");
+        $shiftIndex = $shifted ? $this->getUniqueIntValueFromDB("SELECT count(*) FROM claimed_routes WHERE route_id = $routeId") : 0;
+        $this->DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`, `shift_index`) VALUES ($routeId, $claimerId, $shiftIndex)");
 
         // update score
         $points = 0;
@@ -391,6 +393,10 @@ class Game extends Table {
             $remainingBulletTrains = $this->bga->globals->inc(REMAINING_BULLET_TRAINS, -1);
         } else {
             $points = $this->getMap()->routePoints[$route->number];
+            if ($this->getMap()->useTechnologyCards) {
+                $technologyCards = $this->bga->globals->get("TECHNOLOGY_CARDS_{$playerId}", []);
+                $points += $this->getMap()->getAdditionalRoutePoints($route, $technologyCards);
+            }
             $this->incScore($playerId, $points);
             $this->removeTrainCars($playerId, $route->number);
         }
@@ -412,6 +418,7 @@ class Game extends Table {
             'colors' => array_map(fn($card) => $card->type, $cardsToRemove),
             'remainingTrainCars' => $this->getRemainingTrainCarsCount($playerId),
             'shifted' => $shifted,
+            'shiftIndex' => $shiftIndex,
             'ferryCardsUsed' => $ferryCardsUsed,
             'ferryCardsCount' => $ferryCardsCount,
         ];
@@ -520,7 +527,7 @@ class Game extends Table {
     }
 
     function getMapCode(): string { 
-        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[11]; }
+        //if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[10]; }
         return MAP_LIST[match (__NAMESPACE__) {
             'Bga\\Games\\TicketToRide' => 1,
             'Bga\\Games\\TicketToRideEurope' => 2,
@@ -552,12 +559,66 @@ class Game extends Table {
      * @return ClaimedRoute[]
      */
     function getClaimedRoutes(?int $playerId = null): array {
-        $sql = "SELECT route_id, player_id FROM claimed_routes ";
+        $sql = "SELECT route_id, player_id, shift_index FROM claimed_routes ";
         if ($playerId !== null) {
             $sql .= "WHERE player_id = $playerId OR player_id = -1";
         }
+        $sql .= " ORDER BY route_id, shift_index";
         $dbResults = $this->getObjectListFromDB($sql);
         return array_map(fn($dbResult) => new ClaimedRoute($dbResult), array_values($dbResults));
+    }
+
+    public function returnRightOfWay(int $playerId): void {
+        $cards = $this->bga->globals->get("TECHNOLOGY_CARDS_{$playerId}", []);
+        $cards = array_values(array_filter($cards, fn($type) => $type !== 10));
+        $remaining = $this->bga->globals->get('REMAINING_TECHNOLOGY_CARDS', []);
+        $remaining[10]++;
+        $this->bga->globals->set("TECHNOLOGY_CARDS_{$playerId}", $cards);
+        $this->bga->globals->set('REMAINING_TECHNOLOGY_CARDS', $remaining);
+        $this->bga->globals->set('RIGHT_OF_WAY_PENDING', false);
+        $this->notify->all('technologyCardReturned', clienttranslate('${player_name} returns Right of Way to the table'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerNameById($playerId),
+            'type' => 10,
+            'remainingCount' => $remaining[10],
+        ]);
+    }
+
+    public function thermocompressorAfterRouteClaim(int $playerId): bool {
+        if (!$this->getMap()->useTechnologyCards) {
+            return false;
+        }
+        $remaining = (int) $this->bga->globals->get('THERMOCOMPRESSOR_REMAINING', 0);
+        if ($remaining === 0) {
+            return false;
+        }
+        $remaining--;
+        $this->bga->globals->set('THERMOCOMPRESSOR_REMAINING', $remaining);
+        if ($remaining > 0 && count($this->mapManager->claimableRoutes(
+            $playerId,
+            $this->trainCarManager->getPlayerHand($playerId),
+            $this->getRemainingTrainCarsCount($playerId),
+        )) > 0) {
+            return true;
+        }
+        $this->returnThermocompressor($playerId);
+        return false;
+    }
+
+    public function returnThermocompressor(int $playerId): void {
+        $cards = $this->bga->globals->get("TECHNOLOGY_CARDS_{$playerId}", []);
+        $cards = array_values(array_filter($cards, fn($type) => $type !== 11));
+        $remaining = $this->bga->globals->get('REMAINING_TECHNOLOGY_CARDS', []);
+        $remaining[11]++;
+        $this->bga->globals->set("TECHNOLOGY_CARDS_{$playerId}", $cards);
+        $this->bga->globals->set('REMAINING_TECHNOLOGY_CARDS', $remaining);
+        $this->bga->globals->set('THERMOCOMPRESSOR_REMAINING', 0);
+        $this->notify->all('technologyCardReturned', clienttranslate('${player_name} returns Thermocompressor to the table'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerNameById($playerId),
+            'type' => 11,
+            'remainingCount' => $remaining[11],
+        ]);
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:
@@ -576,6 +637,9 @@ class Game extends Table {
     */
     
     function upgradeTableDb($from_version) {
+        if (count($this->getObjectListFromDB("SHOW COLUMNS FROM claimed_routes LIKE 'shift_index'")) === 0) {
+            $this->applyDbUpgradeToAllDB('ALTER TABLE DBPREFIX_claimed_routes ADD shift_index TINYINT unsigned NOT NULL DEFAULT 0');
+        }
         // $from_version is the current version of this game database, in numerical form.
         // For example, if the game was running with a release of your game named "140430-1345",
         // $from_version is equal to 1404301345

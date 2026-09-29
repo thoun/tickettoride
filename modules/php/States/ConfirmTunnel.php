@@ -39,12 +39,12 @@ class ConfirmTunnel extends GameState {
             $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
             $pairSetAsLocomotive = $this->game->legendaryCharacterManager->getCharacter3UsingColor($activePlayerId);
         }
-        $tunnelCost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, $tunnelAttempt->extraCards, pairSetAsLocomotive: $pairSetAsLocomotive, considerAllRoutesGray: $considerAllRoutesGray);
+        $tunnelCost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, $tunnelAttempt->extraCards, pairSetAsLocomotive: $pairSetAsLocomotive, considerAllRoutesGray: $considerAllRoutesGray, playerId: $activePlayerId);
         $canPay = $tunnelCost != null;
 
         $extraCards = null;
         if ($canPay) {
-            $routeCost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, pairSetAsLocomotive: $pairSetAsLocomotive, considerAllRoutesGray: $considerAllRoutesGray);
+            $routeCost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $tunnelAttempt->color, pairSetAsLocomotive: $pairSetAsLocomotive, considerAllRoutesGray: $considerAllRoutesGray, playerId: $activePlayerId);
             $extraCards = array_values(array_filter($tunnelCost, fn($tunnelCard) => !Arrays::some($routeCost, fn($routeCard) => $routeCard->id == $tunnelCard->id)));
         }
 
@@ -75,10 +75,17 @@ class ConfirmTunnel extends GameState {
 
         $distributionCards = $distribution ? Arrays::filter($this->game->trainCarManager->getPlayerHand($activePlayerId), fn($card) => in_array($card->id, $distribution)) : null;
 
-        $shifted = $this->game->legendaryCharacterManager->isActive()
+        $rightOfWayPending = $this->game->getMap()->useTechnologyCards && $this->bga->globals->get('RIGHT_OF_WAY_PENDING', false);
+        $shifted = $rightOfWayPending || ($this->game->legendaryCharacterManager->isActive()
             && $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 1
-            && $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId) === 'using';
+            && $this->game->legendaryCharacterManager->getPlayerCharacterState($activePlayerId) === 'using');
         $this->game->applyClaimRoute($activePlayerId, $tunnelAttempt->routeId, $tunnelAttempt->color, $tunnelAttempt->extraCards, distributionCards: $distributionCards, shifted: $shifted);
+        if ($rightOfWayPending) {
+            $this->game->returnRightOfWay($activePlayerId);
+        }
+        if ($this->game->thermocompressorAfterRouteClaim($activePlayerId)) {
+            return ChooseAction::class;
+        }
 
         if ($this->game->legendaryCharacterManager->isActive() 
             && $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 4 
@@ -97,6 +104,12 @@ class ConfirmTunnel extends GameState {
     #[PossibleAction]
     public function actSkipTunnel(int $activePlayerId) {
         $this->game->endTunnelAttempt(true);
+        if ($this->game->getMap()->useTechnologyCards && $this->bga->globals->get('RIGHT_OF_WAY_PENDING', false)) {
+            $this->game->returnRightOfWay($activePlayerId);            
+        }
+        if ($this->game->getMap()->useTechnologyCards && $this->bga->globals->get('THERMOCOMPRESSOR_REMAINING', 0) > 0) {
+            $this->game->returnThermocompressor($activePlayerId);
+        }
 
         if ($this->game->legendaryCharacterManager->isActive()
             && $this->game->legendaryCharacterManager->getPlayerCharacter($activePlayerId) === 1
@@ -109,7 +122,7 @@ class ConfirmTunnel extends GameState {
             'player_name' => $this->game->getPlayerNameById($activePlayerId),
         ]);
 
-        return ST_NEXT_PLAYER;
+        return NextPlayer::class;
     }
 
     function zombie(int $playerId, array $args) {

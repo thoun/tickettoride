@@ -18,6 +18,10 @@ export interface EnteringChooseActionArgs {
     ferryCardsCount: number;
     canBuildStation: boolean;
     canPass: boolean;
+    buyableTechnologyCards?: number[];
+    technologyCardCosts?: number[];
+    rightOfWayPending?: boolean;
+    thermocompressorRemaining?: number;
     _private?: {
         trainCarsHand: TrainCar[];
         legendaryCharacter3Colors?: number[];
@@ -43,6 +47,27 @@ export class ChooseActionState {
 
     private isTouch = window.matchMedia('(hover: none)').matches;
 
+    private onTechnologyCardClick = (event: MouseEvent) => {
+        const card = (event.target as Element).closest<HTMLElement>('#player-zone-table .technology-card.selectable');
+        if (!card) {
+            return;
+        }
+        const type = Number(card.dataset.type);
+        const cost = this.args.technologyCardCosts[type];
+        const setSize = this.game.gamedatas.players[this.game.getPlayerId()].mapSpecificData.technologyCards?.includes(6) ? 3 : 4;
+        const paymentRoute = { color: 0, locomotives: 0, ferryWaves: 0, canPayWithAnySetOfCards: setSize } as Route;
+        const title = _('Buy ${technology} for ${number} Locomotives')
+            .replace('${technology}', card.dataset.name)
+            .replace('${number}', String(cost));
+        new DistributionPopin(this.args._private.trainCarsHand, { route: paymentRoute, color: 0, distribution: null }, cost, true)
+            .show(title)
+            .then(distribution => {
+                if (distribution) {
+                    this.bga.actions.performAction('actBuyTechnologyCard', { type, distribution: distribution.cardIds });
+                }
+            });
+    };
+
     constructor(game: Game, bga: Bga) {
         this.game = game;
         this.bga = bga;
@@ -52,9 +77,10 @@ export class ChooseActionState {
      * Show selectable routes, and make train car draggable.
      */ 
     public onEnteringState(args: EnteringChooseActionArgs, isCurrentPlayerActive: boolean) {
-        this.game.trainCarSelection.setSelectableTopDeck(isCurrentPlayerActive, args.maxHiddenCardsPick);
+        this.args = args;
+        this.game.trainCarSelection.setSelectableTopDeck(isCurrentPlayerActive && args.maxHiddenCardsPick > 0, args.maxHiddenCardsPick);
         const usingCharacter4 = args.legendaryCharacter === 4 && typeof args.legendaryCharacterState === 'string' && args.legendaryCharacterState.startsWith('using:');
-        if (usingCharacter4) {
+        if (usingCharacter4 || args.rightOfWayPending || args.thermocompressorRemaining) {
             this.game.trainCarSelection.setSelectableVisibleCards([]);
         } else {
             this.game.trainCarSelection.removeSelectableVisibleCards();
@@ -68,6 +94,18 @@ export class ChooseActionState {
 
         this.game.playerTable?.setDraggable(isCurrentPlayerActive);
         this.game.playerTable?.setSelectable(isCurrentPlayerActive);
+
+        if (this.game.getMap().useTechnologyCards) {
+            const tableZone = this.game.getPlayerZoneContentElement('table');
+            tableZone.querySelectorAll<HTMLElement>('.technology-card').forEach(card => {
+                const selectable = isCurrentPlayerActive && (args.buyableTechnologyCards ?? []).includes(Number(card.dataset.type));
+                card.classList.toggle('selectable', selectable);
+                card.classList.toggle('disabled', isCurrentPlayerActive && !selectable);
+            });
+            if (isCurrentPlayerActive) {
+                tableZone.addEventListener('click', this.onTechnologyCardClick);
+            }
+        }
 
         if (isCurrentPlayerActive) {
             if (args.maxDestinationsPick) {
@@ -86,6 +124,11 @@ export class ChooseActionState {
         this.game.playerTable?.setSelectable(false);   
         this.game.playerTable?.setSelectableTrainCarColors(null);
         this.game.trainCarSelection.removeSelectableVisibleCards();
+        if (this.game.getMap().useTechnologyCards) {
+            const tableZone = this.game.getPlayerZoneContentElement('table');
+            tableZone.removeEventListener('click', this.onTechnologyCardClick);
+            tableZone.querySelectorAll<HTMLElement>('.technology-card').forEach(card => card.classList.remove('selectable', 'disabled'));
+        }
         document.getElementById('destination-deck-hidden-pile').classList.remove('selectable');
         (Array.from(document.getElementsByClassName('train-car-group hide')) as HTMLDivElement[]).forEach(group => group.classList.remove('hide'));
     }
@@ -94,6 +137,24 @@ export class ChooseActionState {
      * Sets the action bar (title and buttons) for Choose action.
      */
     public setActionBarChooseAction(isCurrentPlayerActive: boolean): void {
+
+        if (this.args.rightOfWayPending) {
+            this.bga.statusBar.setTitle(isCurrentPlayerActive ? _('${you} must claim an occupied route with Right of Way') : _('${actplayer} must claim an occupied route with Right of Way'), this.args);
+            if (isCurrentPlayerActive) {
+                this.bga.statusBar.removeActionButtons();
+            }
+            return;
+        }
+        if (this.args.thermocompressorRemaining) {
+            this.bga.statusBar.setTitle(isCurrentPlayerActive
+                ? _('${you} must claim ${number} route(s) with Thermocompressor')
+                : _('${actplayer} must claim ${number} route(s) with Thermocompressor'),
+                { ...this.args, number: this.args.thermocompressorRemaining });
+            if (isCurrentPlayerActive) {
+                this.bga.statusBar.removeActionButtons();
+            }
+            return;
+        }
 
         if (this.args.legendaryCharacter === 4 && typeof this.args.legendaryCharacterState === 'string' && this.args.legendaryCharacterState.startsWith('using:')) {
             this.bga.statusBar.setTitle(isCurrentPlayerActive ? _('You may claim more routes') : _('${actplayer} may claim more routes'), this.args);
@@ -386,7 +447,14 @@ export class ChooseActionState {
         const canUseLocomotives = locomotiveRestriction === 0
             || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
             || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
-        return route.ferryWaves > 0 || route.canPayWithAnySetOfCards > 0 || (locomotiveRestriction && canUseLocomotives);
+        return route.ferryWaves > 0 || route.canPayWithAnySetOfCards > 0 || this.game.getMap().useTechnologyCards || (locomotiveRestriction && canUseLocomotives);
+    }
+
+    private getRouteCardCost(route: Route): number {
+        const ownedTechnologies = this.game.gamedatas.players[this.game.getPlayerId()]?.mapSpecificData.technologyCards ?? [];
+        return this.game.getMap().useTechnologyCards && ownedTechnologies.includes(15)
+            ? Math.max(1, route.locomotives, route.spaces.length - 1)
+            : route.spaces.length;
     }
 
     public clickedRouteDoubleRouteConfirmed(route: Route) {
@@ -439,7 +507,7 @@ export class ChooseActionState {
         this.bga.statusBar.removeActionButtons();
 
         possibleColors.forEach(color => {
-            if (!route.ferryWaves && this.args.costForRoute[route.id][color].length >= route.spaces.length) {
+            if (!route.ferryWaves && this.args.costForRoute[route.id][color].length >= this.getRouteCardCost(route)) {
                 const label = dojo.string.substitute(_("Use ${color}"), {
                     'color': `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(color, 'train-car')}`
                 });
@@ -482,8 +550,11 @@ export class ChooseActionState {
             .replace('${from}', this.game.getCityName(route.from))
             .replace('${to}', this.game.getCityName(route.to));
 
-        this.claimingRoute = { route, color, distribution: null };
-        new DistributionPopin(this.args._private.trainCarsHand, this.claimingRoute, route.spaces.length, canUseLocomotives, this.args.ferryCardsCount)
+        const paymentRoute = this.game.getMap().useTechnologyCards
+            ? { ...route, canPayWithAnySetOfCards: this.game.gamedatas.players[this.game.getPlayerId()].mapSpecificData.technologyCards?.includes(6) ? 3 : 4 }
+            : route;
+        this.claimingRoute = { route: paymentRoute, color, distribution: null };
+        new DistributionPopin(this.args._private.trainCarsHand, this.claimingRoute, this.getRouteCardCost(route), canUseLocomotives, this.args.ferryCardsCount)
             .show(popinTitle)
             .then(distribution => this.onDistributionPopinResult(distribution));
     }

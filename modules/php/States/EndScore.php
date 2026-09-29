@@ -157,6 +157,18 @@ class EndScore extends GameState {
             $destinationsResults[$playerId] = array_merge($uncompletedDestinations, $completedDestinations);
         }
 
+        $completedTicketBonuses = [];
+        if ($this->game->getMap()->useTechnologyCards) {
+            foreach ($players as $playerId => $playerDb) {
+                $technologyCards = $this->game->bga->globals->get("TECHNOLOGY_CARDS_{$playerId}", []);
+                $bonus = $this->game->getMap()->getCompletedTicketBonus($completedDestinationsCount[$playerId], $technologyCards);
+                if ($bonus > 0) {
+                    $completedTicketBonuses[$playerId] = $bonus;
+                    $totalScore[$playerId] += $bonus;
+                }
+            }
+        }
+
         // Longest continuous path 
         $playersLongestPaths = [];
         $longestPathWinners = [];
@@ -165,6 +177,24 @@ class EndScore extends GameState {
         foreach ($players as $playerId => $playerDb) {
             $longestPath = $this->game->mapManager->getLongestPath($playerId);
             $playersLongestPaths[$playerId] = $longestPath;
+        }
+
+        $endGameTechnologyBonuses = [];
+        if ($this->game->getMap()->useTechnologyCards) {
+            $mostCompletedTickets = max($completedDestinationsCount);
+            $longestPathInGame = max(array_map(fn($path) => $path->length, $playersLongestPaths));
+            foreach ($players as $playerId => $playerDb) {
+                $technologyCards = $this->game->bga->globals->get("TECHNOLOGY_CARDS_{$playerId}", []);
+                $bonuses = $this->game->getMap()->getEndGameTechnologyBonuses(
+                    $technologyCards,
+                    $completedDestinationsCount[$playerId],
+                    $mostCompletedTickets,
+                    $playersLongestPaths[$playerId]->length,
+                    $longestPathInGame,
+                );
+                $endGameTechnologyBonuses[$playerId] = $bonuses;
+                $totalScore[$playerId] += array_sum($bonuses);
+            }
         }
 
         if ($isLongestPathBonusActive) {
@@ -352,6 +382,29 @@ class EndScore extends GameState {
                     $this->game->incStat($points, 'pointsLostWithUncompletedDestinations');
                     $this->game->incStat($points, 'pointsLostWithUncompletedDestinations', $playerId);
                 }
+            }
+        }
+
+        foreach ($completedTicketBonuses as $playerId => $points) {
+            $this->game->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points from Double Heading for ${completedTickets} completed tickets'), [
+                'delta' => $points,
+                'completedTickets' => $completedDestinationsCount[$playerId],
+            ]);
+            $this->game->incStat($points, 'pointsWithDestinations');
+            $this->game->incStat($points, 'pointsWithDestinations', $playerId);
+            $this->game->incStat($points, 'pointsWithCompletedDestinations');
+            $this->game->incStat($points, 'pointsWithCompletedDestinations', $playerId);
+        }
+
+        foreach ($endGameTechnologyBonuses as $playerId => $bonuses) {
+            foreach ($bonuses as $type => $points) {
+                $this->game->incScore($playerId, $points, clienttranslate('${player_name} ${gainsloses} ${absdelta} points with ${technology_name}'), [
+                    'delta' => $points,
+                    'absdelta' => abs($points),
+                    'i18n' => ['gainsloses', 'technology_name'],
+                    'gainsloses' => $points > 0 ? clienttranslate('gains') : clienttranslate('loses'),
+                    'technology_name' => $type === 13 ? clienttranslate('Risky Contracts') : clienttranslate('Equalising Beam'),
+                ]);
             }
         }
 

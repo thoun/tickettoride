@@ -21,6 +21,12 @@ class NextPlayer extends GameState {
         $this->game->incStat(1, 'turnsNumber', $activePlayerId);
 
         $this->game->legendaryCharacterManager->onEndTurn();
+        if ($this->game->getMap()->useTechnologyCards) {
+            if ($this->bga->globals->get('THERMOCOMPRESSOR_REMAINING', 0) > 0) {
+                $this->game->returnThermocompressor($activePlayerId);
+            }
+            $this->bga->globals->set('TECHNOLOGY_CARD_BOUGHT_THIS_TURN', false);
+        }
 
         $lastTurn = intval($this->game->getGameStateValue(LAST_TURN));
 

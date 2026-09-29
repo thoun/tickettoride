@@ -126,20 +126,4 @@ trait DebugUtilTrait {
     function debug_NoTrainCar() {
         $this->DbQuery("UPDATE player SET `player_remaining_train_cars` = 0");
     }
-
-    // select all 3 destinations for each player
-    function debug_Start() {
-        $playersIds = $this->getPlayersIds();
-        foreach ($playersIds as $playerId) {
-            $destinations = $this->destinationManager->getPickedDestinationCards($playerId);
-            $ids = array_map(fn($card) => $card->id, $destinations);
-            $this->destinationManager->keepInitialDestinationCards($playerId, $ids);
-        }
-
-        $this->gamestate->jumpToState(ST_PLAYER_CHOOSE_ACTION);
-    }
-
-    function debug_playMoves(int $moves = 10) {
-        $this->bga->debug->playUntil(fn(int $count) => $this->gamestate->getCurrentMainStateId() == 99 || $count >= $moves);
-    }
 }

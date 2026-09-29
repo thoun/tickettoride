@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS `destination` (
 CREATE TABLE IF NOT EXISTS `claimed_routes` (
   `route_id` TINYINT unsigned NOT NULL,
   `player_id` INT NOT NULL,
+  `shift_index` TINYINT unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`route_id`, `player_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
 

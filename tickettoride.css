@@ -602,6 +602,45 @@
   background: url("img/forbidden.png") no-repeat;
   background-position: center center;
 }
+.route-space.forbidden.selectable::before {
+  top: -15px;
+  bottom: -13px;
+  left: -10px;
+  right: -15px;
+  background-image: url("img/road-highlight.png");
+  background-size: 900% 100%;
+  animation: selectable-road-animation 1s alternate-reverse infinite ease-in-out;
+}
+.route-space.forbidden.selectable.tunnel::before {
+  background-image: url("img/road-highlight-tunnel.png");
+}
+.route-space.forbidden.selectable[data-color="0"]::before {
+  background-position: 0% 50%;
+}
+.route-space.forbidden.selectable[data-color="1"]::before {
+  background-position: 12.5% 50%;
+}
+.route-space.forbidden.selectable[data-color="2"]::before {
+  background-position: 25% 50%;
+}
+.route-space.forbidden.selectable[data-color="3"]::before {
+  background-position: 37.5% 50%;
+}
+.route-space.forbidden.selectable[data-color="4"]::before {
+  background-position: 50% 50%;
+}
+.route-space.forbidden.selectable[data-color="5"]::before {
+  background-position: 62.5% 50%;
+}
+.route-space.forbidden.selectable[data-color="6"]::before {
+  background-position: 75% 50%;
+}
+.route-space.forbidden.selectable[data-color="7"]::before {
+  background-position: 87.5% 50%;
+}
+.route-space.forbidden.selectable[data-color="8"]::before {
+  background-position: 100% 50%;
+}
 
 @keyframes selectable-road-animation {
   from {

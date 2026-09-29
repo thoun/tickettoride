@@ -62,6 +62,7 @@ export class DistributionPopin {
 
             const otherCardsForSet = this.trainCarsHand.filter(card => !singleCards.some(sc => sc.id == card.id));
             const showSet = this.claimingRoute.route.canPayWithAnySetOfCards > 0 && otherCardsForSet.length >= this.claimingRoute.route.canPayWithAnySetOfCards;
+            const showUseMaximum = !isFerry && !(this.claimingRoute.route.canPayWithAnySetOfCards > 0);
             
             let html = ``;
             if (showLocomotives) {
@@ -69,11 +70,11 @@ export class DistributionPopin {
                 if (this.claimingRoute.route.locomotives) {
                     html += `${_('${number} locomotives required').replace('${number}', `${this.claimingRoute.route.locomotives}`)}<br>`
                 }
-                html += this.cardSection(locomotiveCardsToDisplay, isFerry || this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : 0);
+                html += this.cardSection(locomotiveCardsToDisplay, showUseMaximum ? 0 : null);
             }
             if (showColorCards) {
                 this.distributionCards[this.claimingRoute.color] = [];
-                html += this.cardSection(colorCardsToDisplay, isFerry || this.claimingRoute.route.canPayWithAnySetOfCards > 0 ? null : this.claimingRoute.color);
+                html += this.cardSection(colorCardsToDisplay, showUseMaximum ? this.claimingRoute.color : null);
             }
             if (this.claimingRoute.route.canPayWithAnySetOfCards > 0) {
                 this.distributionCards[99] = [];
@@ -112,7 +113,7 @@ export class DistributionPopin {
                     }
                 });
 
-                if (!showSet && !isFerry) {
+                if (showUseMaximum) {
                     document.getElementById(`use-maximum-${0}-btn`).addEventListener('click', () => this.useMaximum(0));
                 }
             }
@@ -132,7 +133,7 @@ export class DistributionPopin {
                     }
                 });
 
-                if (!showSet && !isFerry) {
+                if (showUseMaximum) {
                     document.getElementById(`use-maximum-${this.claimingRoute.color}-btn`).addEventListener('click', () => this.useMaximum(this.claimingRoute.color));
                 }
             }

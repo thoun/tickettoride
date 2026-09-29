@@ -27,6 +27,8 @@ class ChooseAction extends GameState {
     }
 
     function getArgs(int $activePlayerId) {
+        $rightOfWayPending = $this->game->getMap()->useTechnologyCards && $this->bga->globals->get('RIGHT_OF_WAY_PENDING', false);
+        $thermocompressorRemaining = $this->game->getMap()->useTechnologyCards ? (int) $this->bga->globals->get('THERMOCOMPRESSOR_REMAINING', 0) : 0;
         $legendaryCharacter = null;
         $legendaryCharacterState = null;
         $opponentRoutesInsteadOfFreeOnes = false;
@@ -44,6 +46,7 @@ class ChooseAction extends GameState {
 
             $usingCharacter4 = $legendaryCharacter === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0;
         }
+        $opponentRoutesInsteadOfFreeOnes = $opponentRoutesInsteadOfFreeOnes || $rightOfWayPending;
 
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
         $ferryCardsCount = $this->game->getMap()->ferryCards ? (int) $this->game->bga->globals->get("FERRY_CARD_{$activePlayerId}", 0) : 0;
@@ -52,11 +55,16 @@ class ChooseAction extends GameState {
         $remainingTrainCars = 99;
         $realRemainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);
 
-        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $ferryCardsCount);
+        $possibleRoutes = $this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, ($rightOfWayPending || $thermocompressorRemaining > 0) ? $realRemainingTrainCars : $remainingTrainCars, opponentRoutesInsteadOfFreeOnes: $opponentRoutesInsteadOfFreeOnes, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $ferryCardsCount);
         if ($legendaryCharacter === 4) {
             $possibleRoutes = $this->game->legendaryCharacterManager->filterCharacter4Routes($activePlayerId, $possibleRoutes);
         }
-        $maxHiddenCardsPick = min(2, $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true));
+        $maxHiddenCardsPerAction = 2;
+        if ($this->game->getMap()->useTechnologyCards) {
+            $technologyCards = $this->bga->globals->get("TECHNOLOGY_CARDS_{$activePlayerId}", []);
+            $maxHiddenCardsPerAction = $this->game->getMap()->getMaximumHiddenTrainCardsPerAction($technologyCards);
+        }
+        $maxHiddenCardsPick = min($maxHiddenCardsPerAction, $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true));
         $maxDestinationsPick = min($this->game->getMap()->getAdditionalDestinationCardNumber($this->game->getExpansionOption()), $this->game->destinationManager->getRemainingDestinationCardsInDeck());
 
         $canClaimARoute = false;
@@ -70,7 +78,7 @@ class ChooseAction extends GameState {
             }
             $costByColor = [];
             foreach($colorsToTest as $colorToTest) {
-                $costByColor[$colorToTest] = $this->game->mapManager->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $ferryCardsCount);
+                $costByColor[$colorToTest] = $this->game->mapManager->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $ferryCardsCount, playerId: $activePlayerId);
 
                 if (!$canClaimARoute && $costByColor[$colorToTest] !== null && ($possibleRoute->number + $possibleRoute->mountain) <= $realRemainingTrainCars) {
                     $canClaimARoute = true;
@@ -99,7 +107,41 @@ class ChooseAction extends GameState {
         }
 
         $canDrawFerryCard = $this->game->getMap()->ferryCards && $ferryCardsCount < 2;
+        $buyableTechnologyCards = [];
+        $technologyCardCosts = $this->game->getMap()->technologyCardCosts;
+        if ($this->game->getMap()->useTechnologyCards && !$this->bga->globals->get('TECHNOLOGY_CARD_BOUGHT_THIS_TURN', false)) {
+            $remainingTechnologyCards = $this->bga->globals->get('REMAINING_TECHNOLOGY_CARDS', []);
+            $ownedTechnologyCards = $this->bga->globals->get("TECHNOLOGY_CARDS_{$activePlayerId}", []);
+            $setSize = in_array(6, $ownedTechnologyCards, true) ? 3 : 4;
+            $locomotives = count(array_filter($trainCarsHand, fn($card) => $card->type === 0));
+            $otherCards = count($trainCarsHand) - $locomotives;
+            $deckReshuffled = $this->bga->globals->get('TRAIN_CAR_DECK_RESHUFFLED', false);
+            foreach ($technologyCardCosts as $type => $cost) {
+                if ($type === 10 && count($this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $realRemainingTrainCars, opponentRoutesInsteadOfFreeOnes: true, ferryCards: $ferryCardsCount)) === 0) {
+                    continue;
+                }
+                if ($type === 11 && count($this->game->mapManager->claimableRoutes($activePlayerId, $trainCarsHand, $realRemainingTrainCars, ferryCards: $ferryCardsCount)) === 0) {
+                    continue;
+                }
+                if (($remainingTechnologyCards[$type] ?? 0) > 0
+                    && !in_array($type, $ownedTechnologyCards, true)
+                    && (!$deckReshuffled || !in_array($type, [13, 14], true))
+                    && $locomotives + intdiv($otherCards, $setSize) >= $cost) {
+                    $buyableTechnologyCards[] = $type;
+                }
+            }
+        }
         $canPass = !$canClaimARoute && !$canBuildStation && $maxDestinationsPick == 0 && $canTakeTrainCarCards == 0 && !$canDrawFerryCard;
+        if ($rightOfWayPending || $thermocompressorRemaining > 0) {
+            $buyableTechnologyCards = [];
+            $maxHiddenCardsPick = 0;
+            $maxDestinationsPick = 0;
+            $canTakeTrainCarCards = false;
+            $canDrawFerryCard = false;
+            $canBuildStation = false;
+            $possibleStations = [];
+            $canPass = false;
+        }
 
         if ($usingCharacter4) {
             $maxDestinationsPick = 0;
@@ -110,6 +152,7 @@ class ChooseAction extends GameState {
             $possibleStations = [];
             $costForStation = [];
             $canPass = true;
+            $buyableTechnologyCards = [];
         }
 
         $args = [
@@ -126,6 +169,10 @@ class ChooseAction extends GameState {
             'canBuildStation' => $canBuildStation,
             'costForStation' => $costForStation,
             'canPass' => $canPass,
+            'buyableTechnologyCards' => $buyableTechnologyCards,
+            'technologyCardCosts' => $technologyCardCosts,
+            'rightOfWayPending' => $rightOfWayPending,
+            'thermocompressorRemaining' => $thermocompressorRemaining,
             '_private' => [
                 $activePlayerId => [
 
@@ -133,7 +180,7 @@ class ChooseAction extends GameState {
             ]
         ];
 
-        if ($this->game->getMap()->locomotiveUsageRestriction || $this->game->getMap()->ferryCards) {
+        if ($this->game->getMap()->locomotiveUsageRestriction || $this->game->getMap()->ferryCards || $this->game->getMap()->useTechnologyCards) {
             $args['_private'] = [
                 $activePlayerId => [
                     'trainCarsHand' => $trainCarsHand,
@@ -156,7 +203,74 @@ class ChooseAction extends GameState {
     }
 
     #[PossibleAction]
+    public function actBuyTechnologyCard(int $type, #[IntArrayParam()] array $distribution, int $activePlayerId, array $args) {
+        $this->assertNoImmediateTechnologyPending();
+        if (in_array($type, [13, 14], true) && $this->bga->globals->get('TRAIN_CAR_DECK_RESHUFFLED', false)) {
+            throw new UserException('This Technology card is no longer available after the Train Car deck was reshuffled.');
+        }
+        if (!in_array($type, $args['buyableTechnologyCards'] ?? [], true)) {
+            throw new UserException('This Technology card is not available to buy.');
+        }
+
+        $hand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
+        $cardsById = [];
+        foreach ($hand as $card) {
+            $cardsById[$card->id] = $card;
+        }
+        if (count($distribution) !== count(array_unique($distribution))) {
+            throw new UserException('A Train Car card cannot be used twice.');
+        }
+        $cardsToRemove = [];
+        foreach ($distribution as $cardId) {
+            if (!isset($cardsById[$cardId])) {
+                throw new UserException('Selected Train Car card is not in your hand.');
+            }
+            $cardsToRemove[] = $cardsById[$cardId];
+        }
+
+        $locomotives = count(array_filter($cardsToRemove, fn($card) => $card->type === 0));
+        $otherCards = count($cardsToRemove) - $locomotives;
+        $ownedTechnologyCards = $this->bga->globals->get("TECHNOLOGY_CARDS_{$activePlayerId}", []);
+        $setSize = in_array(6, $ownedTechnologyCards, true) ? 3 : 4;
+        if ($otherCards % $setSize !== 0 || $locomotives + intdiv($otherCards, $setSize) !== $this->game->getMap()->technologyCardCosts[$type]) {
+            throw new UserException('Selected cards do not pay the Technology cost.');
+        }
+        if ($type === 10 || $type === 11) {
+            $remainingHand = array_values(array_filter($hand, fn($card) => !in_array($card->id, $distribution, true)));
+            if (count($this->game->mapManager->claimableRoutes($activePlayerId, $remainingHand, $this->game->getRemainingTrainCarsCount($activePlayerId), opponentRoutesInsteadOfFreeOnes: $type === 10)) === 0) {
+                throw new UserException($type === 10
+                    ? 'Keep enough Train Car cards to claim an occupied route with Right of Way.'
+                    : 'Keep enough Train Car cards to claim a route with Thermocompressor.');
+            }
+        }
+
+        $remainingTechnologyCards = $this->bga->globals->get('REMAINING_TECHNOLOGY_CARDS', []);
+        $remainingTechnologyCards[$type]--;
+        $ownedTechnologyCards[] = $type;
+        $this->game->trainCarManager->trainCars->moveCards($distribution, 'discard');
+        $this->bga->globals->set('REMAINING_TECHNOLOGY_CARDS', $remainingTechnologyCards);
+        $this->bga->globals->set("TECHNOLOGY_CARDS_{$activePlayerId}", $ownedTechnologyCards);
+        $this->bga->globals->set('TECHNOLOGY_CARD_BOUGHT_THIS_TURN', true);
+        if ($type === 10) {
+            $this->bga->globals->set('RIGHT_OF_WAY_PENDING', true);
+        } else if ($type === 11) {
+            $this->bga->globals->set('THERMOCOMPRESSOR_REMAINING', 2);
+        }
+
+        $this->notify->all('technologyCardBought', clienttranslate('${player_name} buys a Technology card with these Train Car cards: ${colors}'), [
+            'playerId' => $activePlayerId,
+            'player_name' => $this->game->getPlayerNameById($activePlayerId),
+            'type' => $type,
+            'remainingCount' => $remainingTechnologyCards[$type],
+            'removeCards' => $cardsToRemove,
+            'colors' => array_map(fn($card) => $card->type, $cardsToRemove),
+        ]);
+        return self::class;
+    }
+
+    #[PossibleAction]
     public function actDrawDeckCards(int $number, int $activePlayerId) { 
+        $this->assertNoImmediateTechnologyPending();
         $this->assertCharacter4DoesNotDraw($activePlayerId);
         $drawNumber = $this->game->trainCarManager->drawTrainCarCardsFromDeck($activePlayerId, $number);
 
@@ -170,6 +284,7 @@ class ChooseAction extends GameState {
 
     #[PossibleAction]
     public function actDrawFerryCard(int $activePlayerId) {
+        $this->assertNoImmediateTechnologyPending();
         $this->assertCharacter4DoesNotDraw($activePlayerId);
         if (!$this->game->getMap()->ferryCards) {
             throw new UserException("Ferry cards are not used on this map.");
@@ -193,6 +308,7 @@ class ChooseAction extends GameState {
     
     #[PossibleAction]
     public function actDrawTableCard(int $id, int $activePlayerId) { 
+        $this->assertNoImmediateTechnologyPending();
         $this->assertCharacter4DoesNotDraw($activePlayerId);
         $card = $this->game->trainCarManager->drawTrainCarCardsFromTable($activePlayerId, $id);
 
@@ -210,6 +326,7 @@ class ChooseAction extends GameState {
     
     #[PossibleAction]
     public function actDrawDestinations(int $activePlayerId) {
+        $this->assertNoImmediateTechnologyPending();
         $this->assertCharacter4DoesNotDraw($activePlayerId);
         $remainingDestinationsCardsInDeck = $this->game->destinationManager->getRemainingDestinationCardsInDeck();
         if ($remainingDestinationsCardsInDeck == 0) {
@@ -226,6 +343,7 @@ class ChooseAction extends GameState {
     
     #[PossibleAction]
     public function actClaimRoute(int $routeId, int $color, #[IntArrayParam()] ?array $distribution, int $ferryCards, int $activePlayerId) {
+        $rightOfWayPending = $this->game->getMap()->useTechnologyCards && $this->bga->globals->get('RIGHT_OF_WAY_PENDING', false);
         $route = $this->game->mapManager->getAllRoutes()[$routeId];
 
         $claimWithBulletTrain = $route->bulletTrainSpaceIndex !== null && $this->bga->globals->get(REMAINING_BULLET_TRAINS) > 0;
@@ -248,17 +366,18 @@ class ChooseAction extends GameState {
             $considerAllRoutesGray = $legendaryCharacter === 5 && $legendaryCharacterState === 'using';
             $pairSetAsLocomotive = $this->game->legendaryCharacterManager->getCharacter3UsingColor($activePlayerId);
         }
+        $opponentRoutesInsteadOfFreeOnes = $opponentRoutesInsteadOfFreeOnes || $rightOfWayPending;
 
-        $alreadyClaimedPlayerId = $this->game->getUniqueIntValueFromDB( "SELECT `player_id` FROM `claimed_routes` WHERE `route_id` = $routeId");
+        $claimedRoutes = array_values(array_filter($this->game->getClaimedRoutes(), fn($claimedRoute) => $claimedRoute->routeId === $routeId));
         if ($opponentRoutesInsteadOfFreeOnes) {
-            if ($alreadyClaimedPlayerId === 0) {
+            if (count($claimedRoutes) === 0) {
                 throw new UserException("Route is not already claimed.");
             }
-            if ($alreadyClaimedPlayerId === $activePlayerId) {
+            if (Arrays::some($claimedRoutes, fn($claimedRoute) => $claimedRoute->playerId === $activePlayerId)) {
                 throw new UserException("Route is already claimed by you.");
             }
         } else {
-            if ($alreadyClaimedPlayerId > 0) {
+            if (count($claimedRoutes) > 0) {
                 throw new UserException("Route is already claimed.");
             }
         }
@@ -269,7 +388,7 @@ class ChooseAction extends GameState {
         if ($route->ferryWaves > 0 && $distribution === null) {
             throw new UserException("You must choose how to pay for this Ferry route.");
         }
-        $colorAndLocomotiveCards = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $availableFerryCards, ferryCardsUsed: $ferryCards);
+        $colorAndLocomotiveCards = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $color, distributionCards: $distributionCards, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $availableFerryCards, ferryCardsUsed: $ferryCards, playerId: $activePlayerId);
         
         if ($colorAndLocomotiveCards == null) {
             throw new UserException("Not enough cards to claim the route.");
@@ -317,6 +436,12 @@ class ChooseAction extends GameState {
         }
 
         $this->game->applyClaimRoute($activePlayerId, $routeId, $color, 0, distributionCards: $distributionCards, shifted: $opponentRoutesInsteadOfFreeOnes, ferryCardsUsed: $ferryCards);
+        if ($rightOfWayPending) {
+            $this->game->returnRightOfWay($activePlayerId);
+        }
+        if ($this->game->thermocompressorAfterRouteClaim($activePlayerId)) {
+            return self::class;
+        }
 
         if ($legendaryCharacter === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0) {
             if ($this->game->legendaryCharacterManager->character4CanClaimAnotherRoute($activePlayerId)) {
@@ -342,6 +467,7 @@ class ChooseAction extends GameState {
      */
     #[PossibleAction]
     public function actBuildStation(int $cityId, int $color, int $activePlayerId) {
+        $this->assertNoImmediateTechnologyPending();
 
         $remainingStations = $this->game->buildingManager->getRemainingStations($activePlayerId);
         if ($remainingStations <= 0) {
@@ -371,6 +497,7 @@ class ChooseAction extends GameState {
     
     #[PossibleAction]
     public function actPass(int $activePlayerId, array $args) {
+        $this->assertNoImmediateTechnologyPending();
         if (!$args['canPass']) {
             throw new UserException("You cannot pass");
         }
@@ -380,8 +507,18 @@ class ChooseAction extends GameState {
         return NextPlayer::class;
     }
 
+    private function assertNoImmediateTechnologyPending(): void {
+        if ($this->game->getMap()->useTechnologyCards && $this->bga->globals->get('RIGHT_OF_WAY_PENDING', false)) {
+            throw new UserException('Claim an occupied route with Right of Way first.');
+        }
+        if ($this->game->getMap()->useTechnologyCards && $this->bga->globals->get('THERMOCOMPRESSOR_REMAINING', 0) > 0) {
+            throw new UserException('Claim your routes with Thermocompressor first.');
+        }
+    }
+
     #[PossibleAction]
     public function actUseLegendaryCharacter(int $activePlayerId, array $args, ?int $color = null) {
+        $this->assertNoImmediateTechnologyPending();
         $legendaryCharacter = $args['legendaryCharacter'];
         $legendaryCharacterState = $args['legendaryCharacterState'];
         if ($legendaryCharacterState !== null) {
@@ -410,6 +547,7 @@ class ChooseAction extends GameState {
 
     #[PossibleAction]
     public function actCancelLegendaryCharacter(int $activePlayerId, array $args) {
+        $this->assertNoImmediateTechnologyPending();
         $legendaryCharacterState = $args['legendaryCharacterState'];
         $isCharacter3Using = $args['legendaryCharacter'] === 3
             && is_string($legendaryCharacterState)
@@ -539,7 +677,7 @@ class ChooseAction extends GameState {
                     continue;
                 }
 
-                $color = $this->getZombieClaimColor($possibleRoute, $trainCarsHand, $remainingTrainCars);
+                $color = $this->getZombieClaimColor($possibleRoute, $trainCarsHand, $remainingTrainCars, $playerId);
                 if ($color !== null) {
                     return $this->actClaimRoute($possibleRoute->id, $color, null, 0, $playerId);
                 }
@@ -549,7 +687,7 @@ class ChooseAction extends GameState {
         return null;
     }
 
-    private function getZombieClaimColor(object $route, array $trainCarsHand, int $remainingTrainCars): ?int {
+    private function getZombieClaimColor(object $route, array $trainCarsHand, int $remainingTrainCars, int $playerId): ?int {
         $colorsToTest = $route->color > 0 ? [$route->color, 0] : [1,2,3,4,5,6,7,8,0];
         if ($route->locomotives === $route->number) {
             $colorsToTest = [0];
@@ -558,7 +696,7 @@ class ChooseAction extends GameState {
         $bestColor = null;
         $bestLocomotiveCount = PHP_INT_MAX;
         foreach ($colorsToTest as $colorToTest) {
-            $cost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $colorToTest);
+            $cost = $this->game->mapManager->canPayForRoute($route, $trainCarsHand, $remainingTrainCars, $colorToTest, playerId: $playerId);
             if ($cost === null) {
                 continue;
             }

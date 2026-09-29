@@ -54,6 +54,33 @@ class Map {
     public ?array $regionBonusPoints = null;
     public array $completeRegionsCountingDouble = [];
     public bool $ferryCards = false;
+    public bool $useTechnologyCards = false;
+    public array $technologyCardCosts = [];
+
+    public function canClaimRouteWithTechnology(Route $route, array $technologyCards): bool {
+        return true;
+    }
+
+    public function getLocomotiveSubstitutionSize(array $technologyCards): ?int {
+        return null;
+    }
+
+    public function getAdditionalRoutePoints(Route $route, array $technologyCards): int {
+        return 0;
+    }
+
+    public function getCompletedTicketBonus(int $completedTickets, array $technologyCards): int {
+        return 0;
+    }
+
+    public function getMaximumHiddenTrainCardsPerAction(array $technologyCards): int {
+        return 2;
+    }
+
+    public function getEndGameTechnologyBonuses(array $technologyCards, int $completedTickets, int $mostCompletedTickets, int $longestPath, int $longestPathInGame): array {
+        return [];
+    }
+
     /**
      * List for each type of share stock cards, the points awarded by ranking (index 0 means ranked first)
      */

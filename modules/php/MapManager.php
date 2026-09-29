@@ -55,37 +55,42 @@ class MapManager {
 
         $claimableRoutes = [];
         if ($opponentRoutesInsteadOfFreeOnes) {
-            $claimableRoutes = array_filter($allRoutes, fn($route) => Arrays::some($claimedRoutes, fn($claimedRoute) => $claimedRoute->routeId === $route->id && $claimedRoute->playerId !== $playerId));
+            $claimableRoutes = array_filter($allRoutes, fn($route) =>
+                Arrays::some($claimedRoutes, fn($claimedRoute) => $claimedRoute->routeId === $route->id && $claimedRoute->playerId !== $playerId)
+                && !Arrays::some($claimedRoutes, fn($claimedRoute) => $claimedRoute->routeId === $route->id && $claimedRoute->playerId === $playerId)
+            );
         } else {
             // remove routes already claimed
             $claimableRoutes = array_filter($allRoutes, fn($route) => !in_array($route->id, $claimedRoutesIds));
         }
 
+        if ($this->game->getMap()->useTechnologyCards) {
+            $technologyCards = $this->game->bga->globals->get("TECHNOLOGY_CARDS_{$playerId}", []);
+            $claimableRoutes = array_filter($claimableRoutes, fn($route) =>
+                $this->game->getMap()->canClaimRouteWithTechnology($route, $technologyCards)
+            );
+        }
+
         // remove routes user can't pay
         $claimableRoutes = array_values(array_filter($claimableRoutes, fn($unclaimedRoute) => 
-           $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $ferryCards) !== null
+           $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $ferryCards, playerId: $playerId) !== null
         ));
 
         $doubleRouteAllowed = $this->isDoubleRouteAllowed();
         $tripleRouteAllowed = $this->isTripleRouteAllowed();
         // remove double routes if low player count, or if player already got the other route
-        $claimableRoutes = array_values(array_filter($claimableRoutes, function($unclaimedRoute) use ($playerId, $claimedRoutes, $doubleRouteAllowed, $tripleRouteAllowed) {
+        $claimableRoutes = array_values(array_filter($claimableRoutes, function($unclaimedRoute) use ($playerId, $claimedRoutes, $doubleRouteAllowed, $tripleRouteAllowed, $opponentRoutesInsteadOfFreeOnes) {
+            if ($opponentRoutesInsteadOfFreeOnes) {
+                return true;
+            }
             $twinRoutes = $this->getTwinRoutes($unclaimedRoute);
             $otherRoutesAllowed = count($twinRoutes) > 2 ? $tripleRouteAllowed : $doubleRouteAllowed;
             foreach($twinRoutes as $twinRoute) {
                 // we check if twin route is claimed
-                $twinRouteClaimedBy = null;
-                foreach($claimedRoutes as $claimedRoute) {
-                    if ($claimedRoute->routeId == $twinRoute->id) {
-                        $twinRouteClaimedBy = $claimedRoute->playerId;
-                        break;
-                    }
-                }
-
-                if ($twinRouteClaimedBy !== null) {
-                    // twin route is claimed by someone
-                    // if double/triple routes are not allowed, or player already got twin route, he can claim route
-                    if (!$otherRoutesAllowed || $twinRouteClaimedBy == $playerId) {
+                $twinRouteOwners = array_values(array_map(fn($claimedRoute) => $claimedRoute->playerId, array_filter($claimedRoutes, fn($claimedRoute) => $claimedRoute->routeId == $twinRoute->id)));
+                if (count($twinRouteOwners) > 0) {
+                    // A parallel route is unavailable at this player count or when the player owns one of its tracks.
+                    if (!$otherRoutesAllowed || in_array($playerId, $twinRouteOwners, true)) {
                         return false;
                     }
                 }
@@ -310,6 +315,17 @@ class MapManager {
         return $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForTripleRoutes;
     }
 
+    public function getRouteTrainCardCost(object $route, ?int $playerId, int $extraCardsCost = 0): int {
+        $cost = $route->number + $extraCardsCost;
+        if ($playerId !== null && $this->game->getMap()->useTechnologyCards) {
+            $technologyCards = $this->game->bga->globals->get("TECHNOLOGY_CARDS_{$playerId}", []);
+            if (in_array(15, $technologyCards, true)) {
+                return max(1, $route->locomotives, $cost - 1);
+            }
+        }
+        return $cost;
+    }
+
     /**
      * Indicates if the player got enough train cars (meeples) left, and enough Train car cards (of route color + locomotive).
      * If player cannot pay, returns null.
@@ -317,7 +333,15 @@ class MapManager {
      * 
      * @param Route $route
      */
-    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0, ?array $distributionCards = null, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null, int $ferryCards = 0, ?int $ferryCardsUsed = null): ?array {
+    public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0, ?array $distributionCards = null, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null, int $ferryCards = 0, ?int $ferryCardsUsed = null, ?int $playerId = null): ?array {
+        if ($playerId !== null && $this->game->getMap()->useTechnologyCards) {
+            $technologyCards = $this->game->bga->globals->get("TECHNOLOGY_CARDS_{$playerId}", []);
+            $substitutionSize = $this->game->getMap()->getLocomotiveSubstitutionSize($technologyCards);
+            if ($substitutionSize !== null) {
+                $route = clone $route;
+                $route->canPayWithAnySetOfCards = $substitutionSize;
+            }
+        }
         if ($pairSetAsLocomotive !== null) {
             // Do not consume the selected pair when the route can already be
             // paid with cards of that same color, without locomotives.
@@ -362,7 +386,7 @@ class MapManager {
             }
         }
 
-        $cardCost = $route->number + $extraCardsCost;
+        $cardCost = $this->getRouteTrainCardCost($route, $playerId, $extraCardsCost);
 
         if ($route->bulletTrainSpaceIndex !== null && $this->game->bga->globals->get(REMAINING_BULLET_TRAINS) > 0) {
             // no need to check if the player has enough train cars as he will use bullet train ones
@@ -402,18 +426,21 @@ class MapManager {
 
         if ($distributionCards) {
             $locomotiveCards = $forbidLocomotiveAsJoker ? [] : Arrays::filter($distributionCards, fn($card) => $card->type == 0);
-            $colorCards = $color === 0 ? [] : array_slice(Arrays::filter($distributionCards, fn($card) => $card->type == $color), 0, ($route->number + $extraCardsCost) - $route->locomotives);
+            $colorCards = $color === 0 ? [] : array_slice(Arrays::filter($distributionCards, fn($card) => $card->type == $color), 0, $cardCost - $route->locomotives);
             $setCount = 0;
             if ($route->canPayWithAnySetOfCards) {
                 $singleCards = array_merge($locomotiveCards, $colorCards);
                 $setCardsCount = Arrays::count($distributionCards, fn($card) => !Arrays::some($singleCards, fn($sc) => $sc->id == $card->id));
+                if ($this->game->getMap()->useTechnologyCards && $setCardsCount % $route->canPayWithAnySetOfCards !== 0) {
+                    return null;
+                }
                 $setCount = (int)floor($setCardsCount / $route->canPayWithAnySetOfCards);
             }
             // check if valid
             if ((count($locomotiveCards) + $setCount) < $route->locomotives) {
                 return null;
             } 
-            if ((count($locomotiveCards) + count($colorCards) + $setCount) === ($route->number + $extraCardsCost)) {
+            if ((count($locomotiveCards) + count($colorCards) + $setCount) === $cardCost) {
                 return $distributionCards;
             } else {
                 return null;

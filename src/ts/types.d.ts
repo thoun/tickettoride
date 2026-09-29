@@ -53,6 +53,7 @@ interface ClaimingRoute {
 interface ClaimedRoute {
     routeId: number;
     playerId: number;
+    shiftIndex?: number;
 }
 
 interface BuiltStation {
@@ -62,11 +63,13 @@ interface BuiltStation {
 
 interface MapSpecificData {
     remainingBulletTrains?: number;
+    remainingTechnologyCards?: number[];
     remainingStockShareCards?: {[type: number]: number[] };
     stockShareCardsDummy?: {[type: number]: number[] };
     shareStockPoints?: {[type: number]: number[] };
 }
 interface PlayerMapSpecificData {
+    technologyCards?: number[];
     mountainTrains?: number;
     bulletTrainPosition?: number;
     regionsCount?: number;
@@ -128,6 +131,7 @@ interface TicketToRideMap {
     pointsForGlobetrotter: number | null;
     pointsForMostConnectedCities: number | null;
     ferryCards: boolean;
+    useTechnologyCards: boolean;
 }
 
 /**
@@ -216,6 +220,7 @@ interface NotifClaimedRouteArgs {
     removeCards: TrainCar[];
     remainingTrainCars: number;
     shifted?: boolean;
+    shiftIndex?: number;
     claimWithBulletTrain?: boolean;
     remainingBulletTrains?: number;
     bulletTrainPosition?: number;
@@ -236,6 +241,17 @@ interface NotifStockShareTakenArgs {
     remainingCount: number;
     ownerTypeCount: number;
     ownerTotalCount: number;
+}
+
+interface NotifTechnologyCardBoughtArgs {
+    playerId: number;
+    type: number;
+    remainingCount: number;
+    removeCards: TrainCar[];
+}
+
+interface NotifTechnologyCardsExpiredArgs {
+    types: number[];
 }
 
 interface NotifAddMountainTrainsArgs {

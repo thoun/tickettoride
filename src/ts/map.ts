@@ -162,6 +162,7 @@ export class TtrMap {
     private crosshairShift: number = 0;
 
     private claimedRoutesIds = [];
+    private routeClaimCounts = new Map<number, number>();
     private claimedCitiesIds = [];
 
     private activeDestinationCityIds = new Set<number>();
@@ -173,6 +174,8 @@ export class TtrMap {
     // map specific
     private mountainCarCounters: Counter[] = [];
     private remainingBulletTrainCarCounters: Counter | null = null;
+
+    private UK_TECHNOLOGIES: string[][] | null = null;
 
     /** 
      * Place map corner illustration and borders, cities, routes, and bind events.
@@ -186,6 +189,25 @@ export class TtrMap {
         illustration: number,
         private mapSpecificData: MapSpecificData,
     ) {
+        this.UK_TECHNOLOGIES = [
+            [_('Wales Concession'), _('Claim routes into any city in Wales.')],
+            [_('Ireland / France Concession'), _('Claim routes into any city in Ireland or France.')],
+            [_('Scotland Concession'), _('Claim routes into any city in Scotland.')],
+            [_('Mechanical Stoker'), _('Claim 3-space routes.')],
+            [_('Superheated Steam Boiler'), _('Claim 4-, 5-, and 6-space routes. Mechanical Stoker is still needed for 3-space routes.')],
+            [_('Propellers'), _('Claim Ferry routes.')],
+            [_('Booster'), _('Use any 3 Train Car cards as a Locomotive instead of 4.')],
+            [_('Boiler Lagging'), _('Score 1 extra point for every route you claim.')],
+            [_('Steam Turbines'), _('Score 2 extra points for every Ferry route you claim, or 3 with Boiler Lagging.')],
+            [_('Double Heading'), _('At game end, score 2 points for each completed Destination Ticket.')],
+            [_('Right of Way'), _('Immediately claim a route already claimed by another player. Pay its usual cost, place your trains beside theirs, then return this card to the table.')],
+            [_('Thermocompressor'), _('Claim 2 routes this turn, then return this card to the table.')],
+            [_('Water Tenders'), _('When drawing Train Car cards, you may draw 3 blind cards instead of the usual 2.')],
+            [_('Risky Contracts'), _('At game end, score 20 points if you have the most completed Destination Tickets; otherwise lose 20. Available only before the first Train Car deck reshuffle.')],
+            [_('Equalising Beam'), _('At game end, score 15 points if you have the longest continuous route; otherwise lose 15. Available only before the first Train Car deck reshuffle.')],
+            [_('Diesel Power'), _('When claiming a route, play 1 fewer card than required. You must still play at least 1 card and cannot ignore a Locomotive on a Ferry route.')],
+        ];
+
         this.mapDiv = document.getElementById('map') as HTMLDivElement;
 
         // map border
@@ -434,11 +456,14 @@ export class TtrMap {
      */ 
     public setClaimedRoutes(claimedRoutes: ClaimedRoute[], fromPlayerId: number | null, shifted: boolean = false) {
         claimedRoutes.forEach(claimedRoute => {
+            const previousClaims = this.routeClaimCounts.get(claimedRoute.routeId) ?? 0;
+            this.routeClaimCounts.set(claimedRoute.routeId, previousClaims + 1);
             this.claimedRoutesIds.push(claimedRoute.routeId);
             const route = this.map.routes[claimedRoute.routeId];
             const player = this.players.find(player => Number(player.id) == claimedRoute.playerId);
-            const routeShifted = shifted || (player && player.legendaryCharacter === 1 && player.legendaryCharacterState === `used:${claimedRoute.routeId}`);
-            this.setWagons(route, claimedRoute.playerId, fromPlayerId, false, routeShifted);
+            const legacyShifted = player && player.legendaryCharacter === 1 && player.legendaryCharacterState === `used:${claimedRoute.routeId}`;
+            const shiftIndex = claimedRoute.shiftIndex || ((shifted || legacyShifted) ? Math.max(1, previousClaims) : 0);
+            this.setWagons(route, claimedRoute.playerId, fromPlayerId, false, shiftIndex);
 
             const otherRoutes = this.game.getOtherDoubleRoutes(route);
             if ((otherRoutes.length > 1 && this.game.isTripleRouteForbidden()) || (otherRoutes.length === 1 && this.game.isDoubleRouteForbidden())) {
@@ -514,9 +539,9 @@ export class TtrMap {
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */ 
-    private setWagon(route: Route, space: RouteSpace, spaceIndex: number, playerId: number, fromPlayerId: number, phantom: boolean, isLowestFromDoubleHorizontalRoute: boolean, shift: { x: number, y: number } = undefined) {
+    private setWagon(route: Route, space: RouteSpace, spaceIndex: number, playerId: number, fromPlayerId: number, phantom: boolean, isLowestFromDoubleHorizontalRoute: boolean, shift: { x: number, y: number } = undefined, shiftIndex: number = 0) {
         const player = playerId > 0 ? this.game.bga.players.getPlayerById(playerId) as TicketToRidePlayer : null;
-        const id = `wagon-route${route.id}-space${spaceIndex}${shift ? '-shifted' : ''}${phantom ? '-phantom' : ''}`;
+        const id = `wagon-route${route.id}-space${spaceIndex}${shiftIndex ? `-shifted${shiftIndex}` : ''}${phantom ? '-phantom' : ''}`;
         if (playerId === -1 && spaceIndex !== route.bulletTrainSpaceIndex) {
             return;
         }
@@ -574,10 +599,10 @@ export class TtrMap {
         }
     }
 
-    private getShift(route: Route) {
+    private getShift(route: Route, shiftIndex: number) {
         const from = this.map.cities[route.from];
         const to = this.map.cities[route.to];
-        const shift = 20;
+        const shift = 20 * shiftIndex;
 
         const dx = to.x - from.x;
         const dy = to.y - from.y;
@@ -594,21 +619,21 @@ export class TtrMap {
      * fromPlayerId is for animation (null for no animation)
      * Phantom is for dragging over a route : wagons are showns translucent.
      */ 
-    private setWagons(route: Route, playerId: number, fromPlayerId: number, phantom: boolean, shifted: boolean = false) {
-        const shift = shifted ? this.getShift(route) : undefined;
+    private setWagons(route: Route, playerId: number, fromPlayerId: number, phantom: boolean, shiftIndex: number = 0) {
+        const shift = shiftIndex ? this.getShift(route, shiftIndex) : undefined;
 
         const isLowestFromDoubleHorizontalRoute = this.isLowestFromDoubleHorizontalRoute(route);
 
         if (fromPlayerId) {
             route.spaces.forEach((space, spaceIndex) => {
                 setTimeout(() => {
-                    this.setWagon(route, space, spaceIndex, playerId, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute, shift);
+                    this.setWagon(route, space, spaceIndex, playerId, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute, shift, shiftIndex);
                     this.game.bga.sounds.play(`placed-train-car`);
                 }, 200 * spaceIndex);
             });
             this.game.bga.gameui.disableNextMoveSound();
         } else {
-            route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, playerId, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute, shift));
+            route.spaces.forEach((space, spaceIndex) => this.setWagon(route, space, spaceIndex, playerId, fromPlayerId, phantom, isLowestFromDoubleHorizontalRoute, shift, shiftIndex));
         }
     }
 
@@ -727,12 +752,12 @@ export class TtrMap {
 
             if (valid) {
                 const chooseActionArgs = this.game.bga.states.getCurrentMainStateName() === 'chooseAction' ? this.game.gamedatas.gamestate.args as EnteringChooseActionArgs : null;
-                const shifted = chooseActionArgs && chooseActionArgs.legendaryCharacter === 1 && chooseActionArgs.legendaryCharacterState === 'using';
+                const shifted = chooseActionArgs && (chooseActionArgs.rightOfWayPending || (chooseActionArgs.legendaryCharacter === 1 && chooseActionArgs.legendaryCharacterState === 'using'));
                 let claimerId = Number((player || this.game.getCurrentPlayer()).id);
                 if (route?.bulletTrainSpaceIndex !== null && this.remainingBulletTrainCarCounters.getValue() > 0) {
                     claimerId = -1;
                 }
-                this.setWagons(route, claimerId, null, true, shifted);
+                this.setWagons(route, claimerId, null, true, shifted ? (this.routeClaimCounts.get(route.id) ?? 0) : 0);
             }
 
         } else {
@@ -1001,6 +1026,64 @@ export class TtrMap {
                 }
             }); 
         }
+        if (this.map.code === 'uk') {
+            this.game.createPlayerZones(_('Available Technologies'));
+            const tableZone = this.game.getPlayerZoneContentElement('table');
+            Object.entries(this.mapSpecificData.remainingTechnologyCards ?? {}).forEach(([type, count]) => {
+                this.addTechnologyCard(tableZone, Number(type), count);
+            });
+            this.players.forEach(player => {
+                const playerZone = this.game.getPlayerZoneContentElement(player.id);
+                (player.mapSpecificData.technologyCards ?? []).forEach(type => this.addTechnologyCard(playerZone, type));
+            });
+        }
+    }
+
+    private addTechnologyCard(zone: HTMLElement, type: number, count?: number) {
+        const card = document.createElement('div');
+        card.className = 'technology-card';
+        card.dataset.type = String(type);
+        card.id = `technology-card-${zone.closest('.player-zone').id}-${type}`;
+        zone.appendChild(card);
+
+        if (count !== undefined) {
+            const counter = document.createElement('span');
+            counter.className = 'technology-card-count';
+            counter.textContent = String(count);
+            card.appendChild(counter);
+        }
+
+        const [name, description] = this.UK_TECHNOLOGIES[type] ?? [];
+        if (name) {
+            card.dataset.name = name;
+            this.game.setTooltip(card.id, `<strong>${name}</strong><br><br>${description}`);
+        }
+    }
+
+    public technologyCardBought(playerId: number, type: number, remainingCount: number) {
+        const tableCard = this.game.getPlayerZoneContentElement('table').querySelector<HTMLElement>(`.technology-card[data-type="${type}"]`);
+        tableCard?.querySelector<HTMLElement>('.technology-card-count')?.replaceChildren(String(remainingCount));
+        const player = this.players.find(player => Number(player.id) === playerId);
+        (player.mapSpecificData.technologyCards ??= []).push(type);
+        this.addTechnologyCard(this.game.getPlayerZoneContentElement(playerId), type);
+    }
+
+    public technologyCardReturned(playerId: number, type: number, remainingCount: number) {
+        const tableCard = this.game.getPlayerZoneContentElement('table').querySelector<HTMLElement>(`.technology-card[data-type="${type}"]`);
+        tableCard?.querySelector<HTMLElement>('.technology-card-count')?.replaceChildren(String(remainingCount));
+        const player = this.players.find(player => Number(player.id) === playerId);
+        player.mapSpecificData.technologyCards = (player.mapSpecificData.technologyCards ?? []).filter(cardType => cardType !== type);
+        this.game.getPlayerZoneContentElement(playerId).querySelector<HTMLElement>(`.technology-card[data-type="${type}"]`)?.remove();
+    }
+
+    public technologyCardsExpired(types: number[]) {
+        const tableZone = this.game.getPlayerZoneContentElement('table');
+        types.forEach(type => {
+            if (this.mapSpecificData.remainingTechnologyCards) {
+                this.mapSpecificData.remainingTechnologyCards[type] = 0;
+            }
+            tableZone.querySelector<HTMLElement>(`.technology-card[data-type="${type}"] .technology-card-count`)?.replaceChildren('0');
+        });
     }
 
     private addStockSharePile(zone: HTMLElement, type: number | null, cards: number[], hiddenCount?: number) {

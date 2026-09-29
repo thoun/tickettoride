@@ -706,6 +706,9 @@ export class Game {
             ['trainCarPicked', ANIMATION_MS],
             ['ferryCardDrawn', 1],
             ['stockShareTaken', 1],
+            ['technologyCardBought', 1],
+            ['technologyCardReturned', 1],
+            ['technologyCardsExpired', 1],
             ['freeTunnel', 2000],
             ['highlightVisibleLocomotives', 1000],
             ['notEnoughTrainCars', 1],
@@ -785,6 +788,23 @@ export class Game {
         this.map.stockShareTaken(notif.args);
     }
 
+    notif_technologyCardBought(notif: Notif<NotifTechnologyCardBoughtArgs>) {
+        const { playerId, type, remainingCount, removeCards } = notif.args;
+        this.trainCarCardCounters[playerId].incValue(-removeCards.length);
+        if (playerId === this.getPlayerId()) {
+            this.playerTable.removeCards(removeCards);
+        }
+        this.map.technologyCardBought(playerId, type, remainingCount);
+    }
+
+    notif_technologyCardReturned(notif: Notif<{playerId: number; type: number; remainingCount: number}>) {
+        this.map.technologyCardReturned(notif.args.playerId, notif.args.type, notif.args.remainingCount);
+    }
+
+    notif_technologyCardsExpired(notif: Notif<NotifTechnologyCardsExpiredArgs>) {
+        this.map.technologyCardsExpired(notif.args.types);
+    }
+
     /** 
      * Update visible cards.
      */ 
@@ -816,7 +836,8 @@ export class Game {
         this.trainCarCounters[playerId].toValue(notif.args.remainingTrainCars);
         this.map.setClaimedRoutes([{
             playerId: notif.args.claimWithBulletTrain ? -1 : playerId,
-            routeId
+            routeId,
+            shiftIndex: notif.args.shiftIndex,
         }], playerId, notif.args.shifted ?? false);
         if (playerId == this.getPlayerId()) {
             this.playerTable.removeCards(notif.args.removeCards);
@@ -1063,7 +1084,7 @@ export class Game {
                 }
 
                 // make cities names in bold 
-                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name'].forEach(field => {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name', 'technology_name'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }

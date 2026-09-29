@@ -5,6 +5,7 @@ namespace Bga\Games\TicketToRide;
 
 use Bga\GameFramework\Components\Deck;
 use Bga\GameFramework\SystemException;
+use Bga\GameFramework\UserException;
 use Bga\Games\TicketToRide\Objects\TrainCar;
 
 class TrainCarManager {
@@ -63,12 +64,17 @@ class TrainCarManager {
      * Draw 1 or 2 hidden cards, to player hand.
      */
     public function drawTrainCarCardsFromDeck(int $playerId, int $number, bool $isSecondCard = false) {
-        if ($number != 1 && $number != 2) {
-            throw new \BgaUserException("You must take one or two cards.");
+        $maximum = 2;
+        if (!$isSecondCard && $this->game->getMap()->useTechnologyCards) {
+            $technologyCards = $this->game->bga->globals->get("TECHNOLOGY_CARDS_{$playerId}", []);
+            $maximum = $this->game->getMap()->getMaximumHiddenTrainCardsPerAction($technologyCards);
+        }
+        if ($number < 1 || $number > $maximum) {
+            throw new UserException("You cannot take this many hidden Train Car cards.");
         }
         
-        if ($number == 2 && $isSecondCard) {
-            throw new \BgaUserException("You must take one card.");
+        if ($number > 1 && $isSecondCard) {
+            throw new UserException("You must take one card.");
         }
 
         $remainingTrainCarCardsInDeck = $this->getRemainingTrainCarCardsInDeck(true);
@@ -270,6 +276,22 @@ class TrainCarManager {
 
     public function trainCarDeckAutoReshuffle() {
         $this->game->notify->all('log', clienttranslate('The train car deck has been reshuffled'), []);
+        if ($this->game->getMap()->useTechnologyCards
+            && $this->trainCars->countCardInLocation('deck') > 0
+            && !$this->game->bga->globals->get('TRAIN_CAR_DECK_RESHUFFLED', false)) {
+            $this->game->bga->globals->set('TRAIN_CAR_DECK_RESHUFFLED', true);
+            $remainingTechnologyCards = $this->game->bga->globals->get('REMAINING_TECHNOLOGY_CARDS', []);
+            $expiringTypes = array_values(array_filter([13, 14], fn($type) => array_key_exists($type, $remainingTechnologyCards)));
+            if ($expiringTypes) {
+                foreach ($expiringTypes as $type) {
+                    $remainingTechnologyCards[$type] = 0;
+                }
+                $this->game->bga->globals->set('REMAINING_TECHNOLOGY_CARDS', $remainingTechnologyCards);
+                $this->game->notify->all('technologyCardsExpired', clienttranslate('Risky Contracts and Equalising Beam can no longer be purchased'), [
+                    'types' => $expiringTypes,
+                ]);
+            }
+        }
     }
 
     /**
