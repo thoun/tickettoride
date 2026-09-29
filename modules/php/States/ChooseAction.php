@@ -73,7 +73,7 @@ class ChooseAction extends GameState {
             foreach($colorsToTest as $colorToTest) {
                 $costByColor[$colorToTest] = $this->game->mapManager->canPayForRoute($possibleRoute, $trainCarsHand, 99, $colorToTest, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $ferryCardsCount);
 
-                if (!$canClaimARoute && $costByColor[$colorToTest] !== null && count($costByColor[$colorToTest]) <= $realRemainingTrainCars) {
+                if (!$canClaimARoute && $costByColor[$colorToTest] !== null && ($possibleRoute->number + $possibleRoute->mountain) <= $realRemainingTrainCars) {
                     $canClaimARoute = true;
                 }
             }

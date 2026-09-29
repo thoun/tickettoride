@@ -427,13 +427,16 @@ class MapManager {
         
         if ($color === 0) {
             // the user wants to pay with locomotives
-            $possibleSets = $route->canPayWithAnySetOfCards ? (int)floor(Arrays::count($trainCarsHand, fn($card) => $card->type != 0) / $route->canPayWithAnySetOfCards) : 0;
-            if ((count($locomotiveCards) + $possibleSets) >= $cardCost) {
-                if ($forbidLocomotiveAsJoker) {
-                    return null;
-                }
-                // enough locomotive cards
-                return array_slice($locomotiveCards, 0, $cardCost); 
+            if ($forbidLocomotiveAsJoker) {
+                return null;
+            }
+            $payment = array_slice($locomotiveCards, 0, $cardCost);
+            $setsNeeded = $cardCost - count($payment);
+            $setCards = $route->canPayWithAnySetOfCards
+                ? Arrays::filter($trainCarsHand, fn($card) => $card->type != 0)
+                : [];
+            if ($setsNeeded === 0 || ($route->canPayWithAnySetOfCards > 0 && count($setCards) >= $setsNeeded * $route->canPayWithAnySetOfCards)) {
+                return array_merge($payment, array_slice($setCards, 0, $setsNeeded * $route->canPayWithAnySetOfCards));
             }
         } else {
             // route is gray, check for each possible color
@@ -463,11 +466,14 @@ class MapManager {
                     array_slice($colorCards, 0, count($colorCards)),
                     array_slice($locomotiveCards, 0, $locomotiveCardsCount),
                 );
-                $possibleSets = $route->canPayWithAnySetOfCards ? (int)floor(Arrays::count($trainCarsHand, fn($card) => !Arrays::some($singleCardsUsed, fn($sc) => $sc->id == $card->id)) / $route->canPayWithAnySetOfCards) : 0;
+                $setsNeeded = $cardCost - count($singleCardsUsed);
+                $setCards = $route->canPayWithAnySetOfCards
+                    ? Arrays::filter($trainCarsHand, fn($card) => !Arrays::some($singleCardsUsed, fn($sc) => $sc->id == $card->id))
+                    : [];
 
                 if (
-                    (count($singleCardsUsed) + $possibleSets) >= $cardCost
-                    && $route->locomotives <= (count($locomotiveCards) + $possibleSets)
+                    ($setsNeeded === 0 || ($route->canPayWithAnySetOfCards > 0 && count($setCards) >= $setsNeeded * $route->canPayWithAnySetOfCards))
+                    && $route->locomotives <= (count($locomotiveCards) + $setsNeeded)
                 ) {
                     return array_merge(
                         // first required locomotives
@@ -475,7 +481,9 @@ class MapManager {
                         // then color cards
                         array_slice($colorCards, 0, $colorCardCount),
                         // then remaining locomotives
-                        array_slice($locomotiveCards, $route->locomotives, $locomotiveCardsCount - $route->locomotives)
+                        array_slice($locomotiveCards, $route->locomotives, $locomotiveCardsCount - $route->locomotives),
+                        // every card in a substitute set must be discarded too
+                        array_slice($setCards, 0, $setsNeeded * $route->canPayWithAnySetOfCards)
                     );
                 }
             }
