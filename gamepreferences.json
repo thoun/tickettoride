@@ -133,6 +133,6 @@
                 "name": "Fit the whole map on the screen (can be small on mobile)"
             }
         },
-        "default": 0
+        "default": 1
     }
 }
