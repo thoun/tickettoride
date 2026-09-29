@@ -15,6 +15,20 @@ class Map {
     public ?array $bigCities = null;
     public array $countriesEndPoints = [];
 
+    /**
+     * Points scored for claimed routes.
+     */
+    public array $routePoints = [
+        1 => 1,
+        2 => 2,
+        3 => 4,
+        4 => 7,
+        5 => 10,
+        6 => 15,
+        7 => 18,
+        8 => 21,
+    ];
+
     public int $numberOfLocomotiveCards = 14;
     public int $numberOfColoredCards = 12;
     public int $initialTrainCarCardsInHand = 4; // Number of train car cards in hand, for each player, at the beginning of the game.
@@ -50,19 +64,9 @@ class Map {
         public array $cities,
         public array $routes,
         public array $destinations,
-        /**
-         * Points scored for claimed routes.
-         */
-        public array $routePoints =  [
-            1 => 1,
-            2 => 2,
-            3 => 4,
-            4 => 7,
-            5 => 10,
-            6 => 15,
-            8 => 21,
-        ],
+        array $routePoints = [],
     ) {
+        $this->routePoints = array_replace($this->routePoints, $routePoints);
     }
 
     public function setCode(string $code): void {

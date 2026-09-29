@@ -51,12 +51,12 @@ function getRoutes() {
             new RouteSpace(1562, 93, 5),
             new RouteSpace(1625, 99, 6),
         ], stockShares: [5]),
-        6 => new Route(2, 22, RED, [
+        6 => new Route(2, 22, BLACK, [
             new RouteSpace(1405, 792, 63),
             new RouteSpace(1434, 848, 63),
             new RouteSpace(1463, 905, 63),
         ], stockShares: [15, 7]),
-        7 => new Route(2, 22, BLACK, [
+        7 => new Route(2, 22, RED, [
             new RouteSpace(1385, 802, 63),
             new RouteSpace(1414, 858, 63),
             new RouteSpace(1443, 915, 63),
@@ -98,10 +98,10 @@ function getRoutes() {
             new RouteSpace(942, 868, 1),
         ], stockShares: [15]),
         15 => new Route(3, 16, YELLOW, [
-            new RouteSpace(572, 793, -25),
+            new RouteSpace(573, 795, -27),
         ], stockShares: [15]),
         16 => new Route(3, 16, BLUE, [
-            new RouteSpace(586, 813, -25),
+            new RouteSpace(586, 812, -28),
         ], stockShares: [15]),
         17 => new Route(3, 18, GREEN, [
             new RouteSpace(707, 740, 0),
@@ -124,12 +124,12 @@ function getRoutes() {
             new RouteSpace(1699, 935, -90),
         ], stockShares: [3]),
         20 => new Route(4, 22, GRAY, [
-            new RouteSpace(1561, 970, 6),
-            new RouteSpace(1622, 977, 5),
+            new RouteSpace(1560, 972, 7),
+            new RouteSpace(1624, 979, 7),
         ], stockShares: [15, 7, 3]),
         21 => new Route(4, 22, GRAY, [
-            new RouteSpace(1561, 993, 5),
-            new RouteSpace(1620, 1000, 5),
+            new RouteSpace(1559, 994, 7),
+            new RouteSpace(1621, 1001, 7),
         ], stockShares: [15, 7, 3]),
         22 => new Route(5, 10, BLUE, [
             new RouteSpace(697, 1082, 0),
@@ -137,8 +137,8 @@ function getRoutes() {
             new RouteSpace(822, 1084, 0),
             new RouteSpace(887, 1084, 0),
             new RouteSpace(951, 1084, 0),
-            new RouteSpace(1015, 1084, 0),
-            new RouteSpace(1078, 1082, 0),
+            new RouteSpace(1015, 1085, 0),
+            new RouteSpace(1078, 1086, 0),
         ], stockShares: [4, 10]),
         23 => new Route(5, 14, RED, [
             new RouteSpace(997, 1027, 20),
@@ -252,9 +252,9 @@ function getRoutes() {
             new RouteSpace(964, 275, -20),
         ], stockShares: [15, 8, 10, 5, 2]),
         45 => new Route(9, 30, GRAY, [
-            new RouteSpace(680, 364, -11),
-            new RouteSpace(616, 373, 0),
-            new RouteSpace(551, 371, 3),
+            new RouteSpace(680, 364, -10),
+            new RouteSpace(616, 373, -2),
+            new RouteSpace(551, 371, 5),
             new RouteSpace(489, 363, 11),
         ], stockShares: [15, 8, 10, 5, 2]),
         46 => new Route(9, 32, GREEN, [
@@ -333,19 +333,19 @@ function getRoutes() {
         59 => new Route(13, 1002, GRAY, [
             new RouteSpace(109, 102, 59),
             new RouteSpace(142, 157, 59),
-            new RouteSpace(174, 210, 59),
+            new RouteSpace(173, 210, 59),
         ], stockShares: [15, 8, 5]),
         60 => new Route(13, 1002, GRAY, [
-            new RouteSpace(128, 87, 59),
-            new RouteSpace(162, 141, 59),
-            new RouteSpace(194, 195, 59),
+            new RouteSpace(127, 88, 59),
+            new RouteSpace(160, 143, 59),
+            new RouteSpace(193, 197, 59),
         ], stockShares: [15, 8, 5]),
         61 => new Route(14, 15, YELLOW, [
             new RouteSpace(983, 903, -64),
             new RouteSpace(955, 959, -63),
         ], stockShares: [7, 15]),
         62 => new Route(14, 33, GRAY, [
-            new RouteSpace(1008, 983, -22),
+            new RouteSpace(1006, 981, -20),
         ], stockShares: [15]),
         63 => new Route(15, 18, GRAY, [
             new RouteSpace(914, 775, 29),
@@ -379,19 +379,19 @@ function getRoutes() {
             new RouteSpace(467, 845, -5),
         ], stockShares: [15, 10]),
         69 => new Route(17, 22, GREEN, [
-            new RouteSpace(1224, 938, 18),
-            new RouteSpace(1283, 956, 12),
-            new RouteSpace(1348, 969, 3),
-            new RouteSpace(1412, 971, -3),
+            new RouteSpace(1224, 938, 19),
+            new RouteSpace(1286, 955, 12),
+            new RouteSpace(1351, 963, 4),
+            new RouteSpace(1415, 964, -3),
         ], stockShares: [15]),
         70 => new Route(17, 22, ORANGE, [
-            new RouteSpace(1222, 959, 17),
-            new RouteSpace(1283, 977, 8),
-            new RouteSpace(1348, 991, -3),
-            new RouteSpace(1412, 993, -3),
+            new RouteSpace(1222, 961, 17),
+            new RouteSpace(1283, 977, 10),
+            new RouteSpace(1348, 986, 2),
+            new RouteSpace(1414, 988, -3),
         ], stockShares: [15]),
         71 => new Route(17, 24, YELLOW, [
-            new RouteSpace(1191, 873, 82),
+            new RouteSpace(1192, 873, 104),
         ], stockShares: [7]),
         72 => new Route(17, 33, PINK, [
             new RouteSpace(1122, 955, -9),
@@ -421,9 +421,9 @@ function getRoutes() {
         77 => new Route(20, 26, PINK, [
             new RouteSpace(1388, 509, 0),
             new RouteSpace(1452, 511, 5),
-            new RouteSpace(1515, 519, 10),
-            new RouteSpace(1578, 532, 15),
-            new RouteSpace(1638, 550, 20),
+            new RouteSpace(1515, 520, 10),
+            new RouteSpace(1578, 534, 15),
+            new RouteSpace(1639, 553, 20),
         ], stockShares: [8, 6, 3]),
         78 => new Route(21, 23, RED, [
             new RouteSpace(281, 550, -80),
@@ -440,21 +440,21 @@ function getRoutes() {
             new RouteSpace(170, 526, -15),
             new RouteSpace(109, 542, -15),
         ], stockShares: [8]),
-        81 => new Route(22, 27, GRAY, [
+        81 => new Route(20, 22, GRAY, [
             new RouteSpace(1622, 605, -70),
             new RouteSpace(1601, 663, -69),
             new RouteSpace(1578, 723, -69),
-            new RouteSpace(1556, 782, -70),
+            new RouteSpace(1557, 783, -70),
             new RouteSpace(1537, 841, -69),
             new RouteSpace(1515, 901, -68),
         ], stockShares: [3, 7, 10, 15]),
-        82 => new Route(22, 27, GRAY, [
-            new RouteSpace(1642, 612, -70),
-            new RouteSpace(1621, 671, -70),
-            new RouteSpace(1599, 731, -69),
-            new RouteSpace(1577, 790, -69),
-            new RouteSpace(1556, 849, -70),
-            new RouteSpace(1534, 909, -70),
+        82 => new Route(20, 22, GRAY, [
+            new RouteSpace(1643, 613, -70),
+            new RouteSpace(1622, 672, -70),
+            new RouteSpace(1600, 733, -69),
+            new RouteSpace(1578, 792, -69),
+            new RouteSpace(1557, 851, -70),
+            new RouteSpace(1536, 910, -70),
         ], stockShares: [3, 7, 10, 15]),
         83 => new Route(23, 31, GREEN, [
             new RouteSpace(110, 874, -38),
@@ -476,11 +476,11 @@ function getRoutes() {
             new RouteSpace(152, 707, 52),
             new RouteSpace(195, 754, 44),
         ], stockShares: [15, 10, 5]),
-        87 => new Route(24, 33, GRAY, [
+        87 => new Route(15, 17, GRAY, [
             new RouteSpace(1077, 864, 26),
             new RouteSpace(1131, 891, 27),
         ], stockShares: [15]),
-        88 => new Route(24, 33, GRAY, [
+        88 => new Route(15, 17, GRAY, [
             new RouteSpace(1067, 882, 26),
             new RouteSpace(1122, 911, 26),
         ], stockShares: [15]),

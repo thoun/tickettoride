@@ -21,16 +21,9 @@ class NordicCountriesMap extends Map {
              */
             getAllDestinations(),
             /**
-             * Points scored for claimed routes.
+             * Additional points scored for route lengths not in the default table.
              */
             [
-                1 => 1,
-                2 => 2,
-                3 => 4,
-                4 => 7,
-                5 => 10,
-                6 => 15,
-                //8 => 21,
                 9 => 27,
             ]
         );

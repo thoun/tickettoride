@@ -41,7 +41,7 @@ const MAP_LIST = [
     8 => 'africa',
     9 => 'netherlands',
     10 => 'uk',
-    11 => 'pensylvania',
+    11 => 'pennsylvania',
     12 => 'france',
     13 => 'oldwest',
     14 => 'poland',
@@ -520,7 +520,7 @@ class Game extends Table {
     }
 
     function getMapCode(): string { 
-        //if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[15]; }
+        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[10]; }
         return MAP_LIST[match (__NAMESPACE__) {
             'Bga\\Games\\TicketToRide' => 1,
             'Bga\\Games\\TicketToRideEurope' => 2,

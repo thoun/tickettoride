@@ -20,18 +20,6 @@ class SwitzerlandMap extends Map {
              * List of DestinationCard.
              */
             getAllDestinations(),
-            /**
-             * Points scored for claimed routes.
-             */
-            [
-                1 => 1,
-                2 => 2,
-                3 => 4,
-                4 => 7,
-                5 => 10,
-                6 => 15,
-                8 => 21,
-            ]
         );
 
         $this->visibleLocomotivesCountsAsTwoCards = false; // Says if it is possible to take only one visible locomotive.
