@@ -5,3 +5,26 @@
 .train-car-card, .icon.train-car-color {
     background-image: url("./train-cards.jpg");
 }
+
+.technology-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 250px; 
+    height: 161px; 
+    background-image: url("img/technology-cards.webp");
+    background-size: 100% auto;
+    border-radius: 6px;
+    box-shadow: 0 0 8px 1px black;
+    transform-origin: center center;
+}
+
+.technology-card.selectable {
+    cursor: pointer;
+}
+    
+.technology-card.disabled {
+    filter: contrast(0.6);
+    cursor: not-allowed;
+}
+

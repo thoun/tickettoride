@@ -1,3 +1,31 @@
 #map {
     background-image: url('./map.webp');
 }
+
+.bonus-card.globetrotter {
+    width: 161px;
+    height: 250px;
+    background: url('./bonus-card-globetrotter.webp'); 
+}
+
+.stock-shares-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 250px; 
+    height: 161px; 
+    background-image: url("img/stock-shares.webp");
+    background-size: 100% 900%;
+    border-radius: 6px;
+    box-shadow: 0 0 8px 1px black;
+    transform-origin: center center;
+}
+
+.stock-shares-card.selectable {
+    cursor: pointer;
+}
+    
+.stock-shares-card.disabled {
+    filter: contrast(0.6);
+    cursor: not-allowed;
+}
