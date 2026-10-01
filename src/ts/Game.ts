@@ -221,6 +221,8 @@ export class Game {
     private onEnteringEndScore(fromReload: boolean = false) {
         this.bga.gameArea.removeLastTurnBanner();
 
+        this.map.revealStockShares();
+
         document.getElementById('score').style.display = 'flex';
 
         this.endScore = new EndScore(this, Object.values(this.gamedatas.players), fromReload, this.gamedatas.bestScore);

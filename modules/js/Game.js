@@ -2131,6 +2131,21 @@ class TtrMap {
         pile.appendChild(counter);
         zone.appendChild(pile);
     }
+    revealStockShares() {
+        if (this.map.code !== 'pennsylvania') {
+            return;
+        }
+        this.players.forEach(player => {
+            if (Number(player.id) === Number(this.game.bga.players.getCurrentPlayerId())) {
+                return;
+            }
+            const playerZone = this.game.getPlayerZoneContentElement(player.id);
+            playerZone.querySelectorAll('.stock-shares-pile').forEach(pile => pile.remove());
+            Object.entries(player.mapSpecificData.stockShareCards ?? {}).forEach(([type, cards]) => {
+                this.addStockSharePile(playerZone, Number(type), cards);
+            });
+        });
+    }
     stockShareTaken(args) {
         var _a, _b, _c, _d;
         this.mapSpecificData.remainingStockShareCards?.[args.type]?.shift();
@@ -3658,6 +3673,7 @@ class Game {
      */
     onEnteringEndScore(fromReload = false) {
         this.bga.gameArea.removeLastTurnBanner();
+        this.map.revealStockShares();
         document.getElementById('score').style.display = 'flex';
         this.endScore = new EndScore(this, Object.values(this.gamedatas.players), fromReload, this.gamedatas.bestScore);
     }

@@ -1127,6 +1127,24 @@ export class TtrMap {
         zone.appendChild(pile);
     }
 
+    public revealStockShares() {
+        if (this.map.code !== 'pennsylvania') {
+            return;
+        }
+
+        this.players.forEach(player => {
+            if (Number(player.id) === Number(this.game.bga.players.getCurrentPlayerId())) {
+                return;
+            }
+
+            const playerZone = this.game.getPlayerZoneContentElement(player.id);
+            playerZone.querySelectorAll('.stock-shares-pile').forEach(pile => pile.remove());
+            Object.entries(player.mapSpecificData.stockShareCards ?? {}).forEach(([type, cards]) => {
+                this.addStockSharePile(playerZone, Number(type), cards);
+            });
+        });
+    }
+
     public stockShareTaken(args: NotifStockShareTakenArgs) {
         this.mapSpecificData.remainingStockShareCards?.[args.type]?.shift();
         const tableZone = this.game.getPlayerZoneContentElement('table');
