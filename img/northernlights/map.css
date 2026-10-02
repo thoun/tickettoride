@@ -1,0 +1,25 @@
+#map {
+    background-image: url('./map.webp');
+}
+
+.northernlights-bonus-card {
+    width: 250px;
+    height: 161px;
+    flex: none;
+    background-image: url('./bonus-cards.webp');
+    background-size: 1100% 100%;
+    border-radius: 6px;
+    box-shadow: 0 0 8px 1px black;
+}
+
+.player-zone-table .player-zone-content {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.city[data-selectable="true"] {
+    mask: radial-gradient(circle 8px at center, transparent 0, transparent 8px, black 8px);
+}

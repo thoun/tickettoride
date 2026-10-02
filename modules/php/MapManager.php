@@ -76,26 +76,27 @@ class MapManager {
            $this->canPayForRoute($unclaimedRoute, $trainCarsHand, $remainingTrainCars, considerAllRoutesGray: $considerAllRoutesGray, pairSetAsLocomotive: $pairSetAsLocomotive, ferryCards: $ferryCards, playerId: $playerId) !== null
         ));
 
-        $doubleRouteAllowed = $this->isDoubleRouteAllowed();
-        $tripleRouteAllowed = $this->isTripleRouteAllowed();
+        $maximumDoubleRoutes = $this->game->getMap()->maximumPlayerForDoubleRoutes[$this->game->getPlayerCount()] ?? 2;
+        $maximumTripleRoutes = $this->game->getMap()->maximumPlayerForTripleRoutes[$this->game->getPlayerCount()] ?? 3;
         // remove double routes if low player count, or if player already got the other route
-        $claimableRoutes = array_values(array_filter($claimableRoutes, function($unclaimedRoute) use ($playerId, $claimedRoutes, $doubleRouteAllowed, $tripleRouteAllowed, $opponentRoutesInsteadOfFreeOnes) {
+        $claimableRoutes = array_values(array_filter($claimableRoutes, function($unclaimedRoute) use ($playerId, $claimedRoutes, $maximumDoubleRoutes, $maximumTripleRoutes, $opponentRoutesInsteadOfFreeOnes) {
             if ($opponentRoutesInsteadOfFreeOnes) {
                 return true;
             }
             $twinRoutes = $this->getTwinRoutes($unclaimedRoute);
-            $otherRoutesAllowed = count($twinRoutes) > 2 ? $tripleRouteAllowed : $doubleRouteAllowed;
+            $maximumRoutes = count($twinRoutes) > 1 ? $maximumTripleRoutes : (count($twinRoutes) === 1 ? $maximumDoubleRoutes : 1);
+            $claimedTracks = 0;
             foreach($twinRoutes as $twinRoute) {
                 // we check if twin route is claimed
                 $twinRouteOwners = array_values(array_map(fn($claimedRoute) => $claimedRoute->playerId, array_filter($claimedRoutes, fn($claimedRoute) => $claimedRoute->routeId == $twinRoute->id)));
                 if (count($twinRouteOwners) > 0) {
-                    // A parallel route is unavailable at this player count or when the player owns one of its tracks.
-                    if (!$otherRoutesAllowed || in_array($playerId, $twinRouteOwners, true)) {
+                    $claimedTracks++;
+                    if (in_array($playerId, $twinRouteOwners, true)) {
                         return false;
                     }
                 }
             }
-            return true;
+            return $claimedTracks < $maximumRoutes;
         }));
         
         return $claimableRoutes;
@@ -308,12 +309,6 @@ class MapManager {
         return $allRoutes;
     }
     
-    private function isDoubleRouteAllowed() {
-        return $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForDoubleRoutes;
-    }
-    private function isTripleRouteAllowed() {
-        return $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForTripleRoutes;
-    }
 
     public function getRouteTrainCardCost(object $route, ?int $playerId, int $extraCardsCost = 0): int {
         $cost = $route->number + $extraCardsCost;
@@ -396,6 +391,10 @@ class MapManager {
 
         if ($route->ferryWaves > 0) {
             return $this->canPayForFerryRoute($route, $trainCarsHand, $color, $distributionCards, $ferryCards, $ferryCardsUsed);
+        }
+
+        if (($route->canPayFerriesWithAnySetOfCards ?? 0) > 0) {
+            return $this->canPayForFerryWithMatchingSets($route, $trainCarsHand, $cardCost, $color, $distributionCards, $considerAllRoutesGray);
         }
 
         $routeColor = $considerAllRoutesGray ? 0 : $route->color;
@@ -588,6 +587,45 @@ class MapManager {
         $coloredCardCount = count($trainCards) - $locomotiveCount;
         return $coloredCardCount <= $route->number - $route->ferryWaves
             && $locomotiveCount >= $route->ferryWaves - $coveredWaves;
+    }
+
+    private function canPayForFerryWithMatchingSets(object $route, array $hand, int $cost, ?int $color, ?array $distribution, bool $considerAllRoutesGray): ?array {
+        $routeColor = $considerAllRoutesGray ? 0 : $route->color;
+        if ($color > 0 && $routeColor > 0 && $color !== $routeColor) {
+            return null;
+        }
+        $colors = $color !== null ? [$color] : ($routeColor > 0 ? [$routeColor] : range(0, 8));
+        $cards = $distribution ?? $hand;
+        $locomotives = array_values(array_filter($cards, fn($card) => $card->type === 0));
+        $setSize = $route->canPayFerriesWithAnySetOfCards;
+        foreach ($colors as $baseColor) {
+            $baseCards = $baseColor > 0 ? array_values(array_filter($cards, fn($card) => $card->type === $baseColor)) : [];
+            for ($sets = 0; $sets <= $route->locomotives; $sets++) {
+                // Sets only replace mandatory ferry symbols, never ordinary spaces.
+                for ($locos = $route->locomotives - $sets; $locos <= min(count($locomotives), $cost - $sets); $locos++) {
+                    $regular = $cost - $sets - $locos;
+                    if ($regular > count($baseCards)) { continue; }
+                    $payment = array_merge(array_slice($locomotives, 0, $locos), array_slice($baseCards, 0, $regular));
+                    $used = array_column($payment, 'id');
+                    $remainingByColor = [];
+                    foreach ($cards as $card) {
+                        if ($card->type > 0 && !in_array($card->id, $used, true)) {
+                            $remainingByColor[$card->type][] = $card;
+                        }
+                    }
+                    $setsLeft = $sets;
+                    foreach ($remainingByColor as $sameColorCards) {
+                        $take = min($setsLeft, intdiv(count($sameColorCards), $setSize));
+                        $payment = array_merge($payment, array_slice($sameColorCards, 0, $take * $setSize));
+                        $setsLeft -= $take;
+                    }
+                    if ($setsLeft === 0 && ($distribution === null || count($payment) === count($distribution))) {
+                        return $payment;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private function getTwinRoutes(object $route) {

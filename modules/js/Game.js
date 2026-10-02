@@ -1557,8 +1557,9 @@ class TtrMap {
             const shiftIndex = claimedRoute.shiftIndex || ((shifted || legacyShifted) ? Math.max(1, previousClaims) : 0);
             this.setWagons(route, claimedRoute.playerId, fromPlayerId, false, shiftIndex);
             const otherRoutes = this.game.getOtherDoubleRoutes(route);
-            if ((otherRoutes.length > 1 && this.game.isTripleRouteForbidden()) || (otherRoutes.length === 1 && this.game.isDoubleRouteForbidden())) {
-                otherRoutes.forEach(otherRoute => {
+            const claimedTracks = [route, ...otherRoutes].filter(track => (this.routeClaimCounts.get(track.id) ?? 0) > 0).length;
+            if ((otherRoutes.length > 1 && claimedTracks >= this.game.getMaximumTripleRoutes()) || (otherRoutes.length === 1 && claimedTracks >= this.game.getMaximumDoubleRoutes())) {
+                otherRoutes.filter(otherRoute => !this.routeClaimCounts.has(otherRoute.id)).forEach(otherRoute => {
                     this.claimedRoutesIds.push(otherRoute.id);
                     otherRoute.spaces.forEach((space, spaceIndex) => {
                         const spaceDiv = document.getElementById(`route-spaces-route${otherRoute.id}-space${spaceIndex}`);
@@ -1566,10 +1567,12 @@ class TtrMap {
                             spaceDiv.classList.add('forbidden');
                             this.game.setTooltip(spaceDiv.id, `<strong><span style="color: darkred">${_('Important Note:')}</span> 
                             ${otherRoutes.length > 1 ?
-                                (_('In 2 or 3 player games, only one of the Triple-Routes can be used.')) :
-                                (this.game.gamedatas.map.minimumPlayerForDoubleRoutes <= 3 ?
-                                    _('In 2 player games, only one of the Double-Routes can be used.') :
-                                    _('In 2 or 3 player games, only one of the Double-Routes can be used.'))}</strong>`);
+                                (_('With ${players} players, at most ${maximum} tracks of a Triple-Route can be used.')
+                                    .replace('${players}', String(this.players.length))
+                                    .replace('${maximum}', String(this.game.getMaximumTripleRoutes()))) :
+                                (_('With ${players} players, at most ${maximum} tracks of a Double-Route can be used.')
+                                    .replace('${players}', String(this.players.length))
+                                    .replace('${maximum}', String(this.game.getMaximumDoubleRoutes())))}</strong>`);
                         }
                     });
                 });
@@ -2070,6 +2073,37 @@ class TtrMap {
                 (player.mapSpecificData.technologyCards ?? []).forEach(type => this.addTechnologyCard(playerZone, type));
             });
         }
+        if (this.map.useBonusCards) {
+            this.game.createPlayerZones(_('Bonus cards'), false);
+            const tableZone = this.game.getPlayerZoneContentElement('table');
+            (this.mapSpecificData.bonusCards ?? []).forEach(type => this.addNorthernLightsBonusCard(tableZone, type));
+        }
+    }
+    addNorthernLightsBonusCard(zone, type) {
+        const bonuses = [
+            [_('Call of the wild'), _('The player with the most Locomotives in hand scores 5 points. Each pair of Train Car cards of the same color also counts as a Locomotive.')],
+            [_('Capital investment'), _('The player with the most completed tickets to Stockholm, Copenhagen, Oslo and Helsinki scores 7 points.')],
+            [_('Cost efficiency'), _('The player with the most plastic trains left scores 7 points.')],
+            [_('Small steps strategist'), _('The player who claimed the most one-space routes scores 10 points.')],
+            [_('Nordic Express'), _('The player with the longest continuous path scores 10 points. The path may include loops and pass through the same city several times, but each route can only be used once.')],
+            [_('Local network'), _('The player with the most completed tickets worth 5 points or less scores 10 points.')],
+            [_('International tycoon'), _('The player with the most different countries connected by their routes scores 12 points. There are 9 countries on the board, identified by their flags.')],
+            [_('Polar Express'), _('The player with the most completed tickets to at least one city inside the Arctic Circle scores 12 points.')],
+            [_('Snowplow award'), _('The player with the most claimed routes connecting at least one city inside the Arctic Circle scores 12 points.')],
+            [_('Ferry Master'), _('The player with the most claimed ferry routes scores 12 points.')],
+            [_('The wild west'), _('The player with the most claimed routes connecting at least one Norwegian city scores 7 points.')],
+        ];
+        const [name, description] = bonuses[type];
+        const card = document.createElement('div');
+        card.className = 'northernlights-bonus-card';
+        card.id = `northernlights-bonus-card-${type}`;
+        card.dataset.type = String(type);
+        card.dataset.name = name;
+        card.setAttribute('role', 'img');
+        card.setAttribute('aria-label', `${name}: ${description}`);
+        card.style.backgroundPosition = `${type * 10}% 0%`;
+        zone.appendChild(card);
+        this.game.setTooltip(card.id, `<strong>${name}</strong><br>${description}<br>${_('All tied players score the bonus points.')}`);
     }
     addTechnologyCard(zone, type, count) {
         const card = document.createElement('div');
@@ -2292,8 +2326,7 @@ class DistributionResult {
         this.auto = auto;
         this.ferryCards = ferryCards;
         this.cardIds = distributionCards.flat();
-        const colorKey = Object.keys(distributionCards).map(Number).filter(n => ![0, 99].includes(n))[0];
-        const hasColorCards = colorKey && distributionCards[colorKey].length > 0;
+        const hasColorCards = Object.entries(distributionCards).some(([type, cards]) => Number(type) > 0 && Number(type) < 99 && cards.length > 0);
         this.locomotivesOnly = !hasColorCards;
     }
 }
@@ -2308,6 +2341,9 @@ class DistributionPopin {
         this.selectedFerryCards = [];
     }
     show(title) {
+        if (this.claimingRoute.route.canPayFerriesWithAnySetOfCards > 0) {
+            return this.showMatchingFerrySets(title);
+        }
         this.distributionCards = [];
         this.selectedFerryCards = [];
         return new Promise(resolve => {
@@ -2432,6 +2468,74 @@ class DistributionPopin {
             }
         });
     }
+    showMatchingFerrySets(title) {
+        this.distributionCards = [];
+        this.selectedFerryCards = [];
+        return new Promise(resolve => {
+            const dialog = new ebg.popindialog();
+            dialog.create('distributionPopin');
+            dialog.setTitle(title);
+            let html = `<p>${_('Each ferry Locomotive symbol can be paid with a Locomotive or a set of ${number} cards of the same color. The remaining spaces require cards of one color, with Locomotives as wild cards.')
+                .replace('${number}', String(this.claimingRoute.route.canPayFerriesWithAnySetOfCards))}</p>`;
+            const displayedCards = [];
+            for (let color = 0; color <= 8; color++) {
+                const cards = this.trainCarsHand.filter(card => card.type === color && (color > 0 || this.canUseLocomotives));
+                this.distributionCards[color] = [];
+                if (!cards.length) {
+                    continue;
+                }
+                displayedCards.push(...cards);
+                html += this.cardSection(cards, null);
+            }
+            html += `<div class="total">${_('Total')} : <span id="distribution-current-size">0</span> / ${this.cost}</div>
+                <button id="confirmDistribution-btn" class="bgabutton bgabutton_blue">${_('Confirm')}</button>
+                <button id="cancelDistribution-btn" class="bgabutton bgabutton_gray">${_('Cancel')}</button>`;
+            dialog.setContent(html);
+            dialog.show();
+            displayedCards.forEach(card => {
+                const element = document.getElementById(`distribution-${card.id}`);
+                element.classList.add('selectable');
+                element.addEventListener('click', () => this.onDistributionCardClick(card.id, card.type));
+                if (this.claimingRoute.distribution?.includes(card.id)) {
+                    element.classList.add('selected');
+                    this.distributionCards[card.type].push(card.id);
+                }
+            });
+            const close = (confirm) => {
+                resolve(confirm ? new DistributionResult(this.distributionCards) : null);
+                dialog.destroy();
+            };
+            dialog.replaceCloseCallback(() => close(false));
+            document.getElementById('cancelDistribution-btn').addEventListener('click', () => close(false));
+            document.getElementById('confirmDistribution-btn').addEventListener('click', () => close(true));
+            this.updateTotal();
+        });
+    }
+    matchingFerrySelection() {
+        const counts = Array.from({ length: 9 }, (_, color) => this.distributionCards[color]?.length ?? 0);
+        const size = this.claimingRoute.route.canPayFerriesWithAnySetOfCards;
+        const required = this.claimingRoute.route.locomotives;
+        const physicalCount = counts.reduce((sum, count) => sum + count, 0);
+        const sets = (physicalCount - this.cost) / (size - 1);
+        const regular = this.cost - sets - counts[0];
+        const baseColor = this.claimingRoute.color;
+        const remaining = [...counts];
+        if (baseColor > 0) {
+            remaining[baseColor] -= regular;
+        }
+        const valid = Number.isInteger(sets) && sets >= 0 && sets <= required
+            && counts[0] + sets >= required && regular >= 0 && regular <= this.cost - required
+            && (baseColor > 0 ? remaining[baseColor] >= 0 : regular === 0)
+            && remaining.slice(1).every(count => count % size === 0)
+            && remaining.slice(1).reduce((sum, count) => sum + count / size, 0) === sets;
+        const normalCards = baseColor > 0 ? Math.min(counts[baseColor], this.cost - required) : 0;
+        const forSets = [...counts];
+        if (baseColor > 0) {
+            forSets[baseColor] -= normalCards;
+        }
+        const total = counts[0] + normalCards + forSets.slice(1).reduce((sum, count) => sum + Math.floor(count / size), 0);
+        return { total: valid ? this.cost : total, valid };
+    }
     cardSection(cards, colorForUseMaximum) {
         return `
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -2452,6 +2556,13 @@ class DistributionPopin {
     }
     updateTotal() {
         const element = document.getElementById(`distribution-current-size`);
+        if (this.claimingRoute.route.canPayFerriesWithAnySetOfCards > 0) {
+            const { total, valid } = this.matchingFerrySelection();
+            element.innerText = String(total);
+            element.dataset.valid = JSON.stringify(valid);
+            document.getElementById('confirmDistribution-btn').disabled = !valid;
+            return;
+        }
         const selectedCardCount = this.getSelectedCardCount();
         const isFerry = this.claimingRoute.route.ferryWaves > 0;
         const ferryCardValue = isFerry
@@ -2488,7 +2599,11 @@ class DistributionPopin {
             this.distributionCards[type] = this.distributionCards[type].filter(id => id != cardId);
         }
         else {
-            if (this.getSelectedCardCount() >= this.cost - this.selectedFerryCards.length) {
+            const setSize = this.claimingRoute.route.canPayFerriesWithAnySetOfCards;
+            const full = setSize > 0
+                ? this.distributionCards.flat().length >= this.cost + this.claimingRoute.route.locomotives * (setSize - 1)
+                : this.getSelectedCardCount() >= this.cost - this.selectedFerryCards.length;
+            if (full) {
                 return;
             }
             element.classList.add('selected');
@@ -2875,7 +2990,7 @@ class ChooseActionState {
         const canUseLocomotives = locomotiveRestriction === 0
             || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
             || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
-        return route.ferryWaves > 0 || route.canPayWithAnySetOfCards > 0 || this.game.getMap().useTechnologyCards || (locomotiveRestriction && canUseLocomotives);
+        return route.ferryWaves > 0 || route.canPayWithAnySetOfCards > 0 || route.canPayFerriesWithAnySetOfCards > 0 || this.game.getMap().useTechnologyCards || (locomotiveRestriction && canUseLocomotives);
     }
     getRouteCardCost(route) {
         const ownedTechnologies = this.game.gamedatas.players[this.game.getPlayerId()]?.mapSpecificData.technologyCards ?? [];
@@ -3779,11 +3894,11 @@ class Game {
     getPlayerScore(playerId) {
         return this.bga.playerPanels.getScoreCounter(playerId)?.getValue() ?? Number(this.gamedatas.players[playerId].score);
     }
-    isDoubleRouteForbidden() {
-        return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForDoubleRoutes;
+    getMaximumDoubleRoutes() {
+        return this.gamedatas.map.maximumPlayerForDoubleRoutes[Object.values(this.gamedatas.players).length] ?? 2;
     }
-    isTripleRouteForbidden() {
-        return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForTripleRoutes;
+    getMaximumTripleRoutes() {
+        return this.gamedatas.map.maximumPlayerForTripleRoutes[Object.values(this.gamedatas.players).length] ?? 3;
     }
     getOtherDoubleRoutes(route) {
         return Object.values(this.gamedatas.map.routes).filter(otherRoute => route.id !== otherRoute.id
@@ -3874,8 +3989,8 @@ class Game {
         this.setTooltipToClass('ferry-card-counter', _("Ferry cards"));
         this.setTooltipToClass('destinations-counter', _("Completed / Total destination cards"));
     }
-    createPlayerZones(tableZoneLabel) {
-        let html = `
+    createPlayerZones(tableZoneLabel, includePlayerZones = true) {
+        let html = includePlayerZones ? `
             <div class="player-zones">
             ${this.gamedatas.playerorder.map(playerId => this.bga.players.getPlayerById(playerId)).map(player => `
                 <div id="player-zone-${player.id}" class="player-zone" style="--background: #${player.color}44;">
@@ -3883,7 +3998,7 @@ class Game {
                     <div class="player-zone-content"></div>
                 </div>
             `).join('')}
-            </div>`;
+            </div>` : '';
         if (tableZoneLabel) {
             html += `
             <div class="player-zones">
@@ -4442,7 +4557,7 @@ class Game {
                     args.stockShares = args.stockShares.map(type => `<div class="icon stock-share" data-type="${type}"></div>`).join('');
                 }
                 // make cities names in bold 
-                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name', 'technology_name'].forEach(field => {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name', 'technology_name', 'bonus_name'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }

@@ -1919,3 +1919,6 @@ h2 {
 #popin_distributionPopin #distribution-current-size[data-valid=false] {
   color: darkred;
 }
+#popin_distributionPopin button {
+  width: auto;
+}

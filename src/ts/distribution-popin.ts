@@ -8,8 +8,7 @@ export class DistributionResult {
         public ferryCards: number = 0,
     ) {
         this.cardIds = distributionCards.flat();
-        const colorKey = Object.keys(distributionCards).map(Number).filter(n => ![0,99].includes(n))[0];
-        const hasColorCards = colorKey && distributionCards[colorKey].length > 0;
+        const hasColorCards = Object.entries(distributionCards).some(([type, cards]) => Number(type) > 0 && Number(type) < 99 && cards.length > 0);
         this.locomotivesOnly = !hasColorCards;
     }
 }
@@ -27,6 +26,9 @@ export class DistributionPopin {
     ) {}
 
     public show(title: string): Promise<DistributionResult | null> {
+        if (this.claimingRoute.route.canPayFerriesWithAnySetOfCards > 0) {
+            return this.showMatchingFerrySets(title);
+        }
         this.distributionCards = [];
         this.selectedFerryCards = [];
         return new Promise(resolve => {
@@ -165,6 +167,71 @@ export class DistributionPopin {
         });
     }
 
+    private showMatchingFerrySets(title: string): Promise<DistributionResult | null> {
+        this.distributionCards = [];
+        this.selectedFerryCards = [];
+        return new Promise(resolve => {
+            const dialog = new ebg.popindialog();
+            dialog.create('distributionPopin');
+            dialog.setTitle(title);
+            let html = `<p>${_('Each ferry Locomotive symbol can be paid with a Locomotive or a set of ${number} cards of the same color. The remaining spaces require cards of one color, with Locomotives as wild cards.')
+                .replace('${number}', String(this.claimingRoute.route.canPayFerriesWithAnySetOfCards))}</p>`;
+            const displayedCards: TrainCar[] = [];
+            for (let color = 0; color <= 8; color++) {
+                const cards = this.trainCarsHand.filter(card => card.type === color && (color > 0 || this.canUseLocomotives));
+                this.distributionCards[color] = [];
+                if (!cards.length) { continue; }
+                displayedCards.push(...cards);
+                html += this.cardSection(cards, null);
+            }
+            html += `<div class="total">${_('Total')} : <span id="distribution-current-size">0</span> / ${this.cost}</div>
+                <button id="confirmDistribution-btn" class="bgabutton bgabutton_blue">${_('Confirm')}</button>
+                <button id="cancelDistribution-btn" class="bgabutton bgabutton_gray">${_('Cancel')}</button>`;
+            dialog.setContent(html);
+            dialog.show();
+            displayedCards.forEach(card => {
+                const element = document.getElementById(`distribution-${card.id}`);
+                element.classList.add('selectable');
+                element.addEventListener('click', () => this.onDistributionCardClick(card.id, card.type));
+                if (this.claimingRoute.distribution?.includes(card.id)) {
+                    element.classList.add('selected');
+                    this.distributionCards[card.type].push(card.id);
+                }
+            });
+            const close = (confirm: boolean) => {
+                resolve(confirm ? new DistributionResult(this.distributionCards) : null);
+                dialog.destroy();
+            };
+            dialog.replaceCloseCallback(() => close(false));
+            document.getElementById('cancelDistribution-btn').addEventListener('click', () => close(false));
+            document.getElementById('confirmDistribution-btn').addEventListener('click', () => close(true));
+            this.updateTotal();
+        });
+    }
+
+    private matchingFerrySelection(): {total: number; valid: boolean} {
+        const counts = Array.from({length: 9}, (_, color) => this.distributionCards[color]?.length ?? 0);
+        const size = this.claimingRoute.route.canPayFerriesWithAnySetOfCards;
+        const required = this.claimingRoute.route.locomotives;
+        const physicalCount = counts.reduce((sum, count) => sum + count, 0);
+        const sets = (physicalCount - this.cost) / (size - 1);
+        const regular = this.cost - sets - counts[0];
+        const baseColor = this.claimingRoute.color;
+        const remaining = [...counts];
+        if (baseColor > 0) { remaining[baseColor] -= regular; }
+        const valid = Number.isInteger(sets) && sets >= 0 && sets <= required
+            && counts[0] + sets >= required && regular >= 0 && regular <= this.cost - required
+            && (baseColor > 0 ? remaining[baseColor] >= 0 : regular === 0)
+            && remaining.slice(1).every(count => count % size === 0)
+            && remaining.slice(1).reduce((sum, count) => sum + count / size, 0) === sets;
+
+        const normalCards = baseColor > 0 ? Math.min(counts[baseColor], this.cost - required) : 0;
+        const forSets = [...counts];
+        if (baseColor > 0) { forSets[baseColor] -= normalCards; }
+        const total = counts[0] + normalCards + forSets.slice(1).reduce((sum, count) => sum + Math.floor(count / size), 0);
+        return {total: valid ? this.cost : total, valid};
+    }
+
     private cardSection(cards: TrainCar[], colorForUseMaximum: number | null): string {
         return `
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -187,6 +254,13 @@ export class DistributionPopin {
 
     updateTotal() {
         const element = document.getElementById(`distribution-current-size`);
+        if (this.claimingRoute.route.canPayFerriesWithAnySetOfCards > 0) {
+            const {total, valid} = this.matchingFerrySelection();
+            element.innerText = String(total);
+            element.dataset.valid = JSON.stringify(valid);
+            (document.getElementById('confirmDistribution-btn') as HTMLButtonElement).disabled = !valid;
+            return;
+        }
         const selectedCardCount = this.getSelectedCardCount();
         const isFerry = this.claimingRoute.route.ferryWaves > 0;
         const ferryCardValue = isFerry
@@ -224,7 +298,11 @@ export class DistributionPopin {
             element.classList.remove('selected');
             this.distributionCards[type] = this.distributionCards[type].filter(id => id != cardId);
         } else {
-            if (this.getSelectedCardCount() >= this.cost - this.selectedFerryCards.length) {
+            const setSize = this.claimingRoute.route.canPayFerriesWithAnySetOfCards;
+            const full = setSize > 0
+                ? this.distributionCards.flat().length >= this.cost + this.claimingRoute.route.locomotives * (setSize - 1)
+                : this.getSelectedCardCount() >= this.cost - this.selectedFerryCards.length;
+            if (full) {
                 return;
             }
             element.classList.add('selected');

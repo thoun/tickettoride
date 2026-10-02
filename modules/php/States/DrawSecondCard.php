@@ -58,6 +58,13 @@ class DrawSecondCard extends GameState {
     }
 
     function zombie(int $playerId) {
-        return $this->actDrawSecondDeckCard($playerId);
+        if ($this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true) > 0) {
+            return $this->actDrawSecondDeckCard($playerId);
+        }
+        $cards = $this->game->trainCarManager->getVisibleTrainCarCards(true);
+        if (count($cards) > 0) {
+            return $this->actDrawSecondTableCard(reset($cards)->id, $playerId);
+        }
+        return NextPlayer::class;
     }
 }

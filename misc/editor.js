@@ -5,6 +5,7 @@ const SPECIFIC_ROUTE_ARGUMENTS = {
     stockShares: { input: 'route-stock-shares', defaultValue: '[]' },
     bulletTrainSpaceIndex: { input: 'route-bullet-train-space-index', defaultValue: 'null', checkbox: true },
     ferryWaves: { input: 'route-ferry-waves', defaultValue: '0' },
+    drawingBonus: { input: 'route-drawing-bonus', defaultValue: '0' },
 };
 const DIRECTORY_DATABASE_NAME = 'BGA_TTR_EDITOR';
 const DIRECTORY_STORE_NAME = 'directoryHandles';
@@ -198,6 +199,7 @@ function resetEditor() {
     document.getElementById('new-route-mountain').value = '0';
     document.getElementById('new-route-stock-shares').value = '[]';
     document.getElementById('new-route-ferry-waves').value = '0';
+    document.getElementById('new-route-drawing-bonus').value = '0';
     document.querySelectorAll('.specific-route-field').forEach(field => field.hidden = true);
 }
 

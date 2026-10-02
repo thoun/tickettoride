@@ -38,6 +38,7 @@ interface Route {
     locomotives: number;
     tunnel: boolean;
     canPayWithAnySetOfCards?: number | null;
+    canPayFerriesWithAnySetOfCards?: number | null;
     ferryWaves?: number;
     mountain?: number;
     bulletTrainSpaceIndex?: number;
@@ -62,6 +63,7 @@ interface BuiltStation {
 }
 
 interface MapSpecificData {
+    bonusCards?: number[];
     remainingBulletTrains?: number;
     remainingTechnologyCards?: number[];
     remainingStockShareCards?: {[type: number]: number[] };
@@ -120,8 +122,8 @@ interface TicketToRideMap {
     preloadImages: string[];
     illustration: number;
     locomotiveUsageRestriction: number;
-    minimumPlayerForDoubleRoutes: number;
-    minimumPlayerForTripleRoutes: number;
+    maximumPlayerForDoubleRoutes: {[playerCount: number]: number};
+    maximumPlayerForTripleRoutes: {[playerCount: number]: number};
     differentLengthRoutesAreDoubleRoutes: boolean;
     multilingualPdfRulesUrl?: string;
     rulesDifferences?: string[];
@@ -132,6 +134,7 @@ interface TicketToRideMap {
     pointsForMostConnectedCities: number | null;
     ferryCards: boolean;
     useTechnologyCards: boolean;
+    useBonusCards: boolean;
 }
 
 /**

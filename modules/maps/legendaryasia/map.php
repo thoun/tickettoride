@@ -29,7 +29,6 @@ class LegendaryAsiaMap extends Map {
         $this->pointsForLongestPath = null;
         $this->pointsForGlobetrotter = null;
         $this->pointsForMostConnectedCities = 10;
-        $this->minimumPlayerForDoubleRoutes = 4;
 
         $this->rulesDifferences = [
             clienttranslate('Legendary Asia is for 2 to 5 players. Double routes are only available in 4 and 5-player games.'),

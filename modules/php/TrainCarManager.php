@@ -87,6 +87,16 @@ class TrainCarManager {
             throw new \BgaUserException(clienttranslate("You can't take train car cards because the deck is empty"));
         }
 
+        return $this->pickTrainCarCardsFromDeck($playerId, $number);
+    }
+
+    /** Draw route bonus cards without the normal action's draw limit. */
+    public function drawBonusTrainCarCardsFromDeck(int $playerId, int $number): int {
+        $number = min($number, $this->getRemainingTrainCarCardsInDeck(true));
+        return $number > 0 ? $this->pickTrainCarCardsFromDeck($playerId, $number) : 0;
+    }
+
+    private function pickTrainCarCardsFromDeck(int $playerId, int $number): int {
         $cards = $this->getTrainCarsFromDb($this->trainCars->pickCards($number, 'deck', $playerId));
 
         $this->game->notify->all('trainCarPicked', clienttranslate('${player_name} takes ${count} hidden train car card(s)'), [

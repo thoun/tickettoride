@@ -447,7 +447,7 @@ export class ChooseActionState {
         const canUseLocomotives = locomotiveRestriction === 0
             || ((locomotiveRestriction & LOCOMOTIVE_TUNNEL) !== 0 && route.tunnel)
             || ((locomotiveRestriction & LOCOMOTIVE_FERRY) !== 0 && route.locomotives > 0);
-        return route.ferryWaves > 0 || route.canPayWithAnySetOfCards > 0 || this.game.getMap().useTechnologyCards || (locomotiveRestriction && canUseLocomotives);
+        return route.ferryWaves > 0 || route.canPayWithAnySetOfCards > 0 || route.canPayFerriesWithAnySetOfCards > 0 || this.game.getMap().useTechnologyCards || (locomotiveRestriction && canUseLocomotives);
     }
 
     private getRouteCardCost(route: Route): number {

@@ -29,7 +29,7 @@ class SwitzerlandMap extends Map {
         $this->unusedAdditionalDestinationsGoToDeckBottom = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
         $this->pointsForLongestPath = 10;
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
-        $this->minimumPlayerForDoubleRoutes = 3; // 4 means 2-3 players cant use double routes
+        $this->maximumPlayerForDoubleRoutes = [2 => 1, 3 => 2, 4 => 2, 5 => 2];
 
         $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/staging-daysofwonder/uploads/2024/07/720114-T2RMC2-Rules_switzerland-ML-2017-5.pdf';
         $this->rulesDifferences = [

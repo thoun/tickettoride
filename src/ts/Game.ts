@@ -324,11 +324,11 @@ export class Game {
         return this.bga.playerPanels.getScoreCounter(playerId)?.getValue() ?? Number(this.gamedatas.players[playerId].score);
     }
 
-    public isDoubleRouteForbidden(): boolean {
-        return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForDoubleRoutes;
+    public getMaximumDoubleRoutes(): number {
+        return this.gamedatas.map.maximumPlayerForDoubleRoutes[Object.values(this.gamedatas.players).length] ?? 2;
     }
-    public isTripleRouteForbidden(): boolean {
-        return Object.values(this.gamedatas.players).length < this.gamedatas.map.minimumPlayerForTripleRoutes;
+    public getMaximumTripleRoutes(): number {
+        return this.gamedatas.map.maximumPlayerForTripleRoutes[Object.values(this.gamedatas.players).length] ?? 3;
     }
 
     public getOtherDoubleRoutes(route: Route): Route[] {
@@ -437,8 +437,8 @@ export class Game {
         this.setTooltipToClass('destinations-counter', _("Completed / Total destination cards"));
     }
 
-    public createPlayerZones(tableZoneLabel: string | null) {
-        let html = `
+    public createPlayerZones(tableZoneLabel: string | null, includePlayerZones = true) {
+        let html = includePlayerZones ? `
             <div class="player-zones">
             ${this.gamedatas.playerorder.map(playerId => this.bga.players.getPlayerById(playerId)).map(player => `
                 <div id="player-zone-${player.id}" class="player-zone" style="--background: #${player.color}44;">
@@ -446,7 +446,7 @@ export class Game {
                     <div class="player-zone-content"></div>
                 </div>
             `).join('')}
-            </div>`;
+            </div>` : '';
 
         if (tableZoneLabel) {
             html += `
@@ -1086,7 +1086,7 @@ export class Game {
                 }
 
                 // make cities names in bold 
-                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name', 'technology_name'].forEach(field => {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name', 'technology_name', 'bonus_name'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }

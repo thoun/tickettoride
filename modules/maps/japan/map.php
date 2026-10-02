@@ -28,7 +28,6 @@ class JapanMap extends Map {
         $this->unusedAdditionalDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
         $this->pointsForLongestPath = null; // points for maximum longest countinuous path (null means disabled)
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
-        $this->minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
         $this->differentLengthRoutesAreDoubleRoutes = false;
 
         $this->bulletTrainBonusPoints = [

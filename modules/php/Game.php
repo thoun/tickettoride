@@ -50,6 +50,7 @@ const MAP_LIST = [
     17 => 'iberia',
     18 => 'southkorea',
     19 => 'germany',
+    20 => 'northernlights',
 ];
 
 /*
@@ -222,8 +223,8 @@ class Game extends Table {
                 'illustration' => $expansionOption,
                 'preloadImages' => $this->getMap()->getPreloadImages($expansionOption),
                 'locomotiveUsageRestriction' => $this->getMap()->locomotiveUsageRestriction,
-                'minimumPlayerForDoubleRoutes' => $this->getMap()->minimumPlayerForDoubleRoutes,
-                'minimumPlayerForTripleRoutes' => $this->getMap()->minimumPlayerForTripleRoutes,
+                'maximumPlayerForDoubleRoutes' => $this->getMap()->maximumPlayerForDoubleRoutes,
+                'maximumPlayerForTripleRoutes' => $this->getMap()->maximumPlayerForTripleRoutes,
                 'differentLengthRoutesAreDoubleRoutes' => $this->getMap()->differentLengthRoutesAreDoubleRoutes,
                 'multilingualPdfRulesUrl' => $this->getMap()->multilingualPdfRulesUrl,
                 'rulesDifferences' => $this->getMap()->rulesDifferences,
@@ -234,6 +235,7 @@ class Game extends Table {
                 'pointsForMostConnectedCities' => $this->getMap()->pointsForMostConnectedCities,
                 'ferryCards' => $this->getMap()->ferryCards,
                 'useTechnologyCards' => $this->getMap()->useTechnologyCards,
+                'useBonusCards' => $this->getMap()->useBonusCards,
             ],
         ];
     
@@ -437,6 +439,12 @@ class Game extends Table {
 
         $this->getMap()->onClaimRoute($this, $playerId, $route);
 
+        if ($route->drawingBonus > 0) {
+            $drawNumber = $this->trainCarManager->drawBonusTrainCarCardsFromDeck($playerId, $route->drawingBonus);
+            $this->playerStats->inc('collectedTrainCarCards', $drawNumber, $playerId, updateTableStat: true);
+            $this->playerStats->inc('collectedHiddenTrainCarCards', $drawNumber, $playerId, updateTableStat: true);
+        }
+
         if ($claimWithBulletTrain) {
             // we may have completed destination for other players as well
             $playerIds = $this->getPlayersIds();
@@ -525,7 +533,7 @@ class Game extends Table {
     }
 
     function getMapCode(): string { 
-        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[16]; }
+        //if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[20]; }
         return MAP_LIST[match (__NAMESPACE__) {
             'Bga\\Games\\TicketToRide' => 1,
             'Bga\\Games\\TicketToRideEurope' => 2,

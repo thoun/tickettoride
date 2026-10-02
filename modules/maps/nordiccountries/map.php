@@ -35,7 +35,7 @@ class NordicCountriesMap extends Map {
         $this->unusedAdditionalDestinationsGoToDeckBottom = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
         $this->pointsForLongestPath = null; // points for maximum longest countinuous path (null means disabled)
         $this->pointsForGlobetrotter = 10; // points for maximum completed destinations (null means disabled)
-        $this->minimumPlayerForDoubleRoutes = 3; // 4 means 2-3 players cant use double routes
+        $this->maximumPlayerForDoubleRoutes = [2 => 1, 3 => 2, 4 => 2, 5 => 2];
 
         $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/staging-daysofwonder/uploads/2024/07/7208-T2RNC-Rules-EN.pdf';
         $this->rulesDifferences = [

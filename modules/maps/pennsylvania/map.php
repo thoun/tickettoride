@@ -29,7 +29,6 @@ class PennsylvaniaMap extends Map {
         $this->unusedAdditionalDestinationsGoToDeckBottom = true;
         $this->pointsForLongestPath = null;
         $this->pointsForGlobetrotter = 15;
-        $this->minimumPlayerForDoubleRoutes = 4;
         $this->countriesEndPoints = [
             -1 => [1001, 1002], // Ontario's two separate ferry endpoints
         ];

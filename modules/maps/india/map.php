@@ -28,7 +28,6 @@ class IndiaMap extends Map {
         $this->unusedAdditionalDestinationsGoToDeckBottom = true; // Indicates if unpicked destinations cards go back to the bottom of the deck.
         $this->pointsForLongestPath = 10;
         $this->pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
-        $this->minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
 
         $this->multilingualPdfRulesUrl = 'https://cdn.svc.asmodee.net/production-asmodeees/uploads/2023/06/Reglas_TTR_India-1.pdf';
         $this->rulesDifferences = [

@@ -180,7 +180,10 @@ class ChooseAction extends GameState {
             ]
         ];
 
-        if ($this->game->getMap()->locomotiveUsageRestriction || $this->game->getMap()->ferryCards || $this->game->getMap()->useTechnologyCards) {
+        $hasCardSetPayments = Arrays::some($this->game->getMap()->routes, fn($route) =>
+            ($route->canPayWithAnySetOfCards ?? 0) > 0 || ($route->canPayFerriesWithAnySetOfCards ?? 0) > 0
+        );
+        if ($this->game->getMap()->locomotiveUsageRestriction || $this->game->getMap()->ferryCards || $this->game->getMap()->useTechnologyCards || $hasCardSetPayments) {
             $args['_private'] = [
                 $activePlayerId => [
                     'trainCarsHand' => $trainCarsHand,
@@ -584,7 +587,29 @@ class ChooseAction extends GameState {
                 return $this->actDrawDestinations($playerId);
             }
 
-            return $this->actDrawDeckCards(2, $playerId);
+            $hiddenCards = $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true);
+            if ($hiddenCards > 0) {
+                return $this->actDrawDeckCards(min(2, $hiddenCards), $playerId);
+            }
+            $visibleCards = $this->game->trainCarManager->getVisibleTrainCarCards();
+            if (count($visibleCards) > 0) {
+                return $this->actDrawTableCard(reset($visibleCards)->id, $playerId);
+            }
+            // With no cards to draw, use a payable route even if it does not
+            // help an existing ticket, or draw a new ticket when available.
+            $hand = $this->game->trainCarManager->getPlayerHand($playerId);
+            $remainingTrains = $this->game->getRemainingTrainCarsCount($playerId);
+            foreach ($this->game->mapManager->claimableRoutes($playerId, $hand, $remainingTrains) as $route) {
+                if ($route->ferryWaves > 0) { continue; }
+                $color = $this->getZombieClaimColor($route, $hand, $remainingTrains, $playerId);
+                if ($color !== null) {
+                    return $this->actClaimRoute($route->id, $color, null, 0, $playerId);
+                }
+            }
+            if ($this->game->destinationManager->getRemainingDestinationCardsInDeck() > 0) {
+                return $this->actDrawDestinations($playerId);
+            }
+            return NextPlayer::class;
         } catch (\Throwable $e) { // safe catch : if the zombie cannot play, just pass
             return NextPlayer::class;
         }
@@ -600,11 +625,17 @@ class ChooseAction extends GameState {
 
         $allRoutes = $this->game->mapManager->getAllRoutes();
         $claimedRoutes = $this->game->getClaimedRoutes();
-        $doubleRouteAllowed = $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForDoubleRoutes;
-        $tripleRouteAllowed = $this->game->getPlayerCount() >= $this->game->getMap()->minimumPlayerForTripleRoutes;
+        $maximumDoubleRoutes = $this->game->getMap()->maximumPlayerForDoubleRoutes[$this->game->getPlayerCount()] ?? 2;
+        $maximumTripleRoutes = $this->game->getMap()->maximumPlayerForTripleRoutes[$this->game->getPlayerCount()] ?? 3;
+
+        $tracksByPair = [];
+        foreach ($allRoutes as $route) {
+            $tracksByPair[$this->getZombieRoutePairKey($route)][] = $route->id;
+        }
 
         $playerClaimedRouteIds = [];
         $claimedOwnersByPair = [];
+        $claimedTracksByPair = [];
         foreach ($claimedRoutes as $claimedRoute) {
             $playerClaimedRouteIds[$claimedRoute->routeId] = $claimedRoute->playerId;
 
@@ -614,6 +645,7 @@ class ChooseAction extends GameState {
                 $claimedOwnersByPair[$pairKey] = [];
             }
             $claimedOwnersByPair[$pairKey][$claimedRoute->playerId] = true;
+            $claimedTracksByPair[$pairKey][$claimedRoute->routeId] = true;
         }
 
         $adjacency = [];
@@ -625,8 +657,10 @@ class ChooseAction extends GameState {
                 }
                 $weight = 0;
             } else {
-                $pairOwners = $claimedOwnersByPair[$this->getZombieRoutePairKey($route)] ?? [];
-                if ((!$doubleRouteAllowed && count($pairOwners) > 0) || array_key_exists($playerId, $pairOwners)) {
+                $pairKey = $this->getZombieRoutePairKey($route);
+                $pairOwners = $claimedOwnersByPair[$pairKey] ?? [];
+                $maximumRoutes = count($tracksByPair[$pairKey]) > 2 ? $maximumTripleRoutes : (count($tracksByPair[$pairKey]) === 2 ? $maximumDoubleRoutes : 1);
+                if (count($claimedTracksByPair[$pairKey] ?? []) >= $maximumRoutes || array_key_exists($playerId, $pairOwners)) {
                     continue;
                 }
                 $weight = 1;

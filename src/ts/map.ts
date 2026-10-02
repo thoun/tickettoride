@@ -472,8 +472,9 @@ export class TtrMap {
             this.setWagons(route, claimedRoute.playerId, fromPlayerId, false, shiftIndex);
 
             const otherRoutes = this.game.getOtherDoubleRoutes(route);
-            if ((otherRoutes.length > 1 && this.game.isTripleRouteForbidden()) || (otherRoutes.length === 1 && this.game.isDoubleRouteForbidden())) {
-                otherRoutes.forEach(otherRoute => {
+            const claimedTracks = [route, ...otherRoutes].filter(track => (this.routeClaimCounts.get(track.id) ?? 0) > 0).length;
+            if ((otherRoutes.length > 1 && claimedTracks >= this.game.getMaximumTripleRoutes()) || (otherRoutes.length === 1 && claimedTracks >= this.game.getMaximumDoubleRoutes())) {
+                otherRoutes.filter(otherRoute => !this.routeClaimCounts.has(otherRoute.id)).forEach(otherRoute => {
                     this.claimedRoutesIds.push(otherRoute.id);
                     otherRoute.spaces.forEach((space, spaceIndex) => {
                         const spaceDiv = document.getElementById(`route-spaces-route${otherRoute.id}-space${spaceIndex}`);
@@ -481,10 +482,12 @@ export class TtrMap {
                             spaceDiv.classList.add('forbidden');
                             this.game.setTooltip(spaceDiv.id, `<strong><span style="color: darkred">${_('Important Note:')}</span> 
                             ${ otherRoutes.length > 1 ? 
-                                (_('In 2 or 3 player games, only one of the Triple-Routes can be used.')) :
-                                (this.game.gamedatas.map.minimumPlayerForDoubleRoutes <= 3 ?
-                                _('In 2 player games, only one of the Double-Routes can be used.') :
-                                _('In 2 or 3 player games, only one of the Double-Routes can be used.'))
+                                (_('With ${players} players, at most ${maximum} tracks of a Triple-Route can be used.')
+                                    .replace('${players}', String(this.players.length))
+                                    .replace('${maximum}', String(this.game.getMaximumTripleRoutes()))) :
+                                (_('With ${players} players, at most ${maximum} tracks of a Double-Route can be used.')
+                                    .replace('${players}', String(this.players.length))
+                                    .replace('${maximum}', String(this.game.getMaximumDoubleRoutes())))
                             }</strong>`);
                         }
                     });
@@ -1058,6 +1061,38 @@ export class TtrMap {
                 (player.mapSpecificData.technologyCards ?? []).forEach(type => this.addTechnologyCard(playerZone, type));
             });
         }
+        if (this.map.useBonusCards) {
+            this.game.createPlayerZones(_('Bonus cards'), false);
+            const tableZone = this.game.getPlayerZoneContentElement('table');
+            (this.mapSpecificData.bonusCards ?? []).forEach(type => this.addNorthernLightsBonusCard(tableZone, type));
+        }
+    }
+
+    private addNorthernLightsBonusCard(zone: HTMLElement, type: number) {
+        const bonuses = [
+            [_('Call of the wild'), _('The player with the most Locomotives in hand scores 5 points. Each pair of Train Car cards of the same color also counts as a Locomotive.')],
+            [_('Capital investment'), _('The player with the most completed tickets to Stockholm, Copenhagen, Oslo and Helsinki scores 7 points.')],
+            [_('Cost efficiency'), _('The player with the most plastic trains left scores 7 points.')],
+            [_('Small steps strategist'), _('The player who claimed the most one-space routes scores 10 points.')],
+            [_('Nordic Express'), _('The player with the longest continuous path scores 10 points. The path may include loops and pass through the same city several times, but each route can only be used once.')],
+            [_('Local network'), _('The player with the most completed tickets worth 5 points or less scores 10 points.')],
+            [_('International tycoon'), _('The player with the most different countries connected by their routes scores 12 points. There are 9 countries on the board, identified by their flags.')],
+            [_('Polar Express'), _('The player with the most completed tickets to at least one city inside the Arctic Circle scores 12 points.')],
+            [_('Snowplow award'), _('The player with the most claimed routes connecting at least one city inside the Arctic Circle scores 12 points.')],
+            [_('Ferry Master'), _('The player with the most claimed ferry routes scores 12 points.')],
+            [_('The wild west'), _('The player with the most claimed routes connecting at least one Norwegian city scores 7 points.')],
+        ];
+        const [name, description] = bonuses[type];
+        const card = document.createElement('div');
+        card.className = 'northernlights-bonus-card';
+        card.id = `northernlights-bonus-card-${type}`;
+        card.dataset.type = String(type);
+        card.dataset.name = name;
+        card.setAttribute('role', 'img');
+        card.setAttribute('aria-label', `${name}: ${description}`);
+        card.style.backgroundPosition = `${type * 10}% 0%`;
+        zone.appendChild(card);
+        this.game.setTooltip(card.id, `<strong>${name}</strong><br>${description}<br>${_('All tied players score the bonus points.')}`);
     }
 
     private addTechnologyCard(zone: HTMLElement, type: number, count?: number) {

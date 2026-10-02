@@ -43,8 +43,8 @@ class Map {
     public ?int $pointsForLongestPath = null; // points for maximum longest continuous path (null means disabled)
     public ?int $pointsForGlobetrotter = null; // points for maximum completed destinations (null means disabled)
     public ?int $pointsForMostConnectedCities = null; // points for most connected cities (null means disabled)
-    public int $minimumPlayerForDoubleRoutes = 4; // 4 means 2-3 players cant use double routes
-    public int $minimumPlayerForTripleRoutes = 4; // 4 means 2-3 players cant use double routes
+    public array $maximumPlayerForDoubleRoutes = [2 => 1, 3 => 1, 4 => 2, 5 => 2]; // player count => maximum claimed tracks
+    public array $maximumPlayerForTripleRoutes = [2 => 1, 3 => 1, 4 => 3, 5 => 3]; // player count => maximum claimed tracks
     public bool $differentLengthRoutesAreDoubleRoutes = true; // Whether parallel routes of different lengths count as a double route.
     public ?string $multilingualPdfRulesUrl = null; // PDF rules URL to display when it's not the base game
     public ?array $rulesDifferences = null; // text summary of rules differences to display when it's not the base game
@@ -56,6 +56,12 @@ class Map {
     public bool $ferryCards = false;
     public bool $useTechnologyCards = false;
     public array $technologyCardCosts = [];
+    public bool $useBonusCards = false;
+
+    /** Score selected bonus cards from each player's end-game hand, routes and tickets. */
+    public function getBonusCardScores(array $selectedCards, array $players): array {
+        return [];
+    }
 
     public function canClaimRouteWithTechnology(Route $route, array $technologyCards): bool {
         return true;

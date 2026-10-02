@@ -108,6 +108,7 @@ class EndScore extends GameState {
         // completed/failed destinations 
         $destinationsResults = [];
         $completedDestinationsCount = [];
+        $completedDestinationsByPlayer = [];
 
         $routeByCompletedDestination = [];
         $pointsByDestination = [];
@@ -155,6 +156,7 @@ class EndScore extends GameState {
 
             // first we will reveal uncomplete destinations, then complete destinations
             $destinationsResults[$playerId] = array_merge($uncompletedDestinations, $completedDestinations);
+            $completedDestinationsByPlayer[$playerId] = $completedDestinations;
         }
 
         $completedTicketBonuses = [];
@@ -177,6 +179,32 @@ class EndScore extends GameState {
         foreach ($players as $playerId => $playerDb) {
             $longestPath = $this->game->mapManager->getLongestPath($playerId);
             $playersLongestPaths[$playerId] = $longestPath;
+        }
+
+        $bonusCardResults = [];
+        $bonusCardsWon = array_fill_keys(array_keys($players), 0);
+        if ($this->game->getMap()->useBonusCards) {
+            $bonusPlayers = [];
+            $routes = $this->game->mapManager->getAllRoutes();
+            foreach ($players as $playerId => $playerDb) {
+                $ownedRoutes = array_filter($this->game->getClaimedRoutes($playerId), fn($claim) => $claim->playerId === (int)$playerId);
+                $bonusPlayers[$playerId] = [
+                    'hand' => $this->game->trainCarManager->getPlayerHand($playerId),
+                    'routes' => array_map(fn($claim) => $routes[$claim->routeId], $ownedRoutes),
+                    'completedDestinations' => $completedDestinationsByPlayer[$playerId],
+                    'remainingTrains' => $this->game->getRemainingTrainCarsCount($playerId),
+                    'longestPathLength' => $playersLongestPaths[$playerId]->length,
+                ];
+            }
+            $bonusCardResults = $this->game->getMap()->getBonusCardScores(
+                $this->game->bga->globals->get('SELECTED_BONUS_CARDS', []), $bonusPlayers,
+            );
+            foreach ($bonusCardResults as $result) {
+                foreach ($result['scores'] as $playerId => $points) {
+                    $totalScore[$playerId] += $points;
+                    $bonusCardsWon[$playerId] += (int)($points > 0);
+                }
+            }
         }
 
         $endGameTechnologyBonuses = [];
@@ -408,6 +436,16 @@ class EndScore extends GameState {
             }
         }
 
+        foreach ($bonusCardResults as $result) {
+            foreach ($result['scores'] as $playerId => $points) {
+                $this->game->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card'), [
+                    'bonusCardType' => $result['type'],
+                    'bonus_name' => $result['name'],
+                    'i18n' => ['bonus_name'],
+                ]);
+            }
+        }
+
         // Globetrotter
         if ($isGlobetrotterBonusActive) {
             foreach ($globetrotterWinners as $playerId) {
@@ -517,7 +555,8 @@ class EndScore extends GameState {
                 $this->game->setStat(0, 'averageClaimedRouteLength', $playerId);
             }
 
-            $scoreAux = 1000 * $completedDestinationsCount[$playerId] + $playersLongestPaths[$playerId]->length;
+            $scoreAux = 1000 * $completedDestinationsCount[$playerId] + ($this->game->getMap()->useBonusCards
+                ? $bonusCardsWon[$playerId] : $playersLongestPaths[$playerId]->length);
             if ($this->game->getMap()->stations !== null) {
                 $scoreAux += 100 * ($playersRemainingStations[$playerId] ?? 0);
             }
