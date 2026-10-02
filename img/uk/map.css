@@ -64,3 +64,7 @@
     filter: contrast(0.6);
     cursor: not-allowed;
 }
+
+.city[data-selectable="true"] {
+    mask: radial-gradient(circle 8px at center, transparent 0, transparent 8px, black 8px);
+}

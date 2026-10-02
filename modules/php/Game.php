@@ -162,13 +162,11 @@ class Game extends Table {
         //$this->initStat('player', 'longestPath', 0); // only computed at the end
         
         $expansionOption = $this->getExpansionOption();
-        $isGlobetrotterBonusActive = $this->getMap()->isGlobetrotterBonusActive($expansionOption);
-        $isLongestPathBonusActive = $this->getMap()->isLongestPathBonusActive($expansionOption);
 
-        if ($isLongestPathBonusActive) {
+        if ($this->getMap()->isLongestPathBonusActive($expansionOption)) {
             $this->playerStats->init('longestPathBonus', 0);
         }
-        if ($isGlobetrotterBonusActive) {
+        if ($this->getMap()->isGlobetrotterBonusActive($expansionOption)) {
             $this->playerStats->init('globetrotterBonus', 0);
         }
 
@@ -527,7 +525,7 @@ class Game extends Table {
     }
 
     function getMapCode(): string { 
-        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[11]; }
+        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[16]; }
         return MAP_LIST[match (__NAMESPACE__) {
             'Bga\\Games\\TicketToRide' => 1,
             'Bga\\Games\\TicketToRideEurope' => 2,

@@ -1182,6 +1182,11 @@ const CORNERS = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 const DECK_WIDTH = 250;
 const PLAYER_WIDTH = 305;
 const PLAYER_HEIGHT = 257; // avg height (4 destination cards)
+// Japan's inset cities, keyed by the city also shown on the main map.
+const JAPAN_INSET_CITY_IDS = {
+    17: [6, 13, 17, 18, 24, 28, 33], // Kyushu (Kokura)
+    43: [3, 5, 10, 15, 25, 37, 39, 40, 43, 46, 48], // Tokyo
+};
 /**
  * Manager for in-map zoom.
  */
@@ -1311,11 +1316,11 @@ class TtrMap {
         this.claimedRoutesIds = [];
         this.routeClaimCounts = new Map();
         this.claimedCitiesIds = [];
-        this.activeDestinationCityIds = new Set();
-        this.highlightedDestinationCityIds = new Set();
-        this.toConnectCityIds = new Set();
-        this.selectableDestinationCityIdsByDestination = new Map();
-        this.selectedDestinationCityIdsByDestination = new Map();
+        this.activeDestinationCityElements = new Set();
+        this.highlightedDestinationCityElements = new Set();
+        this.toConnectCityElements = new Set();
+        this.selectableDestinationCityElementsByDestination = new Map();
+        this.selectedDestinationCityElementsByDestination = new Map();
         // map specific
         this.mountainCarCounters = [];
         this.remainingBulletTrainCarCounters = null;
@@ -1780,7 +1785,7 @@ class TtrMap {
         if (previousDestination && destination && previousDestination.id === destination.id) {
             return;
         }
-        this.replaceCityMarkerSet(this.activeDestinationCityIds, this.getDestinationCityIds(destination), 'selectedDestination');
+        this.replaceCityMarkerSet(this.activeDestinationCityElements, this.getDestinationCityElements(destination), 'selectedDestination');
     }
     /**
      * Highlight hovered route (when dragging train cars).
@@ -1828,27 +1833,27 @@ class TtrMap {
      * Highlight cities of selectable destination.
      */
     setSelectableDestination(destination, visible) {
-        this.setDestinationMarker(this.selectableDestinationCityIdsByDestination, destination, visible, 'selectable');
+        this.setDestinationMarker(this.selectableDestinationCityElementsByDestination, destination, visible, 'selectable');
     }
     /**
      * Highlight cities of selected destination.
      */
     setSelectedDestination(destination, visible) {
-        this.setDestinationMarker(this.selectedDestinationCityIdsByDestination, destination, visible, 'selected');
+        this.setDestinationMarker(this.selectedDestinationCityElementsByDestination, destination, visible, 'selected');
     }
     /**
      * Clear destination markers used only while choosing new tickets.
      */
     clearDestinationChoiceMarkers() {
-        this.clearDestinationMarker(this.selectableDestinationCityIdsByDestination, 'selectable');
-        this.clearDestinationMarker(this.selectedDestinationCityIdsByDestination, 'selected');
+        this.clearDestinationMarker(this.selectableDestinationCityElementsByDestination, 'selectable');
+        this.clearDestinationMarker(this.selectedDestinationCityElementsByDestination, 'selected');
     }
     /**
      * Highlight cities player must connect for its objectives.
      */
     setDestinationsToConnect(destinations) {
-        const cities = destinations.flatMap(destination => this.getDestinationCityIds(destination));
-        this.replaceCityMarkerSet(this.toConnectCityIds, cities, 'toConnect');
+        const cities = destinations.flatMap(destination => this.getDestinationCityElements(destination));
+        this.replaceCityMarkerSet(this.toConnectCityElements, cities, 'toConnect');
     }
     /**
      * Highlight destination (on destination mouse over).
@@ -1857,12 +1862,12 @@ class TtrMap {
         const visible = Boolean(destination).toString();
         const shadow = document.getElementById('map-destination-highlight-shadow');
         shadow.dataset.visible = visible;
-        const cities = this.getDestinationCityIds(destination);
+        const cities = this.getDestinationCityElements(destination);
         if (destination) {
             shadow.dataset.from = '' + destination.from;
             shadow.dataset.to = '' + destination.to;
         }
-        this.replaceCityMarkerSet(this.highlightedDestinationCityIds, cities, 'highlight');
+        this.replaceCityMarkerSet(this.highlightedDestinationCityElements, cities, 'highlight');
     }
     getDestinationCityIds(destination) {
         if (!destination) {
@@ -1871,32 +1876,45 @@ class TtrMap {
         const to = Array.isArray(destination.to) ? destination.to : [destination.to];
         return Array.from(new Set([destination.from, ...to].filter(cityId => Number(cityId) > 0)));
     }
+    getDestinationCityElements(destination) {
+        const cityIds = this.getDestinationCityIds(destination);
+        return cityIds.flatMap(cityId => {
+            const cityElements = this.getCityElements([cityId]);
+            const insetCityIds = this.map.code === 'japan' ? JAPAN_INSET_CITY_IDS[cityId] : null;
+            if (!insetCityIds) {
+                return cityElements;
+            }
+            const useInset = cityIds.every(id => insetCityIds.includes(id));
+            // createCities places the main marker first, then the extra coordinates.
+            return cityElements.filter((_, index) => index === (useInset ? 1 : 0));
+        });
+    }
     setDestinationMarker(markerMap, destination, visible, dataKey) {
         if (visible) {
-            markerMap.set(destination.id, new Set(this.getDestinationCityIds(destination)));
+            markerMap.set(destination.id, new Set(this.getDestinationCityElements(destination)));
         }
         else {
             markerMap.delete(destination.id);
         }
-        this.renderCityMarkers(this.getCityIdsFromDestinationMarker(markerMap), dataKey);
+        this.renderCityMarkers(this.getCityElementsFromDestinationMarker(markerMap), dataKey);
     }
     clearDestinationMarker(markerMap, dataKey) {
         markerMap.clear();
         this.renderCityMarkers(new Set(), dataKey);
     }
-    getCityIdsFromDestinationMarker(markerMap) {
-        const cityIds = new Set();
-        markerMap.forEach(markerCityIds => markerCityIds.forEach(cityId => cityIds.add(cityId)));
-        return cityIds;
+    getCityElementsFromDestinationMarker(markerMap) {
+        const cityElements = new Set();
+        markerMap.forEach(markerCityElements => markerCityElements.forEach(cityElement => cityElements.add(cityElement)));
+        return cityElements;
     }
-    replaceCityMarkerSet(markerSet, cityIds, dataKey) {
+    replaceCityMarkerSet(markerSet, cityElements, dataKey) {
         markerSet.clear();
-        cityIds.forEach(cityId => markerSet.add(cityId));
+        cityElements.forEach(cityElement => markerSet.add(cityElement));
         this.renderCityMarkers(markerSet, dataKey);
     }
-    renderCityMarkers(markerCityIds, dataKey) {
+    renderCityMarkers(markerCityElements, dataKey) {
         this.getCityElements(Object.keys(this.map.cities).map(Number)).forEach(cityDiv => {
-            cityDiv.dataset[dataKey] = markerCityIds.has(Number(cityDiv.dataset.cityId)).toString();
+            cityDiv.dataset[dataKey] = markerCityElements.has(cityDiv).toString();
         });
     }
     /**

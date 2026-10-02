@@ -79,3 +79,7 @@
     background-color: var(--player-color);
     flex-shrink: 0;
 }
+
+.city[data-selectable="true"] {
+    mask: radial-gradient(circle 8px at center, transparent 0, transparent 8px, black 8px);
+}

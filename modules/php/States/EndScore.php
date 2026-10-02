@@ -573,6 +573,13 @@ class EndScore extends GameState {
                 'i18n' => ['gainsloses'],
                 'gainsloses' => $points >= 0 ? clienttranslate('gains') : clienttranslate('loses'),
             ]);
+
+            $this->bga->playerStats->set('bulletTrainPoints', $points, $playerId);
+            /*"bulletTrainPoints": {
+                "id": 101,
+                "name": "Bullet Train points",
+                "type": "int"
+            }*/
         }
 
         // Regions Bonus

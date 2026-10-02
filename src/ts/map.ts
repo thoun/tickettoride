@@ -12,6 +12,12 @@ const DECK_WIDTH = 250;
 const PLAYER_WIDTH = 305;
 const PLAYER_HEIGHT = 257; // avg height (4 destination cards)
 
+// Japan's inset cities, keyed by the city also shown on the main map.
+const JAPAN_INSET_CITY_IDS: Record<number, number[]> = {
+    17: [6, 13, 17, 18, 24, 28, 33], // Kyushu (Kokura)
+    43: [3, 5, 10, 15, 25, 37, 39, 40, 43, 46, 48], // Tokyo
+};
+
 /** 
  * Manager for in-map zoom.
  */ 
@@ -165,11 +171,11 @@ export class TtrMap {
     private routeClaimCounts = new Map<number, number>();
     private claimedCitiesIds = [];
 
-    private activeDestinationCityIds = new Set<number>();
-    private highlightedDestinationCityIds = new Set<number>();
-    private toConnectCityIds = new Set<number>();
-    private selectableDestinationCityIdsByDestination = new Map<number, Set<number>>();
-    private selectedDestinationCityIdsByDestination = new Map<number, Set<number>>();
+    private activeDestinationCityElements = new Set<HTMLElement>();
+    private highlightedDestinationCityElements = new Set<HTMLElement>();
+    private toConnectCityElements = new Set<HTMLElement>();
+    private selectableDestinationCityElementsByDestination = new Map<number, Set<HTMLElement>>();
+    private selectedDestinationCityElementsByDestination = new Map<number, Set<HTMLElement>>();
 
     // map specific
     private mountainCarCounters: Counter[] = [];
@@ -734,7 +740,7 @@ export class TtrMap {
             return;
         }
 
-        this.replaceCityMarkerSet(this.activeDestinationCityIds, this.getDestinationCityIds(destination), 'selectedDestination');
+        this.replaceCityMarkerSet(this.activeDestinationCityElements, this.getDestinationCityElements(destination), 'selectedDestination');
     }
 
     /** 
@@ -790,30 +796,30 @@ export class TtrMap {
      * Highlight cities of selectable destination.
      */ 
     public setSelectableDestination(destination: Destination, visible: boolean): void {
-        this.setDestinationMarker(this.selectableDestinationCityIdsByDestination, destination, visible, 'selectable');
+        this.setDestinationMarker(this.selectableDestinationCityElementsByDestination, destination, visible, 'selectable');
     }
 
     /** 
      * Highlight cities of selected destination.
      */ 
     public setSelectedDestination(destination: Destination, visible: boolean): void {
-        this.setDestinationMarker(this.selectedDestinationCityIdsByDestination, destination, visible, 'selected');
+        this.setDestinationMarker(this.selectedDestinationCityElementsByDestination, destination, visible, 'selected');
     }
 
     /**
      * Clear destination markers used only while choosing new tickets.
      */
     public clearDestinationChoiceMarkers(): void {
-        this.clearDestinationMarker(this.selectableDestinationCityIdsByDestination, 'selectable');
-        this.clearDestinationMarker(this.selectedDestinationCityIdsByDestination, 'selected');
+        this.clearDestinationMarker(this.selectableDestinationCityElementsByDestination, 'selectable');
+        this.clearDestinationMarker(this.selectedDestinationCityElementsByDestination, 'selected');
     }
 
     /** 
      * Highlight cities player must connect for its objectives.
      */ 
     public setDestinationsToConnect(destinations: Destination[]): void {
-        const cities = destinations.flatMap(destination => this.getDestinationCityIds(destination));
-        this.replaceCityMarkerSet(this.toConnectCityIds, cities, 'toConnect');
+        const cities = destinations.flatMap(destination => this.getDestinationCityElements(destination));
+        this.replaceCityMarkerSet(this.toConnectCityElements, cities, 'toConnect');
     }
 
     /** 
@@ -824,13 +830,13 @@ export class TtrMap {
         const shadow = document.getElementById('map-destination-highlight-shadow');
         shadow.dataset.visible = visible;
 
-        const cities = this.getDestinationCityIds(destination);
+        const cities = this.getDestinationCityElements(destination);
         if (destination) {
             shadow.dataset.from = ''+destination.from;
             shadow.dataset.to = ''+destination.to;
         }
 
-        this.replaceCityMarkerSet(this.highlightedDestinationCityIds, cities, 'highlight');
+        this.replaceCityMarkerSet(this.highlightedDestinationCityElements, cities, 'highlight');
     }
 
     private getDestinationCityIds(destination: Destination | null): number[] {
@@ -842,37 +848,52 @@ export class TtrMap {
         return Array.from(new Set([destination.from, ...to].filter(cityId => Number(cityId) > 0)));
     }
 
-    private setDestinationMarker(markerMap: Map<number, Set<number>>, destination: Destination, visible: boolean, dataKey: keyof DOMStringMap): void {
+    private getDestinationCityElements(destination: Destination | null): HTMLElement[] {
+        const cityIds = this.getDestinationCityIds(destination);
+        return cityIds.flatMap(cityId => {
+            const cityElements = this.getCityElements([cityId]);
+            const insetCityIds = this.map.code === 'japan' ? JAPAN_INSET_CITY_IDS[cityId] : null;
+            if (!insetCityIds) {
+                return cityElements;
+            }
+
+            const useInset = cityIds.every(id => insetCityIds.includes(id));
+            // createCities places the main marker first, then the extra coordinates.
+            return cityElements.filter((_, index) => index === (useInset ? 1 : 0));
+        });
+    }
+
+    private setDestinationMarker(markerMap: Map<number, Set<HTMLElement>>, destination: Destination, visible: boolean, dataKey: keyof DOMStringMap): void {
         if (visible) {
-            markerMap.set(destination.id, new Set(this.getDestinationCityIds(destination)));
+            markerMap.set(destination.id, new Set(this.getDestinationCityElements(destination)));
         } else {
             markerMap.delete(destination.id);
         }
 
-        this.renderCityMarkers(this.getCityIdsFromDestinationMarker(markerMap), dataKey);
+        this.renderCityMarkers(this.getCityElementsFromDestinationMarker(markerMap), dataKey);
     }
 
-    private clearDestinationMarker(markerMap: Map<number, Set<number>>, dataKey: keyof DOMStringMap): void {
+    private clearDestinationMarker(markerMap: Map<number, Set<HTMLElement>>, dataKey: keyof DOMStringMap): void {
         markerMap.clear();
         this.renderCityMarkers(new Set(), dataKey);
     }
 
-    private getCityIdsFromDestinationMarker(markerMap: Map<number, Set<number>>): Set<number> {
-        const cityIds = new Set<number>();
-        markerMap.forEach(markerCityIds => markerCityIds.forEach(cityId => cityIds.add(cityId)));
-        return cityIds;
+    private getCityElementsFromDestinationMarker(markerMap: Map<number, Set<HTMLElement>>): Set<HTMLElement> {
+        const cityElements = new Set<HTMLElement>();
+        markerMap.forEach(markerCityElements => markerCityElements.forEach(cityElement => cityElements.add(cityElement)));
+        return cityElements;
     }
 
-    private replaceCityMarkerSet(markerSet: Set<number>, cityIds: number[], dataKey: keyof DOMStringMap): void {
+    private replaceCityMarkerSet(markerSet: Set<HTMLElement>, cityElements: HTMLElement[], dataKey: keyof DOMStringMap): void {
         markerSet.clear();
-        cityIds.forEach(cityId => markerSet.add(cityId));
+        cityElements.forEach(cityElement => markerSet.add(cityElement));
 
         this.renderCityMarkers(markerSet, dataKey);
     }
 
-    private renderCityMarkers(markerCityIds: Set<number>, dataKey: keyof DOMStringMap): void {
+    private renderCityMarkers(markerCityElements: Set<HTMLElement>, dataKey: keyof DOMStringMap): void {
         this.getCityElements(Object.keys(this.map.cities).map(Number)).forEach(cityDiv => {
-            cityDiv.dataset[dataKey] = markerCityIds.has(Number(cityDiv.dataset.cityId)).toString();
+            cityDiv.dataset[dataKey] = markerCityElements.has(cityDiv).toString();
         });
     }
 
