@@ -183,6 +183,7 @@ class EndScore extends GameState {
 
         $bonusCardResults = [];
         $bonusCardsWon = array_fill_keys(array_keys($players), 0);
+        $bonusCardPoints = array_fill_keys(array_keys($players), 0);
         if ($this->game->getMap()->useBonusCards) {
             $bonusPlayers = [];
             $routes = $this->game->mapManager->getAllRoutes();
@@ -200,6 +201,7 @@ class EndScore extends GameState {
             foreach ($bonusCardResults as $result) {
                 $totalScore[$result['playerId']] += $result['points'];
                 $bonusCardsWon[$result['playerId']]++;
+                $bonusCardPoints[$result['playerId']] += $result['points'];
             }
         }
 
@@ -552,7 +554,7 @@ class EndScore extends GameState {
             }
             $this->bga->playerScoreAux->set((int)$playerId, $scoreAux, null);
             
-            $this->bga->playerStats->set('bonusCardsPoints', $bonusCardsWon[$playerId], $playerId);
+            $this->bga->playerStats->set('bonusCardsPoints', $bonusCardPoints[$playerId], $playerId);
             /*"bonusCardsPoints": {
                 "id": 105,
                 "name": "Bonus cards points",
@@ -643,22 +645,26 @@ class EndScore extends GameState {
             }*/
         }
 
-        usort($stockShareRanks, static fn(array $a, array $b): int =>
-            ($a['type'] <=> $b['type']) ?: ($a['rank'] <=> $b['rank'])
-        );
-        foreach ($stockShareRanks as $result) {
-            $this->game->incScore($result['playerId'], $result['points'], clienttranslate('${player_name} is ranked ${rank} for ${company_name} stock shares and gains ${delta} points'), [
-                'rank' => $result['rank'],
-                'company_name' => $this->game->getMap()->shareStockCompanyNames[$result['type']],
-                'delta' => $result['points'],
-            ]);
+        if ($this->game->getMap()->shareStockPoints !== null) {
+            usort($stockShareRanks, static fn(array $a, array $b): int =>
+                ($a['type'] <=> $b['type']) ?: ($a['rank'] <=> $b['rank'])
+            );
+            foreach ($stockShareRanks as $result) {
+                $this->game->incScore($result['playerId'], $result['points'], clienttranslate('${player_name} is ranked ${rank} for ${company_name} stock shares and gains ${delta} points'), [
+                    'rank' => $result['rank'],
+                    'company_name' => $this->game->getMap()->shareStockCompanyNames[$result['type']],
+                    'delta' => $result['points'],
+                ]);
+            }
+            foreach ($stockShareScores as $playerId => $points) {
+                $this->bga->playerStats->set('stockSharePoints', $points, $playerId);
+            }
+            /*"stockSharePoints": {
+                "id": 103,
+                "name": "Stock share points",
+                "type": "int"
+            }*/
         }
-        $this->bga->playerStats->set('bonusCardsPoints', $stockShareScores[$playerId], $playerId);
-        /*"stockSharePoints": {
-            "id": 103,
-            "name": "Stock share points",
-            "type": "int"
-        }*/
 
         // highlight winner(s)
         foreach ($totalScore as $playerId => $playerScore) {
