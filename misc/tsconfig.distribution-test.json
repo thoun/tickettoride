@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "../bga-framework.d.ts",
+    "../src/ts/types.d.ts",
+    "../src/ts/distribution-popin.ts"
+  ]
+}

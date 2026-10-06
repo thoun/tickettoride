@@ -579,7 +579,8 @@ class MapManager {
 
     private function isValidFerryPayment(object $route, array $trainCards, int $ferryCardsUsed): bool {
         $coveredWaves = $route->number - count($trainCards);
-        if ($coveredWaves < $ferryCardsUsed || $coveredWaves > 2 * $ferryCardsUsed || $coveredWaves > $route->ferryWaves) {
+        if ($coveredWaves < $ferryCardsUsed || $coveredWaves > 2 * $ferryCardsUsed || $coveredWaves > $route->ferryWaves
+            || $ferryCardsUsed !== intdiv($coveredWaves + 1, 2)) {
             return false;
         }
 

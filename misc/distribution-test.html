@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Route payment popin test</title>
+    <link rel="stylesheet" href="../tickettoride.css">
+    <link rel="stylesheet" href="./distribution-test.css">
+</head>
+<body>
+    <main>
+        <h1>Route payment popin test</h1>
+        <p>Choose a route preset, adjust its values or hand, then open the real game popin. Select cards to see how each route space is paid.</p>
+        <form id="fixture">
+            <label>Scenario <select id="scenario"></select></label>
+            <div class="controls">
+                <label>Route spaces <input id="spaces" type="number" min="1" max="15"></label>
+                <label>Route color <select id="route-color"></select></label>
+                <label>Payment color <select id="payment-color"></select></label>
+                <label>Required locomotives <input id="locomotives" type="number" min="0" max="15"></label>
+                <label>Ferry waves <input id="ferry-waves" type="number" min="0" max="15"></label>
+                <label>Any-card set size <input id="any-set" type="number" min="0" max="10"></label>
+                <label>Matching ferry set size <input id="matching-set" type="number" min="0" max="10"></label>
+                <label>Extra tunnel cards <input id="extra" type="number" min="0" max="10"></label>
+                <label>Ferry cards in hand <input id="ferry-cards" type="number" min="0" max="10"></label>
+                <label><input id="tunnel" type="checkbox"> Tunnel</label>
+                <label><input id="can-use-locomotives" type="checkbox"> Can use locomotives</label>
+            </div>
+            <fieldset><legend>Train cards in hand</legend><div id="hand-controls" class="controls"></div></fieldset>
+            <button type="submit">Open distribution popin</button>
+        </form>
+        <output id="result" aria-live="polite"></output>
+    </main>
+    <script type="module" src="./distribution-test.js"></script>
+</body>
+</html>

@@ -4,3 +4,9 @@ which are not required to run the game.
 The files won't be committed into source control repository and
 won't be packaged for deployment.
 It can contains notes, docs, tools, tests, data files, etc...
+
+Route payment popin test:
+Run `npm run build:distribution-test` after changing the popin TypeScript, then run
+`python3 -m http.server` from the project root and open
+http://localhost:8000/misc/distribution-test.html . Choose a preset or edit the
+route and hand values. The page uses the real DistributionPopin class and game CSS.

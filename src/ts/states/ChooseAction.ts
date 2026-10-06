@@ -555,7 +555,7 @@ export class ChooseActionState {
             : route;
         this.claimingRoute = { route: paymentRoute, color, distribution: null };
         new DistributionPopin(this.args._private.trainCarsHand, this.claimingRoute, this.getRouteCardCost(route), canUseLocomotives, this.args.ferryCardsCount)
-            .show(popinTitle)
+            .show(`${popinTitle} (${getColor(color, 'route')})`)
             .then(distribution => this.onDistributionPopinResult(distribution));
     }
 
