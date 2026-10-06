@@ -12,6 +12,9 @@ namespace Bga\GameFramework\States {
 }
 namespace Bga\GameFramework {
     class StateType { const GAME = 1; }
+    class NotificationMessage {
+        public function __construct(public string $message = '', public array $args = []) {}
+    }
 }
 namespace Bga\Games\TicketToRide {
     class Game {
@@ -32,8 +35,9 @@ namespace Bga\Games\TicketToRide {
             };
             $this->bga = (object)[
                 'globals' => new class {
+                    public array $selectedBonusCards = [0, 2, 4, 9];
                     public function get(string $key, mixed $default = null): mixed {
-                        return $key === 'SELECTED_BONUS_CARDS' ? [0, 2, 4, 9] : $default;
+                        return $key === 'SELECTED_BONUS_CARDS' ? $this->selectedBonusCards : $default;
                     }
                 },
                 'playerScoreAux' => new class {
@@ -102,6 +106,11 @@ namespace {
         if (!$condition) { throw new \RuntimeException($message); }
     }
     $map = new \NorthernLightsMap();
+    $game = new \Bga\Games\TicketToRide\Game($map);
+    $scoreBonus = function(array $selectedCards, array $players) use ($map, $game): array {
+        $game->bga->globals->selectedBonusCards = $selectedCards;
+        return $map->getBonusCardScores($game, $players);
+    };
     $base = ['hand' => [], 'routes' => [], 'completedDestinations' => [], 'remainingTrains' => 0, 'longestPathLength' => 0];
     $ticket = fn($from, $to, $points) => new \Bga\Games\TicketToRide\Objects\DestinationCard($from, $to, $points);
     $route = function($from, $to, $length, $ferry = false) {
@@ -123,32 +132,36 @@ namespace {
     ];
     $points = [5, 7, 7, 10, 10, 10, 12, 12, 12, 12, 7];
     foreach ($examples as $type => $example) {
-        $results = $map->getBonusCardScores([$type], [1 => array_replace($base, $example), 2 => $base]);
-        check(count($results) === 1 && $results[0]['scores'] === [1 => $points[$type], 2 => 0], "Incorrect scoring for bonus $type");
-        $tied = $map->getBonusCardScores([$type], [1 => array_replace($base, $example), 2 => array_replace($base, $example)]);
-        check($tied[0]['scores'] === [1 => $points[$type], 2 => $points[$type]], "Tie must award full points for bonus $type");
+        $results = $scoreBonus([$type], [1 => array_replace($base, $example), 2 => $base]);
+        check(count($results) === 1 && $results[0]['playerId'] === 1 && $results[0]['points'] === $points[$type]
+            && $results[0]['message'] instanceof \Bga\GameFramework\NotificationMessage
+            && $results[0]['message']->args['number'] > 0
+            && $results[0]['message']->args['bonusCardType'] === $type, "Incorrect scoring for bonus $type");
+        $tied = $scoreBonus([$type], [1 => array_replace($base, $example), 2 => array_replace($base, $example)]);
+        check(array_column($tied, 'points', 'playerId') === [1 => $points[$type], 2 => $points[$type]], "Tie must award full points for bonus $type");
     }
     // Odd colored sets count as floor(n/2); Locomotives count individually.
     $hand = fn($types) => array_map(fn($type) => (object)['type' => $type], $types);
-    $results = $map->getBonusCardScores([0], [
+    $results = $scoreBonus([0], [
         1 => array_replace($base, ['hand' => $hand([0, 0, 3, 3, 3, 4])]),
         2 => array_replace($base, ['hand' => $hand([1, 1, 1, 1, 2, 2])]),
     ]);
-    check($results[0]['scores'] === [1 => 5, 2 => 5], 'Locomotive equivalents must count correctly');
+    check(array_column($results, 'points', 'playerId') === [1 => 5, 2 => 5]
+        && $results[0]['message']->args['number'] === 3, 'Locomotive equivalents must count correctly');
     // Count a ticket/route once even when both ends qualify. Boden and Tornio are south of the line.
     foreach ([1, 7, 8, 10] as $type) {
         $oneEnd = [1 => ['completedDestinations' => [$ticket(37, 7, 8)]],
             7 => ['completedDestinations' => [$ticket(29, 6, 8)]],
             8 => ['routes' => [$route(29, 6, 3)]], 10 => ['routes' => [$route(5, 8, 3)]]][$type];
-        $results = $map->getBonusCardScores([$type], [1 => array_replace($base, $examples[$type]), 2 => array_replace($base, $oneEnd)]);
-        check($results[0]['scores'] === [1 => $points[$type], 2 => $points[$type]], "Both qualifying endpoints counted twice for $type");
+        $results = $scoreBonus([$type], [1 => array_replace($base, $examples[$type]), 2 => array_replace($base, $oneEnd)]);
+        check(array_column($results, 'points', 'playerId') === [1 => $points[$type], 2 => $points[$type]], "Both qualifying endpoints counted twice for $type");
     }
-    $results = $map->getBonusCardScores([7, 8], [
+    $results = $scoreBonus([7, 8], [
         1 => array_replace($base, ['completedDestinations' => [$ticket(6, 41, 5)], 'routes' => [$route(6, 41, 1)]]),
         2 => array_replace($base, ['completedDestinations' => [$ticket(35, 41, 5)], 'routes' => [$route(35, 41, 1)]]),
     ]);
-    check($results[0]['scores'] === [1 => 0, 2 => 12] && $results[1]['scores'] === [1 => 0, 2 => 12], 'Arctic boundary classification is incorrect');
-    check($map->getBonusCardScores([], [1 => $base]) === [], 'Unselected cards must not score');
+    check(array_column($results, 'points', 'playerId') === [2 => 12] && count($results) === 2, 'Arctic boundary classification is incorrect');
+    check($scoreBonus([], [1 => $base]) === [], 'Unselected cards must not score');
 
     $game = new \Bga\Games\TicketToRide\Game($map);
     $state = new \Bga\Games\TicketToRide\States\EndScore($game);
@@ -156,12 +169,17 @@ namespace {
     check($game->scores === [1 => 124, 2 => 117], 'Selected bonuses not added exactly once');
     check($game->notify->events[0]['type'] === 'bestScore' && $game->notify->events[0]['args']['bestScore'] === 124, 'Best score must include bonuses before score notifications');
     $events = array_values(array_filter($game->notify->events, fn($event) => $event['type'] === 'points'));
-    check(count($events) === 8, 'Each selected bonus must notify each player');
+    check(count($events) === 5, 'Only players awarded a selected bonus must be notified');
     foreach ($events as $event) {
-        check($event['message'] === '${player_name} gains ${delta} points with ${bonus_name} bonus card'
+        check(str_contains($event['message'], '${number}')
             && isset($event['args']['bonus_name'], $event['args']['player_name'])
-            && $event['args']['i18n'] === ['bonus_name'], 'Wrong bonus notification');
+            && $event['args']['i18n'] === ['bonus_name']
+            && $event['args']['delta'] > 0
+            && $event['args']['number'] > 0, 'Wrong bonus notification');
     }
+    $ferryEvents = array_values(array_filter($events, fn($event) => $event['args']['bonusCardType'] === 9));
+    check(count($ferryEvents) === 1 && $ferryEvents[0]['args']['number'] === 1
+        && $ferryEvents[0]['message'] === '${player_name} gains ${delta} points with ${bonus_name} bonus card by claiming ${number} ferry routes', 'Ferry Master notification must include claimed ferry routes');
     check($game->bga->playerScoreAux->values === [1 => 3, 2 => 2], 'Tie-breaker must count awarded cards instead of path length');
     $map->useBonusCards = false;
     $game = new \Bga\Games\TicketToRide\Game($map);

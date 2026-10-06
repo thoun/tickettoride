@@ -2,6 +2,7 @@
 
 use Bga\Games\TicketToRide\Game;
 use Bga\Games\TicketToRide\Objects\Map;
+use Bga\GameFramework\NotificationMessage;
 
 require_once(__DIR__.'/cities.php');
 require_once(__DIR__.'/routes.php');
@@ -80,7 +81,7 @@ class NorthernLightsMap extends Map {
         return ['bonusCards' => $game->bga->globals->get('SELECTED_BONUS_CARDS', [])];
     }
 
-    public function getBonusCardScores(array $selectedCards, array $players): array {
+    public function getBonusCardScores(Game $game, array $players): array {
         $names = [
             clienttranslate('Call of the wild'), clienttranslate('Capital investment'),
             clienttranslate('Cost efficiency'), clienttranslate('Small steps strategist'),
@@ -90,6 +91,19 @@ class NorthernLightsMap extends Map {
             clienttranslate('The wild west'),
         ];
         $points = [5, 7, 7, 10, 10, 10, 12, 12, 12, 12, 7];
+        $messages = [
+            clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card by holding ${number} locomotive equivalents'),
+            clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card by completing ${number} destinations involving a capital'),
+            clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card with ${number} train cars remaining'),
+            clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card by claiming ${number} single-space routes'),
+            clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card with a continuous path of ${number} train cars'),
+            clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card by completing ${number} destinations worth 5 points or fewer'),
+            clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card by reaching ${number} countries'),
+            clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card by completing ${number} destinations involving an Arctic city'),
+            clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card by claiming ${number} routes connected to an Arctic city'),
+            clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card by claiming ${number} ferry routes'),
+            clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card by claiming ${number} routes involving Norway'),
+        ];
         $values = [];
         foreach ($players as $playerId => $player) {
             $colors = array_count_values(array_map(fn($card) => $card->type, $player['hand']));
@@ -126,13 +140,23 @@ class NorthernLightsMap extends Map {
         }
 
         $results = [];
-        foreach ($selectedCards as $type) {
+        foreach ($game->bga->globals->get('SELECTED_BONUS_CARDS', []) as $type) {
             $best = max(array_column($values, $type));
-            $scores = [];
             foreach ($values as $playerId => $metrics) {
-                $scores[$playerId] = $metrics[$type] === $best ? $points[$type] : 0;
+                if ($metrics[$type] !== $best) {
+                    continue;
+                }
+                $results[] = [
+                    'playerId' => $playerId,
+                    'points' => $points[$type],
+                    'message' => new NotificationMessage($messages[$type], [
+                        'bonusCardType' => $type,
+                        'bonus_name' => $names[$type],
+                        'number' => $best,
+                        'i18n' => ['bonus_name'],
+                    ]),
+                ];
             }
-            $results[] = ['type' => $type, 'name' => $names[$type], 'scores' => $scores];
         }
         return $results;
     }

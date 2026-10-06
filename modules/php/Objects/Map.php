@@ -59,7 +59,7 @@ class Map {
     public bool $useBonusCards = false;
 
     /** Score selected bonus cards from each player's end-game hand, routes and tickets. */
-    public function getBonusCardScores(array $selectedCards, array $players): array {
+    public function getBonusCardScores(Game $game, array $players): array {
         return [];
     }
 

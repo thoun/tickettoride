@@ -196,14 +196,10 @@ class EndScore extends GameState {
                     'longestPathLength' => $playersLongestPaths[$playerId]->length,
                 ];
             }
-            $bonusCardResults = $this->game->getMap()->getBonusCardScores(
-                $this->game->bga->globals->get('SELECTED_BONUS_CARDS', []), $bonusPlayers,
-            );
+            $bonusCardResults = $this->game->getMap()->getBonusCardScores($this->game, $bonusPlayers);
             foreach ($bonusCardResults as $result) {
-                foreach ($result['scores'] as $playerId => $points) {
-                    $totalScore[$playerId] += $points;
-                    $bonusCardsWon[$playerId] += (int)($points > 0);
-                }
+                $totalScore[$result['playerId']] += $result['points'];
+                $bonusCardsWon[$result['playerId']]++;
             }
         }
 
@@ -437,13 +433,7 @@ class EndScore extends GameState {
         }
 
         foreach ($bonusCardResults as $result) {
-            foreach ($result['scores'] as $playerId => $points) {
-                $this->game->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with ${bonus_name} bonus card'), [
-                    'bonusCardType' => $result['type'],
-                    'bonus_name' => $result['name'],
-                    'i18n' => ['bonus_name'],
-                ]);
-            }
+            $this->game->incScore($result['playerId'], $result['points'], $result['message']->message, $result['message']->args);
         }
 
         // Globetrotter
