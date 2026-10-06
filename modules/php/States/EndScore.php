@@ -551,6 +551,13 @@ class EndScore extends GameState {
                 $scoreAux += 100 * ($playersRemainingStations[$playerId] ?? 0);
             }
             $this->bga->playerScoreAux->set((int)$playerId, $scoreAux, null);
+            
+            $this->bga->playerStats->set('bonusCardsPoints', $bonusCardsWon[$playerId], $playerId);
+            /*"bonusCardsPoints": {
+                "id": 105,
+                "name": "Bonus cards points",
+                "type": "int"
+            }*/
         }
         // Mandala
         if ($mandalaPoints !== null) {
@@ -583,6 +590,11 @@ class EndScore extends GameState {
                     'delta' => $points,
                     'number' => count($playerMandalas),
                 ]);
+                /*"mandalaPoints": {
+                    "id": 104,
+                    "name": "Mandala points",
+                    "type": "int"
+                }*/
             }
         }
 
@@ -622,6 +634,13 @@ class EndScore extends GameState {
             $this->game->incScore($playerId, $points, clienttranslate('${player_name} gains ${delta} points with the Regions Bonus'), [
                 "delta" => $points,
             ]);
+
+            $this->bga->playerStats->set('regionPoints', $points, $playerId);
+            /*"regionPoints": {
+                "id": 102,
+                "name": "Region points",
+                "type": "int"
+            }*/
         }
 
         usort($stockShareRanks, static fn(array $a, array $b): int =>
@@ -634,6 +653,12 @@ class EndScore extends GameState {
                 'delta' => $result['points'],
             ]);
         }
+        $this->bga->playerStats->set('bonusCardsPoints', $stockShareScores[$playerId], $playerId);
+        /*"stockSharePoints": {
+            "id": 103,
+            "name": "Stock share points",
+            "type": "int"
+        }*/
 
         // highlight winner(s)
         foreach ($totalScore as $playerId => $playerScore) {

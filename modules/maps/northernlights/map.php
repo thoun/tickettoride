@@ -44,6 +44,7 @@ class NorthernLightsMap extends Map {
             clienttranslate('Double routes are only fully available in 4 and 5-player games. For triple routes, only 1 route can be claimed at 2 players, 2 routes at 3 players, and all 3 routes at 4 or 5 players. A player cannot claim more than one route between the same cities.'),
             clienttranslate('After claiming a route with a +X drawing bonus, draw X Train Car cards from the top of the deck.'),
             clienttranslate('At the start, randomly select 4 of the 11 bonus cards. Only these cards score at the end of the game. All players tied for a bonus receive its points.'),
+            clienttranslate('To claim a ferry route, a player must play: a locomotive card OR a pair of train cards of the same color for each locomotive symbol on the route, in addition to a set of train cards of any one color for the remaining spaces.'),
         ];
     }
 

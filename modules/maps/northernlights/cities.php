@@ -64,12 +64,9 @@ function getCities() {
     44 => new City('Turku', 844, 1041, country: NORTHERNLIGHTS_COUNTRY_FINLAND),
     45 => new City('Umeå', 639, 760, country: NORTHERNLIGHTS_COUNTRY_SWEDEN),
     46 => new City('Vaasa', 715, 825, country: NORTHERNLIGHTS_COUNTRY_FINLAND),
-    47 => new City('Visby', 842, 1401, country: NORTHERNLIGHTS_COUNTRY_SWEDEN),
-
-    // These three connected markers have no city labels on the board artwork.
-    // Keep their ids stable if names are added later.
+    47 => new City('Visby', 842, 1401, country: NORTHERNLIGHTS_COUNTRY_SWEDEN),   
     48 => new City('Unnamed Russian city', 1079, 282, country: NORTHERNLIGHTS_COUNTRY_RUSSIA),
-    49 => new City('Unnamed Swedish city (south)', 449, 717, country: NORTHERNLIGHTS_COUNTRY_SWEDEN),
-    50 => new City('Unnamed Swedish city (north)', 541, 335, country: NORTHERNLIGHTS_COUNTRY_SWEDEN),
+    49 => new City('Unnamed Swedish city', 449, 717, country: NORTHERNLIGHTS_COUNTRY_SWEDEN),
+    50 => new City('Unnamed Swedish city', 541, 335, country: NORTHERNLIGHTS_COUNTRY_SWEDEN),
   ];
 }
