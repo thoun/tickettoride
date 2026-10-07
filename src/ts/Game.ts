@@ -1085,6 +1085,18 @@ export class Game {
                     args.stockShares = args.stockShares.map(type => `<div class="icon stock-share" data-type="${type}"></div>`).join('');
                 }
 
+                if (typeof args.table === 'string') {
+                    const playerIdsByName = new Map<string, number>();
+                    this.gamedatas.playerorder.forEach(playerId => {
+                        const player = this.bga.players.getPlayerById(playerId);
+                        playerIdsByName.set(player.name, Number(player.id));
+                    });
+                    args.table = args.table.replace(/<td>([^<]*)<\/td>/g, (cell, name) => {
+                        const playerId = playerIdsByName.get(name);
+                        return playerId === undefined ? cell : `<td>${this.bga.players.getFormattedPlayerName(playerId)}</td>`;
+                    });
+                }
+
                 // make cities names in bold 
                 ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name', 'technology_name', 'bonus_name'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {

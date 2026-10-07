@@ -44,6 +44,9 @@ namespace Bga\Games\TicketToRide {
                     public array $values = [];
                     public function set(int $playerId, int $value, mixed $message): void { $this->values[$playerId] = $value; }
                 },
+                'playerStats' => new class {
+                    public function set(string $name, int $value, int $playerId): void {}
+                },
             ];
             $this->destinationManager = new class {
                 public function getPlayerHand(int $playerId): array { return []; }
@@ -68,6 +71,7 @@ namespace Bga\Games\TicketToRide {
             };
         }
         public function getMap(): object { return $this->map; }
+        public function getPlayerNameById(int $playerId): string { return 'Player '.$playerId; }
         public function getExpansionOption(): int { return 0; }
         public function getCollectionFromDb(string $sql): array {
             return array_map(fn($score) => ['score' => $score], $this->scores);
@@ -181,6 +185,22 @@ namespace {
     check(count($ferryEvents) === 1 && $ferryEvents[0]['args']['number'] === 1
         && $ferryEvents[0]['message'] === '${player_name} gains ${delta} points with ${bonus_name} bonus card by claiming ${number} ferry routes', 'Ferry Master notification must include claimed ferry routes');
     check($game->bga->playerScoreAux->values === [1 => 3, 2 => 2], 'Tie-breaker must count awarded cards instead of path length');
+    $quantitiesByType = [0 => [1 => 2, 2 => 1], 2 => [1 => 12, 2 => 12], 4 => [1 => 7, 2 => 11], 9 => [1 => 1, 2 => 0]];
+    $tables = array_values(array_filter($game->notify->events, fn($event) => $event['type'] === 'log'));
+    check(count($tables) === 4, 'Each selected bonus card must have exactly one quantity table');
+    foreach ($game->notify->events as $index => $event) {
+        if ($event['type'] !== 'log') { continue; }
+        $type = $event['args']['bonusCardType'];
+        check($event['args']['quantities'] === $quantitiesByType[$type], 'Table must include every player and their quantity');
+        foreach ($quantitiesByType[$type] as $playerId => $quantity) {
+            check(str_contains($event['message'], "<tr><td>Player {$playerId}</td><td>{$quantity}</td></tr>"), 'Missing player quantity table row');
+        }
+        $winnerCount = $type === 2 ? 2 : 1;
+        for ($offset = 1; $offset <= $winnerCount; $offset++) {
+            $previous = $game->notify->events[$index - $offset];
+            check($previous['type'] === 'points' && $previous['args']['bonusCardType'] === $type, 'Table must immediately follow all winners of its card');
+        }
+    }
     $map->useBonusCards = false;
     $game = new \Bga\Games\TicketToRide\Game($map);
     (new \Bga\Games\TicketToRide\States\EndScore($game))->onEnteringState();

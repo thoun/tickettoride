@@ -434,8 +434,30 @@ class EndScore extends GameState {
             }
         }
 
+        $bonusCardResultsByType = [];
         foreach ($bonusCardResults as $result) {
-            $this->game->incScore($result['playerId'], $result['points'], $result['message']->message, $result['message']->args);
+            $bonusCardResultsByType[$result['message']->args['bonusCardType']][] = $result;
+        }
+        foreach ($bonusCardResultsByType as $type => $results) {
+            foreach ($results as $result) {
+                $this->game->incScore($result['playerId'], $result['points'], $result['message']->message, $result['message']->args);
+            }
+
+            $result = $results[0];
+            $rows = '';
+            foreach ($result['quantities'] as $playerId => $quantity) {
+                $playerName = htmlspecialchars($this->game->getPlayerNameById($playerId), ENT_QUOTES, 'UTF-8');
+                $rows .= "<tr><td>{$playerName}</td><td>{$quantity}</td></tr>";
+            }
+            $this->notify->all('log', clienttranslate('${bonus_name} bonus card details: ${table}'), [
+                'bonusCardType' => $type,
+                'bonus_name' => $result['message']->args['bonus_name'],
+                'quantities' => $result['quantities'],
+                'player_label' => clienttranslate('Player'),
+                'quantity_label' => clienttranslate('Quantity'),
+                'i18n' => ['bonus_name'],
+                'table' => '<table border="1" class="ttr-log-table"><tbody>' . $rows . '</tbody></table>'
+            ]);
         }
 
         // Globetrotter

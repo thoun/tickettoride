@@ -150,6 +150,7 @@ class NorthernLightsMap extends Map {
                 $results[] = [
                     'playerId' => $playerId,
                     'points' => $points[$type],
+                    'quantities' => array_map(fn($metrics) => $metrics[$type], $values),
                     'message' => new NotificationMessage($messages[$type], [
                         'bonusCardType' => $type,
                         'bonus_name' => $names[$type],

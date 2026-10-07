@@ -2020,3 +2020,7 @@ h2 {
 #popin_distributionPopin button {
   width: auto;
 }
+
+.ttr-log-table td {
+  padding: 4px;
+}
