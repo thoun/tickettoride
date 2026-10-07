@@ -581,7 +581,7 @@ function getRoutes() {
         121 => new Route(26, 40, ORANGE, [
             new RouteSpace(1370, 741, -57),
         ]),
-        122 => new Route(26, 2002, TRACKBED, [
+        122 => new Route(26, 2003, TRACKBED, [
             new RouteSpace(1401, 780, -6),
             new RouteSpace(1462, 774, -6),
         ]),

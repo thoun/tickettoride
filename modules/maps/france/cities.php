@@ -65,6 +65,7 @@ function getCities() {
         1003 => new City('Belgique', 1207, 162),
         2001 => new City('Allemagne', 1420, 440),
         2002 => new City('Allemagne', 1516, 750),
+        2003 => new City('Allemagne', 1516, 750),
         3001 => new City('Suisse', 1280, 1017),
         3002 => new City('Suisse', 1387, 992),
         3003 => new City('Suisse', 1246, 1102),

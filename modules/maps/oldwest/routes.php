@@ -492,7 +492,7 @@ function getRoutes() {
             new RouteSpace(168, 1229, 68),
             new RouteSpace(147, 1172, 71),
             new RouteSpace(128, 1114, 75),
-        ]),
+        ], locomotives: 3),
         110 => new Route(25, 37, PINK, [
             new RouteSpace(748, 216, 26),
             new RouteSpace(693, 189, 26),
