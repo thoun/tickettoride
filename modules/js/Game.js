@@ -1352,6 +1352,7 @@ class TtrMap {
             <div id="route-spaces"></div>
             <div id="train-cars"></div>
             <div id="stations"></div>
+            <div id="city-markers"></div>
         `);
         SIDES.forEach(side => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="side ${side}"></div>`));
         CORNERS.forEach(corner => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="corner ${corner}"></div>`));
@@ -1361,6 +1362,7 @@ class TtrMap {
         this.createCities(map.stations !== null);
         this.setClaimedRoutes(claimedRoutes, null);
         this.setBuiltStations(builtStations, null);
+        this.setAlvin(mapSpecificData.alvin);
         this.resizedDiv = document.getElementById('resized');
         this.inMapZoomManager = new InMapZoomManager(map);
         document.getElementById('map-destination-highlight-shadow').addEventListener('click', () => this.game.setHighligthedDestination(null));
@@ -1635,6 +1637,41 @@ class TtrMap {
             const player = this.players.find(player => Number(player.id) == builtStation.playerId);
             this.setStation(city, player, fromPlayerId, false);
         });
+    }
+    setPlacedCityMarkers(markers) {
+        markers.forEach(marker => {
+            const id = `city-marker-${marker.cityId}`;
+            if (document.getElementById(id)) {
+                return;
+            }
+            const city = this.map.cities[marker.cityId];
+            const player = this.players.find(player => Number(player.id) === marker.playerId);
+            document.getElementById('city-markers').insertAdjacentHTML('beforeend', `
+                <div id="${id}" class="city-marker" data-player-color="${player.color}"
+                    data-color-blind-player-no="${player.playerNo}"
+                    style="transform: translate(${city.x}px, ${city.y}px)"></div>
+            `);
+            this.game.setTooltip(id, `${this.game.getCityName(marker.cityId)} — ${player.name}`);
+            this.getCityElements([marker.cityId]).forEach(element => element.classList.remove('selectable'));
+        });
+    }
+    setAlvin(alvin) {
+        let element = document.getElementById('alvin');
+        if (!alvin) {
+            element?.remove();
+            return;
+        }
+        if (!element) {
+            this.mapDiv.insertAdjacentHTML('beforeend', '<div id="alvin"><span aria-hidden="true">👽</span> Alvin</div>');
+            element = document.getElementById('alvin');
+        }
+        const city = this.map.cities[alvin.cityId];
+        const player = this.players.find(player => Number(player.id) === alvin.playerId);
+        element.style.transform = `translate(${city.x}px, ${city.y}px)`;
+        element.dataset.playerColor = player?.color ?? '';
+        this.game.setTooltip('alvin', _('Alvin the Alien') + ` — ${this.game.getCityName(alvin.cityId)}`
+            + (player ? ` — ${player.name}` : '')
+            + '<br>' + _('Capture Alvin by claiming a route into his city: gain 10 points and move him to a city you control. His controller receives 10 more points at game end.'));
     }
     animateStationFromCounter(playerId, stationId, toX, toY) {
         const station = document.getElementById(stationId);
@@ -3409,6 +3446,42 @@ class ChooseLegendaryCharacterState {
     }
 }
 
+class ChooseStartingCityState {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+        this.possibleCityIds = [];
+        this.active = false;
+        this.onCityClick = (event) => {
+            const city = event.target.closest('.city');
+            if (!city) {
+                return;
+            }
+            // This state owns city selection; do not trigger station payment.
+            event.stopPropagation();
+            const cityId = Number(city.dataset.cityId);
+            if (this.active && this.possibleCityIds.includes(cityId)) {
+                this.bga.actions.performAction('actChooseStartingCity', { cityId });
+            }
+        };
+    }
+    onEnteringState(args, isCurrentPlayerActive) {
+        this.possibleCityIds = args.possibleCityIds;
+        this.active = isCurrentPlayerActive;
+        this.game.map.setSelectableStations(this.active, this.possibleCityIds);
+        const cities = document.getElementById('cities');
+        cities.classList.toggle('choosing-starting-city', this.active);
+        cities.addEventListener('click', this.onCityClick, true);
+    }
+    onLeavingState() {
+        document.getElementById('cities').removeEventListener('click', this.onCityClick, true);
+        document.getElementById('cities').classList.remove('choosing-starting-city');
+        this.game.map.setSelectableStations(false, null);
+        this.possibleCityIds = [];
+        this.active = false;
+    }
+}
+
 class ConfirmTunnelState {
     constructor(game, bga) {
         this.game = game;
@@ -3544,6 +3617,112 @@ class PlaceTrackPieceState {
         this.active = false;
         this.game.map.setSelectableRoutes(false, []);
         this.game.trainCarSelection.removeSelectableVisibleCards();
+    }
+}
+
+class PlaceCityMarkerState {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+        this.active = false;
+        this.onCityClick = (event) => {
+            const city = event.target.closest('.city');
+            if (!city) {
+                return;
+            }
+            event.stopPropagation();
+            const cityId = Number(city.dataset.cityId);
+            if (this.active && this.args.possibleCityIds.includes(cityId)) {
+                this.showColors(cityId);
+            }
+        };
+    }
+    onEnteringState(args, isCurrentPlayerActive) {
+        this.args = args;
+        this.active = isCurrentPlayerActive;
+        this.game.trainCarSelection.setSelectableTopDeck(false, 0);
+        this.game.trainCarSelection.setSelectableVisibleCards([]);
+        this.game.map.setSelectableStations(this.active, args.possibleCityIds);
+        const cities = document.getElementById('cities');
+        cities.classList.toggle('placing-city-marker', this.active);
+        cities.addEventListener('click', this.onCityClick, true);
+        this.showCities();
+    }
+    showCities() {
+        if (!this.active) {
+            return;
+        }
+        this.bga.statusBar.removeActionButtons();
+        this.bga.statusBar.setTitle(_('${you} may choose a city to place a City Marker (2 matching cards; Locomotives may substitute)'));
+        this.addPassButton();
+    }
+    showColors(cityId) {
+        this.bga.statusBar.removeActionButtons();
+        this.bga.statusBar.setTitle(_('Choose a card color to place a City Marker in ${city_name}')
+            .replace('${city_name}', this.game.getCityName(cityId)));
+        Object.entries(this.args.costByColor ?? {}).forEach(([color, cards]) => {
+            const icons = cards.map(type => `<div class="train-car-color icon" data-color="${type}"></div>`).join('');
+            const label = `${getColor(Number(color), 'train-car')} <span class="color-cards">${icons}</span>`;
+            this.bga.statusBar.addActionButton(label, () => this.bga.actions.performAction('actPlaceCityMarker', {
+                cityId,
+                color: Number(color),
+            }));
+        });
+        this.bga.statusBar.addActionButton(_('Cancel'), () => this.showCities(), { color: 'secondary' });
+        this.addPassButton();
+    }
+    addPassButton() {
+        this.bga.statusBar.addActionButton(_('Pass'), () => this.bga.actions.performAction('actPassCityMarker'), { color: 'secondary' });
+    }
+    onLeavingState() {
+        const cities = document.getElementById('cities');
+        cities.removeEventListener('click', this.onCityClick, true);
+        cities.classList.remove('placing-city-marker');
+        this.game.map.setSelectableStations(false, null);
+        this.game.trainCarSelection.removeSelectableVisibleCards();
+        this.active = false;
+    }
+}
+
+class MoveAlvinState {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+        this.possibleCityIds = [];
+        this.active = false;
+        this.onCityClick = (event) => {
+            const city = event.target.closest('.city');
+            if (!city) {
+                return;
+            }
+            event.stopPropagation();
+            const cityId = Number(city.dataset.cityId);
+            if (this.active && this.possibleCityIds.includes(cityId)) {
+                this.bga.actions.performAction('actMoveAlvin', { cityId });
+            }
+        };
+    }
+    onEnteringState(args, isCurrentPlayerActive) {
+        this.possibleCityIds = args.possibleCityIds;
+        this.active = isCurrentPlayerActive;
+        this.game.trainCarSelection.setSelectableTopDeck(false, 0);
+        this.game.trainCarSelection.setSelectableVisibleCards([]);
+        this.game.map.setSelectableStations(this.active, this.possibleCityIds);
+        const cities = document.getElementById('cities');
+        cities.classList.toggle('moving-alvin', this.active);
+        cities.addEventListener('click', this.onCityClick, true);
+        if (this.active) {
+            this.bga.statusBar.removeActionButtons();
+        }
+    }
+    onLeavingState() {
+        const cities = document.getElementById('cities');
+        cities.removeEventListener('click', this.onCityClick, true);
+        cities.classList.remove('moving-alvin');
+        this.game.map.setSelectableStations(false, null);
+        this.game.trainCarSelection.removeSelectableVisibleCards();
+        this.possibleCityIds = [];
+        this.active = false;
     }
 }
 
@@ -3918,6 +4097,7 @@ class Game {
         this.playerTable = null;
         this.trainCarCounters = [];
         this.stationCounters = [];
+        this.cityMarkerCounters = [];
         this.trainCarCardCounters = [];
         this.ferryCardCounters = [];
         this.destinationCardCounters = [];
@@ -3929,7 +4109,10 @@ class Game {
         this.chooseActionState = new ChooseActionState(this, bga);
         this.placeTrackPieceState = new PlaceTrackPieceState(this, bga);
         this.bga.states.register('PlaceTrackPiece', this.placeTrackPieceState);
+        this.bga.states.register('PlaceCityMarker', new PlaceCityMarkerState(this, bga));
+        this.bga.states.register('MoveAlvin', new MoveAlvinState(this, bga));
         this.bga.states.register('ChooseLegendaryCharacter', this.ChooseLegendaryCharacterState);
+        this.bga.states.register('ChooseStartingCity', new ChooseStartingCityState(this, bga));
         this.bga.states.register('chooseAction', this.chooseActionState);
         this.bga.states.register('drawSecondCard', new DrawSecondCardState(this, bga));
         this.bga.states.register('confirmTunnel', new ConfirmTunnelState(this, bga));
@@ -4017,6 +4200,7 @@ class Game {
         this.gamedatas = gamedatas;
         console.log('gamedatas', gamedatas);
         this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.builtStations, gamedatas.map.illustration, gamedatas.mapSpecificData);
+        this.map.setPlacedCityMarkers(gamedatas.placedCityMarkers ?? []);
         this.trainCarSelection = new TrainCarSelection(this, gamedatas.visibleTrainCards, gamedatas.trainCarDeckCount, gamedatas.destinationDeckCount, gamedatas.trainCarDeckMaxCount, gamedatas.destinationDeckMaxCount);
         this.destinationSelection = new DestinationSelection(this, map);
         const player = gamedatas.players[this.getPlayerId()];
@@ -4193,6 +4377,11 @@ class Game {
                     <div class="icon station" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> 
                     <span id="station-counter-${player.id}"></span>
                 </div>` : ''}
+                ${this.gamedatas.map.cityMarkers != null ? `
+                <div class="counter city-marker-counter" title="${_('Remaining City Markers')}">
+                    <div class="icon city-marker" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div>
+                    <span id="city-marker-counter-${player.id}"></span>
+                </div>` : ''}
                 <div id="train-car-card-counter-${player.id}-wrapper" class="counter train-car-card-counter">
                     <div class="icon train-car-card-icon"></div> 
                     <span id="train-car-card-counter-${player.id}"></span>
@@ -4215,6 +4404,12 @@ class Game {
                 stationCounter.create(`station-counter-${player.id}`);
                 stationCounter.setValue(player.remainingStations);
                 this.stationCounters[playerId] = stationCounter;
+            }
+            if (this.gamedatas.map.cityMarkers != null) {
+                const counter = new ebg.counter();
+                counter.create(`city-marker-counter-${player.id}`);
+                counter.setValue(player.remainingCityMarkers);
+                this.cityMarkerCounters[playerId] = counter;
             }
             const trainCarCardCounter = new ebg.counter();
             trainCarCardCounter.create(`train-car-card-counter-${player.id}`);
@@ -4486,6 +4681,8 @@ class Game {
             ['claimedRoute', ANIMATION_MS],
             ['addMountainTrains', 1],
             ['builtStation', ANIMATION_MS],
+            ['cityMarkerPlaced', 1],
+            ['alvinUpdated', 1],
             ['destinationCompleted', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
@@ -4643,8 +4840,26 @@ class Game {
         this.map.setMountainTrains(playerId, notif.args.mountainCars);
     }
     /**
-     * Update built stations.
+     * Update placed city markers.
      */
+    notif_cityMarkerPlaced(notif) {
+        const { playerId, cityId, remainingCityMarkers } = notif.args;
+        this.map.setPlacedCityMarkers([{ playerId, cityId }]);
+        this.cityMarkerCounters[playerId].toValue(remainingCityMarkers);
+        this.gamedatas.players[playerId].remainingCityMarkers = remainingCityMarkers;
+        this.gamedatas.placedCityMarkers.push({ playerId, cityId });
+        if (notif.args.removeCards) {
+            this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
+            if (playerId == this.getPlayerId()) {
+                this.playerTable.removeCards(notif.args.removeCards);
+            }
+        }
+    }
+    notif_alvinUpdated(notif) {
+        this.gamedatas.mapSpecificData.alvin = notif.args.alvin;
+        this.map.setAlvin(notif.args.alvin);
+    }
+    /** Update built stations. */
     notif_builtStation(notif) {
         const playerId = notif.args.playerId;
         const cityId = notif.args.cityId;

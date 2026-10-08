@@ -170,6 +170,71 @@
     color: black;
 }
 
+.city-marker {
+  // Temporary artwork until dedicated City Marker sprites are available.
+  width: 32px;
+  height: 42px;
+  background-image: url('img/europe/station-icons.png');
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+
+  @each $color in $playerColors {
+    $i: index($playerColors, $color) - 1;
+    &[data-player-color="#{$color}"] {
+      background-position: #{$i * 25%} 0%;
+    }
+  }
+}
+
+#city-markers .city-marker {
+  position: absolute;
+  left: -20px;
+  top: -24px;
+  z-index: 4;
+}
+
+.icon.city-marker {
+  width: 25px;
+  height: 32px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+#cities.choosing-starting-city .city.selectable,
+#cities.placing-city-marker .city.selectable,
+#cities.moving-alvin .city.selectable {
+  opacity: 1;
+  background-position-x: 0%;
+}
+
+#cities.moving-alvin .city.selectable {
+  z-index: 8;
+}
+
+#alvin {
+  position: absolute;
+  left: 16px;
+  top: -42px;
+  z-index: 4;
+  padding: 2px 5px;
+  border: 3px solid #777;
+  border-radius: 12px;
+  background: #fff;
+  white-space: nowrap;
+  font-size: 12px;
+
+  span {
+    font-size: 22px;
+    vertical-align: middle;
+  }
+
+  @each $name, $color in $player-colors {
+    &[data-player-color="#{$color}"] {
+      border-color: #{'#' + $color};
+    }
+  }
+}
+
 /*.point-marker {
     position: absolute;
     top: 0;

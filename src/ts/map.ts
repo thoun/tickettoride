@@ -224,6 +224,7 @@ export class TtrMap {
             <div id="route-spaces"></div>
             <div id="train-cars"></div>
             <div id="stations"></div>
+            <div id="city-markers"></div>
         `);
         SIDES.forEach(side => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="side ${side}"></div>`));
         CORNERS.forEach(corner => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="corner ${corner}"></div>`));
@@ -235,6 +236,7 @@ export class TtrMap {
 
         this.setClaimedRoutes(claimedRoutes, null);
         this.setBuiltStations(builtStations, null);
+        this.setAlvin(mapSpecificData.alvin);
 
         this.resizedDiv = document.getElementById('resized') as HTMLDivElement;
 
@@ -557,6 +559,43 @@ export class TtrMap {
             const player = this.players.find(player => Number(player.id) == builtStation.playerId);
             this.setStation(city, player, fromPlayerId, false);
         });
+    }
+
+    public setPlacedCityMarkers(markers: PlacedCityMarker[]) {
+        markers.forEach(marker => {
+            const id = `city-marker-${marker.cityId}`;
+            if (document.getElementById(id)) {
+                return;
+            }
+            const city = this.map.cities[marker.cityId];
+            const player = this.players.find(player => Number(player.id) === marker.playerId);
+            document.getElementById('city-markers').insertAdjacentHTML('beforeend', `
+                <div id="${id}" class="city-marker" data-player-color="${player.color}"
+                    data-color-blind-player-no="${player.playerNo}"
+                    style="transform: translate(${city.x}px, ${city.y}px)"></div>
+            `);
+            this.game.setTooltip(id, `${this.game.getCityName(marker.cityId)} — ${player.name}`);
+            this.getCityElements([marker.cityId]).forEach(element => element.classList.remove('selectable'));
+        });
+    }
+
+    public setAlvin(alvin: MapSpecificData['alvin']) {
+        let element = document.getElementById('alvin');
+        if (!alvin) {
+            element?.remove();
+            return;
+        }
+        if (!element) {
+            this.mapDiv.insertAdjacentHTML('beforeend', '<div id="alvin"><span aria-hidden="true">👽</span> Alvin</div>');
+            element = document.getElementById('alvin');
+        }
+        const city = this.map.cities[alvin.cityId];
+        const player = this.players.find(player => Number(player.id) === alvin.playerId);
+        element.style.transform = `translate(${city.x}px, ${city.y}px)`;
+        element.dataset.playerColor = player?.color ?? '';
+        this.game.setTooltip('alvin', _('Alvin the Alien') + ` — ${this.game.getCityName(alvin.cityId)}`
+            + (player ? ` — ${player.name}` : '')
+            + '<br>' + _('Capture Alvin by claiming a route into his city: gain 10 points and move him to a city you control. His controller receives 10 more points at game end.'));
     }
 
     private animateStationFromCounter(playerId: number, stationId: string, toX: number, toY: number) {

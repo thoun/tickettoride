@@ -434,6 +434,86 @@
   color: black;
 }
 
+.city-marker {
+  width: 32px;
+  height: 42px;
+  background-image: url("img/europe/station-icons.png");
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+}
+.city-marker[data-player-color="0056aa"] {
+  background-position: 0% 0%;
+}
+.city-marker[data-player-color="41a62a"] {
+  background-position: 25% 0%;
+}
+.city-marker[data-player-color=af0ac2] {
+  background-position: 50% 0%;
+}
+.city-marker[data-player-color=e3001a] {
+  background-position: 75% 0%;
+}
+.city-marker[data-player-color=ffed00] {
+  background-position: 100% 0%;
+}
+
+#city-markers .city-marker {
+  position: absolute;
+  left: -20px;
+  top: -24px;
+  z-index: 4;
+}
+
+.icon.city-marker {
+  width: 25px;
+  height: 32px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+#cities.choosing-starting-city .city.selectable,
+#cities.placing-city-marker .city.selectable,
+#cities.moving-alvin .city.selectable {
+  opacity: 1;
+  background-position-x: 0%;
+}
+
+#cities.moving-alvin .city.selectable {
+  z-index: 8;
+}
+
+#alvin {
+  position: absolute;
+  left: 16px;
+  top: -42px;
+  z-index: 4;
+  padding: 2px 5px;
+  border: 3px solid #777;
+  border-radius: 12px;
+  background: #fff;
+  white-space: nowrap;
+  font-size: 12px;
+}
+#alvin span {
+  font-size: 22px;
+  vertical-align: middle;
+}
+#alvin[data-player-color=e3001a] {
+  border-color: #e3001a;
+}
+#alvin[data-player-color="41a62a"] {
+  border-color: #41a62a;
+}
+#alvin[data-player-color="0056aa"] {
+  border-color: #0056aa;
+}
+#alvin[data-player-color=ffed00] {
+  border-color: #ffed00;
+}
+#alvin[data-player-color=af0ac2] {
+  border-color: #af0ac2;
+}
+
 /*.point-marker {
     position: absolute;
     top: 0;

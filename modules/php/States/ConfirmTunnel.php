@@ -84,7 +84,7 @@ class ConfirmTunnel extends GameState {
             $this->game->returnRightOfWay($activePlayerId);
         }
         if ($this->game->thermocompressorAfterRouteClaim($activePlayerId)) {
-            return ChooseAction::class;
+            return $this->game->getStateAfterRouteClaim($tunnelAttempt->routeId, ChooseAction::class);
         }
 
         if ($this->game->legendaryCharacterManager->isActive() 
@@ -92,13 +92,13 @@ class ConfirmTunnel extends GameState {
             && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0
         ) {
             if ($this->game->legendaryCharacterManager->character4CanClaimAnotherRoute($activePlayerId)) {
-                return ChooseAction::class;
+                return $this->game->getStateAfterRouteClaim($tunnelAttempt->routeId, ChooseAction::class);
             }
 
             $this->game->legendaryCharacterManager->onCharacter4Pass($activePlayerId);
         }
 
-        return NextPlayer::class;
+        return $this->game->getStateAfterRouteClaim($tunnelAttempt->routeId, NextPlayer::class);
     }
 
     #[PossibleAction]

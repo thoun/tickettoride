@@ -343,6 +343,11 @@ class EndScore extends GameState {
             }
         }
 
+        $mapEndGameBonuses = $this->game->getMap()->getEndGameBonuses($this->game);
+        foreach ($mapEndGameBonuses as $bonus) {
+            $totalScore[$bonus['playerId']] += $bonus['points'];
+        }
+
         // we need to send bestScore before all score notifs, because train animations will show score ratio over best score
         $bestScore = max($totalScore);
         $this->notify->all('bestScore', '', [
@@ -551,6 +556,10 @@ class EndScore extends GameState {
 
                 $this->game->setStat($remainingStations, 'unusedStations', $playerId);
             }
+        }
+
+        foreach ($mapEndGameBonuses as $bonus) {
+            $this->game->incScore($bonus['playerId'], $bonus['points'], $bonus['message'], $bonus['args']);
         }
 
         $claimedRoutes = intval($this->game->getStat('claimedRoutes'));

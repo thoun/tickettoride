@@ -4,9 +4,11 @@ declare(strict_types=1);
 namespace Bga\Games\TicketToRide;
 
 use Bga\GameFrameworkPrototype\Helpers\Arrays;
+use Bga\GameFramework\UserException;
 use Bga\Games\TicketToRide\Objects\City;
 use Bga\Games\TicketToRide\Objects\Destination;
 use Bga\Games\TicketToRide\Objects\PlacedBuilding;
+use Bga\Games\TicketToRide\Objects\Route;
 use Bga\Games\TicketToRide\Objects\TrainCar;
 
 class BuildingManager {
@@ -28,6 +30,88 @@ class BuildingManager {
             return null;
         }
         return $defaultStations - count($this->getPlacedStations($playerId));
+    }
+
+    function getPlacedCityMarkers(?int $playerId = null): array {
+        return $this->game->getMap()->cityMarkers === null ? [] : $this->getPlacedBuildings($playerId, CITY_MARKER);
+    }
+
+    function getRemainingCityMarkers(int $playerId): ?int {
+        $markers = $this->game->getMap()->cityMarkers;
+        return $markers === null ? null : $markers - count($this->getPlacedCityMarkers($playerId));
+    }
+
+    /** Uncontrolled endpoints where a player may place a marker after claiming this route. */
+    function getCityMarkerPlacementCityIds(int $playerId, int $routeId): array {
+        if (($this->getRemainingCityMarkers($playerId) ?? 0) <= 0
+            || !Arrays::some($this->game->getClaimedRoutes(), fn($route) => $route->routeId === $routeId && $route->playerId === $playerId)) {
+            return [];
+        }
+        $route = $this->game->mapManager->getAllRoutes()[$routeId];
+        return array_values(array_intersect([$route->from, $route->to], $this->getUncontrolledCityIds()));
+    }
+
+    function placeCityMarker(int $playerId, int $routeId, int $cityId, int $color): void {
+        if (!in_array($cityId, $this->getCityMarkerPlacementCityIds($playerId, $routeId), true)) {
+            throw new UserException('You cannot place a City Marker in this city.');
+        }
+        if ($color < 0 || $color > 8) {
+            throw new UserException('Invalid card color.');
+        }
+        $cardsToRemove = $this->canPayForStation($this->game->trainCarManager->getPlayerHand($playerId), 2, $color);
+        if ($cardsToRemove === null) {
+            throw new UserException('Not enough cards to place a City Marker.');
+        }
+
+        $this->game->trainCarManager->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
+        $this->game->DbQuery("INSERT INTO `placed_buildings` (`city_id`, `player_id`, `building_type`) VALUES ($cityId, $playerId, ".CITY_MARKER.")");
+        $this->bga->notify->all('cityMarkerPlaced', clienttranslate('${player_name} places a City Marker in ${city_name} with these Train Car cards: ${colors}'), [
+            'playerId' => $playerId,
+            'player_name' => $this->game->getPlayerNameById($playerId),
+            'cityId' => $cityId,
+            'city_name' => $this->game->getCityName($cityId),
+            'remainingCityMarkers' => $this->getRemainingCityMarkers($playerId),
+            'removeCards' => $cardsToRemove,
+            'colors' => array_map(fn($card) => $card->type, $cardsToRemove),
+        ]);
+        $this->game->trainCarManager->checkVisibleTrainCarCards();
+    }
+
+    /** @return array<int, int> Route points awarded to each player according to city control. */
+    function getRoutePointAwards(int $playerId, Route $route, int $points): array {
+        $awards = [];
+        foreach ($this->getPlacedCityMarkers() as $marker) {
+            if ($marker->cityId === $route->from || $marker->cityId === $route->to) {
+                $awards[$marker->playerId] = ($awards[$marker->playerId] ?? 0) + $points;
+            }
+        }
+
+        return empty($awards) ? [$playerId => $points] : $awards;
+    }
+
+    /** City ids that are not controlled by any player. */
+    function getUncontrolledCityIds(): array {
+        $controlled = array_map(fn($marker) => $marker->cityId, $this->getPlacedCityMarkers());
+        return array_values(array_diff(array_keys($this->game->getMap()->cities), $controlled,
+            $this->game->getMap()->getForbiddenCityMarkerCityIds($this->game)));
+    }
+
+    function placeStartingCityMarker(int $playerId, int $cityId): void {
+        if ($this->game->getMap()->cityMarkers === null || !empty($this->getPlacedCityMarkers($playerId))) {
+            throw new UserException('You cannot choose a starting city.');
+        }
+        if (!in_array($cityId, $this->getUncontrolledCityIds(), true)) {
+            throw new UserException('This city is not available.');
+        }
+
+        $this->game->DbQuery("INSERT INTO `placed_buildings` (`city_id`, `player_id`, `building_type`) VALUES ($cityId, $playerId, ".CITY_MARKER.")");
+        $this->bga->notify->all('cityMarkerPlaced', clienttranslate('${player_name} chooses ${city_name} as their starting city'), [
+            'playerId' => $playerId,
+            'player_name' => $this->game->getPlayerNameById($playerId),
+            'cityId' => $cityId,
+            'city_name' => $this->game->getCityName($cityId),
+            'remainingCityMarkers' => $this->getRemainingCityMarkers($playerId),
+        ]);
     }
 
     /**

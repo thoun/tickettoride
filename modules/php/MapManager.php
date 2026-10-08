@@ -47,6 +47,7 @@ class MapManager {
      * - he got enough train cars & train car cards
      * - it is not already claimed
      * - player count allows it (if double route)
+     * - it extends their starting-city network on maps with City Markers
      */
     public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars, bool $opponentRoutesInsteadOfFreeOnes = false, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null, int $ferryCards = 0) {
         $allRoutes = $this->getCurrentStateRoutes();
@@ -62,6 +63,13 @@ class MapManager {
         } else {
             // remove routes already claimed
             $claimableRoutes = array_filter($allRoutes, fn($route) => !in_array($route->id, $claimedRoutesIds));
+        }
+
+        if ($this->game->getMap()->cityMarkers !== null) {
+            $networkCities = $this->getCityMarkerNetworkCities($playerId, $claimedRoutes);
+            $claimableRoutes = array_filter($claimableRoutes, fn($route) =>
+                isset($networkCities[$route->from]) || isset($networkCities[$route->to])
+            );
         }
 
         if ($this->game->getMap()->useTechnologyCards) {
@@ -100,6 +108,42 @@ class MapManager {
         }));
         
         return $claimableRoutes;
+    }
+
+    /** City ids reachable from any of the player's City Markers using their own routes. */
+    private function getCityMarkerNetworkCities(int $playerId, array $claimedRoutes): array {
+        $markers = $this->game->buildingManager->getPlacedCityMarkers($playerId);
+        if (empty($markers)) {
+            return [];
+        }
+
+        $routes = $this->getAllRoutes();
+        $neighbors = [];
+        foreach ($claimedRoutes as $claimedRoute) {
+            if ($claimedRoute->playerId !== $playerId) {
+                continue;
+            }
+            $route = $routes[$claimedRoute->routeId];
+            $neighbors[$route->from][] = $route->to;
+            $neighbors[$route->to][] = $route->from;
+        }
+
+        $networkCities = [];
+        $citiesToVisit = array_map(fn($marker) => $marker->cityId, $markers);
+        while (!empty($citiesToVisit)) {
+            $city = array_pop($citiesToVisit);
+            if (isset($networkCities[$city])) {
+                continue;
+            }
+            $networkCities[$city] = true;
+            foreach ($neighbors[$city] ?? [] as $neighbor) {
+                if (!isset($networkCities[$neighbor])) {
+                    $citiesToVisit[] = $neighbor;
+                }
+            }
+        }
+
+        return $networkCities;
     }
 
     /**

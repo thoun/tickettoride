@@ -450,12 +450,12 @@ class ChooseAction extends GameState {
             $this->game->returnRightOfWay($activePlayerId);
         }
         if ($this->game->thermocompressorAfterRouteClaim($activePlayerId)) {
-            return self::class;
+            return $this->game->getStateAfterRouteClaim($routeId, self::class);
         }
 
         if ($legendaryCharacter === 4 && count($this->game->legendaryCharacterManager->getCharacter4UsingRouteIds($activePlayerId)) > 0) {
             if ($this->game->legendaryCharacterManager->character4CanClaimAnotherRoute($activePlayerId)) {
-                return self::class;
+                return $this->game->getStateAfterRouteClaim($routeId, self::class);
             }
 
             $this->game->legendaryCharacterManager->onCharacter4Pass($activePlayerId);
@@ -465,11 +465,11 @@ class ChooseAction extends GameState {
             $remainingStockShareCards = $this->game->bga->globals->get('REMAINING_STOCK_SHARE_CARDS', []);
             if (array_any($route->stockShares, fn($type) => !empty($remainingStockShareCards[$type]))) {
                 $this->bga->globals->set('STOCK_SHARE_ROUTE', $routeId);
-                return ChooseStockShare::class;
+                return $this->game->getStateAfterRouteClaim($routeId, ChooseStockShare::class);
             }
         }
 
-        return NextPlayer::class;
+        return $this->game->getStateAfterRouteClaim($routeId, NextPlayer::class);
     }
   	
     /**
@@ -664,6 +664,11 @@ class ChooseAction extends GameState {
                 }
                 $weight = 0;
             } else {
+                // France trackbeds only become usable once a Track Piece is placed.
+                // Claimed routes remain connected after their piece returns to the supply.
+                if ($route->color === TRACKBED) {
+                    continue;
+                }
                 $pairKey = $this->getZombieRoutePairKey($route);
                 $pairOwners = $claimedOwnersByPair[$pairKey] ?? [];
                 $maximumRoutes = count($tracksByPair[$pairKey]) > 2 ? $maximumTripleRoutes : (count($tracksByPair[$pairKey]) === 2 ? $maximumDoubleRoutes : 1);
@@ -729,6 +734,9 @@ class ChooseAction extends GameState {
     }
 
     private function getZombieClaimColor(object $route, array $trainCarsHand, int $remainingTrainCars, int $playerId): ?int {
+        if ($route->color === TRACKBED) {
+            return null;
+        }
         $colorsToTest = $route->color > 0 ? [$route->color, 0] : [1,2,3,4,5,6,7,8,0];
         if ($route->locomotives === $route->number) {
             $colorsToTest = [0];

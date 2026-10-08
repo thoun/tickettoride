@@ -62,7 +62,18 @@ interface BuiltStation {
     playerId: number;
 }
 
+interface PlacedCityMarker {
+    cityId: number;
+    playerId: number;
+}
+
+interface NotifCityMarkerPlacedArgs extends PlacedCityMarker {
+    remainingCityMarkers: number;
+    removeCards?: TrainCar[];
+}
+
 interface MapSpecificData {
+    alvin?: {cityId: number; playerId: number | null} | null;
     bonusCards?: number[];
     remainingBulletTrains?: number;
     remainingTechnologyCards?: number[];
@@ -87,6 +98,7 @@ interface TicketToRidePlayer extends Player {
     destinationsCount: number | null;
     remainingTrainCarsCount: number;
     remainingStations?: number;
+    remainingCityMarkers?: number;
     legendaryCharacter?: number;
     legendaryCharacterState?: any | null;
     mapSpecificData: PlayerMapSpecificData;
@@ -132,6 +144,7 @@ interface TicketToRideMap {
     width: number;
     height: number;
     stations: number | null;
+    cityMarkers: number | null;
     pointsForGlobetrotter: number | null;
     pointsForMostConnectedCities: number | null;
     ferryCards: boolean;
@@ -148,6 +161,7 @@ interface TicketToRideGamedatas extends Gamedatas<TicketToRidePlayer> {
     map: TicketToRideMap; 
     claimedRoutes: ClaimedRoute[];
     builtStations: BuiltStation[];
+    placedCityMarkers: PlacedCityMarker[];
     visibleTrainCards: { [spot: number]: TrainCar | null };
 
     // private informations for current player only

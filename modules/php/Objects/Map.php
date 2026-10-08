@@ -49,6 +49,7 @@ class Map {
     public ?string $multilingualPdfRulesUrl = null; // PDF rules URL to display when it's not the base game
     public ?array $rulesDifferences = null; // text summary of rules differences to display when it's not the base game
     public ?int $stations = null;
+    public ?int $cityMarkers = null;
     public ?array $mandalaPoints = null;
     public ?array $bulletTrainBonusPoints = null;
     public ?array $regionBonusPoints = null;
@@ -274,6 +275,19 @@ class Map {
     }
 
     function getPlayerMapSpecificData(Game $game, int $playerId): array {
+        return [];
+    }
+
+    function getForbiddenCityMarkerCityIds(Game $game): array {
+        return [];
+    }
+
+    function getStateAfterRouteClaim(Game $game, string $nextState): string {
+        return $nextState;
+    }
+
+    /** Additional end-game point awards, included in the final-score projection. */
+    function getEndGameBonuses(Game $game): array {
         return [];
     }
     

@@ -52,6 +52,12 @@ class PrivateChooseInitialDestinations extends GameState {
             ]);
         }
 
+        if ($this->game->getMap()->cityMarkers !== null) {
+            $playerId = (int) $this->game->activePrevPlayer();
+            $this->game->giveExtraTime($playerId);
+            return ChooseStartingCity::class;
+        }
+
         return ChooseAction::class;
     }
 

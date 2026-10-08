@@ -231,6 +231,7 @@ class Game extends Table {
                 'width' => $this->getMap()->width,
                 'height' => $this->getMap()->height,
                 'stations' => $this->getMap()->stations,
+                'cityMarkers' => $this->getMap()->cityMarkers,
                 'pointsForGlobetrotter' => $this->getMap()->pointsForGlobetrotter,
                 'pointsForMostConnectedCities' => $this->getMap()->pointsForMostConnectedCities,
                 'ferryCards' => $this->getMap()->ferryCards,
@@ -249,6 +250,7 @@ class Game extends Table {
 
         $result['claimedRoutes'] = $this->getClaimedRoutes();
         $result['builtStations'] = $this->buildingManager->getPlacedStations();
+        $result['placedCityMarkers'] = $this->buildingManager->getPlacedCityMarkers();
         $visibleTrainCards = $this->trainCarManager->getVisibleTrainCarCards();
         $spotsCards = [];
         foreach($visibleTrainCards as $visibleTrainCard) {
@@ -267,6 +269,7 @@ class Game extends Table {
             $player['trainCarsCount'] = $this->trainCarManager->getPlayerHandCount($playerId);
             $player['destinationsCount'] = $gameStarted || $playerId === $currentPlayerId ? $this->destinationManager->getPlayerHandCount($playerId) : null;
             $player['remainingTrainCarsCount'] = $this->getRemainingTrainCarsCount($playerId);
+            $player['remainingCityMarkers'] = $this->buildingManager->getRemainingCityMarkers($playerId);
             $remainingStations = $this->buildingManager->getRemainingStations($playerId);
             if ($remainingStations !== null) {
                 $player['remainingStations'] = $remainingStations;
@@ -404,6 +407,7 @@ class Game extends Table {
 
         // update score
         $points = 0;
+        $routePointAwards = [$playerId => 0];
         $remainingBulletTrains = null;
         $bulletTrainPosition = null;
         if ($claimWithBulletTrain) {
@@ -416,7 +420,16 @@ class Game extends Table {
                 $technologyCards = $this->bga->globals->get("TECHNOLOGY_CARDS_{$playerId}", []);
                 $points += $this->getMap()->getAdditionalRoutePoints($route, $technologyCards);
             }
-            $this->incScore($playerId, $points);
+            $routePointAwards = $this->buildingManager->getRoutePointAwards($playerId, $route, $points);
+            foreach ($routePointAwards as $scoringPlayerId => $awardedPoints) {
+                $this->incScore($scoringPlayerId, $awardedPoints, $scoringPlayerId !== $playerId
+                    ? clienttranslate('${player_name} gains ${delta} point(s) from city control on the route from ${from} to ${to}')
+                    : null, [
+                        'from' => $this->getCityName($route->from),
+                        'to' => $this->getCityName($route->to),
+                    ]);
+            }
+            $points = $routePointAwards[$playerId] ?? 0;
             $this->removeTrainCars($playerId, $route->number);
         }
         
@@ -455,7 +468,9 @@ class Game extends Table {
 
         $this->playerStats->inc('claimedRoutes', 1, $playerId, updateTableStat: true);
         $this->playerStats->inc('playedTrainCars', $route->number, $playerId, updateTableStat: true);
-        $this->playerStats->inc('pointsWithClaimedRoutes', $points, $playerId, updateTableStat: true);
+        foreach ($routePointAwards as $scoringPlayerId => $awardedPoints) {
+            $this->playerStats->inc('pointsWithClaimedRoutes', $awardedPoints, $scoringPlayerId, updateTableStat: true);
+        }
 
         $this->getMap()->onClaimRoute($this, $playerId, $route);
 
@@ -477,6 +492,16 @@ class Game extends Table {
 
         // in case there is less than 5 visible cards on the table, we refill with newly discarded cards
         $this->trainCarManager->checkVisibleTrainCarCards();
+    }
+
+    /** Offer a City Marker after each successful claim before continuing the turn. */
+    function getStateAfterRouteClaim(int $routeId, string $nextState): string {
+        $nextState = $this->getMap()->getStateAfterRouteClaim($this, $nextState);
+        if ($this->getMap()->cityMarkers === null) {
+            return $nextState;
+        }
+        $this->bga->globals->set('CITY_MARKER_PLACEMENT', ['routeId' => $routeId, 'nextState' => $nextState]);
+        return \Bga\Games\TicketToRide\States\PlaceCityMarker::class;
     }
 
     function endTunnelAttempt(bool $storedTunnelAttempt): void {
@@ -553,7 +578,7 @@ class Game extends Table {
     }
 
     function getMapCode(): string { 
-        //if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[20]; }
+        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[13]; }
         return MAP_LIST[match (__NAMESPACE__) {
             'Bga\\Games\\TicketToRide' => 1,
             'Bga\\Games\\TicketToRideEurope' => 2,

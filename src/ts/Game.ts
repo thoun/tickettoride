@@ -5,10 +5,13 @@ import { TtrMap } from "./map";
 import { PlayerTable } from "./player-table/player-table";
 import { ChooseActionState, EnteringChooseActionArgs } from "./states/ChooseAction";
 import { ChooseLegendaryCharacterState } from "./states/ChooseLegendaryCharacter";
+import { ChooseStartingCityState } from "./states/ChooseStartingCity";
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { ChooseStockShareState } from "./states/ChooseStockShare";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
 import { PlaceTrackPieceState } from "./states/PlaceTrackPiece";
+import { PlaceCityMarkerState } from "./states/PlaceCityMarker";
+import { MoveAlvinState } from "./states/MoveAlvin";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 import { BgaAutofit } from "./libs";
@@ -31,6 +34,7 @@ export class Game {
 
     private trainCarCounters: Counter[] = [];
     public stationCounters: Counter[] = [];
+    public cityMarkerCounters: Counter[] = [];
     private trainCarCardCounters: Counter[] = [];
     private ferryCardCounters: Counter[] = [];
     public destinationCardCounters: Counter[] = [];
@@ -49,7 +53,10 @@ export class Game {
         this.chooseActionState = new ChooseActionState(this, bga);
         this.placeTrackPieceState = new PlaceTrackPieceState(this, bga);
         this.bga.states.register('PlaceTrackPiece', this.placeTrackPieceState);
+        this.bga.states.register('PlaceCityMarker', new PlaceCityMarkerState(this, bga));
+        this.bga.states.register('MoveAlvin', new MoveAlvinState(this, bga));
         this.bga.states.register('ChooseLegendaryCharacter', this.ChooseLegendaryCharacterState);
+        this.bga.states.register('ChooseStartingCity', new ChooseStartingCityState(this, bga));
         this.bga.states.register('chooseAction', this.chooseActionState);
         this.bga.states.register('drawSecondCard', new DrawSecondCardState(this, bga));
         this.bga.states.register('confirmTunnel', new ConfirmTunnelState(this, bga));
@@ -149,6 +156,7 @@ export class Game {
         console.log('gamedatas', gamedatas);
 
         this.map = new TtrMap(this, map, Object.values(gamedatas.players), gamedatas.claimedRoutes, gamedatas.builtStations, gamedatas.map.illustration, gamedatas.mapSpecificData);
+        this.map.setPlacedCityMarkers(gamedatas.placedCityMarkers ?? []);
         this.trainCarSelection = new TrainCarSelection(this, 
             gamedatas.visibleTrainCards,
             gamedatas.trainCarDeckCount,
@@ -372,6 +380,11 @@ export class Game {
                     <div class="icon station" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div> 
                     <span id="station-counter-${player.id}"></span>
                 </div>` : ''}
+                ${this.gamedatas.map.cityMarkers != null ? `
+                <div class="counter city-marker-counter" title="${_('Remaining City Markers')}">
+                    <div class="icon city-marker" data-player-color="${player.color}" data-color-blind-player-no="${player.playerNo}"></div>
+                    <span id="city-marker-counter-${player.id}"></span>
+                </div>` : ''}
                 <div id="train-car-card-counter-${player.id}-wrapper" class="counter train-car-card-counter">
                     <div class="icon train-car-card-icon"></div> 
                     <span id="train-car-card-counter-${player.id}"></span>
@@ -398,6 +411,12 @@ export class Game {
                 this.stationCounters[playerId] = stationCounter;
             }
 
+            if (this.gamedatas.map.cityMarkers != null) {
+                const counter = new ebg.counter();
+                counter.create(`city-marker-counter-${player.id}`);
+                counter.setValue(player.remainingCityMarkers);
+                this.cityMarkerCounters[playerId] = counter;
+            }
             const trainCarCardCounter = new ebg.counter();
             trainCarCardCounter.create(`train-car-card-counter-${player.id}`);
             trainCarCardCounter.setValue(player.trainCarsCount);
@@ -706,6 +725,8 @@ export class Game {
             ['claimedRoute', ANIMATION_MS],
             ['addMountainTrains', 1],
             ['builtStation', ANIMATION_MS],
+            ['cityMarkerPlaced', 1],
+            ['alvinUpdated', 1],
             ['destinationCompleted', ANIMATION_MS],
             ['points', 1],
             ['destinationsPicked', 1],
@@ -884,8 +905,28 @@ export class Game {
     }
 
     /** 
-     * Update built stations.
+     * Update placed city markers.
      */ 
+    notif_cityMarkerPlaced(notif: Notif<NotifCityMarkerPlacedArgs>) {
+        const { playerId, cityId, remainingCityMarkers } = notif.args;
+        this.map.setPlacedCityMarkers([{ playerId, cityId }]);
+        this.cityMarkerCounters[playerId].toValue(remainingCityMarkers);
+        this.gamedatas.players[playerId].remainingCityMarkers = remainingCityMarkers;
+        this.gamedatas.placedCityMarkers.push({ playerId, cityId });
+        if (notif.args.removeCards) {
+            this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
+            if (playerId == this.getPlayerId()) {
+                this.playerTable.removeCards(notif.args.removeCards);
+            }
+        }
+    }
+
+    notif_alvinUpdated(notif: Notif<{alvin: MapSpecificData['alvin']}>) {
+        this.gamedatas.mapSpecificData.alvin = notif.args.alvin;
+        this.map.setAlvin(notif.args.alvin);
+    }
+
+    /** Update built stations. */
     notif_builtStation(notif: Notif<NotifBuiltStationArgs>) {
         const playerId = notif.args.playerId;
         const cityId = notif.args.cityId;
