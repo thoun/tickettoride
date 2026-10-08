@@ -2,6 +2,11 @@
     background-image: url('./map.webp');
 }
 
+.train-car-card, .icon.train-car-color {
+    background-image: url('./train-cards.webp');
+}
+
+
 .northernlights-bonus-card {
     width: 250px;
     height: 161px;
