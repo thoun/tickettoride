@@ -347,7 +347,10 @@ class ChooseAction extends GameState {
     #[PossibleAction]
     public function actClaimRoute(int $routeId, int $color, #[IntArrayParam()] ?array $distribution, int $ferryCards, int $activePlayerId) {
         $rightOfWayPending = $this->game->getMap()->useTechnologyCards && $this->bga->globals->get('RIGHT_OF_WAY_PENDING', false);
-        $route = $this->game->mapManager->getAllRoutes()[$routeId];
+        $route = $this->game->mapManager->getAllRoutes()[$routeId] ?? null;
+        if (!isset($route)) {
+            throw new UserException("Invalid route.");
+        }
 
         $claimWithBulletTrain = $route->bulletTrainSpaceIndex !== null && $this->bga->globals->get(REMAINING_BULLET_TRAINS) > 0;
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);

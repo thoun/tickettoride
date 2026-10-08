@@ -84,7 +84,7 @@ class TrainCarManager {
         }
 
         if ($number > $remainingTrainCarCardsInDeck) {
-            throw new \BgaUserException(clienttranslate("You can't take train car cards because the deck is empty"));
+            throw new UserException(clienttranslate("You can't take train car cards because the deck is empty"));
         }
 
         return $this->pickTrainCarCardsFromDeck($playerId, $number);
@@ -128,12 +128,16 @@ class TrainCarManager {
     public function drawTrainCarCardsFromTable(int $playerId, int $id, bool $isSecondCard = false) { // return card
         $card = $this->getTrainCarFromDb($this->trainCars->getCard($id));
 
+        if (!isset($card)) {
+            throw new UserException("Invalid card.");
+        }
+
         if ($card->location != 'table') {
-            throw new \BgaUserException("You can't take this visible card.");
+            throw new UserException("You can't take this visible card.");
         }
 
         if ($isSecondCard && $card->type == 0 && $this->game->getMap()->visibleLocomotivesCountsAsTwoCards) {
-            throw new \BgaUserException("You can't take a locomotive as a second card.");
+            throw new UserException("You can't take a locomotive as a second card.");
         }
 
         $spot = $card->location_arg;

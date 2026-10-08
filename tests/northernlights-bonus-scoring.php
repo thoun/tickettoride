@@ -192,8 +192,9 @@ namespace {
         if ($event['type'] !== 'log') { continue; }
         $type = $event['args']['bonusCardType'];
         check($event['args']['quantities'] === $quantitiesByType[$type], 'Table must include every player and their quantity');
+        check(str_contains($event['message'], '${table}') && isset($event['args']['table']), 'Quantity table must be passed as a notification argument');
         foreach ($quantitiesByType[$type] as $playerId => $quantity) {
-            check(str_contains($event['message'], "<tr><td>Player {$playerId}</td><td>{$quantity}</td></tr>"), 'Missing player quantity table row');
+            check(str_contains($event['args']['table'], "<tr><td>Player {$playerId}</td><td>{$quantity}</td></tr>"), 'Missing player quantity table row');
         }
         $winnerCount = $type === 2 ? 2 : 1;
         for ($offset = 1; $offset <= $winnerCount; $offset++) {

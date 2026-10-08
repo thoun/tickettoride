@@ -8,8 +8,6 @@ use Bga\GameFrameworkPrototype\Helpers\Arrays;
 use Bga\Games\TicketToRide\Game;
 use Bga\Games\TicketToRide\Objects\Destination;
 
-use function Bga\Games\TicketToRide\debug;
-
 class EndScore extends GameState {
     public function __construct(protected Game $game)
     {

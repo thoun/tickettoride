@@ -111,8 +111,12 @@ class Map {
     public function setCode(string $code): void {
         $this->code = $code;
 
+        try {
         $dimensions = getimagesize(__DIR__.'/../../../img/'.$code.'/map.webp');
         if ($dimensions === false) {
+            throw new \RuntimeException("Unable to read dimensions for map '$code'");
+        }
+        } catch (\Throwable $e) {
             throw new \RuntimeException("Unable to read dimensions for map '$code'");
         }
 

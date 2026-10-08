@@ -96,4 +96,6 @@ $gameinfos = [
     //  minimum possible value: 320 (the lowest value you specify, the better the display is on mobile)
     'min' => 490, // under 490, player panels aren't on 2 columns on mobile
 ],
+
+'exception_on_warning' => true,
 ];

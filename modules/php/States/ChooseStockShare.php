@@ -8,8 +8,6 @@ use Bga\GameFramework\StateType;
 use Bga\GameFramework\UserException;
 use Bga\Games\TicketToRide\Game;
 
-use function Bga\Games\TicketToRide\debug;
-
 class ChooseStockShare extends GameState {
     public function __construct(protected Game $game, bool $dummy = false)
     {
