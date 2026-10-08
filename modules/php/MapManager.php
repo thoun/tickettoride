@@ -436,7 +436,8 @@ class MapManager {
                 $virtualLocomotive->type = 0;
 
                 $paymentHand = array_values(array_filter($trainCarsHand, fn($card) => !in_array($card->id, $pairCardIds)));
-                $paymentHand[] = $virtualLocomotive;
+                // Use Mina's selected pair before spending real locomotives.
+                array_unshift($paymentHand, $virtualLocomotive);
                 $paymentDistribution = $distributionCards === null ? null : array_values(array_filter($distributionCards, fn($card) => !in_array($card->id, $pairCardIds)));
                 if ($paymentDistribution !== null) {
                     $paymentDistribution[] = $virtualLocomotive;
