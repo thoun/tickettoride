@@ -10,10 +10,6 @@ require_once(__DIR__.'/routes.php');
 require_once(__DIR__.'/destinations.php');
 
 /**
- * Rules reference: 06b-OldWest-EN-2019-1.pdf, page 2.
- *
- * TODO: Support 6 players in the game configuration (Old West allows 2-6). => or only allow 5 in BGA ? we only have 5 colors of wagons sprites.
- * *
  * TODO: Verify the destination data against the physical tickets: the rules
  * list 50 tickets, but destinations.php currently defines 51. => ask the publisher
  */

@@ -647,7 +647,7 @@ class EndScore {
         players.forEach(player => {
             const playerId = Number(player.id);
             document.getElementById('score-table-body').insertAdjacentHTML('beforeend', `<tr id="score${player.id}">
-                <td id="score-name-${player.id}" class="player-name" style="color: #${player.color}">${player.name}<div id="bonus-card-icons-${player.id}" class="bonus-card-icons"></div></td>
+                <td id="score-name-${player.id}" class="player-name" data-player-color="${player.color}" style="color: #${player.color}">${player.name}<div id="bonus-card-icons-${player.id}" class="bonus-card-icons"></div></td>
                 <td id="destinations-score-${player.id}" class="destinations">
                     <div class="icons-grid">
                         <div id="destination-counter-${player.id}" class="icon destination-card"></div>
@@ -5069,8 +5069,8 @@ class Game {
                     }
                 });
                 ['you', 'actplayer', 'player_name'].forEach(field => {
-                    if (typeof args[field] === 'string' && args[field].indexOf('#ffed00;') !== -1 && args[field].indexOf('text-shadow') === -1) {
-                        args[field] = args[field].replace('#ffed00;', '#ffed00; text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;');
+                    if (typeof args[field] === 'string' && args[field].indexOf('text-shadow') === -1) {
+                        args[field] = args[field].replace(/#(ffed00|ffffff);/gi, '$& text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;');
                     }
                 });
             }

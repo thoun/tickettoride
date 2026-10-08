@@ -33,7 +33,7 @@ export class EndScore {
             const playerId = Number(player.id);
 
             document.getElementById('score-table-body').insertAdjacentHTML('beforeend', `<tr id="score${player.id}">
-                <td id="score-name-${player.id}" class="player-name" style="color: #${player.color}">${player.name}<div id="bonus-card-icons-${player.id}" class="bonus-card-icons"></div></td>
+                <td id="score-name-${player.id}" class="player-name" data-player-color="${player.color}" style="color: #${player.color}">${player.name}<div id="bonus-card-icons-${player.id}" class="bonus-card-icons"></div></td>
                 <td id="destinations-score-${player.id}" class="destinations">
                     <div class="icons-grid">
                         <div id="destination-counter-${player.id}" class="icon destination-card"></div>

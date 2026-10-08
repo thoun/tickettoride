@@ -70,6 +70,19 @@
   box-shadow: 0 0 3px 2px black;
   border-radius: 8px;
 }
+.player-board[data-player-color=ffffff]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  background: url("img/playerboard-background.png"), #ffffff;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 3px 2px black;
+  border-radius: 8px;
+}
 .player-board .player-name, .player-board .player-name a {
   color: white !important;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) !important;
@@ -77,6 +90,14 @@
 .player-board .player_score_value {
   font-weight: bold;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
+.player-board[data-player-color=ffffff] .player-name, .player-board[data-player-color=ffffff] .player-name a {
+  color: #222 !important;
+  text-shadow: none !important;
+}
+.player-board[data-player-color=ffffff] .player_score_value {
+  color: #222;
+  text-shadow: none;
 }
 .player-board .train-car-counter {
   flex-direction: column;
@@ -214,39 +235,45 @@
 .icon.train {
   background-image: url("img/train-icons.png");
 }
-.icon.train[data-player-color=e3001a] {
-  background-position: 75% 0%;
-}
-.icon.train[data-player-color="41a62a"] {
-  background-position: 25% 0%;
-}
 .icon.train[data-player-color="0056aa"] {
   background-position: 0% 0%;
 }
-.icon.train[data-player-color=ffed00] {
-  background-position: 100% 0%;
+.icon.train[data-player-color="41a62a"] {
+  background-position: 20% 0%;
 }
 .icon.train[data-player-color=af0ac2] {
-  background-position: 50% 0%;
+  background-position: 40% 0%;
+}
+.icon.train[data-player-color=e3001a] {
+  background-position: 60% 0%;
+}
+.icon.train[data-player-color=ffed00] {
+  background-position: 80% 0%;
+}
+.icon.train[data-player-color=ffffff] {
+  background-position: 100% 0%;
 }
 .icon.station {
   background-image: url("img/europe/station-icons.png");
   width: 25px;
 }
-.icon.station[data-player-color=e3001a] {
-  background-position: 75% 0%;
-}
-.icon.station[data-player-color="41a62a"] {
-  background-position: 25% 0%;
-}
 .icon.station[data-player-color="0056aa"] {
   background-position: 0% 0%;
 }
-.icon.station[data-player-color=ffed00] {
-  background-position: 100% 0%;
+.icon.station[data-player-color="41a62a"] {
+  background-position: 20% 0%;
 }
 .icon.station[data-player-color=af0ac2] {
-  background-position: 50% 0%;
+  background-position: 40% 0%;
+}
+.icon.station[data-player-color=e3001a] {
+  background-position: 60% 0%;
+}
+.icon.station[data-player-color=ffed00] {
+  background-position: 80% 0%;
+}
+.icon.station[data-player-color=ffffff] {
+  background-position: 100% 0%;
 }
 .icon.train-car-color {
   background-image: url("img/train-cards.jpg");
@@ -445,15 +472,18 @@
   background-position: 0% 0%;
 }
 .city-marker[data-player-color="41a62a"] {
-  background-position: 25% 0%;
+  background-position: 20% 0%;
 }
 .city-marker[data-player-color=af0ac2] {
-  background-position: 50% 0%;
+  background-position: 40% 0%;
 }
 .city-marker[data-player-color=e3001a] {
-  background-position: 75% 0%;
+  background-position: 60% 0%;
 }
 .city-marker[data-player-color=ffed00] {
+  background-position: 80% 0%;
+}
+.city-marker[data-player-color=ffffff] {
   background-position: 100% 0%;
 }
 
@@ -512,6 +542,9 @@
 }
 #alvin[data-player-color=af0ac2] {
   border-color: #af0ac2;
+}
+#alvin[data-player-color=ffffff] {
+  border-color: #ffffff;
 }
 
 /*.point-marker {
@@ -864,6 +897,9 @@
 .wagon[data-player-color=af0ac2] {
   background-image: url("img/wagons-purple.png"), url("img/wagons-shadow.png");
 }
+.wagon[data-player-color=ffffff] {
+  background-image: url("img/wagons-white.png"), url("img/wagons-shadow.png");
+}
 .wagon.phantom {
   opacity: 0.5;
 }
@@ -892,6 +928,9 @@
 #map[data-big-shadows=true] .wagon[data-player-color=af0ac2] {
   background-image: url("img/wagons-purple.png"), url("img/wagons-shadow-big.png");
 }
+#map[data-big-shadows=true] .wagon[data-player-color=ffffff] {
+  background-image: url("img/wagons-white.png"), url("img/wagons-shadow-big.png");
+}
 
 #map .station {
   position: absolute;
@@ -908,15 +947,18 @@
   background-position-x: 0%;
 }
 #map .station[data-player-color="41a62a"] {
-  background-position-x: 25%;
+  background-position-x: 20%;
 }
 #map .station[data-player-color=af0ac2] {
-  background-position-x: 50%;
+  background-position-x: 40%;
 }
 #map .station[data-player-color=e3001a] {
-  background-position-x: 75%;
+  background-position-x: 60%;
 }
 #map .station[data-player-color=ffed00] {
+  background-position-x: 80%;
+}
+#map .station[data-player-color=ffffff] {
   background-position-x: 100%;
 }
 #map .station.phantom {
@@ -1550,6 +1592,9 @@
   text-overflow: ellipsis;
   position: relative;
 }
+#score #table-wrapper table tr td.player-name[data-player-color=ffffff] {
+  text-shadow: 0 0 2px black, 0 0 3px black;
+}
 #score #table-wrapper table tr td.player-name .bonus-card-icons {
   position: absolute;
   z-index: 25;
@@ -1598,20 +1643,23 @@
   height: 20px;
   transition: right 0.5s;
 }
-#score #table-wrapper table tr td.train .train-image[data-player-color=e3001a] {
-  background-position: 0% 100%;
-}
-#score #table-wrapper table tr td.train .train-image[data-player-color="41a62a"] {
-  background-position: 0% 50%;
-}
-#score #table-wrapper table tr td.train .train-image[data-player-color="0056aa"] {
-  background-position: 0% 25%;
-}
 #score #table-wrapper table tr td.train .train-image[data-player-color=ffed00] {
   background-position: 0% 0%;
 }
+#score #table-wrapper table tr td.train .train-image[data-player-color="0056aa"] {
+  background-position: 0% 20%;
+}
+#score #table-wrapper table tr td.train .train-image[data-player-color="41a62a"] {
+  background-position: 0% 40%;
+}
 #score #table-wrapper table tr td.train .train-image[data-player-color=af0ac2] {
-  background-position: 0% 75%;
+  background-position: 0% 60%;
+}
+#score #table-wrapper table tr td.train .train-image[data-player-color=e3001a] {
+  background-position: 0% 80%;
+}
+#score #table-wrapper table tr td.train .train-image[data-player-color=ffffff] {
+  background-position: 0% 100%;
 }
 #score #table-wrapper table tr td.total {
   font-weight: bold;
@@ -1884,6 +1932,9 @@ html[data-color-blind=true] [data-color-blind-player-no="4"]::after {
 }
 html[data-color-blind=true] [data-color-blind-player-no="5"]::after {
   content: "⬟";
+}
+html[data-color-blind=true] [data-color-blind-player-no="6"]::after {
+  content: "★";
 }
 
 #rules-differences-btn {

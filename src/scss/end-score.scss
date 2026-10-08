@@ -28,6 +28,10 @@
                         text-overflow: ellipsis;
                         position: relative;
 
+                        &[data-player-color="ffffff"] {
+                            text-shadow: 0 0 2px black, 0 0 3px black;
+                        }
+
                         .bonus-card-icons {
                             position: absolute;
                             z-index: 25;
@@ -84,24 +88,12 @@
                             height: 20px;
                             transition: right 0.5s;
 
-                            &[data-player-color="e3001a"] {
-                              background-position: 0% 100%;
-                            }
-                        
-                            &[data-player-color="41a62a"] {
-                              background-position: 0% 50%;
-                            }
-                        
-                            &[data-player-color="0056aa"] {
-                              background-position: 0% 25%;
-                            }
-                        
-                            &[data-player-color="ffed00"] {
-                              background-position: 0% 0%;
-                            }
-                        
-                            &[data-player-color="af0ac2"] {
-                              background-position: 0% 75%;
+                            $score-train-colors: "ffed00", "0056aa", "41a62a", "af0ac2", "e3001a", "ffffff";
+                            @each $color in $score-train-colors {
+                              $i: index($score-train-colors, $color) - 1;
+                              &[data-player-color="#{$color}"] {
+                                background-position: 0% #{$i * 100% / 5};
+                              }
                             }
                         }
                     }

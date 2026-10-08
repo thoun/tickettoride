@@ -1,8 +1,9 @@
 // old colors (classic BGA colors) : $player-colors: ("red": "ff0000", "green": "008000", "blue": "0000ff", "yellow": "ffa500", "purple": "982fff");
 // new colors (from end score train image)
-$player-colors: ("red": "e3001a", "green": "41a62a", "blue": "0056aa", "yellow": "ffed00", "purple": "af0ac2");
+$player-colors: ("red": "e3001a", "green": "41a62a", "blue": "0056aa", "yellow": "ffed00", "purple": "af0ac2", "white": "ffffff");
 
-$playerColors: "0056aa", "41a62a", "af0ac2", "e3001a", "ffed00";
+// Frame order in the train and station sprite sheets.
+$playerColors: "0056aa", "41a62a", "af0ac2", "e3001a", "ffed00", "ffffff";
 
 @import 'playerboards';
 @import 'map';
@@ -166,6 +167,10 @@ html[data-color-blind="true"] {
 
     [data-color-blind-player-no="5"]::after {
       content: '⬟'; // pentagon
+    }
+
+    [data-color-blind-player-no="6"]::after {
+      content: '★'; // star
     }
 }
 

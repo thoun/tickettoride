@@ -30,6 +30,18 @@
     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
   }
 
+  &[data-player-color="ffffff"] {
+    .player-name, .player-name a {
+      color: #222 !important;
+      text-shadow: none !important;
+    }
+
+    .player_score_value {
+      color: #222;
+      text-shadow: none;
+    }
+  }
+
   .train-car-counter {
     flex-direction: column;
     width: 64px;
@@ -188,24 +200,11 @@
   &.train {
     background-image: url('img/train-icons.png');
 
-    &[data-player-color="e3001a"] {
-      background-position: #{3 * 100% / 4} 0%;
-    }
-
-    &[data-player-color="41a62a"] {
-      background-position: #{1 * 100% / 4} 0%;
-    }
-
-    &[data-player-color="0056aa"] {
-      background-position: #{0 * 100% / 4} 0%;
-    }
-
-    &[data-player-color="ffed00"] {
-      background-position: #{4 * 100% / 4} 0%;
-    }
-
-    &[data-player-color="af0ac2"] {
-      background-position: #{2 * 100% / 4} 0%;
+    @each $color in $playerColors {
+      $i: index($playerColors, $color) - 1;
+      &[data-player-color="#{$color}"] {
+        background-position: #{$i * 100% / 5} 0%;
+      }
     }
   }
 
@@ -213,24 +212,11 @@
     background-image: url('img/europe/station-icons.png');
     width: 25px;
 
-    &[data-player-color="e3001a"] {
-      background-position: #{3 * 100% / 4} 0%;
-    }
-
-    &[data-player-color="41a62a"] {
-      background-position: #{1 * 100% / 4} 0%;
-    }
-
-    &[data-player-color="0056aa"] {
-      background-position: #{0 * 100% / 4} 0%;
-    }
-
-    &[data-player-color="ffed00"] {
-      background-position: #{4 * 100% / 4} 0%;
-    }
-
-    &[data-player-color="af0ac2"] {
-      background-position: #{2 * 100% / 4} 0%;
+    @each $color in $playerColors {
+      $i: index($playerColors, $color) - 1;
+      &[data-player-color="#{$color}"] {
+        background-position: #{$i * 100% / 5} 0%;
+      }
     }
   }
 

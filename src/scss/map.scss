@@ -181,7 +181,7 @@
   @each $color in $playerColors {
     $i: index($playerColors, $color) - 1;
     &[data-player-color="#{$color}"] {
-      background-position: #{$i * 25%} 0%;
+      background-position: #{$i * 100% / 5} 0%;
     }
   }
 }
@@ -502,7 +502,7 @@
     @each $color in $playerColors {
       $i: index($playerColors, $color) - 1;
       &[data-player-color="#{$color}"] {
-        background-position-x: #{$i * 25%};
+        background-position-x: #{$i * 100% / 5};
       }
     }
 
