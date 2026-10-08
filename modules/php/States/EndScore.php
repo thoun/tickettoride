@@ -576,12 +576,14 @@ class EndScore extends GameState {
             }
             $this->bga->playerScoreAux->set((int)$playerId, $scoreAux, null);
             
-            $this->bga->playerStats->set('bonusCardsPoints', $bonusCardPoints[$playerId], $playerId);
-            /*"bonusCardsPoints": {
-                "id": 105,
-                "name": "Bonus cards points",
-                "type": "int"
-            }*/
+            if ($this->game->getMap()->useBonusCards) {
+                $this->bga->playerStats->set('bonusCardsPoints', $bonusCardPoints[$playerId], $playerId);
+                /*"bonusCardsPoints": {
+                    "id": 105,
+                    "name": "Bonus cards points",
+                    "type": "int"
+                }*/
+            }
         }
         // Mandala
         if ($mandalaPoints !== null) {
