@@ -282,7 +282,9 @@ class ChooseAction extends GameState {
         $this->game->incStat($drawNumber, 'collectedHiddenTrainCarCards');
         $this->game->incStat($drawNumber, 'collectedHiddenTrainCarCards', $activePlayerId);
 
-       return $drawNumber == 1 && $this->game->trainCarManager->canTakeASecondCard(null) ? DrawSecondCard::class : NextPlayer::class;
+       return $drawNumber == 1 && $this->game->trainCarManager->canTakeASecondCard(null)
+           ? DrawSecondCard::class
+           : ($this->game->getMap()->useTrackBedPieces ? PlaceTrackPiece::class : NextPlayer::class);
     }
 
     #[PossibleAction]
@@ -324,7 +326,9 @@ class ChooseAction extends GameState {
             $this->game->incStat(1, 'collectedVisibleLocomotives', $activePlayerId);
         }
 
-        return $this->game->trainCarManager->canTakeASecondCard($card->type) ? DrawSecondCard::class : NextPlayer::class;
+        return $this->game->trainCarManager->canTakeASecondCard($card->type)
+            ? DrawSecondCard::class
+            : ($this->game->getMap()->useTrackBedPieces ? PlaceTrackPiece::class : NextPlayer::class);
     }
     
     #[PossibleAction]
@@ -347,7 +351,7 @@ class ChooseAction extends GameState {
     #[PossibleAction]
     public function actClaimRoute(int $routeId, int $color, #[IntArrayParam()] ?array $distribution, int $ferryCards, int $activePlayerId) {
         $rightOfWayPending = $this->game->getMap()->useTechnologyCards && $this->bga->globals->get('RIGHT_OF_WAY_PENDING', false);
-        $route = $this->game->mapManager->getAllRoutes()[$routeId] ?? null;
+        $route = $this->game->mapManager->getCurrentStateRoutes()[$routeId] ?? null;
         if (!isset($route)) {
             throw new UserException("Invalid route.");
         }
@@ -626,7 +630,7 @@ class ChooseAction extends GameState {
             return null;
         }
 
-        $allRoutes = $this->game->mapManager->getAllRoutes();
+        $allRoutes = $this->game->mapManager->getCurrentStateRoutes(includeTrackbed: true);
         $claimedRoutes = $this->game->getClaimedRoutes();
         $maximumDoubleRoutes = $this->game->getMap()->maximumPlayerForDoubleRoutes[$this->game->getPlayerCount()] ?? 2;
         $maximumTripleRoutes = $this->game->getMap()->maximumPlayerForTripleRoutes[$this->game->getPlayerCount()] ?? 3;

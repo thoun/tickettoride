@@ -1,42 +1,12 @@
 <?php
 
+use Bga\Games\TicketToRide\Game;
 use Bga\Games\TicketToRide\Objects\Map;
 
 require_once(__DIR__.'/cities.php');
 require_once(__DIR__.'/routes.php');
 require_once(__DIR__.'/destinations.php');
 
-/**
- * Rules reference: 06a-France-EN-2019-2.pdf, printed pages 2-3.
- * *
- * TODO: Add a shared supply of the 64 Track Pieces, sorted by length. Track
- * Piece quantities by length and color must be checked against the components;
- * the rules booklet does not give their distribution.
- *
- * TODO: After drawing Train Car cards under the normal rules (including taking
- * a face-up Locomotive), require the player to build one route by placing an
- * available Track Piece on an unbuilt Track Bed of the same length. Its color
- * determines the route's payment color. Building does not claim the route:
- * any player may claim it on a later turn.
- *
- * TODO: Record crossing routes and forbid placing a Track Piece over or under
- * another Track Piece or through a claimed route. Building a crossing route
- * permanently blocks the crossed routes, even after its Track Piece is returned
- * to the supply (for example, Marseille-Grenoble blocks Avignon-Briançon and
- * Avignon-Nice).
- *
- * TODO: Apply parallel-route limits when building, as well as when claiming.
- * With 2 or 3 players, only one track of a double or triple route may be built.
- * With 4 or 5 players, build each track separately, one per card-drawing turn;
- * the same player may build several tracks on different turns, but may still
- * claim only one track between the same cities.
- *
- * TODO: Prevent claiming TRACKBED routes until they have been built, and use
- * the placed Track Piece's color for payment. One-space colored routes and
- * printed grey routes (including ferries) are already built and can be claimed
- * immediately. Return a built route's Track Piece to the shared supply when
- * anyone claims it, retaining its crossing restrictions.
- */
 class FranceMap extends Map {
     public function __construct() {
         parent::__construct(
@@ -54,6 +24,26 @@ class FranceMap extends Map {
         $this->pointsForGlobetrotter = 15;
         $this->maximumPlayerForDoubleRoutes = [2 => 1, 3 => 1, 4 => 2, 5 => 2];
         $this->maximumPlayerForTripleRoutes = [2 => 1, 3 => 1, 4 => 3, 5 => 3];
+        $this->useTrackBedPieces = true;
+        // Crossings checked against img/france/map.webp. Each pair blocks both ways.
+        $this->blockedTrackBedRoutes = [
+            12 => [90],       // Angers-Rennes / Le Mans-Lorient
+            15 => [83],       // Avignon-Briançon / Grenoble-Marseille
+            24 => [56, 83],   // Avignon-Nice / Briançon-Marseille, Grenoble-Marseille
+            44 => [71],       // Bourges-Brive-la-Gaillarde / Clermont-Ferrand-Limoges
+            53 => [102],      // Brest-Rennes / Lorient-Saint-Malo
+            56 => [24],
+            69 => [146],      // Cherbourg-Le Mans / Rouen-Saint-Malo
+            71 => [44],
+            83 => [15, 24],
+            88 => [146],      // Le Havre-Le Mans / Rouen-Saint-Malo
+            90 => [12, 149],  // Le Mans-Lorient / Angers-Rennes, Nantes-Rennes
+            102 => [53],
+            146 => [69, 88],
+            149 => [90],
+            150 => [151],     // Besançon-Nancy / Dijon-Mulhouse
+            151 => [150],
+        ];
 
         // Zone tickets accept any listed endpoint; each is a separate dead end.
         $this->countriesEndPoints = [
@@ -66,7 +56,7 @@ class FranceMap extends Map {
         ];
 
         $this->rulesDifferences = [
-            /* TODO clienttranslate('France is designed for 2 to 5 players. Each player starts with 40 trains and 8 Train Car cards.'),
+            clienttranslate('Each player starts with 40 trains and 8 Train Car cards.'),
             clienttranslate('Deal 5 Destination Tickets at the start and keep at least 3. Shuffle all rejected initial tickets together and place them under the deck. Later, draw 4 tickets and keep at least 1; return unchosen tickets to the bottom of the deck.'),
             clienttranslate('After drawing Train Car cards, you must build one route: place an available Track Piece on a Track Bed of the same length. The Track Piece determines the route color. Any player may later claim the built route.'),
             clienttranslate('A Track Piece cannot cross another Track Piece or a claimed route. Building a crossing route permanently cuts off the crossed routes, even after the built route is claimed.'),
@@ -75,7 +65,6 @@ class FranceMap extends Map {
             clienttranslate('Routes leading to neighboring countries or Corsica are separate dead ends. Routes leading to the same zone do not connect to each other.'),
             clienttranslate('Ferries require a Locomotive card for each Locomotive symbol on the route, plus matching cards for the remaining spaces.'),
             clienttranslate('The Longest Continuous Path bonus is worth 10 points and the Globetrotter bonus for the most completed tickets is worth 15 points. All players tied for either bonus receive its points.'),
-            */
         ];
     }
 
@@ -98,6 +87,32 @@ class FranceMap extends Map {
         }
 
         return ['deck' => $destinations];
+    }
+
+    function setup(Game $game): void {
+        $remainingTrackPieces = [];
+        foreach ([PINK, WHITE, BLUE, YELLOW, ORANGE, BLACK, RED, GREEN] as $color) {
+            $remainingTrackPieces[$color] = [2 => 3, 3 => 3, 4 => 1, 5 => 1];
+        }
+        $game->bga->globals->set('REMAINING_TRACK_PIECES', $remainingTrackPieces);
+        $game->bga->globals->set('PLACED_TRACK_PIECES', []);
+    }
+
+    function getMapSpecificData(Game $game): array {
+        return [
+            'remainingTrackPieces' => $game->bga->globals->get('REMAINING_TRACK_PIECES', []),
+            'placedTrackPieces' => $game->bga->globals->get('PLACED_TRACK_PIECES', []),
+        ];
+    }
+
+    function getPreloadImages(int $expansionValue): array {
+        return array_merge(parent::getPreloadImages($expansionValue), [
+            'track-pieces-1.webp',
+            'track-pieces-2.webp',
+            'track-pieces-3.webp',
+            'track-pieces-4.webp',
+            'track-pieces-5.webp',
+        ]);
     }
 }
 

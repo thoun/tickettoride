@@ -236,6 +236,7 @@ class Game extends Table {
                 'ferryCards' => $this->getMap()->ferryCards,
                 'useTechnologyCards' => $this->getMap()->useTechnologyCards,
                 'useBonusCards' => $this->getMap()->useBonusCards,
+                'useTrackBedPieces' => $this->getMap()->useTrackBedPieces,
             ],
         ];
     
@@ -345,7 +346,7 @@ class Game extends Table {
     }
 
     function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null, bool $shifted = false, int $ferryCardsUsed = 0): void {
-        $route = $this->mapManager->getAllRoutes()[$routeId];
+        $route = $this->mapManager->getCurrentStateRoutes()[$routeId];
         $cardCost = $this->mapManager->getRouteTrainCardCost($route, $playerId, $extraCardCost);
         $ferryCardsUsed = $route->ferryWaves > 0 ? $ferryCardsUsed : 0;
 
@@ -382,6 +383,24 @@ class Game extends Table {
         $claimerId = $claimWithBulletTrain ? -1 : $playerId;
         $shiftIndex = $shifted ? $this->getUniqueIntValueFromDB("SELECT count(*) FROM claimed_routes WHERE route_id = $routeId") : 0;
         $this->DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`, `shift_index`) VALUES ($routeId, $claimerId, $shiftIndex)");
+
+        $returnedTrackPiece = null;
+        if ($this->getMap()->useTrackBedPieces) {
+            $placedTrackPieces = $this->bga->globals->get('PLACED_TRACK_PIECES', []);
+            if (isset($placedTrackPieces[$routeId])) {
+                $pieceColor = $placedTrackPieces[$routeId];
+                $remainingTrackPieces = $this->bga->globals->get('REMAINING_TRACK_PIECES', []);
+                $remainingTrackPieces[$pieceColor][$route->number]++;
+                unset($placedTrackPieces[$routeId]);
+                $this->bga->globals->set('PLACED_TRACK_PIECES', $placedTrackPieces);
+                $this->bga->globals->set('REMAINING_TRACK_PIECES', $remainingTrackPieces);
+                $returnedTrackPiece = [
+                    'color' => $pieceColor,
+                    'length' => $route->number,
+                    'remainingCount' => $remainingTrackPieces[$pieceColor][$route->number],
+                ];
+            }
+        }
 
         // update score
         $points = 0;
@@ -421,6 +440,7 @@ class Game extends Table {
             'shiftIndex' => $shiftIndex,
             'ferryCardsUsed' => $ferryCardsUsed,
             'ferryCardsCount' => $ferryCardsCount,
+            'returnedTrackPiece' => $returnedTrackPiece,
         ];
         if ($shifted) {
             $args['shifted'] = true;
@@ -533,7 +553,7 @@ class Game extends Table {
     }
 
     function getMapCode(): string { 
-        //if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[20]; }
+        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[12]; }
         return MAP_LIST[match (__NAMESPACE__) {
             'Bga\\Games\\TicketToRide' => 1,
             'Bga\\Games\\TicketToRideEurope' => 2,

@@ -1348,6 +1348,7 @@ class TtrMap {
         this.mapDiv.insertAdjacentHTML('afterbegin', `
             <div class="illustration" data-illustration="${illustration}"></div>
             <div id="cities"></div>
+            <div id="track-pieces"></div>
             <div id="route-spaces"></div>
             <div id="train-cars"></div>
             <div id="stations"></div>
@@ -1356,6 +1357,7 @@ class TtrMap {
         CORNERS.forEach(corner => document.getElementById('map-and-borders').insertAdjacentHTML('beforeend', `<div class="corner ${corner}"></div>`));
         map.bigCities.forEach(bigCity => document.getElementById('cities').insertAdjacentHTML('beforeend', `<div class="big-city" style="left: ${bigCity.x}px; top: ${bigCity.y}px; width: ${bigCity.width}px;"></div>`));
         this.createRouteSpaces('route-spaces');
+        Object.entries(mapSpecificData.placedTrackPieces ?? {}).forEach(([routeId, color]) => this.placeTrackPiece(Number(routeId), color));
         this.createCities(map.stations !== null);
         this.setClaimedRoutes(claimedRoutes, null);
         this.setBuiltStations(builtStations, null);
@@ -1495,7 +1497,14 @@ class TtrMap {
         spaceDiv.addEventListener('dragover', e => this.routeDragOver(e, route));
         spaceDiv.addEventListener('dragleave', e => this.setHoveredRoute(null));
         spaceDiv.addEventListener('drop', e => this.routeDragDrop(e, route));
-        spaceDiv.addEventListener('click', () => this.game.chooseActionState.clickedRoute(route));
+        spaceDiv.addEventListener('click', () => {
+            if (this.game.gamedatas.gamestate.name === 'PlaceTrackPiece') {
+                this.game.placeTrackPieceState.clickedRoute(route);
+            }
+            else {
+                this.game.chooseActionState.clickedRoute(route);
+            }
+        });
     }
     /**
      * Bind drag events to route space.
@@ -1524,6 +1533,29 @@ class TtrMap {
     /**
      * Highlight selectable route spaces.
      */
+    placeTrackPiece(routeId, color) {
+        const route = this.map.routes[routeId];
+        route.color = color;
+        document.getElementById(`track-piece-${routeId}`)?.remove();
+        const first = route.spaces[0];
+        const last = route.spaces[route.spaces.length - 1];
+        const angle = route.spaces.length === 1 ? first.angle : Math.atan2(last.y - first.y, last.x - first.x) * 180 / Math.PI;
+        document.getElementById('track-pieces').insertAdjacentHTML('beforeend', `
+            <div id="track-piece-${routeId}" class="track-piece" data-length="${route.spaces.length}" data-color="${color}"
+                style="--track-piece-x: ${(first.x + last.x) / 2}px; --track-piece-y: ${(first.y + last.y) / 2}px; --track-piece-angle: ${angle}deg;"></div>
+        `);
+        document.querySelectorAll(`.route-space[data-route="${routeId}"]`).forEach(space => {
+            space.dataset.color = String(color);
+            space.title = `${this.game.getCityName(route.from)} - ${this.game.getCityName(route.to)}, ${route.spaces.length} ${getColor(color, 'route')}`;
+        });
+    }
+    removeTrackPiece(routeId) {
+        document.getElementById(`track-piece-${routeId}`)?.remove();
+        this.map.routes[routeId].color = -1;
+        document.querySelectorAll(`.route-space[data-route="${routeId}"]`).forEach(space => {
+            space.dataset.color = '-1';
+        });
+    }
     setSelectableRoutes(selectable, possibleRoutes) {
         dojo.query('.route-space').removeClass('selectable');
         if (selectable) {
@@ -2073,10 +2105,47 @@ class TtrMap {
                 (player.mapSpecificData.technologyCards ?? []).forEach(type => this.addTechnologyCard(playerZone, type));
             });
         }
+        if (this.map.useTrackBedPieces) {
+            this.game.createPlayerZones(_('Remaining Track Pieces'), false);
+            const tableZone = this.game.getPlayerZoneContentElement('table');
+            tableZone.insertAdjacentHTML('beforeend', `
+                <div id="remaining-track-pieces">
+                    ${[2, 3, 4, 5].map(length => `
+                        <div class="track-piece-supply-column">
+                            <div class="track-piece-supply-heading">${_('${length}-space tracks').replace('${length}', String(length))}</div>
+                            ${[1, 2, 3, 4, 5, 6, 7, 8].map(color => `
+                                <div id="track-piece-supply-${color}-${length}" class="track-piece-supply" data-color="${color}" data-length="${length}">
+                                    <div class="track-piece" data-color="${color}" data-length="${length}" aria-hidden="true"></div>
+                                    <span class="track-piece-count"></span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            `);
+            [2, 3, 4, 5].forEach(length => {
+                [1, 2, 3, 4, 5, 6, 7, 8].forEach(color => {
+                    this.setRemainingTrackPieceCount(color, length, this.mapSpecificData.remainingTrackPieces?.[color]?.[length] ?? 0);
+                });
+            });
+        }
         if (this.map.useBonusCards) {
             this.game.createPlayerZones(_('Bonus cards'), false);
             const tableZone = this.game.getPlayerZoneContentElement('table');
             (this.mapSpecificData.bonusCards ?? []).forEach(type => this.addNorthernLightsBonusCard(tableZone, type));
+        }
+    }
+    setRemainingTrackPieceCount(color, length, count) {
+        var _a, _b;
+        (_b = ((_a = this.mapSpecificData).remainingTrackPieces ?? (_a.remainingTrackPieces = {})))[color] ?? (_b[color] = {});
+        this.mapSpecificData.remainingTrackPieces[color][length] = count;
+        const pile = document.getElementById(`track-piece-supply-${color}-${length}`);
+        if (pile) {
+            pile.querySelector('.track-piece-count').textContent = String(count);
+            pile.classList.toggle('empty', count === 0);
+            const label = `${getColor(color, 'route')}, ${_('${length}-space tracks').replace('${length}', String(length))}: ${count}`;
+            pile.title = label;
+            pile.setAttribute('aria-label', label);
         }
     }
     addNorthernLightsBonusCard(zone, type) {
@@ -3433,6 +3502,51 @@ class DrawSecondCardState {
     }
 }
 
+class PlaceTrackPieceState {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+        this.active = false;
+    }
+    onEnteringState(args, isCurrentPlayerActive) {
+        this.args = args;
+        this.active = isCurrentPlayerActive;
+        this.game.trainCarSelection.setSelectableTopDeck(false, 0);
+        this.game.trainCarSelection.setSelectableVisibleCards([]);
+        this.showRoutes();
+    }
+    showRoutes() {
+        this.game.map.setSelectableRoutes(this.active, this.args.possibleRouteIds.map(id => this.game.getMap().routes[id]));
+        if (this.active) {
+            this.bga.statusBar.removeActionButtons();
+            this.bga.statusBar.setTitle(_('${you} must choose a route to place a Track Piece'));
+        }
+    }
+    clickedRoute(route) {
+        if (!this.active || !this.args.possibleRouteIds.includes(route.id)) {
+            return;
+        }
+        const length = route.spaces.length;
+        this.bga.statusBar.removeActionButtons();
+        this.bga.statusBar.setTitle(_('Choose a Track Piece colour for ${from} to ${to}')
+            .replace('${from}', this.game.getCityName(route.from))
+            .replace('${to}', this.game.getCityName(route.to)));
+        Object.entries(this.args.remainingTrackPieces).forEach(([color, counts]) => {
+            const label = `<div class="train-car-color icon" data-color="${color}"></div> ${getColor(Number(color), 'route')}`;
+            this.bga.statusBar.addActionButton(label, () => this.bga.actions.performAction('actPlaceTrackPiece', {
+                routeId: route.id,
+                color: Number(color),
+            }), { disabled: !counts[length] });
+        });
+        this.bga.statusBar.addActionButton(_('Cancel'), () => this.showRoutes(), { color: 'secondary' });
+    }
+    onLeavingState() {
+        this.active = false;
+        this.game.map.setSelectableRoutes(false, []);
+        this.game.trainCarSelection.removeSelectableVisibleCards();
+    }
+}
+
 /**
  * Animation to move a card to a player's counter (the destroy animated card).
  */
@@ -3813,6 +3927,8 @@ class Game {
         this.bga = bga;
         this.ChooseLegendaryCharacterState = new ChooseLegendaryCharacterState(this, bga);
         this.chooseActionState = new ChooseActionState(this, bga);
+        this.placeTrackPieceState = new PlaceTrackPieceState(this, bga);
+        this.bga.states.register('PlaceTrackPiece', this.placeTrackPieceState);
         this.bga.states.register('ChooseLegendaryCharacter', this.ChooseLegendaryCharacterState);
         this.bga.states.register('chooseAction', this.chooseActionState);
         this.bga.states.register('drawSecondCard', new DrawSecondCardState(this, bga));
@@ -4376,6 +4492,7 @@ class Game {
             ['trainCarPicked', ANIMATION_MS],
             ['ferryCardDrawn', 1],
             ['stockShareTaken', 1],
+            ['trackPiecePlaced', 1],
             ['technologyCardBought', 1],
             ['technologyCardReturned', 1],
             ['technologyCardsExpired', 1],
@@ -4448,6 +4565,14 @@ class Game {
     notif_stockShareTaken(notif) {
         this.map.stockShareTaken(notif.args);
     }
+    notif_trackPiecePlaced(notif) {
+        var _a;
+        const { routeId, color, length, remainingCount } = notif.args;
+        this.gamedatas.mapSpecificData.remainingTrackPieces[color][length] = remainingCount;
+        this.map.setRemainingTrackPieceCount(color, length, remainingCount);
+        ((_a = this.gamedatas.mapSpecificData).placedTrackPieces ?? (_a.placedTrackPieces = {}))[routeId] = color;
+        this.map.placeTrackPiece(routeId, color);
+    }
     notif_technologyCardBought(notif) {
         const { playerId, type, remainingCount, removeCards } = notif.args;
         this.trainCarCardCounters[playerId].incValue(-removeCards.length);
@@ -4485,6 +4610,13 @@ class Game {
     notif_claimedRoute(notif) {
         const playerId = notif.args.playerId;
         const routeId = notif.args.routeId;
+        if (notif.args.returnedTrackPiece) {
+            const { color, length, remainingCount } = notif.args.returnedTrackPiece;
+            this.gamedatas.mapSpecificData.remainingTrackPieces[color][length] = remainingCount;
+            this.map.setRemainingTrackPieceCount(color, length, remainingCount);
+            delete this.gamedatas.mapSpecificData.placedTrackPieces[routeId];
+            this.map.removeTrackPiece(routeId);
+        }
         this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
         this.trainCarCounters[playerId].toValue(notif.args.remainingTrainCars);
         this.map.setClaimedRoutes([{

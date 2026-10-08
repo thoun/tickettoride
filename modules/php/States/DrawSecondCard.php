@@ -38,7 +38,7 @@ class DrawSecondCard extends GameState {
         $this->game->incStat(1, 'collectedHiddenTrainCarCards');
         $this->game->incStat(1, 'collectedHiddenTrainCarCards', $activePlayerId);
 
-       return ST_NEXT_PLAYER;
+       return $this->game->getMap()->useTrackBedPieces ? PlaceTrackPiece::class : NextPlayer::class;
     }
     
     #[PossibleAction]
@@ -54,7 +54,7 @@ class DrawSecondCard extends GameState {
             $this->game->incStat(1, 'collectedVisibleLocomotives', $activePlayerId);
         }
 
-        return ST_NEXT_PLAYER; 
+        return $this->game->getMap()->useTrackBedPieces ? PlaceTrackPiece::class : NextPlayer::class;
     }
 
     function zombie(int $playerId) {
@@ -65,6 +65,6 @@ class DrawSecondCard extends GameState {
         if (count($cards) > 0) {
             return $this->actDrawSecondTableCard(reset($cards)->id, $playerId);
         }
-        return NextPlayer::class;
+        return $this->game->getMap()->useTrackBedPieces ? PlaceTrackPiece::class : NextPlayer::class;
     }
 }

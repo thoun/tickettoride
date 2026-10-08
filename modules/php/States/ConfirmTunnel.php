@@ -28,7 +28,7 @@ class ConfirmTunnel extends GameState {
     function getArgs(int $activePlayerId) {
         $tunnelAttempt = $this->game->getGlobalVariable(TUNNEL_ATTEMPT);
 
-        $route = $this->game->mapManager->getAllRoutes()[$tunnelAttempt->routeId];
+        $route = $this->game->mapManager->getCurrentStateRoutes()[$tunnelAttempt->routeId];
         $remainingTrainCars = $this->game->getRemainingTrainCarsCount($activePlayerId);        
         $trainCarsHand = $this->game->trainCarManager->getPlayerHand($activePlayerId);
         $considerAllRoutesGray = false;

@@ -66,6 +66,8 @@ interface MapSpecificData {
     bonusCards?: number[];
     remainingBulletTrains?: number;
     remainingTechnologyCards?: number[];
+    remainingTrackPieces?: {[color: number]: {[length: number]: number }};
+    placedTrackPieces?: {[routeId: number]: number};
     remainingStockShareCards?: {[type: number]: number[] };
     stockShareCardsDummy?: {[type: number]: number[] };
     shareStockPoints?: {[type: number]: number[] };
@@ -134,6 +136,7 @@ interface TicketToRideMap {
     pointsForMostConnectedCities: number | null;
     ferryCards: boolean;
     useTechnologyCards: boolean;
+    useTrackBedPieces: boolean;
     useBonusCards: boolean;
 }
 
@@ -218,6 +221,7 @@ interface NotifNewCardsOnTableArgs {
 }
 
 interface NotifClaimedRouteArgs {
+    returnedTrackPiece?: {color: number; length: number; remainingCount: number} | null;
     playerId: number;
     routeId: number;
     removeCards: TrainCar[];

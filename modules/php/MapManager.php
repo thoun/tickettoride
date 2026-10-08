@@ -49,7 +49,7 @@ class MapManager {
      * - player count allows it (if double route)
      */
     public function claimableRoutes(int $playerId, array $trainCarsHand, int $remainingTrainCars, bool $opponentRoutesInsteadOfFreeOnes = false, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null, int $ferryCards = 0) {
-        $allRoutes = $this->getAllRoutes();
+        $allRoutes = $this->getCurrentStateRoutes();
         $claimedRoutes = $this->game->getClaimedRoutes();
         $claimedRoutesIds = array_map(fn($claimedRoute) => $claimedRoute->routeId, array_values($claimedRoutes));
 
@@ -308,6 +308,37 @@ class MapManager {
         array_walk($allRoutes, function(&$route, $id) { $route->id = $id; });
         return $allRoutes;
     }
+
+    /** @return Route[] Current routes with built track colours, optionally including unbuilt trackbeds. */
+    public function getCurrentStateRoutes(bool $includeTrackbed = false): array {
+        $allRoutes = $this->getAllRoutes();
+        $placedTrackPieces = $this->game->getMap()->useTrackBedPieces
+            ? $this->game->bga->globals->get('PLACED_TRACK_PIECES', [])
+            : [];
+        if ($this->game->getMap()->useTrackBedPieces) {
+            // Claimed tracks still block crossings after their pieces return to the supply.
+            $builtRouteIds = array_merge(
+                array_keys($placedTrackPieces),
+                array_map(fn($route) => $route->routeId, array_values($this->game->getClaimedRoutes())),
+            );
+            foreach ($builtRouteIds as $routeId) {
+                foreach ($this->game->getMap()->blockedTrackBedRoutes[$routeId] ?? [] as $blockedRouteId) {
+                    unset($allRoutes[$blockedRouteId]);
+                }
+            }
+        }
+        array_walk($allRoutes, function(&$route, $id) use ($placedTrackPieces) {
+            if ($route->color === TRACKBED && isset($placedTrackPieces[$id])) {
+                $route = clone $route;
+                $route->color = $placedTrackPieces[$id];
+            }
+            $route->id = $id;
+        });
+        if (!$includeTrackbed) {
+            $allRoutes = array_filter($allRoutes, fn($route) => $route->color !== TRACKBED);
+        }
+        return $allRoutes;
+    }
     
 
     public function getRouteTrainCardCost(object $route, ?int $playerId, int $extraCardsCost = 0): int {
@@ -329,6 +360,9 @@ class MapManager {
      * @param Route $route
      */
     public function canPayForRoute(object $route, array $trainCarsHand, int $remainingTrainCars, ?int $color = null, int $extraCardsCost = 0, ?array $distributionCards = null, bool $considerAllRoutesGray = false, ?int $pairSetAsLocomotive = null, int $ferryCards = 0, ?int $ferryCardsUsed = null, ?int $playerId = null): ?array {
+        if ($this->game->getMap()->useTrackBedPieces && $route->color === TRACKBED) {
+            return null;
+        }
         if ($playerId !== null && $this->game->getMap()->useTechnologyCards) {
             $technologyCards = $this->game->bga->globals->get("TECHNOLOGY_CARDS_{$playerId}", []);
             $substitutionSize = $this->game->getMap()->getLocomotiveSubstitutionSize($technologyCards);

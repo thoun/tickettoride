@@ -8,6 +8,7 @@ import { ChooseLegendaryCharacterState } from "./states/ChooseLegendaryCharacter
 import { ConfirmTunnelState } from "./states/ConfirmTunnel";
 import { ChooseStockShareState } from "./states/ChooseStockShare";
 import { DrawSecondCardState } from "./states/DrawSecondCard";
+import { PlaceTrackPieceState } from "./states/PlaceTrackPiece";
 import { TrainCarSelection } from "./train-car-deck/train-car-deck";
 import { WagonsAnimation } from "./wagons-animation";
 import { BgaAutofit } from "./libs";
@@ -19,6 +20,7 @@ export class Game {
     public gamedatas: TicketToRideGamedatas;
 
     public chooseActionState: ChooseActionState;
+    public placeTrackPieceState: PlaceTrackPieceState;
     public ChooseLegendaryCharacterState: ChooseLegendaryCharacterState;
 
     public map: TtrMap;
@@ -45,6 +47,8 @@ export class Game {
 
         this.ChooseLegendaryCharacterState = new ChooseLegendaryCharacterState(this, bga);
         this.chooseActionState = new ChooseActionState(this, bga);
+        this.placeTrackPieceState = new PlaceTrackPieceState(this, bga);
+        this.bga.states.register('PlaceTrackPiece', this.placeTrackPieceState);
         this.bga.states.register('ChooseLegendaryCharacter', this.ChooseLegendaryCharacterState);
         this.bga.states.register('chooseAction', this.chooseActionState);
         this.bga.states.register('drawSecondCard', new DrawSecondCardState(this, bga));
@@ -708,6 +712,7 @@ export class Game {
             ['trainCarPicked', ANIMATION_MS],
             ['ferryCardDrawn', 1],
             ['stockShareTaken', 1],
+            ['trackPiecePlaced', 1],
             ['technologyCardBought', 1],
             ['technologyCardReturned', 1],
             ['technologyCardsExpired', 1],
@@ -790,6 +795,14 @@ export class Game {
         this.map.stockShareTaken(notif.args);
     }
 
+    notif_trackPiecePlaced(notif: Notif<{routeId: number; color: number; length: number; remainingCount: number}>) {
+        const { routeId, color, length, remainingCount } = notif.args;
+        this.gamedatas.mapSpecificData.remainingTrackPieces[color][length] = remainingCount;
+        this.map.setRemainingTrackPieceCount(color, length, remainingCount);
+        (this.gamedatas.mapSpecificData.placedTrackPieces ??= {})[routeId] = color;
+        this.map.placeTrackPiece(routeId, color);
+    }
+
     notif_technologyCardBought(notif: Notif<NotifTechnologyCardBoughtArgs>) {
         const { playerId, type, remainingCount, removeCards } = notif.args;
         this.trainCarCardCounters[playerId].incValue(-removeCards.length);
@@ -833,6 +846,14 @@ export class Game {
     notif_claimedRoute(notif: Notif<NotifClaimedRouteArgs>) {
         const playerId = notif.args.playerId;
         const routeId = notif.args.routeId;
+
+        if (notif.args.returnedTrackPiece) {
+            const { color, length, remainingCount } = notif.args.returnedTrackPiece;
+            this.gamedatas.mapSpecificData.remainingTrackPieces[color][length] = remainingCount;
+            this.map.setRemainingTrackPieceCount(color, length, remainingCount);
+            delete this.gamedatas.mapSpecificData.placedTrackPieces[routeId];
+            this.map.removeTrackPiece(routeId);
+        }
 
         this.trainCarCardCounters[playerId].incValue(-notif.args.removeCards.length);
         this.trainCarCounters[playerId].toValue(notif.args.remainingTrainCars);

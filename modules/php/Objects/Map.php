@@ -57,6 +57,9 @@ class Map {
     public bool $useTechnologyCards = false;
     public array $technologyCardCosts = [];
     public bool $useBonusCards = false;
+    public bool $useTrackBedPieces = false;
+    /** Trackbed route id => ids of routes blocked when that track is built. */
+    public array $blockedTrackBedRoutes = [];
 
     /** Score selected bonus cards from each player's end-game hand, routes and tickets. */
     public function getBonusCardScores(Game $game, array $players): array {

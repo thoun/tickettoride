@@ -220,6 +220,7 @@ export class TtrMap {
         this.mapDiv.insertAdjacentHTML('afterbegin', `
             <div class="illustration" data-illustration="${illustration}"></div>
             <div id="cities"></div>
+            <div id="track-pieces"></div>
             <div id="route-spaces"></div>
             <div id="train-cars"></div>
             <div id="stations"></div>
@@ -229,6 +230,7 @@ export class TtrMap {
         map.bigCities.forEach(bigCity => document.getElementById('cities').insertAdjacentHTML('beforeend', `<div class="big-city" style="left: ${bigCity.x}px; top: ${bigCity.y}px; width: ${bigCity.width}px;"></div>`)); 
 
         this.createRouteSpaces('route-spaces');
+        Object.entries(mapSpecificData.placedTrackPieces ?? {}).forEach(([routeId, color]) => this.placeTrackPiece(Number(routeId), color));
         this.createCities(map.stations !== null);
 
         this.setClaimedRoutes(claimedRoutes, null);
@@ -398,7 +400,13 @@ export class TtrMap {
         spaceDiv.addEventListener('dragover', e => this.routeDragOver(e, route));
         spaceDiv.addEventListener('dragleave', e => this.setHoveredRoute(null));
         spaceDiv.addEventListener('drop', e => this.routeDragDrop(e, route));
-        spaceDiv.addEventListener('click', () => this.game.chooseActionState.clickedRoute(route));
+        spaceDiv.addEventListener('click', () => {
+            if (this.game.gamedatas.gamestate.name === 'PlaceTrackPiece') {
+                this.game.placeTrackPieceState.clickedRoute(route);
+            } else {
+                this.game.chooseActionState.clickedRoute(route);
+            }
+        });
     }
 
     /** 
@@ -431,6 +439,31 @@ export class TtrMap {
     /** 
      * Highlight selectable route spaces.
      */ 
+    public placeTrackPiece(routeId: number, color: number) {
+        const route = this.map.routes[routeId];
+        route.color = color;
+        document.getElementById(`track-piece-${routeId}`)?.remove();
+        const first = route.spaces[0];
+        const last = route.spaces[route.spaces.length - 1];
+        const angle = route.spaces.length === 1 ? first.angle : Math.atan2(last.y - first.y, last.x - first.x) * 180 / Math.PI;
+        document.getElementById('track-pieces').insertAdjacentHTML('beforeend', `
+            <div id="track-piece-${routeId}" class="track-piece" data-length="${route.spaces.length}" data-color="${color}"
+                style="--track-piece-x: ${(first.x + last.x) / 2}px; --track-piece-y: ${(first.y + last.y) / 2}px; --track-piece-angle: ${angle}deg;"></div>
+        `);
+        document.querySelectorAll<HTMLElement>(`.route-space[data-route="${routeId}"]`).forEach(space => {
+            space.dataset.color = String(color);
+            space.title = `${this.game.getCityName(route.from)} - ${this.game.getCityName(route.to)}, ${route.spaces.length} ${getColor(color, 'route')}`;
+        });
+    }
+
+    public removeTrackPiece(routeId: number) {
+        document.getElementById(`track-piece-${routeId}`)?.remove();
+        this.map.routes[routeId].color = -1;
+        document.querySelectorAll<HTMLElement>(`.route-space[data-route="${routeId}"]`).forEach(space => {
+            space.dataset.color = '-1';
+        });
+    }
+
     public setSelectableRoutes(selectable: boolean, possibleRoutes: Route[]) {
         dojo.query('.route-space').removeClass('selectable');
 
@@ -1061,10 +1094,47 @@ export class TtrMap {
                 (player.mapSpecificData.technologyCards ?? []).forEach(type => this.addTechnologyCard(playerZone, type));
             });
         }
+        if (this.map.useTrackBedPieces) {
+            this.game.createPlayerZones(_('Remaining Track Pieces'), false);
+            const tableZone = this.game.getPlayerZoneContentElement('table');
+            tableZone.insertAdjacentHTML('beforeend', `
+                <div id="remaining-track-pieces">
+                    ${[2, 3, 4, 5].map(length => `
+                        <div class="track-piece-supply-column">
+                            <div class="track-piece-supply-heading">${_('${length}-space tracks').replace('${length}', String(length))}</div>
+                            ${[1, 2, 3, 4, 5, 6, 7, 8].map(color => `
+                                <div id="track-piece-supply-${color}-${length}" class="track-piece-supply" data-color="${color}" data-length="${length}">
+                                    <div class="track-piece" data-color="${color}" data-length="${length}" aria-hidden="true"></div>
+                                    <span class="track-piece-count"></span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            `);
+            [2, 3, 4, 5].forEach(length => {
+                [1, 2, 3, 4, 5, 6, 7, 8].forEach(color => {
+                    this.setRemainingTrackPieceCount(color, length, this.mapSpecificData.remainingTrackPieces?.[color]?.[length] ?? 0);
+                });
+            });
+        }
         if (this.map.useBonusCards) {
             this.game.createPlayerZones(_('Bonus cards'), false);
             const tableZone = this.game.getPlayerZoneContentElement('table');
             (this.mapSpecificData.bonusCards ?? []).forEach(type => this.addNorthernLightsBonusCard(tableZone, type));
+        }
+    }
+
+    public setRemainingTrackPieceCount(color: number, length: number, count: number) {
+        (this.mapSpecificData.remainingTrackPieces ??= {})[color] ??= {};
+        this.mapSpecificData.remainingTrackPieces[color][length] = count;
+        const pile = document.getElementById(`track-piece-supply-${color}-${length}`);
+        if (pile) {
+            pile.querySelector('.track-piece-count').textContent = String(count);
+            pile.classList.toggle('empty', count === 0);
+            const label = `${getColor(color, 'route')}, ${_('${length}-space tracks').replace('${length}', String(length))}: ${count}`;
+            pile.title = label;
+            pile.setAttribute('aria-label', label);
         }
     }
 
