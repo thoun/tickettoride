@@ -41,7 +41,7 @@ export class PlaceCityMarkerState {
             return;
         }
         this.bga.statusBar.removeActionButtons();
-        this.bga.statusBar.setTitle(_('${you} may choose a city to place a City Marker (2 matching cards; Locomotives may substitute)'));
+        this.bga.statusBar.setTitle(_('${you} may place a City Marker'));
         this.addPassButton();
     }
 

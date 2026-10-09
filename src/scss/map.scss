@@ -170,43 +170,6 @@
     color: black;
 }
 
-.city-marker {
-  // Temporary artwork until dedicated City Marker sprites are available.
-  width: 32px;
-  height: 42px;
-  background-image: url('img/europe/station-icons.png');
-  background-size: auto 100%;
-  background-repeat: no-repeat;
-
-  @each $color in $playerColors {
-    $i: index($playerColors, $color) - 1;
-    &[data-player-color="#{$color}"] {
-      background-position: #{$i * 100% / 5} 0%;
-    }
-  }
-}
-
-#city-markers .city-marker {
-  position: absolute;
-  left: -20px;
-  top: -24px;
-  z-index: 4;
-}
-
-.icon.city-marker {
-  width: 25px;
-  height: 32px;
-  position: relative;
-  flex-shrink: 0;
-}
-
-#cities.choosing-starting-city .city.selectable,
-#cities.placing-city-marker .city.selectable,
-#cities.moving-alvin .city.selectable {
-  opacity: 1;
-  background-position-x: 0%;
-}
-
 #cities.moving-alvin .city.selectable {
   z-index: 8;
 }

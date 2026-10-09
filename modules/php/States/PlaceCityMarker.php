@@ -15,7 +15,7 @@ class PlaceCityMarker extends GameState {
             type: StateType::ACTIVE_PLAYER,
             name: 'PlaceCityMarker',
             description: clienttranslate('${actplayer} may place a City Marker'),
-            descriptionMyTurn: clienttranslate('${you} may place a City Marker by paying 2 matching Train Car cards'),
+            descriptionMyTurn: clienttranslate('${you} may place a City Marker'),
         );
     }
 
@@ -33,6 +33,7 @@ class PlaceCityMarker extends GameState {
             'possibleCityIds' => $placement === null ? []
                 : $this->game->buildingManager->getCityMarkerPlacementCityIds($activePlayerId, $placement['routeId']),
             '_private' => [$activePlayerId => ['costByColor' => $costByColor]],
+            '_merge_private' => true,
         ];
     }
 

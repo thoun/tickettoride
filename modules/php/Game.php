@@ -578,7 +578,7 @@ class Game extends Table {
     }
 
     function getMapCode(): string { 
-        //if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[13]; }
+        if (Table::getBgaEnvironment() === 'studio') { return MAP_LIST[13]; }
         return MAP_LIST[match (__NAMESPACE__) {
             'Bga\\Games\\TicketToRide' => 1,
             'Bga\\Games\\TicketToRideEurope' => 2,

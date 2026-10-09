@@ -1,3 +1,50 @@
 #map {
     background-image: url('./map.webp');
 }
+
+/* Temporary artwork until dedicated City Marker sprites are available. */
+.city-marker {
+    width: 32px;
+    height: 42px;
+    background-image: url('./city-markers-icons.png');
+    background-size: auto 100%;
+    background-repeat: no-repeat;
+}
+
+.city-marker[data-player-color="0056aa"] {
+    background-position: 0% 0%;
+}
+
+.city-marker[data-player-color="41a62a"] {
+    background-position: 20% 0%;
+}
+
+.city-marker[data-player-color="af0ac2"] {
+    background-position: 40% 0%;
+}
+
+.city-marker[data-player-color="e3001a"] {
+    background-position: 60% 0%;
+}
+
+.city-marker[data-player-color="ffed00"] {
+    background-position: 80% 0%;
+}
+
+.city-marker[data-player-color="ffffff"] {
+    background-position: 100% 0%;
+}
+
+#city-markers .city-marker {
+    position: absolute;
+    left: -20px;
+    top: -24px;
+    z-index: 4;
+}
+
+.icon.city-marker {
+    width: 25px;
+    height: 32px;
+    position: relative;
+    flex-shrink: 0;
+}
