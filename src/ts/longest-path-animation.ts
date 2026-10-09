@@ -22,7 +22,7 @@ export class LongestPathAnimation extends WagonsAnimation {
         return new Promise(resolve => {
 
             document.getElementById('map').insertAdjacentHTML('beforeend', `
-            <div id="longest-path-animation" style="color: #${this.playerColor};${this.getCardPosition()}">${this.length}</div>
+            <div id="longest-path-animation" data-player-color="${this.playerColor}" style="color: #${this.playerColor};${this.getCardPosition()}">${this.length}</div>
             `);
             this.setWagonsVisibility(true);
     

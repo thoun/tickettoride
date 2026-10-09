@@ -24,7 +24,7 @@ export class MostConnectedCitiesAnimation extends WagonsAnimation {
     public animate(): Promise<WagonsAnimation> {
         return new Promise(resolve => {
             document.getElementById('map').insertAdjacentHTML('beforeend', `
-            <div id="most-connected-cities-animation" style="color: #${this.playerColor};${this.getPosition()}">${this.length}</div>
+            <div id="most-connected-cities-animation" data-player-color="${this.playerColor}" style="color: #${this.playerColor};${this.getPosition()}">${this.length}</div>
             `);
             this.cities.forEach(city => city.dataset.highlight = 'true');
             this.setWagonsVisibility(true);

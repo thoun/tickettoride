@@ -983,6 +983,11 @@
   z-index: 21;
 }
 
+#longest-path-animation[data-player-color=ffffff],
+#most-connected-cities-animation[data-player-color=ffffff] {
+  text-shadow: 0 0 2px black, 0 0 3px black;
+}
+
 #remaining-station-animation {
   position: absolute;
   left: 750px;

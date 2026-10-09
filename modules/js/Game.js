@@ -486,7 +486,7 @@ class LongestPathAnimation extends WagonsAnimation {
     animate() {
         return new Promise(resolve => {
             document.getElementById('map').insertAdjacentHTML('beforeend', `
-            <div id="longest-path-animation" style="color: #${this.playerColor};${this.getCardPosition()}">${this.length}</div>
+            <div id="longest-path-animation" data-player-color="${this.playerColor}" style="color: #${this.playerColor};${this.getCardPosition()}">${this.length}</div>
             `);
             this.setWagonsVisibility(true);
             setTimeout(() => this.endAnimation(resolve), 1900);
@@ -527,7 +527,7 @@ class MostConnectedCitiesAnimation extends WagonsAnimation {
     animate() {
         return new Promise(resolve => {
             document.getElementById('map').insertAdjacentHTML('beforeend', `
-            <div id="most-connected-cities-animation" style="color: #${this.playerColor};${this.getPosition()}">${this.length}</div>
+            <div id="most-connected-cities-animation" data-player-color="${this.playerColor}" style="color: #${this.playerColor};${this.getPosition()}">${this.length}</div>
             `);
             this.cities.forEach(city => city.dataset.highlight = 'true');
             this.setWagonsVisibility(true);
