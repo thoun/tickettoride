@@ -821,7 +821,7 @@ export class TtrMap {
     /** 
      * Highlight hovered route (when dragging train cars).
      */ 
-    public setHoveredRoute(route: Route | null, valid: boolean | null = null, player: TicketToRidePlayer | null = null) {
+    public setHoveredRoute(route: Route | null, valid: boolean | null = null, player: TicketToRidePlayer | null = null, showWagons = true) {
         this.inMapZoomManager.setHoveredRoute(route);
 
         if (route) {
@@ -831,7 +831,7 @@ export class TtrMap {
                 cityDiv.dataset.valid = valid.toString();
             });
 
-            if (valid) {
+            if (valid && showWagons) {
                 const chooseActionArgs = this.game.bga.states.getCurrentMainStateName() === 'chooseAction' ? this.game.gamedatas.gamestate.args as EnteringChooseActionArgs : null;
                 const shifted = chooseActionArgs && (chooseActionArgs.rightOfWayPending || (chooseActionArgs.legendaryCharacter === 1 && chooseActionArgs.legendaryCharacterState === 'using'));
                 let claimerId = Number((player || this.game.getCurrentPlayer()).id);

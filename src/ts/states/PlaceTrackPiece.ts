@@ -21,6 +21,7 @@ export class PlaceTrackPieceState {
     }
 
     private showRoutes() {
+        this.game.map.setHoveredRoute(null);
         this.game.map.setSelectableRoutes(this.active, this.args.possibleRouteIds.map(id => this.game.getMap().routes[id]));
         if (this.active) {
             this.bga.statusBar.removeActionButtons();
@@ -32,6 +33,7 @@ export class PlaceTrackPieceState {
         if (!this.active || !this.args.possibleRouteIds.includes(route.id)) {
             return;
         }
+        this.game.map.setHoveredRoute(route, true, null, false);
         const length = route.spaces.length;
         this.bga.statusBar.removeActionButtons();
         this.bga.statusBar.setTitle(_('Choose a Track Piece colour for ${from} to ${to}')
@@ -49,6 +51,7 @@ export class PlaceTrackPieceState {
 
     public onLeavingState() {
         this.active = false;
+        this.game.map.setHoveredRoute(null);
         this.game.map.setSelectableRoutes(false, []);
         this.game.trainCarSelection.removeSelectableVisibleCards();
     }

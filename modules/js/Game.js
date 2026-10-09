@@ -1862,14 +1862,14 @@ class TtrMap {
     /**
      * Highlight hovered route (when dragging train cars).
      */
-    setHoveredRoute(route, valid = null, player = null) {
+    setHoveredRoute(route, valid = null, player = null, showWagons = true) {
         this.inMapZoomManager.setHoveredRoute(route);
         if (route) {
             this.getCityElements([route.from, route.to].filter(city => city > 0)).forEach(cityDiv => {
                 cityDiv.dataset.hovered = 'true';
                 cityDiv.dataset.valid = valid.toString();
             });
-            if (valid) {
+            if (valid && showWagons) {
                 const chooseActionArgs = this.game.bga.states.getCurrentMainStateName() === 'chooseAction' ? this.game.gamedatas.gamestate.args : null;
                 const shifted = chooseActionArgs && (chooseActionArgs.rightOfWayPending || (chooseActionArgs.legendaryCharacter === 1 && chooseActionArgs.legendaryCharacterState === 'using'));
                 let claimerId = Number((player || this.game.getCurrentPlayer()).id);
@@ -3589,6 +3589,7 @@ class PlaceTrackPieceState {
         this.showRoutes();
     }
     showRoutes() {
+        this.game.map.setHoveredRoute(null);
         this.game.map.setSelectableRoutes(this.active, this.args.possibleRouteIds.map(id => this.game.getMap().routes[id]));
         if (this.active) {
             this.bga.statusBar.removeActionButtons();
@@ -3599,6 +3600,7 @@ class PlaceTrackPieceState {
         if (!this.active || !this.args.possibleRouteIds.includes(route.id)) {
             return;
         }
+        this.game.map.setHoveredRoute(route, true, null, false);
         const length = route.spaces.length;
         this.bga.statusBar.removeActionButtons();
         this.bga.statusBar.setTitle(_('Choose a Track Piece colour for ${from} to ${to}')
@@ -3615,6 +3617,7 @@ class PlaceTrackPieceState {
     }
     onLeavingState() {
         this.active = false;
+        this.game.map.setHoveredRoute(null);
         this.game.map.setSelectableRoutes(false, []);
         this.game.trainCarSelection.removeSelectableVisibleCards();
     }
@@ -5063,7 +5066,7 @@ class Game {
                     });
                 }
                 // make cities names in bold 
-                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name', 'technology_name', 'bonus_name'].forEach(field => {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name', 'technology_name', 'bonus_name', 'piece_color'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }

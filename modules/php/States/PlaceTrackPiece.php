@@ -72,12 +72,25 @@ class PlaceTrackPiece extends GameState {
         $placedTrackPieces[$routeId] = $color;
         $this->bga->globals->set('REMAINING_TRACK_PIECES', $remainingTrackPieces);
         $this->bga->globals->set('PLACED_TRACK_PIECES', $placedTrackPieces);
+        $pieceColor = match ($color) {
+            0 => clienttranslate('Gray'),
+            1 => clienttranslate('Pink'),
+            2 => clienttranslate('White'),
+            3 => clienttranslate('Blue'),
+            4 => clienttranslate('Yellow'),
+            5 => clienttranslate('Orange'),
+            6 => clienttranslate('Black'),
+            7 => clienttranslate('Red'),
+            8 => clienttranslate('Green'),
+        };
 
-        $this->notify->all('trackPiecePlaced', clienttranslate('${player_name} places a Track Piece between ${from} and ${to}'), [
+        $this->notify->all('trackPiecePlaced', clienttranslate('${player_name} places a ${piece_color} Track Piece between ${from} and ${to}'), [
             'playerId' => $activePlayerId,
             'player_name' => $this->game->getPlayerNameById($activePlayerId),
             'from' => $this->game->getMap()->cities[$route->from]->name,
             'to' => $this->game->getMap()->cities[$route->to]->name,
+            'piece_color' => $pieceColor,
+            'i18n' => ['piece_color'],
             'routeId' => $routeId,
             'color' => $color,
             'length' => $route->number,

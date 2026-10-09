@@ -1160,7 +1160,7 @@ export class Game {
                 }
 
                 // make cities names in bold 
-                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name', 'technology_name', 'bonus_name'].forEach(field => {
+                ['from', 'to', 'count', 'extraCards', 'pickedCards', 'character_name', 'company_name', 'technology_name', 'bonus_name', 'piece_color'].forEach(field => {
                     if (args[field] !== null && args[field] !== undefined && args[field][0] != '<') {
                         args[field] = `<strong>${_(args[field])}</strong>`;
                     }
