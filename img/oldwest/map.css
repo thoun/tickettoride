@@ -2,12 +2,11 @@
     background-image: url('./map.webp');
 }
 
-/* Temporary artwork until dedicated City Marker sprites are available. */
 .city-marker {
-    width: 32px;
-    height: 42px;
-    background-image: url('./city-markers-icons.png');
-    background-size: auto 100%;
+    width: 48px;
+    height: 48px;
+    background-image: url('./city-markers-icons.webp');
+    background-size: 600% 100%;
     background-repeat: no-repeat;
 }
 
@@ -37,13 +36,13 @@
 
 #city-markers .city-marker {
     position: absolute;
-    left: -20px;
+    left: -24px;
     top: -24px;
     z-index: 4;
 }
 
 .icon.city-marker {
-    width: 25px;
+    width: 32px;
     height: 32px;
     position: relative;
     flex-shrink: 0;
