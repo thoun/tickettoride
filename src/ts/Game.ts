@@ -106,9 +106,12 @@ export class Game {
                         </div>
 
                         <div id="train-car-deck">
-                            <div id="train-car-deck-hidden-pile" class="hidden-pile stock train-car-deck-hidden-pile-tooltip">
+                            <div id="train-car-deck-hidden-pile" class="hidden-pile stock">
                                 <div id="train-car-deck-level" class="deck-level"></div>
-                                ${[1, 2].map(number => `<div role="button" id="train-car-deck-hidden-pile${number}" class="button ${number === 1 ? 'left' : 'right'}-radius train-car-deck-hidden-pile-tooltip" data-number="${number}">${number}</div>`).join('')}
+                                <div id="auto-pick-controls"></div>
+                                <div id="train-car-deck-draw-buttons" class="train-car-deck-hidden-pile-tooltip">
+                                    ${[1, 2].map(number => `<div role="button" id="train-car-deck-hidden-pile${number}" class="button ${number === 1 ? 'left' : 'right'}-radius" data-number="${number}">${number}</div>`).join('')}
+                                </div>
                             </div>
                             <div id="visible-train-cards">
                                 ${[1, 2, 3, 4, 5].map(number => `<div id="visible-train-cards-stock${number}" class="stock"></div>`).join('')}
@@ -182,6 +185,22 @@ export class Game {
 
         this.setupNotifications();
 
+        if (player && Number(gamedatas.gamestate.id) < 90) {
+            const controls = document.getElementById('auto-pick-controls');
+            ['pointerup', 'touchend', 'click'].forEach(type => controls.addEventListener(type, event => event.stopPropagation()));
+            this.bga.statusBar.addActionButton(
+                '<i class="fa6 fa6-bolt" aria-hidden="true"></i>',
+                () => this.showAutoPickPopin(),
+                {
+                    id: 'auto-pick-train-car-cards',
+                    color: 'secondary',
+                    destination: controls,
+                    tooltip: _('Auto-pick train car cards'),
+                },
+            );
+            this.updateAutoPickButton();
+        }
+
         this.bga.gameui.onScreenWidthChange = () => this.map.setAutoZoom();
 
         if (this.gamedatas.map.multilingualPdfRulesUrl || this.gamedatas.map.rulesDifferences) {
@@ -199,6 +218,66 @@ export class Game {
 
     ///////////////////////////////////////////////////
     //// Game & client states
+
+    private updateAutoPickButton() {
+        const target = this.gamedatas.players[this.getPlayerId()]?.autoPickTrainCarCards ?? 0;
+        const button = document.getElementById('auto-pick-train-car-cards');
+        if (button) {
+            button.classList.toggle('enabled', target > 0);
+            button.dataset.target = target > 0 ? String(target) : '';
+        }
+        const disableButton = document.getElementById('auto-pick-disable') as HTMLButtonElement;
+        if (disableButton) {
+            disableButton.disabled = target === 0;
+        }
+    }
+
+    private showAutoPickPopin() {
+        const target = this.gamedatas.players[this.getPlayerId()].autoPickTrainCarCards ?? 0;
+        const minimum = Math.max(2, this.trainCarCardCounters[this.getPlayerId()].getValue() + 1);
+        this.bga.dialogs.generic(_('Auto-pick train car cards'), `
+            <form id="auto-pick-form">
+                <label for="auto-pick-target">${_('Auto-pick cards from the deck until I have at least this many cards or someone changes the map:')}</label>
+                <input id="auto-pick-target" type="number" min="${minimum}" max="50" step="1" required value="${target || ''}">
+                <div class="auto-pick-actions">
+                    <button type="submit" class="bgabutton bgabutton_blue">${_('Confirm')}</button>
+                    <button type="button" id="auto-pick-disable" class="bgabutton bgabutton_gray" ${target === 0 ? 'disabled' : ''}>${_('Disable')}</button>
+                    <button type="button" id="auto-pick-cancel" class="bgabutton bgabutton_gray">${_('Cancel')}</button>
+                </div>
+            </form>
+        `, {
+            id: 'autoPickTrainCarCards',
+            beforeShow: dialog => {
+                const form = document.getElementById('auto-pick-form') as HTMLFormElement;
+                const save = (value: number) => {
+                    this.bga.actions.performAction('actSetAutoPickTrainCarCards', { value }, { checkAction: false })?.then(() => dialog.destroy());
+                };
+                form.addEventListener('submit', event => {
+                    event.preventDefault();
+                    if (form.reportValidity()) {
+                        save((document.getElementById('auto-pick-target') as HTMLInputElement).valueAsNumber);
+                    }
+                });
+                document.getElementById('auto-pick-disable').addEventListener('click', () => save(0));
+                document.getElementById('auto-pick-cancel').addEventListener('click', () => dialog.destroy());
+            },
+        });
+    }
+
+    notif_setPlayerCounter(notif: Notif<{ name: string; playerId: number; value?: number }>) {
+        if (notif.args.name === 'autoPickTrainCarCards' && notif.args.playerId == this.getPlayerId() && notif.args.value !== undefined) {
+            this.gamedatas.players[this.getPlayerId()].autoPickTrainCarCards = notif.args.value;
+            this.updateAutoPickButton();
+        }
+    }
+
+    notif_setPlayerCounterAll(notif: Notif<{ name: string; value: number }>) {
+        const player = this.gamedatas.players[this.getPlayerId()];
+        if (notif.args.name === 'autoPickTrainCarCards' && player) {
+            player.autoPickTrainCarCards = notif.args.value;
+            this.updateAutoPickButton();
+        }
+    }
 
     // onEnteringState: this method is called each time we are entering into a new game state.
     //                  You can use this method to perform some user interface changes at this moment.
@@ -721,6 +800,8 @@ export class Game {
         const skipEndOfGameAnimations = this.isFastEndScoring();
 
         const notifs = [
+            ['setPlayerCounter', 1],
+            ['setPlayerCounterAll', 1],
             ['newCardsOnTable', ANIMATION_MS],
             ['claimedRoute', ANIMATION_MS],
             ['addMountainTrains', 1],

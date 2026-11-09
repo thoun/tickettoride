@@ -65,6 +65,7 @@ class BuildingManager {
 
         $this->game->trainCarManager->trainCars->moveCards(array_map(fn($card) => $card->id, $cardsToRemove), 'discard');
         $this->game->DbQuery("INSERT INTO `placed_buildings` (`city_id`, `player_id`, `building_type`) VALUES ($cityId, $playerId, ".CITY_MARKER.")");
+        $this->game->resetAutoPick();
         $this->bga->notify->all('cityMarkerPlaced', clienttranslate('${player_name} places a City Marker in ${city_name} with these Train Car cards: ${colors}'), [
             'playerId' => $playerId,
             'player_name' => $this->game->getPlayerNameById($playerId),
@@ -105,6 +106,7 @@ class BuildingManager {
         }
 
         $this->game->DbQuery("INSERT INTO `placed_buildings` (`city_id`, `player_id`, `building_type`) VALUES ($cityId, $playerId, ".CITY_MARKER.")");
+        $this->game->resetAutoPick();
         $this->bga->notify->all('cityMarkerPlaced', clienttranslate('${player_name} chooses ${city_name} as their starting city'), [
             'playerId' => $playerId,
             'player_name' => $this->game->getPlayerNameById($playerId),
@@ -202,6 +204,7 @@ class BuildingManager {
 
         // save built station
         $this->game->DbQuery("INSERT INTO `placed_buildings` (`city_id`, `player_id`, `building_type`) VALUES ($cityId, $playerId, ".STATION.")");
+        $this->game->resetAutoPick();
 
         $this->bga->notify->all('builtStation', clienttranslate('${player_name} builds a Train Station on ${city_name} with ${number} train car(s) : ${colors}'), [
             'playerId' => $playerId,

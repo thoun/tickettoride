@@ -1130,6 +1130,21 @@
 #train-car-deck .hidden-pile:not(.buttonselection).selectable {
   cursor: pointer;
 }
+#train-car-deck #train-car-deck-hidden-pile {
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 6px 0 20px;
+}
+#train-car-deck:has(> #destination-deck-hidden-pile.top) #auto-pick-controls {
+  order: 2;
+}
+#train-car-deck #train-car-deck-draw-buttons {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+}
 #train-car-deck #visible-train-cards {
   transform-origin: 0 0;
   transform: scale(0.9);
@@ -1739,6 +1754,73 @@
   left: 19px;
   right: 60px;
   bottom: 20px;
+}
+
+#auto-pick-controls {
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 2;
+  padding: 4px 12px;
+}
+#auto-pick-controls:empty {
+  display: none;
+}
+
+#auto-pick-train-car-cards {
+  position: relative;
+  overflow: unset;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 24px;
+}
+#auto-pick-train-car-cards::after {
+  border: unset;
+}
+#auto-pick-train-car-cards.enabled::after {
+  content: attr(data-target);
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #fff;
+  color: #238323;
+  border: 1px solid #238323;
+  border-radius: 50%;
+  width: 27px;
+  height: 27px;
+  line-height: 27px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+#auto-pick-form {
+  max-width: 480px;
+  padding: 12px;
+}
+#auto-pick-form button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+#auto-pick-form input {
+  display: block;
+  width: 80px;
+  margin: 16px auto;
+}
+#auto-pick-form .auto-pick-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
 }
 
 /* make space between buttons on touch devices */

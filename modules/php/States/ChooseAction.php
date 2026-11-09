@@ -26,6 +26,29 @@ class ChooseAction extends GameState {
         );
     }
 
+    function onEnteringState(int $activePlayerId) {
+        $target = $this->game->autoPickTrainCarCards->get($activePlayerId);
+        if ($target === 0) {
+            return;
+        }
+        $args = $this->getArgs($activePlayerId);
+        if ($args['maxHiddenCardsPick'] < 2) {
+            $this->game->autoPickTrainCarCards->set($activePlayerId, 0);
+            return;
+        }
+        if ($target <= $this->game->trainCarManager->getPlayerHandCount($activePlayerId)) {
+            $this->game->autoPickTrainCarCards->set($activePlayerId, 0);
+            return;
+        }
+
+        $nextState = $this->actDrawDeckCards($args['maxHiddenCardsPick'], $activePlayerId);
+        if ($this->game->trainCarManager->getPlayerHandCount($activePlayerId) >= $target
+            || $this->game->trainCarManager->getRemainingTrainCarCardsInDeck(true) < 2) {
+            $this->game->autoPickTrainCarCards->set($activePlayerId, 0);
+        }
+        return $nextState;
+    }
+
     function getArgs(int $activePlayerId) {
         $rightOfWayPending = $this->game->getMap()->useTechnologyCards && $this->bga->globals->get('RIGHT_OF_WAY_PENDING', false);
         $thermocompressorRemaining = $this->game->getMap()->useTechnologyCards ? (int) $this->bga->globals->get('THERMOCOMPRESSOR_REMAINING', 0) : 0;

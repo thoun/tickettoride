@@ -41,6 +41,7 @@ class MoveAlvin extends GameState {
         }
         $alvin['cityId'] = $cityId;
         $this->bga->globals->set('ALVIN', $alvin);
+        $this->game->resetAutoPick();
         $this->bga->globals->set('ALVIN_MOVE_PENDING', null);
         $nextState = $this->bga->globals->get('ALVIN_MOVE_NEXT_STATE', NextPlayer::class);
         $this->bga->globals->set('ALVIN_MOVE_NEXT_STATE', null);

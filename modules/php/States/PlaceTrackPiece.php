@@ -72,6 +72,7 @@ class PlaceTrackPiece extends GameState {
         $placedTrackPieces[$routeId] = $color;
         $this->bga->globals->set('REMAINING_TRACK_PIECES', $remainingTrackPieces);
         $this->bga->globals->set('PLACED_TRACK_PIECES', $placedTrackPieces);
+        $this->game->resetAutoPick();
         $pieceColor = match ($color) {
             0 => clienttranslate('Gray'),
             1 => clienttranslate('Pink'),

@@ -94,6 +94,7 @@ interface PlayerMapSpecificData {
 }
 
 interface TicketToRidePlayer extends Player {
+    autoPickTrainCarCards: number | null;
     playerNo: number;
     trainCarsCount: number;
     destinationsCount: number | null;

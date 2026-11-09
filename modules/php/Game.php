@@ -24,6 +24,11 @@ require_once('constants.inc.php');
 require_once(__DIR__.'/MapManager.php');
 
 use Bga\GameFramework\Table;
+use Bga\GameFramework\Actions\CheckAction;
+use Bga\GameFramework\Components\Counters\CounterVisibility;
+use Bga\GameFramework\Components\Counters\PlayerCounter;
+use Bga\GameFramework\UserException;
+use Bga\Games\TicketToRide\States\ChooseAction;
 use Bga\Games\TicketToRide\Objects\ClaimedRoute;
 use Bga\Games\TicketToRide\Objects\Destination;
 use Bga\Games\TicketToRide\Objects\Map;
@@ -66,9 +71,11 @@ class Game extends Table {
     public LegendaryCharacterManager $legendaryCharacterManager;
 
     public Map $map;
+    public PlayerCounter $autoPickTrainCarCards;
 
 	function __construct() {
         parent::__construct();
+        $this->autoPickTrainCarCards = $this->bga->counterFactory->createPlayerCounter('autoPickTrainCarCards', min: 0, max: 50, visibility: CounterVisibility::SELF);
         
         $this->initGameStateLabels(array_merge([
             LAST_TURN => 10, // last turn is the id of the player starting last turn, 0 if it's not last turn
@@ -115,6 +122,7 @@ class Game extends Table {
         $this->DbQuery($sql);
         $this->reattributeColorsBasedOnPreferences($players, $gameinfos['player_colors']);
         $this->reloadPlayersBasicInfos();
+        $this->autoPickTrainCarCards->initDb(array_keys($players));
         
         /************ Start the game initialization *****/
 
@@ -320,7 +328,26 @@ class Game extends Table {
         }
 
   
+        $this->autoPickTrainCarCards->fillResult($result, currentPlayerId: $currentPlayerId);
         return $result;
+    }
+
+    #[CheckAction(false)]
+    public function actSetAutoPickTrainCarCards(int $value, int $currentPlayerId): void {
+        if (!in_array($currentPlayerId, $this->getPlayersIds())) {
+            throw new UserException('Only players can change auto-pick.');
+        }
+        if ($value !== 0 && ($value < 2 || $value > 50)) {
+            throw new UserException(clienttranslate('Choose a number of cards between 2 and 50.'));
+        }
+        if ($value > 0 && $value <= $this->trainCarManager->getPlayerHandCount($currentPlayerId)) {
+            throw new UserException(clienttranslate('Choose a number greater than the number of Train Car cards in your hand.'));
+        }
+        $this->autoPickTrainCarCards->set($currentPlayerId, $value);
+        if ($value > 0 && $this->gamestate->getCurrentMainStateId() === ST_PLAYER_CHOOSE_ACTION
+            && (int) $this->getActivePlayerId() === $currentPlayerId) {
+            $this->gamestate->jumpToState(ChooseAction::class);
+        }
     }
 
     /*
@@ -346,6 +373,12 @@ class Game extends Table {
 
     function removeTrainCars(int $playerId, int $number) {
         $this->DbQuery("UPDATE player SET `player_remaining_train_cars` = `player_remaining_train_cars` - $number WHERE player_id = $playerId");
+    }
+
+    public function resetAutoPick(): void {
+        if ($this->autoPickTrainCarCards->getMax() > 0) {
+            $this->autoPickTrainCarCards->setAll(0);
+        }
     }
 
     function applyClaimRoute(int $playerId, int $routeId, int $color, int $extraCardCost = 0, ?array $distributionCards = null, bool $shifted = false, int $ferryCardsUsed = 0): void {
@@ -386,6 +419,7 @@ class Game extends Table {
         $claimerId = $claimWithBulletTrain ? -1 : $playerId;
         $shiftIndex = $shifted ? $this->getUniqueIntValueFromDB("SELECT count(*) FROM claimed_routes WHERE route_id = $routeId") : 0;
         $this->DbQuery("INSERT INTO `claimed_routes` (`route_id`, `player_id`, `shift_index`) VALUES ($routeId, $claimerId, $shiftIndex)");
+        $this->resetAutoPick();
 
         $returnedTrackPiece = null;
         if ($this->getMap()->useTrackBedPieces) {
@@ -688,6 +722,10 @@ class Game extends Table {
     */
     
     function upgradeTableDb($from_version) {
+        if (count($this->getObjectListFromDB("SHOW TABLES LIKE 'bga_player_counters'")) === 0
+            || count($this->getObjectListFromDB("SHOW COLUMNS FROM bga_player_counters LIKE 'autoPickTrainCarCards'")) === 0) {
+            $this->autoPickTrainCarCards->initDb($this->getPlayersIds());
+        }
         if (count($this->getObjectListFromDB("SHOW COLUMNS FROM claimed_routes LIKE 'shift_index'")) === 0) {
             $this->applyDbUpgradeToAllDB('ALTER TABLE DBPREFIX_claimed_routes ADD shift_index TINYINT unsigned NOT NULL DEFAULT 0');
         }
