@@ -42,6 +42,7 @@ interface Route {
     ferryWaves?: number;
     mountain?: number;
     bulletTrainSpaceIndex?: number;
+    bridgeToll?: number | null;
 }
 
 interface ClaimingRoute {

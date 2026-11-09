@@ -28,6 +28,7 @@ class Route {
      * @param ?int $bulletTrainSpaceIndex index of the bullet train space (bullet train logo drawn on this route space) (Japan map)
      * @param ?int $ferryWaves number of waves on this route (wave logo drawn on route spaces) (Italy map)
      * @param ?int $drawingBonus number of train cars drawn from the deck when claiming this route (Northern Lights map)
+     * @param ?int $bridgeToll bridge toll cost when claiming this route (Nederland map)
      */
     public function __construct(
         // generic parameters
@@ -45,6 +46,7 @@ class Route {
         public ?int $bulletTrainSpaceIndex = null,
         public int $ferryWaves = 0,
         public int $drawingBonus = 0,
+        public ?int $bridgeToll = null,
     ) {
         $this->number = count($spaces);
     }

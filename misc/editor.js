@@ -6,6 +6,7 @@ const SPECIFIC_ROUTE_ARGUMENTS = {
     bulletTrainSpaceIndex: { input: 'route-bullet-train-space-index', defaultValue: 'null', checkbox: true },
     ferryWaves: { input: 'route-ferry-waves', defaultValue: '0' },
     drawingBonus: { input: 'route-drawing-bonus', defaultValue: '0' },
+    bridgeToll: { input: 'route-bridge-toll', defaultValue: 'null', map: 'nederland' },
 };
 const DIRECTORY_DATABASE_NAME = 'BGA_TTR_EDITOR';
 const DIRECTORY_STORE_NAME = 'directoryHandles';
@@ -200,7 +201,10 @@ function resetEditor() {
     document.getElementById('new-route-stock-shares').value = '[]';
     document.getElementById('new-route-ferry-waves').value = '0';
     document.getElementById('new-route-drawing-bonus').value = '0';
-    document.querySelectorAll('.specific-route-field').forEach(field => field.hidden = true);
+    document.getElementById('new-route-bridge-toll').value = '';
+    document.querySelectorAll('.specific-route-field').forEach(field => {
+        field.hidden = SPECIFIC_ROUTE_ARGUMENTS[field.dataset.routeArgument]?.map !== MAP;
+    });
 }
 
 async function load() {
