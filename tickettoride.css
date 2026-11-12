@@ -1145,6 +1145,9 @@
   position: relative;
   z-index: 1;
 }
+#train-car-deck #train-car-deck-hidden-pile:not(.buttonselection) #train-car-deck-draw-buttons {
+  pointer-events: none;
+}
 #train-car-deck #visible-train-cards {
   transform-origin: 0 0;
   transform: scale(0.9);
@@ -1763,12 +1766,14 @@
   position: relative;
   z-index: 2;
   padding: 4px 12px;
+  pointer-events: none;
 }
 #auto-pick-controls:empty {
   display: none;
 }
 
 #auto-pick-train-car-cards {
+  pointer-events: auto;
   position: relative;
   overflow: unset;
   margin: 0;

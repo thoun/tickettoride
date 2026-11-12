@@ -103,6 +103,10 @@
         z-index: 1;
     }
 
+    #train-car-deck-hidden-pile:not(.buttonselection) #train-car-deck-draw-buttons {
+        pointer-events: none;
+    }
+
     #visible-train-cards {
         transform-origin: 0 0;
         transform: scale(0.9);
