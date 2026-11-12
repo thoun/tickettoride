@@ -29,6 +29,7 @@ class NordicCountriesMap extends Map {
         );
 
         $this->visibleLocomotivesCountsAsTwoCards = false; // Says if it is possible to take only one visible locomotive.
+        $this->resetVisibleCardsWithLocomotives = null;
         $this->locomotiveUsageRestriction = Map::LOCOMOTIVE_TUNNEL | Map::LOCOMOTIVE_FERRY; // Locomotive jokers only usable on tunnels or ferries.
         $this->trainCarsPerPlayer = 40; // trains car tokens per player at the beginning of the game
         $this->unusedInitialDestinationsGoToDeckBottom = false; // Indicates if unpicked destinations cards go back to the bottom of the deck.
@@ -41,6 +42,7 @@ class NordicCountriesMap extends Map {
         $this->rulesDifferences = [
             clienttranslate('All players start with 40 trains instead of 45 trains.'),
             clienttranslate('Locomotives count as a simple card, so you can take 2 visible locomotives in one turn'),
+            clienttranslate('Face-up cards are not replaced when 3 or more Locomotives are visible.'),
             clienttranslate('Locomotives can only be used for tunnels and ferries'),
             clienttranslate('You can only play 3 players maximum. Double routes are only available at 3 players.'),
             clienttranslate('Game start: Deal 5 tickets and keep at least 2.'),
